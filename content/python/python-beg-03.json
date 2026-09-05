@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 1,
+  "language": "python",
+  "level": "beginner",
+  "lessonId": "python-beg-03",
+  "lessonTitle": "Decidir: comparação, booleanos e condicionais",
+  "questions": [
+    {
+      "id": "python-beg-0301",
+      "topic": "comparacao",
+      "prompt": "Qual operador pergunta se dois valores são iguais?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "=",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "==",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "===",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "<>",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "equals()",
+          "correct": false
+        }
+      ],
+      "hint": "Um sinal sozinho já tem outro trabalho em Python: guardar um valor numa variável. Para perguntar alguma coisa, o operador precisa ser diferente daquele.",
+      "explanation": "O sinal sozinho é atribuição: guarda um valor. O sinal duplicado é comparação: devolve True ou False. Trocar um pelo outro dentro de um if é um dos tropeços mais comuns de quem começa. A forma com três sinais é de JavaScript, a com menor e maior foi removida no Python 3, e o método com nome não existe na linguagem."
+    },
+    {
+      "id": "python-beg-0302",
+      "topic": "comparacao",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(10 > 3)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "True",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "true",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "10 > 3",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "10",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Erro: comparação não pode ser impressa",
+          "correct": false
+        }
+      ],
+      "hint": "A comparação não devolve a conta escrita nem um dos números envolvidos, e sim um dos dois valores lógicos da linguagem. Repare que o Python distingue maiúsculas de minúsculas, inclusive neles.",
+      "explanation": "Uma comparação sempre resulta num booleano. Em Python os dois valores booleanos se escrevem True e False, sempre com a primeira letra maiúscula. Escritos em minúsculas o Python os trataria como nomes de variáveis e o programa pararia com NameError."
+    },
+    {
+      "id": "python-beg-0303",
+      "topic": "condicionais",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "idade = 17\nif idade >= 18:\n    print(\"Maior de idade\")\nelse:\n    print(\"Menor de idade\")",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Maior de idade",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "Maior de idade e Menor de idade",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Nada, o programa não imprime",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "Menor de idade",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "True",
+          "correct": false
+        }
+      ],
+      "hint": "Compare o valor guardado na variável com o limite escrito na condição. Quando o teste falha, o Python pula o primeiro bloco e executa o alternativo.",
+      "explanation": "17 não é maior nem igual a 18, então a condição é falsa e o primeiro bloco é ignorado. O bloco do else roda no lugar dele. Apenas um dos dois blocos executa, nunca os dois."
+    },
+    {
+      "id": "python-beg-0304",
+      "topic": "sintaxe",
+      "prompt": "O que acontece ao rodar este código?",
+      "code": {
+        "language": "python",
+        "content": "if 5 > 3:\nprint(\"oi\")",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Imprime oi",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "Imprime True",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "IndentationError: o bloco depois dos dois pontos precisa ser recuado",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "SyntaxError: falta ponto e vírgula no fim da linha",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Nada acontece, o programa termina em silêncio",
+          "correct": false
+        }
+      ],
+      "hint": "Em Python o bloco que pertence a uma condição não é delimitado por chaves. Repare no recuo da segunda linha, ou na falta dele.",
+      "explanation": "Depois dos dois pontos o Python exige um bloco recuado. Sem o recuo ele não sabe o que pertence à condição e interrompe antes de executar qualquer coisa. Chaves e ponto e vírgula não fazem esse papel aqui: o recuo é sintaxe, não estética."
+    },
+    {
+      "id": "python-beg-0305",
+      "topic": "booleanos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "idade = 20\ntem_carteira = False\nprint(idade >= 18 and tem_carteira)",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "True",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "20",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Erro: não dá para comparar número com booleano",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "None",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "False",
+          "correct": true
+        }
+      ],
+      "hint": "O conector and só entrega o valor positivo quando os dois lados são positivos. Repare que um dos lados já está definido como negativo na segunda linha.",
+      "explanation": "O operador and exige que os dois lados sejam verdadeiros. O primeiro lado é verdadeiro, porque 20 alcança 18, mas o segundo já vale False, e isso derruba o resultado inteiro. Com or bastaria um lado verdadeiro para o resultado ser positivo."
+    },
+    {
+      "id": "python-beg-0306",
+      "topic": "condicionais",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "nota = 7\nif nota >= 9:\n    print(\"Excelente\")\nelif nota >= 7:\n    print(\"Bom\")\nelif nota >= 5:\n    print(\"Regular\")\nelse:\n    print(\"Insuficiente\")",
+        "highlightLine": 4
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Excelente",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "Regular",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Insuficiente",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "Bom",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Bom Regular",
+          "correct": false
+        }
+      ],
+      "hint": "Percorra os testes de cima para baixo e pare no primeiro que der certo. A nota falha no primeiro teste, mas passa no seguinte.",
+      "explanation": "A cadeia é avaliada de cima para baixo e para no primeiro teste verdadeiro. A nota 7 não alcança 9, mas alcança 7, então o segundo bloco roda e todos os testes seguintes são ignorados. Por isso a ordem dos elif importa: se o teste de 5 viesse primeiro, ele capturaria a nota 7 antes."
+    },
+    {
+      "id": "python-beg-0307",
+      "topic": "condicionais",
+      "prompt": "Complete a linha que abre o bloco alternativo da condição.",
+      "code": {
+        "language": "python",
+        "content": "idade = 15\nif idade >= 18:\n    print(\"Pode dirigir\")\n______:\n    print(\"Não pode dirigir\")",
+        "highlightLine": 4
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "else"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A palavra que falta abre o bloco que roda quando a condição acima deu errado. Ela vem sozinha, sem repetir nenhum teste.",
+      "explanation": "A palavra else fecha a condição com o caminho alternativo. Ao contrário do elif, ela não leva teste algum: roda sempre que nenhuma condição anterior foi satisfeita. Escrever elif naquela linha seria erro de sintaxe, porque elif exige uma condição depois dele."
+    },
+    {
+      "id": "python-beg-0308",
+      "topic": "comparacao",
+      "prompt": "Complete a linha para que a mensagem apareça quando a resposta for diferente de sim.",
+      "code": {
+        "language": "python",
+        "content": "resposta = \"nao\"\nif resposta ______ \"sim\":\n    print(\"Pedido cancelado\")",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "!="
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "O teste precisa ser verdadeiro justamente quando os dois valores não coincidem. Existe um operador de dois caracteres feito para isso, e ele começa com o sinal de negação.",
+      "explanation": "O operador de diferença devolve True quando os dois valores não são iguais. Ele é o oposto do operador de igualdade. A forma antiga, com os sinais de menor e maior juntos, foi removida no Python 3 e hoje causa erro de sintaxe."
+    },
+    {
+      "id": "python-beg-0309",
+      "topic": "booleanos",
+      "prompt": "Escreva a expressão que verifica se a variável idade guarda 18 ou mais.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "idade >= 18",
+        "18 <= idade"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Use o nome da variável, o operador que aceita também o valor exato do limite, e o número. Sem parênteses e sem a palavra que abre a condição.",
+      "explanation": "O operador maior ou igual cobre os dois casos de uma vez: acima do limite e exatamente no limite. Usar apenas maior deixaria de fora justamente quem tem 18 anos. A forma invertida, com o número à esquerda e o operador menor ou igual, é igualmente válida em Python e também é aceita."
+    },
+    {
+      "id": "python-beg-0310",
+      "topic": "condicionais",
+      "prompt": "Escreva a primeira linha de um if que testa se saldo é maior que zero, incluindo a pontuação que abre o bloco.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "if saldo > 0:"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Comece pela palavra-chave da condição, escreva o teste com a variável e o número, e termine com o sinal de pontuação que anuncia o bloco recuado logo abaixo.",
+      "explanation": "Os dois pontos no fim são obrigatórios: são eles que anunciam o bloco recuado que vem a seguir. Sem eles o Python nem chega a avaliar a condição, para com erro de sintaxe. Essa pontuação faz aqui o papel que as chaves fazem em outras linguagens."
+    }
+  ]
+}

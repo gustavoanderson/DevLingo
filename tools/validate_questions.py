@@ -153,10 +153,28 @@ def check_question_rules(question, filename, report):
             report.error(where, "ha alternativas com o mesmo id.")
 
         # --- textos repetidos deixam a questao sem resposta unica ---
-        texts = [o.get("text", "").strip().lower() for o in options]
+        # A comparacao preserva a caixa de proposito. A maioria das linguagens do
+        # DevLingo e case-sensitive, entao 'True' e 'true' sao respostas realmente
+        # diferentes: uma e o booleano, a outra da NameError. Comparar em minusculas
+        # reprovava esse distrator legitimo, e falso positivo em portao de qualidade
+        # ensina a contornar o validador em vez de confiar nele.
+        texts = [o.get("text", "").strip() for o in options]
         duplicates = {t for t in texts if texts.count(t) > 1}
         if duplicates:
             report.error(where, f"alternativas com texto repetido: {sorted(duplicates)}")
+
+        # --- diferenca apenas na caixa: legitima como distrator, mas tambem e a
+        #     cara de uma desatencao do autor. Avisa sem reprovar, e quem escreveu
+        #     decide se foi intencional ---
+        lowered = [t.lower() for t in texts]
+        for chave in sorted({t for t in lowered if lowered.count(t) > 1}):
+            variantes = sorted({t for t in texts if t.lower() == chave})
+            if len(variantes) > 1:
+                report.warn(
+                    where,
+                    f"alternativas que diferem apenas na caixa: {variantes}. "
+                    f"Proposital numa linguagem case-sensitive; confirme que nao foi descuido.",
+                )
 
         # --- a dica nao pode entregar a resposta ---
         hint = question.get("hint", "").lower()
