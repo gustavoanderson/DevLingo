@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://devlingo.app/schemas/question.schema.json",
+  "title": "DevLingo question bank",
+  "description": "Formato de um arquivo de licao do DevLingo. Cada arquivo contem uma licao com N questoes.",
+  "type": "object",
+  "required": ["schemaVersion", "language", "level", "lessonId", "lessonTitle", "questions"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "description": "Versao do formato. Permite o app ler arquivos antigos sem quebrar.",
+      "type": "integer",
+      "const": 1
+    },
+    "language": {
+      "description": "Linguagem de programacao ensinada nesta licao.",
+      "type": "string",
+      "enum": ["python", "javascript", "node", "html", "css", "sql", "csharp", "golang", "cpp", "cobol", "ruby"]
+    },
+    "level": {
+      "type": "string",
+      "enum": ["beginner", "intermediate", "advanced"]
+    },
+    "lessonId": {
+      "description": "Identificador imutavel da licao. Nunca reutilizar nem renumerar.",
+      "type": "string",
+      "pattern": "^[a-z]+-(beg|int|adv)-[0-9]{2}$"
+    },
+    "lessonTitle": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 60
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/question" }
+    }
+  },
+  "definitions": {
+    "question": {
+      "type": "object",
+      "required": ["id", "topic", "prompt", "answerType", "hint", "explanation"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Identificador imutavel da questao. O progresso do usuario aponta para ele.",
+          "type": "string",
+          "pattern": "^[a-z]+-(beg|int|adv)-[0-9]{4}$"
+        },
+        "topic": {
+          "description": "Assunto da questao. Base para revisao dirigida no futuro.",
+          "type": "string",
+          "minLength": 2
+        },
+        "prompt": {
+          "description": "Enunciado em texto. Sempre presente, mesmo quando ha bloco de codigo.",
+          "type": "string",
+          "minLength": 5
+        },
+        "code": {
+          "description": "Bloco opcional exibido na IDE simulada. Ausente em questoes puramente teoricas.",
+          "type": "object",
+          "required": ["language", "content"],
+          "additionalProperties": false,
+          "properties": {
+            "language": {
+              "description": "Usada apenas para o realce de sintaxe. Pode diferir da linguagem da licao.",
+              "type": "string"
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1
+            },
+            "highlightLine": {
+              "description": "Linha destacada na IDE, contando a partir de 1.",
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "answerType": {
+          "description": "Como o usuario responde. Independente do que a questao mostra.",
+          "type": "string",
+          "enum": ["multipleChoice", "fillBlank", "freeWrite"]
+        },
+        "options": {
+          "description": "Obrigatorio e exclusivo de multipleChoice. Sempre 5 itens, sempre 1 correto.",
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "required": ["id", "text", "correct"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "enum": ["a", "b", "c", "d", "e"] },
+              "text": { "type": "string", "minLength": 1 },
+              "correct": { "type": "boolean" }
+            }
+          }
+        },
+        "accepted": {
+          "description": "Obrigatorio para fillBlank e freeWrite. Lista de respostas consideradas certas.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "normalize": {
+          "description": "O que ignorar antes de comparar a resposta escrita. Explicito, sem magica escondida.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "spaces": { "type": "boolean", "default": true },
+            "quotes": { "type": "boolean", "default": true },
+            "trailingSemicolon": { "type": "boolean", "default": true },
+            "caseSensitive": { "type": "boolean", "default": false }
+          }
+        },
+        "hint": {
+          "description": "Obrigatoria. Deve orientar o raciocinio sem entregar a resposta.",
+          "type": "string",
+          "minLength": 10
+        },
+        "explanation": {
+          "description": "Obrigatoria. Exibida depois da resposta. E onde o aprendizado acontece.",
+          "type": "string",
+          "minLength": 10
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "answerType": { "const": "multipleChoice" } } },
+          "then": { "required": ["options"], "not": { "required": ["accepted"] } }
+        },
+        {
+          "if": { "properties": { "answerType": { "enum": ["fillBlank", "freeWrite"] } } },
+          "then": { "required": ["accepted"], "not": { "required": ["options"] } }
+        }
+      ]
+    }
+  }
+}

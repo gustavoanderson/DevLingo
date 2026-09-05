@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="680" viewBox="60 12 195 340" role="img">
+<title>Tr∅nikAt</title>
+<desc>Mascote do DevLingo: gato branco bipede ciberneticamente modificado, com metade direita do corpo metalica, moletom roxo e visor verde no estilo scouter.</desc>
+
+<ellipse cx="150" cy="338" rx="82" ry="10" fill="#000000" opacity="0.2"/>
+
+<path d="M194 236 Q 236 234 242 192" stroke="#C9CBE0" stroke-width="9" fill="none" stroke-linecap="round"/>
+<line x1="212" y1="228" x2="216" y2="238" stroke="#5C6178" stroke-width="2"/>
+<line x1="230" y1="216" x2="238" y2="222" stroke="#5C6178" stroke-width="2"/>
+<circle cx="242" cy="190" r="6" fill="#39FF14"/>
+
+<path d="M132 246 Q 122 284 118 308" stroke="#F2F0FF" stroke-width="16" fill="none" stroke-linecap="round"/>
+<path d="M170 246 Q 184 282 190 306" stroke="#9BA0B8" stroke-width="16" fill="none" stroke-linecap="round"/>
+<circle cx="180" cy="278" r="6" fill="#5C6178"/>
+
+<path d="M128 304 Q134 316 128 324 Q118 331 100 331 Q84 331 82 320 Q82 309 94 305 Q112 299 128 304 Z" fill="#F2F0FF"/>
+<circle cx="90" cy="308" r="7" fill="#F2F0FF" stroke="#DFDCEC" stroke-width="1"/>
+<circle cx="84" cy="319" r="7.5" fill="#F2F0FF" stroke="#DFDCEC" stroke-width="1"/>
+<circle cx="91" cy="329" r="7" fill="#F2F0FF" stroke="#DFDCEC" stroke-width="1"/>
+
+<path d="M204 302 Q210 314 204 322 Q194 329 176 329 Q160 329 158 318 Q158 307 170 303 Q188 297 204 302 Z" fill="#C9CBE0"/>
+<line x1="200" y1="309" x2="187" y2="313" stroke="#ABAFC2" stroke-width="1"/>
+<circle cx="166" cy="308" r="7" fill="#C9CBE0" stroke="#ABAFC2" stroke-width="1"/>
+<circle cx="160" cy="319" r="7.5" fill="#C9CBE0" stroke="#ABAFC2" stroke-width="1"/>
+<circle cx="167" cy="329" r="7" fill="#C9CBE0" stroke="#ABAFC2" stroke-width="1"/>
+
+<path d="M112 152 Q150 142 188 152 L194 244 Q150 256 106 244 Z" fill="#2A1B4D"/>
+<path d="M118 152 Q150 170 182 152" stroke="#FF2D95" stroke-width="4" fill="none"/>
+<rect x="132" y="182" width="38" height="24" rx="3" fill="#170A31" stroke="#39FF14" stroke-width="1.5"/>
+<text x="140" y="199" font-family="ui-monospace, monospace" font-size="12" fill="#39FF14">&gt;_</text>
+
+<path d="M112 162 Q92 196 96 224" stroke="#F2F0FF" stroke-width="14" fill="none" stroke-linecap="round"/>
+<g transform="rotate(-80 94 234)">
+  <ellipse cx="94" cy="234" rx="13" ry="12" fill="#F2F0FF"/>
+  <circle cx="84" cy="226" r="5.5" fill="#F2F0FF" stroke="#DFDCEC" stroke-width="1"/>
+  <circle cx="94" cy="222" r="6" fill="#F2F0FF" stroke="#DFDCEC" stroke-width="1"/>
+  <circle cx="104" cy="227" r="5.5" fill="#F2F0FF" stroke="#DFDCEC" stroke-width="1"/>
+  <ellipse cx="94" cy="238" rx="6" ry="4.5" fill="#FF7AD9"/>
+</g>
+
+<path d="M190 162 Q212 190 206 218" stroke="#9BA0B8" stroke-width="14" fill="none" stroke-linecap="round"/>
+<circle cx="207" cy="190" r="5" fill="#5C6178"/>
+<g transform="rotate(-80 207 228)">
+  <ellipse cx="207" cy="228" rx="13" ry="12" fill="#C9CBE0"/>
+  <circle cx="197" cy="220" r="5.5" fill="#C9CBE0" stroke="#ABAFC2" stroke-width="1"/>
+  <circle cx="207" cy="216" r="6" fill="#C9CBE0" stroke="#ABAFC2" stroke-width="1"/>
+  <circle cx="217" cy="221" r="5.5" fill="#C9CBE0" stroke="#ABAFC2" stroke-width="1"/>
+  <ellipse cx="207" cy="232" rx="6" ry="4.5" fill="#7E8299"/>
+</g>
+
+<polygon points="108,80 120,24 146,66" fill="#F2F0FF"/>
+<polygon points="114,74 122,40 138,66" fill="#FF7AD9"/>
+<polygon points="156,66 186,22 196,88" fill="#C9CBE0"/>
+<polygon points="164,66 182,38 188,80" fill="#7E8299"/>
+
+<ellipse cx="150" cy="108" rx="52" ry="46" fill="#F2F0FF"/>
+<path d="M150 62 A 52 46 0 0 1 150 154 Z" fill="#C9CBE0"/>
+<line x1="150" y1="62" x2="150" y2="154" stroke="#00E5FF" stroke-width="2"/>
+<circle cx="176" cy="132" r="2.5" fill="#7E8299"/>
+<line x1="160" y1="141" x2="180" y2="139" stroke="#7E8299" stroke-width="1.5"/>
+
+<ellipse cx="125" cy="105" rx="10" ry="11.5" fill="#17092E"/>
+<circle cx="121" cy="100" r="3.5" fill="#FFFFFF"/>
+
+<line x1="102" y1="117" x2="70" y2="111" stroke="#F2F0FF" stroke-width="2"/>
+<line x1="102" y1="124" x2="66" y2="124" stroke="#F2F0FF" stroke-width="2"/>
+<line x1="102" y1="131" x2="70" y2="138" stroke="#F2F0FF" stroke-width="2"/>
+<line x1="198" y1="117" x2="230" y2="111" stroke="#9BA0B8" stroke-width="2"/>
+<line x1="198" y1="124" x2="234" y2="124" stroke="#9BA0B8" stroke-width="2"/>
+<line x1="198" y1="131" x2="230" y2="138" stroke="#9BA0B8" stroke-width="2"/>
+<g stroke="#9BA0B8" stroke-width="1.4">
+  <line x1="210" y1="110" x2="216" y2="118"/><line x1="216" y1="110" x2="210" y2="118"/>
+  <line x1="212" y1="120" x2="218" y2="128"/><line x1="218" y1="120" x2="212" y2="128"/>
+  <line x1="210" y1="131" x2="216" y2="139"/><line x1="216" y1="131" x2="210" y2="139"/>
+</g>
+
+<polygon points="144,120 156,120 150,127" fill="#FF4FD8"/>
+<path d="M143 131 Q150 138 157 131" stroke="#17092E" stroke-width="2" fill="none"/>
+
+<g transform="rotate(-7 186 102)">
+  <rect x="196" y="82" width="24" height="36" rx="7" fill="#3A3E52"/>
+  <circle cx="208" cy="100" r="5" fill="#9BA0B8"/>
+  <rect x="156" y="84" width="60" height="32" rx="5" fill="#3A3E52"/>
+  <rect x="161" y="89" width="50" height="22" rx="3" fill="#232636"/>
+  <rect x="164" y="92" width="44" height="16" fill="#39FF14" opacity="0.55"/>
+  <text x="166" y="104" font-family="ui-monospace, monospace" font-size="9" fill="#FFE14D">h0Oman</text>
+  <rect x="156" y="84" width="60" height="32" rx="5" fill="none" stroke="#5C6178" stroke-width="3"/>
+</g>
+</svg>

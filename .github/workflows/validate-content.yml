@@ -1,0 +1,27 @@
+name: Validar banco de questoes
+
+# Portao de qualidade: nenhuma questao mal formada entra na branch principal.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validacao do conteudo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install jsonschema
+
+      - name: Rodar o validador
+        run: python3 tools/validate_questions.py content/

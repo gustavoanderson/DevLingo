@@ -1,0 +1,48 @@
+# ---- Flutter / Dart ----
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+*.lock.bak
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# ---- Android ----
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# ---- iOS (para quando expandirmos) ----
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# ---- Firebase: NUNCA versionar credenciais ----
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+.firebaserc
+serviceAccount*.json
+
+# ---- IDEs ----
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# ---- Sistema operacional ----
+.DS_Store
+Thumbs.db
+
+# ---- Python (ferramentas de QA) ----
+__pycache__/
+*.pyc
+.venv/
+venv/

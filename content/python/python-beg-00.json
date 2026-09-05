@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "language": "python",
+  "level": "beginner",
+  "lessonId": "python-beg-00",
+  "lessonTitle": "Lição de referência (formato)",
+  "questions": [
+    {
+      "id": "python-beg-0001",
+      "topic": "variaveis",
+      "prompt": "Em Python, o que acontece quando você atribui um valor a um nome que ainda não existe?",
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "A variável é criada naquele momento", "correct": true },
+        { "id": "b", "text": "O programa lança NameError", "correct": false },
+        { "id": "c", "text": "É preciso declarar antes usando a palavra var", "correct": false },
+        { "id": "d", "text": "É preciso informar o tipo antes do nome", "correct": false },
+        { "id": "e", "text": "A variável só passa a existir dentro de uma função", "correct": false }
+      ],
+      "hint": "Pense se Python exige alguma declaração prévia antes de você usar um nome pela primeira vez.",
+      "explanation": "Python cria a variável na primeira atribuição, sem declaração e sem tipo explícito. O NameError acontece quando você tenta ler um nome que nunca recebeu valor, não quando atribui."
+    },
+    {
+      "id": "python-beg-0002",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "nome = \"Ada\"\nidade = 36\nprint(f\"{nome} tem {idade} anos\")",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "Ada tem 36 anos", "correct": true },
+        { "id": "b", "text": "{nome} tem {idade} anos", "correct": false },
+        { "id": "c", "text": "nome tem idade anos", "correct": false },
+        { "id": "d", "text": "\"Ada\" tem 36 anos", "correct": false },
+        { "id": "e", "text": "Erro: não é possível juntar texto com número", "correct": false }
+      ],
+      "hint": "Repare na letra f logo antes das aspas. Ela muda o tratamento do que está entre chaves.",
+      "explanation": "A letra f cria uma f-string. O conteúdo entre chaves é substituído pelo valor da variável, sem as aspas ao redor. O resultado impresso é Ada tem 36 anos."
+    },
+    {
+      "id": "python-beg-0003",
+      "topic": "lacos",
+      "prompt": "Complete a linha para que o programa imprima o dobro de cada número da lista.",
+      "code": {
+        "language": "python",
+        "content": "nums = [1, 2, 3]\nfor n in nums:\n    print(______)",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": ["n * 2", "2 * n", "n + n"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": false
+      },
+      "hint": "Você precisa de uma expressão que use a variável do laço e resulte no valor multiplicado por dois.",
+      "explanation": "A expressão n * 2 multiplica cada elemento no momento da impressão. As formas 2 * n e n + n produzem o mesmo resultado e também são aceitas."
+    },
+    {
+      "id": "python-beg-0004",
+      "topic": "variaveis",
+      "prompt": "Escreva a linha que cria uma variável chamada total com o valor 10.",
+      "answerType": "freeWrite",
+      "accepted": ["total = 10"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Em Python não se declara tipo. Basta o nome, o sinal de igual e o valor desejado.",
+      "explanation": "A linha total = 10 cria a variável e atribui o número inteiro 10. O tipo é inferido pelo interpretador, sem necessidade de declaração."
+    }
+  ]
+}
