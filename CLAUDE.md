@@ -72,6 +72,26 @@ python3 tools/validate_questions.py content/
 
 Saída 0 aprova, 1 reprova. Roda também em GitHub Actions a cada push. Toda vez que um defeito de conteúdo for encontrado à mão, escreva a regra correspondente no validador e prove que ela pega, rodando contra um arquivo defeituoso de propósito.
 
+**Falso positivo é tão grave quanto defeito não pego.** Uma regra que reprova conteúdo legítimo ensina a contornar o validador em vez de confiar nele. Quando uma regra barrar algo correto, conserte a regra, não o conteúdo. Isso já aconteceu duas vezes:
+
+- A regra de alternativas repetidas comparava os textos em minúsculas e reprovava `True` ao lado de `true`, que numa linguagem *case-sensitive* são respostas realmente diferentes e um distrator legítimo. Hoje ela preserva a caixa, e diferença apenas de caixa é `[AVISO]`, não `[ERRO]`.
+- A regra de impressão digital, na primeira versão, acusaria a resposta `3` em JavaScript contra a mesma resposta em Python. Hoje é escopada por linguagem.
+
+Nas duas, a saída certa foi `[AVISO]`: o `Report` distingue aviso de defeito justamente para relatar o que é suspeito sem barrar o que é válido.
+
+#### Regra de impressão digital
+
+Avisa quando duas questões da mesma linguagem cobram a **mesma resposta**. Ela não compara enunciados: onze questões do banco têm o mesmo `prompt` ("O que este código imprime?") e são todas legítimas. O que se repete numa questão disfarçada é a resposta.
+
+A chave é assimétrica, e o motivo importa:
+
+| Tipo | Chave | Motivo |
+|---|---|---|
+| `fillBlank` / `freeWrite` | só a resposta | O aluno *produz* a resposta, então ela é o próprio conceito. O `topic` fica de fora de propósito: a mesma resposta cobrada sob outro tópico continua sendo a mesma questão com outra roupagem |
+| `multipleChoice` | resposta + `topic` | Ali a resposta costuma ser o valor de saída (`True`, `3`, `5.0`), não o conceito. Sem o `topic`, questões legitimamente distintas colidiriam o tempo todo |
+
+Ela já pegou um defeito real: as questões `python-beg-0203` e `python-beg-0206` tinham o mesmo gabarito `5.0`, mesmo tópico e mesma lição, o que tornava a segunda adivinhável depois da primeira.
+
 ### Convenções de nome
 
 - Lição: `content/<linguagem>/<linguagem>-<beg|int|adv>-<NN>.json`
@@ -147,10 +167,12 @@ Os níveis 1 e 2 são determinísticos, o que é exatamente o que se quer: sem f
 
 ## Estado e próximos passos
 
-Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição 1 de Python iniciante, lição sonda de JavaScript iniciante.
+Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e as **lições 1 a 3 de Python iniciante** (30 questões: exibir e guardar valores; números e contas; comparação e condicionais).
 
-Próximo: completar Python iniciante (lições 2 a 5), depois Python intermediário e avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
+A regra de impressão digital, que era o pendente combinado para perto da lição 4, **está implementada** — ver "Validador". O desenho mudou no caminho: ela compara respostas, não enunciados.
 
-**Pendente e combinado:** perto da lição 4, escrever uma regra no validador que compare enunciados parecidos e avise sobre questões repetidas com outra roupagem.
+Próximo: lições 4 e 5 de Python iniciante (strings e seus métodos; listas e o laço `for`), fechando as 50 questões da meta. Depois Python intermediário e avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
+
+O banco aprova hoje com **um aviso, e ele é intencional**: a questão `python-beg-0302` usa `true` em minúsculas como distrator de `True`, de propósito. Se esse aviso sumir, alguém mexeu na questão.
 
 O ambiente Flutter ainda **não** foi instalado. Isso foi adiado de propósito: ambiente instalado e não usado envelhece e pede atualização justo no dia em que se precisa dele.
