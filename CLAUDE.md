@@ -54,7 +54,8 @@ Uma questão separa **o que ela mostra** do **como é respondida**. O campo `cod
 - **`id` é imutável.** O progresso do usuário aponta para ele. Para aposentar uma questão, remova-a; nunca reaproveite o identificador.
 - **`hint` e `explanation` são obrigatórias.** A dica ajuda quem travou sem entregar a resposta. A explicação aparece depois de responder e é onde o aprendizado acontece.
 - **Múltipla escolha tem exatamente 5 alternativas e 1 correta.**
-- **Distribua os gabaritos.** Se mais da metade cair na mesma letra, o validador reprova. Isso já aconteceu: a primeira lição de Python saiu com os 6 gabaritos em "a".
+- **Os `id` `a`–`e` das alternativas são rótulos de autoria, não posição de tela.** O app embaralha as alternativas ao renderizar (ver "Tela de exercício"). O `correct: true` fica no objeto certo e viaja junto com ele.
+- **Distribua os gabaritos mesmo assim.** Se mais da metade cair na mesma letra, o validador reprova. É defesa secundária, para o caso de o embaralhamento estar desligado ou quebrado. Isso já aconteceu: a primeira lição de Python saiu com os 6 gabaritos em "a".
 
 ### Normalização de respostas escritas
 
@@ -108,6 +109,15 @@ Detalhes que têm motivo:
 - Dica é ação secundária (contornada, amarela). Verificar é a única ação primária (preenchida, magenta). Se a dica tivesse o mesmo peso, viraria o caminho de menor resistência
 - Régua de símbolos acima do teclado nas questões de escrita: parênteses, colchetes, dois pontos, asterisco, igual
 - Sombra no limite do miolo quando houver conteúdo cortado, senão o usuário não descobre a quinta alternativa
+
+### Embaralhamento das alternativas
+
+As alternativas de múltipla escolha são embaralhadas **no momento de renderizar**, toda vez que a questão aparece. Sem isso, refazer a lição vira decoreba de posição ("nessa aqui é a terceira").
+
+- Os `id` `a`–`e` do JSON são só rótulos para revisão em pull request e para a `explanation` se referir a uma alternativa. Não definem onde a alternativa cai na tela.
+- O `correct: true` está preso ao objeto da alternativa, então sobrevive a qualquer ordem.
+- A regra "distribua os gabaritos" do validador continua valendo como **segunda linha de defesa**: se o embaralhamento for desligado por acessibilidade, config, ou um bug, o banco ainda não deixa a resposta sempre na mesma letra.
+- Se algum dia surgir uma questão que exija ordem fixa ("todas as anteriores", opções numéricas crescentes), criar um flag opcional `keepOrder: true` na questão. Nenhuma questão atual precisa disso.
 
 ### Fundo animado: regras de performance
 

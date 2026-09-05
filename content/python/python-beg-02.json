@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "language": "python",
+  "level": "beginner",
+  "lessonId": "python-beg-02",
+  "lessonTitle": "Números e contas: operadores aritméticos",
+  "questions": [
+    {
+      "id": "python-beg-0201",
+      "topic": "operadores",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(7 // 2)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "3.5",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "3",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "4",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "1",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "35",
+          "correct": false
+        }
+      ],
+      "hint": "A barra dupla não é a divisão comum. Ela guarda só a parte inteira do resultado e joga fora o que sobra.",
+      "explanation": "A barra dupla faz a divisão inteira: 7 dividido por 2 dá 3 com resto 1, e o operador devolve apenas o 3. A barra simples devolveria 3.5."
+    },
+    {
+      "id": "python-beg-0202",
+      "topic": "operadores",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(7 % 3)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "1",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "2",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "2.33",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "3",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "21",
+          "correct": false
+        }
+      ],
+      "hint": "O sinal de porcentagem aqui não calcula porcentagem nenhuma. Ele devolve o que sobra de uma divisão que não é exata.",
+      "explanation": "O operador de módulo devolve o resto da divisão. 7 dividido por 3 cabe 2 vezes e sobra 1, então o resultado é 1. Ele é muito usado para testar se um número é par: n % 2 == 0."
+    },
+    {
+      "id": "python-beg-0203",
+      "topic": "tipos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(10 / 2)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "5",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "10",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "5.0",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "2.0",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "5,0",
+          "correct": false
+        }
+      ],
+      "hint": "Mesmo quando a conta dá certinho, a barra simples sempre devolve o mesmo tipo de número. Repare no ponto decimal.",
+      "explanation": "A barra simples sempre produz um float, mesmo quando a divisão é exata. Por isso 10 / 2 é 5.0 e não 5. Para receber o inteiro 5 use a barra dupla: 10 // 2."
+    },
+    {
+      "id": "python-beg-0204",
+      "topic": "operadores",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(2 ** 3)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "6",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "9",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "23",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "5",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "8",
+          "correct": true
+        }
+      ],
+      "hint": "O asterisco duplo não multiplica os dois números entre si. O da esquerda é a base e o da direita diz quantas vezes ela se multiplica.",
+      "explanation": "O asterisco duplo é o operador de potência: 2 elevado a 3 é 2 vezes 2 vezes 2, que dá 8. A multiplicação simples 2 * 3 daria 6."
+    },
+    {
+      "id": "python-beg-0205",
+      "topic": "operadores",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(2 + 3 * 4)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "20",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "14",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "24",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "9",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "11",
+          "correct": false
+        }
+      ],
+      "hint": "O Python não lê a conta da esquerda para a direita sem critério. Uma das duas operações tem prioridade sobre a outra, como na matemática do papel.",
+      "explanation": "A multiplicação acontece antes da soma: 3 * 4 dá 12, depois 2 + 12 dá 14. Para forçar a soma primeiro seriam necessários parênteses: (2 + 3) * 4, que daria 20."
+    },
+    {
+      "id": "python-beg-0206",
+      "topic": "tipos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(3 + 2.0)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "5",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "TypeError: tipos diferentes",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "3 2.0",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "5.0",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "32.0",
+          "correct": false
+        }
+      ],
+      "hint": "Somar inteiro com decimal é permitido, ao contrário de somar número com texto. Pense em qual dos dois tipos é mais abrangente e sobrevive no resultado.",
+      "explanation": "Misturar int e float numa conta é permitido, e o resultado sempre vira float porque ele comporta o inteiro sem perder informação. Por isso 3 + 2.0 é 5.0. Já 3 + \"2\" seria erro, porque texto e número não se somam."
+    },
+    {
+      "id": "python-beg-0207",
+      "topic": "operadores",
+      "prompt": "Complete a linha para que o programa imprima o resto da divisão de total por 2.",
+      "code": {
+        "language": "python",
+        "content": "total = 47\nprint(total ______ 2)",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "%"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Você precisa do operador que descarta o quociente e devolve só o que sobra da divisão. É um único símbolo.",
+      "explanation": "O operador de módulo devolve o resto: 47 dividido por 2 sobra 1. É o mesmo operador usado para checar se um número é par ou ímpar."
+    },
+    {
+      "id": "python-beg-0208",
+      "topic": "tipos",
+      "prompt": "Complete a linha para transformar o texto em um número decimal antes de multiplicar.",
+      "code": {
+        "language": "python",
+        "content": "preco = ______(\"19.90\")\nprint(preco * 2)",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "float"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A conversão precisa preservar a parte que vem depois do ponto. A função que devolve só inteiros recusaria esse texto com um erro.",
+      "explanation": "A função float converte o texto \"19.90\" no número 19.9, que pode entrar em contas. A função int falharia aqui, porque \"19.90\" não representa um inteiro."
+    },
+    {
+      "id": "python-beg-0209",
+      "topic": "operadores",
+      "prompt": "Escreva a expressão que calcula 5 elevado ao quadrado.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "5 ** 2",
+        "5 * 5"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Existe um operador de dois caracteres feito para potência. Multiplicar o número por ele mesmo também chega ao resultado neste caso.",
+      "explanation": "O operador de potência resolve qualquer expoente: 5 elevado a 2 se escreve com o asterisco duplo. Como o expoente é 2, multiplicar o número por ele mesmo dá o mesmo valor, 25, e também é aceito."
+    },
+    {
+      "id": "python-beg-0210",
+      "topic": "numeros",
+      "prompt": "Escreva a linha que imprime quantas dezenas inteiras cabem em 47.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "print(47 // 10)"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Chame a função de exibição e, dentro dela, use o operador que divide descartando o resto para saber quantas vezes o dez cabe no quarenta e sete.",
+      "explanation": "A divisão inteira de 47 por 10 devolve 4, que é quantas dezenas completas há no número. O resto, 7, seria obtido com o operador de módulo."
+    }
+  ]
+}
