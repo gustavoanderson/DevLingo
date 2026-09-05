@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "language": "python",
+  "level": "beginner",
+  "lessonId": "python-beg-01",
+  "lessonTitle": "Primeiros passos: exibir e guardar valores",
+  "questions": [
+    {
+      "id": "python-beg-0101",
+      "topic": "saida",
+      "prompt": "Qual função Python exibe algo na tela?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "write()",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "display()",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "print()",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "echo()",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "console.log()",
+          "correct": false
+        }
+      ],
+      "hint": "Duas dessas opções pertencem a outras linguagens bem conhecidas. Pense na que você digitaria dentro de um arquivo com extensão .py.",
+      "explanation": "A função embutida do Python para exibir na saída padrão é print(). A opção console.log() é do JavaScript e echo é do PHP."
+    },
+    {
+      "id": "python-beg-0102",
+      "topic": "saida",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(\"Oi\", \"Gustavo\")",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Oi Gustavo",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "OiGustavo",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Oi,Gustavo",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "(\"Oi\", \"Gustavo\")",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Oi",
+          "correct": false
+        }
+      ],
+      "hint": "Quando a função recebe mais de um valor separado por vírgula, ela decide sozinha o que colocar entre eles.",
+      "explanation": "Ao receber vários valores, o print os junta usando um espaço como separador. Para mudar esse separador existe o parâmetro sep."
+    },
+    {
+      "id": "python-beg-0103",
+      "topic": "tipos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(type(10))",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "<class 'float'>",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "int",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "10",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "<class 'number'>",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "<class 'int'>",
+          "correct": true
+        }
+      ],
+      "hint": "A função type não devolve o valor, e sim a classe dele. Repare também que o Python tem um jeito bem característico de imprimir uma classe.",
+      "explanation": "O valor 10 é um número inteiro, então a classe devolvida é int. O Python imprime classes no formato <class 'nome'>, com as aspas e os sinais de menor e maior."
+    },
+    {
+      "id": "python-beg-0104",
+      "topic": "variaveis",
+      "prompt": "Complete a linha para que o programa imprima Gustavo.",
+      "code": {
+        "language": "python",
+        "content": "______ = \"Gustavo\"\nprint(nome)",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "nome"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A variável criada na primeira linha precisa ter exatamente o mesmo rótulo que aparece dentro dos parênteses da segunda.",
+      "explanation": "A atribuição cria a variável com o rótulo escrito à esquerda do sinal de igual. Como a segunda linha pede uma variável específica, a primeira precisa criar aquela mesma."
+    },
+    {
+      "id": "python-beg-0105",
+      "topic": "tipos",
+      "prompt": "O que acontece ao rodar este código?",
+      "code": {
+        "language": "python",
+        "content": "idade = 30\nprint(\"Tenho \" + idade + \" anos\")",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "30",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "TypeError: não dá para juntar texto com número",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Tenho 30 anos",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "Tenho  anos",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Tenho 30anos",
+          "correct": false
+        }
+      ],
+      "hint": "O sinal de mais tem significados diferentes conforme os tipos envolvidos. Repare que aqui os dois lados não são do mesmo tipo.",
+      "explanation": "O sinal de mais junta dois textos ou soma dois números, mas não mistura os dois tipos. O Python interrompe a execução. Para obter a frase esperada seria preciso converter o número com str, ou usar uma f-string."
+    },
+    {
+      "id": "python-beg-0106",
+      "topic": "saida",
+      "prompt": "Escreva a linha que exibe na tela exatamente: Olá, mundo!",
+      "answerType": "freeWrite",
+      "accepted": [
+        "print(\"Olá, mundo!\")"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Chame a função de exibição e passe o texto entre aspas, sem esquecer a vírgula e a exclamação.",
+      "explanation": "O texto precisa estar entre aspas para ser tratado como um valor de texto, e a pontuação faz parte dele. Aspas simples e duplas funcionam igualmente aqui."
+    },
+    {
+      "id": "python-beg-0107",
+      "topic": "sintaxe",
+      "prompt": "Como se escreve um comentário de uma linha em Python?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "<!-- comentário -->",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "/* comentário */",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "-- comentário",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "# comentário",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "// comentário",
+          "correct": false
+        }
+      ],
+      "hint": "Quatro dessas formas pertencem a C, Java, HTML e SQL. Sobra apenas uma.",
+      "explanation": "Em Python o comentário de uma linha começa com cerquilha. As barras duplas são de C e Java, os sinais com exclamação são de HTML, as barras com asterisco são de C, e os traços duplos são de SQL."
+    },
+    {
+      "id": "python-beg-0108",
+      "topic": "tipos",
+      "prompt": "Complete a linha para que o programa consiga somar 1 ao valor digitado.",
+      "code": {
+        "language": "python",
+        "content": "idade = ______(input(\"Sua idade: \"))\nprint(idade + 1)",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "int"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A leitura do teclado sempre devolve texto, mesmo quando o usuário digita algarismos. É preciso converter antes de somar.",
+      "explanation": "A função input devolve sempre um texto. Somar 1 a um texto causaria erro de tipo, então o valor é convertido para número inteiro antes da soma."
+    },
+    {
+      "id": "python-beg-0109",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "preco = 19.9\nprint(f\"Custa R$ {preco:.2f}\")",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Custa R$ 20",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "Erro de sintaxe",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Custa R$ 19.90",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Custa R$ 19.9",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Custa R$ {preco:.2f}",
+          "correct": false
+        }
+      ],
+      "hint": "O trecho escrito depois dos dois pontos, ainda dentro das chaves, não faz parte do texto: ele comanda a formatação do número.",
+      "explanation": "O formato com duas casas decimais completa o valor com um zero à direita. Sem esse formato, o número apareceria como foi escrito no código."
+    },
+    {
+      "id": "python-beg-0110",
+      "topic": "variaveis",
+      "prompt": "Escreva a linha que exibe na tela o valor guardado na variável nome.",
+      "code": {
+        "language": "python",
+        "content": "nome = \"Ada\"",
+        "highlightLine": 1
+      },
+      "answerType": "freeWrite",
+      "accepted": [
+        "print(nome)"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Chame a função de exibição passando a variável, e repare que ela não leva aspas ao redor.",
+      "explanation": "Sem aspas, o Python entende que se trata de uma variável e busca o valor guardado nela. Com aspas, ele trataria como texto literal e imprimiria as próprias letras."
+    }
+  ]
+}

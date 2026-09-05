@@ -56,7 +56,12 @@ def normalize(text, rules):
     if rules.get("trailingSemicolon", True):
         out = out.rstrip().rstrip(";")
     if rules.get("spaces", True):
-        out = re.sub(r"\s+", "", out)
+        # Espaco entre duas palavras e obrigatorio: 'const total' nao pode virar
+        # 'consttotal'. Espaco encostado em pontuacao ou operador e irrelevante:
+        # 'n * 2' e 'n*2' sao a mesma coisa. Entao colapsamos os espaços e so
+        # removemos os que tocam um caractere que nao e letra, digito ou sublinhado.
+        out = re.sub(r"\s+", " ", out).strip()
+        out = re.sub(r"\s*([^\w\s])\s*", r"\1", out)
     else:
         out = out.strip()
     if not rules.get("caseSensitive", False):
@@ -93,6 +98,26 @@ def check_lesson_rules(data, filename, report):
                 f"{filename} -> {qid}",
                 f"o id da questao nao combina com a licao. Esperado comecar com '{expected_prefix}'.",
             )
+
+    # --- vies de gabarito: se a resposta certa cai quase sempre na mesma letra,
+    #     o usuario aprende a chutar a posicao em vez de aprender a linguagem ---
+    posicoes = []
+    for question in data.get("questions", []):
+        if question.get("answerType") != "multipleChoice":
+            continue
+        for option in question.get("options", []):
+            if option.get("correct"):
+                posicoes.append(option.get("id"))
+
+    if len(posicoes) >= 5:
+        for letra in set(posicoes):
+            repetidas = posicoes.count(letra)
+            if repetidas > len(posicoes) / 2:
+                report.error(
+                    f"{filename} -> gabaritos",
+                    f"{repetidas} de {len(posicoes)} gabaritos caem na alternativa '{letra}'. "
+                    f"Redistribua as alternativas.",
+                )
 
 
 def check_question_rules(question, filename, report):

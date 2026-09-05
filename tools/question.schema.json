@@ -107,7 +107,7 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "normalize": {
-          "description": "O que ignorar antes de comparar a resposta escrita. Explicito, sem magica escondida.",
+          "description": "O que ignorar antes de comparar a resposta escrita. spaces ignora apenas espacos irrelevantes (os que tocam pontuacao ou operador); o espaco obrigatorio entre duas palavras e sempre exigido.",
           "type": "object",
           "additionalProperties": false,
           "properties": {

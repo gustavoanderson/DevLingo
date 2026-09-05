@@ -15,9 +15,9 @@ O projeto está em construção. O que já existe:
 - [x] Identidade visual e mascote (paleta, logo, ciclo de caminhada)
 - [x] Modelagem do banco de questões (esquema formal)
 - [x] Validador de conteúdo rodando em CI
-- [ ] Layout da tela de exercício
-- [ ] Cenários animados de fundo
-- [ ] Banco de questões de Python, JavaScript e Node
+- [x] Layout da tela de exercício
+- [x] Cenários animados de fundo (dia, tarde, noite)
+- [ ] Banco de questões: 1 lição de Python, 1 de JavaScript, faltam 8
 - [ ] Aplicativo Flutter
 
 ---
@@ -37,14 +37,22 @@ O projeto está em construção. O que já existe:
 ## Estrutura
 
 ```
+CLAUDE.md         contexto do projeto para sessões de Claude Code
 content/          banco de questões, uma pasta por linguagem
   python/
     python-beg-00.json      lição de referência (formato)
+    python-beg-01.json      primeiros passos
+  javascript/
+    javascript-beg-01.json  primeiros passos
 tools/
   question.schema.json      contrato do formato de uma questão
   validate_questions.py     validador do banco
 assets/
   mascot/                   arte do Tr∅nikAt
+  cenarios/                 faixas de fundo (dia, tarde, noite)
+docs/
+  paleta.md                 cores e tipografia
+  mockup-tela-exercicio.html  referência visual da tela
 .github/workflows/
   validate-content.yml      roda o validador a cada push
 ```

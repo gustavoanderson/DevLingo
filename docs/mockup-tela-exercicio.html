@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevLingo — mockup da tela de exercício</title>
+<style>
+  body { margin:0; padding:32px 16px; background:#0C0518; color:#F2F0FF;
+         font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .titulo { max-width:760px; margin:0 auto 24px; }
+  h1 { font-size:20px; font-weight:500; margin:0 0 6px; }
+  .nota { font-size:13px; color:#9B8FC7; margin:0; line-height:1.6; }
+  .telas { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; }
+  .rotulo { font-size:12px; color:#9B8FC7; margin:0 0 8px; text-align:center; }
+  .fone { width:300px; background:#170A31; border-radius:22px;
+          border:1px solid #3D2A66; overflow:hidden; display:flex; flex-direction:column; }
+  .corpo { padding:14px 12px 0; }
+  .topo { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .sair { font-size:17px; color:#9B8FC7; line-height:1; }
+  .barra { flex:1; height:8px; background:#2A1B4D; border-radius:4px; overflow:hidden; }
+  .barra i { display:block; height:100%; background:#FF2D95; }
+  .cont { font-size:11px; color:#9B8FC7; font-family:ui-monospace,monospace; }
+  .chip { font-size:11px; color:#00E5FF; font-family:ui-monospace,monospace; margin-bottom:10px; }
+  .enunciado { font-size:14px; margin:0 0 10px; line-height:1.4; }
+  .ide { background:#1B1235; border:1px solid #3D2A66; border-radius:8px;
+         overflow:hidden; margin-bottom:12px; }
+  .ide .aba { background:#241847; padding:6px 10px; display:flex; align-items:center; gap:6px; }
+  .ponto { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .arquivo { font-size:11px; color:#9B8FC7; font-family:ui-monospace,monospace; margin-left:4px; }
+  .cod { padding:8px 10px; font-family:ui-monospace,monospace; font-size:11px; line-height:1.7;
+         white-space:pre; overflow-x:auto; }
+  .ln { color:#5F4B8B; }
+  .destaque { background:#2E1D5C; margin:0 -10px; padding:0 10px; display:block; }
+  .var { color:#00E5FF; } .txt { color:#FFE14D; } .num { color:#FF7AD9; }
+  .fn { color:#39FF14; } .kw { color:#FF7AD9; } .pon { color:#F2F0FF; }
+  .lacuna { background:#00E5FF; color:#062230; padding:0 4px; border-radius:3px; }
+  .alts { display:flex; flex-direction:column; gap:6px; }
+  .alt { border:1px solid #3D2A66; border-radius:8px; padding:8px 10px;
+         font-size:12px; font-family:ui-monospace,monospace; }
+  .alt.sel { border-color:#00E5FF; background:#1D2C4A; }
+  .acoes { display:flex; gap:8px; margin:12px 0; }
+  .dica { border:1px solid #FFE14D; border-radius:8px; padding:9px 12px;
+          font-size:12px; color:#FFE14D; }
+  .verificar { flex:1; background:#FF2D95; border-radius:8px; padding:9px;
+               font-size:13px; color:#3B0A24; text-align:center; font-weight:500; }
+  .pausado { font-size:11px; color:#5F4B8B; margin-bottom:10px; }
+  .teclado { margin-top:auto; background:#241847; border-top:1px solid #3D2A66; padding:8px 6px 12px; }
+  .fila { display:flex; gap:3px; margin-bottom:3px; }
+  .tecla { flex:1; background:#4A3670; border-radius:4px; padding:9px 0;
+           text-align:center; font-size:11px; }
+  .simbolo { background:#3D2A66; font-family:ui-monospace,monospace; }
+  .larga { flex:0 0 44px; background:#3D2A66; font-size:11px; color:#9B8FC7; }
+  .enviar { flex:0 0 44px; background:#00E5FF; color:#062230; }
+  .faixa svg { display:block; width:100%; height:58px; }
+</style>
+</head>
+<body>
+
+<div class="titulo">
+  <h1>DevLingo — mockup da tela de exercício</h1>
+  <p class="nota">
+    Referência visual para a implementação em Flutter. Não é código do app.<br>
+    Regra de layout: topo e barra de ações ficam fixos, o miolo rola, e a faixa animada
+    de 58&nbsp;px fica colada na borda inferior. Com o teclado aberto, a faixa some e a
+    animação é congelada.
+  </p>
+</div>
+
+<div class="telas">
+
+<div>
+<p class="rotulo">múltipla escolha, com cenário</p>
+<div class="fone">
+  <div class="corpo">
+    <div class="topo">
+      <span class="sair">&#10005;</span>
+      <span class="barra"><i style="width:60%"></i></span>
+      <span class="cont">6/10</span>
+    </div>
+    <div class="chip">python · iniciante · strings</div>
+    <p class="enunciado">O que este código imprime?</p>
+    <div class="ide">
+      <div class="aba">
+        <span class="ponto" style="background:#FF5F57"></span>
+        <span class="ponto" style="background:#FFE14D"></span>
+        <span class="ponto" style="background:#39FF14"></span>
+        <span class="arquivo">main.py</span>
+      </div>
+      <div class="cod"><span class="ln">1 </span><span class="var">nome</span> <span class="pon">=</span> <span class="txt">"Ada"</span>
+<span class="ln">2 </span><span class="var">idade</span> <span class="pon">=</span> <span class="num">36</span>
+<span class="destaque"><span class="ln">3 </span><span class="fn">print</span><span class="pon">(</span><span class="txt">f"{nome} tem {idade} anos"</span><span class="pon">)</span></span></div>
+    </div>
+    <div class="alts">
+      <div class="alt">Ada tem 36 anos</div>
+      <div class="alt">{nome} tem {idade} anos</div>
+      <div class="alt sel">nome tem idade anos</div>
+      <div class="alt">"Ada" tem 36 anos</div>
+      <div class="alt">Erro de tipo</div>
+    </div>
+    <div class="acoes">
+      <div class="dica">Dica</div>
+      <div class="verificar">Verificar</div>
+    </div>
+  </div>
+  <div class="faixa">
+    <svg viewBox="0 0 680 58" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMax slice">
+      <title>Faixa noturna com o Tr0nikAt caminhando</title>
+      <defs>
+        <path id="mf" d="M0 60 L0 34 L40 34 L40 20 L74 20 L74 42 L110 42 L110 12 L146 12 L146 38 L190 38 L190 26 L232 26 L232 46 L276 46 L276 18 L316 18 L316 40 L360 40 L360 28 L400 28 L400 8 L436 8 L436 36 L480 36 L480 22 L524 22 L524 44 L566 44 L566 16 L610 16 L610 38 L652 38 L652 30 L680 30 L680 60 Z"/>
+        <path id="mn" d="M0 30 L0 18 L52 18 L52 8 L96 8 L96 22 L150 22 L150 14 L206 14 L206 24 L262 24 L262 10 L312 10 L312 20 L370 20 L370 12 L424 12 L424 22 L482 22 L482 6 L534 6 L534 18 L590 18 L590 26 L640 26 L640 16 L680 16 L680 30 Z"/>
+      </defs>
+      <rect x="0" y="0" width="680" height="58" fill="#170A31"/>
+      <g fill="#241847"><animateTransform attributeName="transform" type="translate" values="-680 0;0 0" dur="44s" repeatCount="indefinite"/><use href="#mf" x="0" y="-14"/><use href="#mf" x="680" y="-14"/></g>
+      <g><animateTransform attributeName="transform" type="translate" values="-680 0;0 0" dur="19s" repeatCount="indefinite"/><use href="#mn" x="0" y="20" fill="#0E0524"/><use href="#mn" x="680" y="20" fill="#0E0524"/><rect x="30" y="42" width="16" height="3" fill="#FF2D95"/><rect x="160" y="36" width="3" height="12" fill="#00E5FF"/><rect x="300" y="43" width="13" height="3" fill="#39FF14"/><rect x="430" y="37" width="3" height="11" fill="#FFE14D"/><rect x="570" y="42" width="15" height="3" fill="#FF2D95"/><rect x="710" y="42" width="16" height="3" fill="#FF2D95"/><rect x="840" y="36" width="3" height="12" fill="#00E5FF"/><rect x="980" y="43" width="13" height="3" fill="#39FF14"/><rect x="1110" y="37" width="3" height="11" fill="#FFE14D"/><rect x="1250" y="42" width="15" height="3" fill="#FF2D95"/></g>
+      <rect x="0" y="52" width="680" height="6" fill="#0F0620"/>
+      <g transform="translate(150 52)">
+        <ellipse cx="0" cy="0" rx="13" ry="3" fill="#000000" opacity="0.4"/>
+        <path d="M8 -14 Q17 -17 16 -26" stroke="#C9CBE0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="16" cy="-27" r="2.5" fill="#39FF14"/>
+        <line x1="-3" y1="-7" x2="-5" y2="0" stroke="#F2F0FF" stroke-width="4" stroke-linecap="round"><animate attributeName="x2" values="-8;-3;2;-3;-8" dur="0.85s" repeatCount="indefinite"/></line>
+        <line x1="3" y1="-7" x2="5" y2="0" stroke="#9BA0B8" stroke-width="4" stroke-linecap="round"><animate attributeName="x2" values="2;-3;-8;-3;2" dur="0.85s" repeatCount="indefinite"/></line>
+        <line x1="-7" y1="-16" x2="-11" y2="-8" stroke="#F2F0FF" stroke-width="3.5" stroke-linecap="round"><animate attributeName="x2" values="-12;-10;-8;-10;-12" dur="0.85s" repeatCount="indefinite"/></line>
+        <line x1="7" y1="-16" x2="11" y2="-8" stroke="#9BA0B8" stroke-width="3.5" stroke-linecap="round"><animate attributeName="x2" values="8;10;12;10;8" dur="0.85s" repeatCount="indefinite"/></line>
+        <path d="M-8 -18 L-7 -6 L7 -6 L8 -18 Q0 -21 -8 -18 Z" fill="#2A1B4D"/>
+        <path d="M-6 -18 Q0 -15 6 -18" stroke="#FF2D95" stroke-width="1.8" fill="none"/>
+        <polygon points="-9,-34 -7,-46 -1,-35" fill="#F2F0FF"/>
+        <polygon points="2,-35 8,-46 11,-32" fill="#C9CBE0"/>
+        <circle cx="0" cy="-28" r="11" fill="#F2F0FF"/>
+        <path d="M0 -39 A 11 11 0 0 1 0 -17 Z" fill="#C9CBE0"/>
+        <circle cx="-5" cy="-28" r="3" fill="#17092E"/>
+        <circle cx="-6.2" cy="-29.2" r="1.2" fill="#FFFFFF"/>
+        <polygon points="-2,-25 2,-25 0,-22.5" fill="#FF4FD8"/>
+        <path d="M-2.5 -21.5 Q0 -19.5 2.5 -21.5" stroke="#17092E" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <rect x="0.5" y="-33" width="13" height="8" rx="2" fill="#3A3E52"/>
+        <rect x="2.5" y="-31" width="9" height="4" fill="#39FF14"/>
+      </g>
+    </svg>
+  </div>
+</div>
+</div>
+
+<div>
+<p class="rotulo">escrever código, teclado aberto</p>
+<div class="fone">
+  <div class="corpo">
+    <div class="topo">
+      <span class="sair">&#10005;</span>
+      <span class="barra"><i style="width:70%"></i></span>
+      <span class="cont">7/10</span>
+    </div>
+    <div class="chip">python · iniciante · laços</div>
+    <p class="enunciado">Complete a linha para imprimir o dobro de cada número.</p>
+    <div class="ide">
+      <div class="aba">
+        <span class="ponto" style="background:#FF5F57"></span>
+        <span class="ponto" style="background:#FFE14D"></span>
+        <span class="ponto" style="background:#39FF14"></span>
+        <span class="arquivo">main.py</span>
+      </div>
+      <div class="cod"><span class="ln">1 </span><span class="var">nums</span> <span class="pon">= [</span><span class="num">1</span><span class="pon">, </span><span class="num">2</span><span class="pon">, </span><span class="num">3</span><span class="pon">]</span>
+<span class="ln">2 </span><span class="kw">for</span> <span class="var">n</span> <span class="kw">in</span> <span class="var">nums</span><span class="pon">:</span>
+<span class="destaque"><span class="ln">3 </span>  <span class="fn">print</span><span class="pon">(</span><span class="lacuna">n * 2</span><span class="pon">)</span></span></div>
+    </div>
+    <div class="pausado">fundo pausado</div>
+    <div class="acoes">
+      <div class="dica">Dica</div>
+      <div class="verificar">Verificar</div>
+    </div>
+  </div>
+  <div class="teclado">
+    <div class="fila">
+      <div class="tecla simbolo">(</div><div class="tecla simbolo">)</div><div class="tecla simbolo">[</div>
+      <div class="tecla simbolo">]</div><div class="tecla simbolo">:</div><div class="tecla simbolo">*</div>
+      <div class="tecla simbolo">=</div>
+    </div>
+    <div class="fila">
+      <div class="tecla">q</div><div class="tecla">w</div><div class="tecla">e</div><div class="tecla">r</div>
+      <div class="tecla">t</div><div class="tecla">y</div><div class="tecla">u</div><div class="tecla">i</div>
+      <div class="tecla">o</div><div class="tecla">p</div>
+    </div>
+    <div class="fila" style="padding:0 12px">
+      <div class="tecla">a</div><div class="tecla">s</div><div class="tecla">d</div><div class="tecla">f</div>
+      <div class="tecla">g</div><div class="tecla">h</div><div class="tecla">j</div><div class="tecla">k</div>
+      <div class="tecla">l</div>
+    </div>
+    <div class="fila">
+      <div class="tecla larga">&#8679;</div>
+      <div class="tecla">z</div><div class="tecla">x</div><div class="tecla">c</div><div class="tecla">v</div>
+      <div class="tecla">b</div><div class="tecla">n</div><div class="tecla">m</div>
+      <div class="tecla larga">&#9003;</div>
+    </div>
+    <div class="fila" style="margin-bottom:0">
+      <div class="tecla larga">?123</div>
+      <div class="tecla"></div>
+      <div class="tecla enviar">&#10003;</div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "language": "javascript",
+  "level": "beginner",
+  "lessonId": "javascript-beg-01",
+  "lessonTitle": "Primeiros passos: console, tipos e comparação",
+  "questions": [
+    {
+      "id": "javascript-beg-0101",
+      "topic": "saida",
+      "prompt": "Qual comando exibe uma mensagem no console do navegador?",
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "print()", "correct": false },
+        { "id": "b", "text": "console.log()", "correct": true },
+        { "id": "c", "text": "echo()", "correct": false },
+        { "id": "d", "text": "alert.log()", "correct": false },
+        { "id": "e", "text": "System.out.println()", "correct": false }
+      ],
+      "hint": "Uma das opções é de Python, outra de PHP e outra de Java. Das duas que sobram, uma mistura dois comandos que existem separadamente.",
+      "explanation": "O objeto console tem o método log, usado para escrever na saída de depuração. A opção com alert é uma armadilha: alert existe de verdade, mas não tem método log."
+    },
+    {
+      "id": "javascript-beg-0102",
+      "topic": "sintaxe",
+      "prompt": "Qual símbolo encerra uma instrução em JavaScript?",
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": ":", "correct": false },
+        { "id": "b", "text": ".", "correct": false },
+        { "id": "c", "text": "|", "correct": false },
+        { "id": "d", "text": ";", "correct": true },
+        { "id": "e", "text": "end", "correct": false }
+      ],
+      "hint": "É o mesmo sinal que C e Java usam para fechar uma linha de código.",
+      "explanation": "O ponto e vírgula encerra a instrução. Em JavaScript ele é opcional na maioria dos casos, porque o interpretador insere automaticamente, mas omiti-lo causa surpresas em linhas que começam com parêntese ou colchete."
+    },
+    {
+      "id": "javascript-beg-0103",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const nome = \"Ada\";\nconsole.log(`Oi, ${nome}!`);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "Oi, Ada!", "correct": true },
+        { "id": "b", "text": "Oi, ${nome}!", "correct": false },
+        { "id": "c", "text": "Oi, nome!", "correct": false },
+        { "id": "d", "text": "`Oi, Ada!`", "correct": false },
+        { "id": "e", "text": "Erro de sintaxe", "correct": false }
+      ],
+      "hint": "As crases mudam o comportamento do texto. Repare no trecho que fica entre o cifrão e as chaves.",
+      "explanation": "Texto entre crases é um template literal. O trecho dentro de cifrão e chaves é avaliado e substituído pelo valor da variável. As crases delimitam o texto e não aparecem na saída."
+    },
+    {
+      "id": "javascript-beg-0104",
+      "topic": "comparacao",
+      "prompt": "Complete a comparação para que o programa imprima false.",
+      "code": {
+        "language": "javascript",
+        "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a ______ b);",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": ["==="],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Um dos operadores de igualdade compara apenas o valor e ignora o tipo. O outro exige que os dois lados sejam iguais também no tipo. Você quer o rigoroso.",
+      "explanation": "A igualdade estrita compara valor e tipo ao mesmo tempo. Como um lado é número e o outro é texto, o resultado é false. Com a igualdade solta, o JavaScript converteria o texto em número e o resultado seria true."
+    },
+    {
+      "id": "javascript-beg-0105",
+      "topic": "tipos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "console.log(typeof \"42\");",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "number", "correct": false },
+        { "id": "b", "text": "int", "correct": false },
+        { "id": "c", "text": "text", "correct": false },
+        { "id": "d", "text": "undefined", "correct": false },
+        { "id": "e", "text": "string", "correct": true }
+      ],
+      "hint": "O operador typeof olha para o que o valor é de fato, não para o que ele parece. Repare bem nas aspas.",
+      "explanation": "As aspas transformam 42 em um valor de texto, e é isso que o typeof reporta. Sem as aspas o resultado seria number."
+    },
+    {
+      "id": "javascript-beg-0106",
+      "topic": "saida",
+      "prompt": "Escreva a linha que exibe no console exatamente: Olá, mundo!",
+      "answerType": "freeWrite",
+      "accepted": ["console.log(\"Olá, mundo!\");"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Chame o método de log do console e passe o texto entre aspas, sem esquecer a vírgula e a exclamação.",
+      "explanation": "O ponto e vírgula no final é opcional em JavaScript, e por isso a resposta vale com ou sem ele. Aspas simples e duplas funcionam igualmente para texto comum."
+    },
+    {
+      "id": "javascript-beg-0107",
+      "topic": "tipos",
+      "prompt": "O que este código imprime, em ordem?",
+      "code": {
+        "language": "javascript",
+        "content": "console.log(\"5\" + 3);\nconsole.log(\"5\" - 3);",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "8 e 2", "correct": false },
+        { "id": "b", "text": "53 e 53", "correct": false },
+        { "id": "c", "text": "53 e 2", "correct": true },
+        { "id": "d", "text": "8 e 8", "correct": false },
+        { "id": "e", "text": "Erro de tipo", "correct": false }
+      ],
+      "hint": "Os dois operadores reagem de forma diferente quando um dos lados é texto. Um deles sabe juntar textos, o outro não sabe fazer nada com texto.",
+      "explanation": "O sinal de mais junta textos quando um dos lados é texto, então o número é convertido e o resultado vira 53. O sinal de menos não junta nada, então o JavaScript converte o texto em número e faz a subtração, resultando em 2. Essa assimetria é uma das armadilhas clássicas da linguagem."
+    },
+    {
+      "id": "javascript-beg-0108",
+      "topic": "funcoes",
+      "prompt": "Complete a função para que o console imprima 8.",
+      "code": {
+        "language": "javascript",
+        "content": "function dobro(n) {\n  ______ n * 2;\n}\nconsole.log(dobro(4));",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": ["return"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Sem essa palavra, a função calcula o valor e o descarta, e o console acaba mostrando undefined.",
+      "explanation": "A palavra devolve o valor calculado para quem chamou a função. Sem ela a função termina sem entregar nada, e toda função que não entrega nada resulta em undefined."
+    },
+    {
+      "id": "javascript-beg-0109",
+      "topic": "arrays",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const cores = [\"azul\", \"verde\"];\ncores.push(\"rosa\");\nconsole.log(cores.length);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        { "id": "a", "text": "2", "correct": false },
+        { "id": "b", "text": "3", "correct": true },
+        { "id": "c", "text": "4", "correct": false },
+        { "id": "d", "text": "rosa", "correct": false },
+        { "id": "e", "text": "undefined", "correct": false }
+      ],
+      "hint": "O método usado na segunda linha modifica o próprio array em vez de criar outro. Conte quantos itens restam no final.",
+      "explanation": "O método push acrescenta um item ao final e altera o array original. Com três itens dentro, a propriedade length vale 3. Repare que const impede reatribuir a variável, mas não impede modificar o conteúdo do array."
+    },
+    {
+      "id": "javascript-beg-0110",
+      "topic": "variaveis",
+      "prompt": "Escreva a linha que cria uma constante chamada total valendo 0.",
+      "answerType": "freeWrite",
+      "accepted": ["const total = 0;"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Use a palavra que impede a reatribuição, seguida do rótulo, do sinal de igual e do valor.",
+      "explanation": "A declaração cria um vínculo que não pode receber outro valor depois. O ponto e vírgula final é opcional, como em qualquer instrução da linguagem."
+    }
+  ]
+}
