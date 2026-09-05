@@ -16,6 +16,7 @@ Saida:
 import json
 import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 try:
@@ -118,6 +119,65 @@ def check_lesson_rules(data, filename, report):
                     f"{repetidas} de {len(posicoes)} gabaritos caem na alternativa '{letra}'. "
                     f"Redistribua as alternativas.",
                 )
+
+
+def question_fingerprints(question, language):
+    """Chaves que identificam O QUE a questao cobra, nao como ela foi escrita.
+
+    A repeticao que interessa nao esta na roupagem do enunciado: onze questoes do
+    banco tem o mesmo prompt ("O que este codigo imprime?") e sao todas legitimas.
+    O que se repete numa questao disfarcada e a resposta.
+
+    A chave e assimetrica de proposito:
+
+    - Lacuna e escrita livre usam SO a resposta. O aluno a produz, entao ela e o
+      proprio conceito. O topico fica de fora: a mesma resposta cobrada sob outro
+      topico continua sendo a mesma questao com outra roupagem. Foi esse o caso
+      real que motivou a regra, uma lacuna de resposta '%' em duas licoes seguidas.
+
+    - Multipla escolha leva o topico junto, porque ali a resposta costuma ser o
+      valor de saida (True, 3, 5.0) e nao o conceito. Sem o topico, questoes
+      legitimamente distintas colidiriam o tempo todo.
+
+    Tudo escopado por linguagem: '3' como resposta em JavaScript e em Python nao
+    tem relacao nenhuma.
+    """
+    answer_type = question.get("answerType")
+
+    if answer_type == "multipleChoice":
+        topic = question.get("topic", "")
+        return {
+            (language, "multipla escolha", topic, normalize(option.get("text", ""), None))
+            for option in question.get("options", [])
+            if option.get("correct")
+        }
+
+    rules = question.get("normalize")
+    return {
+        (language, "escrita", "", normalize(answer, rules))
+        for answer in question.get("accepted", [])
+    }
+
+
+def check_duplicate_fingerprints(fingerprints, report):
+    """Avisa quando duas questoes da mesma linguagem cobram a mesma resposta.
+
+    Avisa, nao reprova: duas questoes parecidas as vezes sao reforco proposital
+    do mesmo conceito. Quem escreveu e quem decide.
+    """
+    for chave in sorted(fingerprints, key=str):
+        ocorrencias = sorted(set(fingerprints[chave]))
+        if len({qid for qid, _ in ocorrencias}) < 2:
+            continue
+
+        language, familia, topic, answer = chave
+        escopo = f"{familia}, topic={topic}" if topic else familia
+        onde = ", ".join(f"{qid} em {arquivo}" for qid, arquivo in ocorrencias)
+        report.warn(
+            f"{language} -> impressao digital",
+            f"{len(ocorrencias)} questoes cobram a mesma resposta '{answer}' ({escopo}): {onde}. "
+            f"Confirme que nao e a mesma questao com outra roupagem.",
+        )
 
 
 def check_question_rules(question, filename, report):
@@ -236,6 +296,9 @@ def validate(paths):
         sys.exit("Nenhum arquivo .json encontrado nos caminhos informados.")
 
     seen_ids = {}
+    # impressao digital acumula entre arquivos: questoes repetidas costumam estar
+    # em licoes diferentes, entao a comparacao so faz sentido no banco inteiro
+    fingerprints = defaultdict(list)
     total_questions = 0
 
     for path in files:
@@ -260,6 +323,12 @@ def validate(paths):
                 seen_ids[qid] = filename
 
             check_question_rules(question, filename, report)
+
+            if qid:
+                for chave in question_fingerprints(question, data.get("language", "")):
+                    fingerprints[chave].append((qid, filename))
+
+    check_duplicate_fingerprints(fingerprints, report)
 
     print(f"\nArquivos analisados: {len(files)}")
     print(f"Questoes analisadas: {total_questions}")

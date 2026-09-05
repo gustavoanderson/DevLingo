@@ -211,39 +211,39 @@
       "prompt": "O que este código imprime?",
       "code": {
         "language": "python",
-        "content": "print(3 + 2.0)",
+        "content": "print(type(3 + 2.0))",
         "highlightLine": 1
       },
       "answerType": "multipleChoice",
       "options": [
         {
           "id": "a",
-          "text": "5",
+          "text": "<class 'int'>",
           "correct": false
         },
         {
           "id": "b",
-          "text": "TypeError: tipos diferentes",
+          "text": "TypeError: não dá para somar int com float",
           "correct": false
         },
         {
           "id": "c",
-          "text": "3 2.0",
+          "text": "<class 'number'>",
           "correct": false
         },
         {
           "id": "d",
-          "text": "5.0",
+          "text": "<class 'float'>",
           "correct": true
         },
         {
           "id": "e",
-          "text": "32.0",
+          "text": "5.0",
           "correct": false
         }
       ],
-      "hint": "Somar inteiro com decimal é permitido, ao contrário de somar número com texto. Pense em qual dos dois tipos é mais abrangente e sobrevive no resultado.",
-      "explanation": "Misturar int e float numa conta é permitido, e o resultado sempre vira float porque ele comporta o inteiro sem perder informação. Por isso 3 + 2.0 é 5.0. Já 3 + \"2\" seria erro, porque texto e número não se somam."
+      "hint": "A pergunta é sobre a classe do resultado, não sobre o valor dele. Somar inteiro com decimal é permitido, e um dos dois tipos é abrangente o bastante para comportar o resultado sem perder informação.",
+      "explanation": "Misturar int e float numa conta é permitido, e o resultado sempre vira float, porque float comporta o inteiro sem perder informação. O valor seria 5.0, e a classe devolvida é float. Já 3 + \"2\" seria erro, porque texto e número não se somam."
     },
     {
       "id": "python-beg-0207",
