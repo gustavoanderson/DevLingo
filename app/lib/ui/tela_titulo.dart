@@ -149,6 +149,7 @@ class _TelaTituloState extends State<TelaTitulo>
                     ),
                   ),
                   Expanded(child: _Mascote(pulso: _pulso, animar: _animar)),
+                  const SizedBox(height: 14),
                   _Chamada(
                     pulso: _pulso,
                     animar: _animar,
@@ -259,10 +260,10 @@ class _Mascote extends StatelessWidget {
           stops: const [0, 0.55, 1],
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: arte,
-      ),
+      // Sem folga lateral: os ombros do retrato sao desenhados para SAIR pelas
+      // bordas, e qualquer margem aqui os traria de volta para dentro do
+      // quadro, desfazendo o enquadramento de close.
+      child: arte,
     );
   }
 }

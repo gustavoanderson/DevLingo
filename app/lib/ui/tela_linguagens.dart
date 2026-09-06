@@ -18,12 +18,24 @@ class TelaLinguagens extends StatefulWidget {
     super.key,
     required this.banco,
     this.progresso,
+    this.aoVoltarAoTitulo,
     this.sineta,
   });
 
   final QuestionBank banco;
   final RegistroDeProgresso? progresso;
+
+  /// Volta para a tela de título.
+  ///
+  /// Esta é a primeira tela depois do START, então não há nada na pilha de
+  /// navegação para onde voltar: sem este caminho, **rever a tela de título
+  /// exigiria fechar e reabrir o app**. Ela não é conteúdo consumível, é a
+  /// abertura — e abertura que só se vê matando o processo é abertura perdida.
+  final VoidCallback? aoVoltarAoTitulo;
+
   final Sineta? sineta;
+
+  static const Key chaveVoltarAoTitulo = Key('voltar-ao-titulo');
 
   /// As trilhas que existem de verdade, em ordem de linguagem e nível.
   ///
@@ -85,8 +97,15 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
       backgroundColor: Paleta.fundo,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
+            if (widget.aoVoltarAoTitulo != null) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _BotaoTitulo(aoTocar: widget.aoVoltarAoTitulo!),
+              ),
+              const SizedBox(height: 12),
+            ],
             Row(
               children: [
                 Expanded(
@@ -144,6 +163,51 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
               const SizedBox(height: 10),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Botão discreto que devolve para a tela de título.
+///
+/// **Secundário de propósito.** A ação principal desta tela é escolher uma
+/// trilha; voltar à abertura é um extra. Se ele tivesse o peso de um dos
+/// cartões, competiria com a escolha que a tela existe para oferecer — o mesmo
+/// raciocínio que faz a Dica ser contornada e o Verificar preenchido.
+///
+/// Não toca a ficha: a moeda é o som de **entrar** no fliperama. Voltar para a
+/// tela de abertura não é inserir moeda; inserir moeda é o START de lá.
+class _BotaoTitulo extends StatelessWidget {
+  const _BotaoTitulo({required this.aoTocar});
+
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      key: TelaLinguagens.chaveVoltarAoTitulo,
+      onPressed: aoTocar,
+      icon: const Icon(Icons.arrow_back, size: 16, color: Paleta.suave),
+      label: const Text(
+        'TELA DE INÍCIO',
+        style: TextStyle(
+          color: Paleta.suave,
+          fontFamily: fonteMono,
+          fontSize: 12,
+          letterSpacing: 1.4,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        // Alvo de toque confortavel mesmo com o rotulo pequeno: o texto e
+        // discreto por hierarquia, nao para ser dificil de acertar.
+        minimumSize: const Size(0, 44),
+        tapTargetSize: MaterialTapTargetSize.padded,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Escala.raio),
+          side: const BorderSide(color: Paleta.linha),
         ),
       ),
     );

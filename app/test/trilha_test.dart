@@ -309,4 +309,97 @@ void main() {
       expect(find.text('Escolha por onde começar.'), findsOneWidget);
     });
   });
+
+  group('voltar para a tela de titulo', () {
+    testWidgets('a escolha de linguagem tem o caminho de volta', (
+      tester,
+    ) async {
+      var voltou = 0;
+      await montar(
+        tester,
+        TelaLinguagens(
+          banco: bancoDuasLinguagens,
+          progresso: ProgressoFalso(),
+          aoVoltarAoTitulo: () => voltou++,
+        ),
+      );
+
+      await tester.tap(find.byKey(TelaLinguagens.chaveVoltarAoTitulo));
+      await tester.pumpAndSettle();
+
+      expect(voltou, 1);
+    });
+
+    testWidgets('sem o callback, o botao nem aparece', (tester) async {
+      // A tela nao inventa um caminho que ela nao sabe percorrer. Quem sabe
+      // voltar ao titulo e o `main.dart`, que e dono do estado `_comecou`.
+      await montar(
+        tester,
+        TelaLinguagens(
+          banco: bancoDuasLinguagens,
+          progresso: ProgressoFalso(),
+        ),
+      );
+
+      expect(find.byKey(TelaLinguagens.chaveVoltarAoTitulo), findsNothing);
+    });
+
+    testWidgets('com uma trilha so, a seta da trilha leva ao titulo', (
+      tester,
+    ) async {
+      // Este e o caso que o botao da tela de linguagens NAO cobre: com uma
+      // linguagem so, o app abre direto na trilha e aquela tela nem existe.
+      // Sem isto, rever o titulo exigiria fechar e reabrir o app.
+      var voltou = 0;
+      final soPython = QuestionBank([
+        licao(lessonId: 'python-beg-01', language: 'python'),
+      ]);
+
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: soPython,
+          language: 'python',
+          level: Level.beginner,
+          progresso: ProgressoFalso(),
+          podeVoltar: false,
+          aoVoltarAoTitulo: () => voltou++,
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('trilha-voltar')));
+      await tester.pumpAndSettle();
+
+      expect(voltou, 1);
+    });
+
+    testWidgets('com escolha de linguagem atras, a seta volta para ela', (
+      tester,
+    ) async {
+      // A MESMA seta, com destino diferente conforme por onde se entrou. Este
+      // teste existe para provar que ela nao passou a ignorar o `pop`.
+      var voltou = 0;
+      final soPython = QuestionBank([
+        licao(lessonId: 'python-beg-01', language: 'python'),
+      ]);
+
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: soPython,
+          language: 'python',
+          level: Level.beginner,
+          progresso: ProgressoFalso(),
+          aoVoltarAoTitulo: () => voltou++,
+        ),
+      );
+
+      expect(
+        find.byKey(const Key('trilha-voltar')),
+        findsOneWidget,
+        reason: 'podeVoltar continua sendo o padrao',
+      );
+      expect(voltou, 0, reason: 'o callback do titulo nao foi chamado ainda');
+    });
+  });
 }

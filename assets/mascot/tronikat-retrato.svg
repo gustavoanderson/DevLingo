@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="520" viewBox="0 0 400 520" role="img">
 <title>Tr∅nikAt — retrato</title>
-<desc>Close no rosto e ombros do Tr∅nikAt: metade esquerda de pelo branco com olho ambar de pupila em fenda, metade direita de aco escovado com scouter verde aceso. Moletom roxo com capuz e remendo de terminal.</desc>
+<desc>Close no rosto e ombros do Tr∅nikAt: metade esquerda de pelo branco com olho preto redondo e brilho branco, metade direita de aco escovado com scouter verde aceso. Moletom roxo de capuz, com remendo de terminal no peito.</desc>
 
 <defs>
   <!-- Volume do pelo: claro em cima, sombra embaixo. -->
@@ -111,16 +111,23 @@
 <circle cx="200" cy="286" r="4" fill="#00E5FF"/>
 
 <!-- ============================ OLHO VIVO ============================ -->
-<!-- Ambar quente do lado organico, contra o verde frio do visor. -->
-<ellipse cx="144" cy="196" rx="36" ry="40" fill="#17092E"/>
-<ellipse cx="144" cy="196" rx="29" ry="33" fill="#FFE14D"/>
-<ellipse cx="144" cy="196" rx="21" ry="29" fill="#F5B92E"/>
-<!-- Pupila em fenda: e o que faz parecer gato, e nao boneco -->
-<ellipse cx="144" cy="196" rx="7.5" ry="26" fill="#17092E"/>
-<circle cx="131" cy="177" r="8.5" fill="#FFFFFF"/>
-<circle cx="155" cy="215" r="4" fill="#FFFFFF" opacity="0.85"/>
-<path d="M106 150 Q144 138 182 152" stroke="#CFCAE6" stroke-width="5.5"
-      stroke-linecap="round" fill="none"/>
+<!-- Olho PRETO com um brilho branco, copiado de `tronikat.svg`.
+     A primeira versao deste retrato tinha olho ambar com pupila em fenda. Era
+     invencao minha, e nao existe no personagem: em `tronikat.svg` o olho e um
+     `<ellipse>` #17092E inteiro com um `<circle>` branco em cima. Cor de olho
+     nao e detalhe de close, e identidade : um gato de olho ambar e outro gato.
+
+     As proporcoes vem da arte canonica, e nao de gosto:
+       olho rx  = 10/52  do raio da cabeca  ->  0,192 x 128 = 24,6
+       olho ry  = 11,5/46 do raio da cabeca ->  0,250 x 118 = 29,5
+       centro   = 48% do raio a esquerda do centro da cabeca
+       brilho r = 35% do rx do olho, deslocado para cima e para a esquerda -->
+<ellipse cx="139" cy="198" rx="25" ry="30" fill="#17092E"/>
+<circle cx="129" cy="185" r="8.8" fill="#FFFFFF"/>
+<!-- Sobrancelha discreta: o unico acrescimo do close, e so da expressao.
+     Nao mexe na identidade, que e o olho. -->
+<path d="M110 154 Q142 143 174 155" stroke="#CFCAE6" stroke-width="5"
+      stroke-linecap="round" fill="none" opacity="0.75"/>
 
 <!-- ============================ BIGODES ============================ -->
 <g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.95">
@@ -189,43 +196,74 @@
 </g>
 
 <!-- ============================ PESCOCO ============================ -->
-<!-- Sem ele a cabeca flutuava sobre um trapezio, que foi o defeito mais visivel
-     da primeira versao. A divisa desce por ele e continua no peito. -->
-<path d="M158 288 Q160 342 172 366 L200 366 L200 288 Z" fill="#D6D2EA"/>
-<path d="M200 288 L200 366 L228 366 Q240 342 242 288 Z" fill="#5C6382"/>
+<!-- Curto e largo. Na versao anterior ele tinha 84 de largura e 78 de altura, e
+     era metade do problema de proporcao: pescoco fino e comprido AFASTA a
+     cabeca do corpo, e o olho le isso como cabeca grande demais. Este gato,
+     em `tronikat.svg`, praticamente nao tem pescoco. -->
+<!-- Estreito em cima, ALARGANDO para baixo. A versao anterior fazia o contrario
+     e o pescoco lia como um balde: pescoco que afina na base nao encontra ombro
+     nenhum, ele termina no ar. -->
+<path d="M158 296 Q152 340 142 396 L200 396 L200 296 Z" fill="#D6D2EA"/>
+<path d="M200 296 L200 396 L258 396 Q248 340 242 296 Z" fill="#5C6382"/>
 <!-- Sombra do queixo sobre o pescoco -->
-<path d="M158 288 Q200 322 242 288 Q200 306 158 288 Z" fill="#17092E" opacity="0.28"/>
+<path d="M158 296 Q200 328 242 296 Q200 316 158 296 Z" fill="#17092E" opacity="0.32"/>
 
 <!-- ============================ OMBROS ============================ -->
-<path d="M22 520 L54 424 Q200 364 346 424 L378 520 Z" fill="url(#moletom)"/>
-<!-- Abertura do capuz em volta do pescoco -->
-<path d="M118 392 Q200 348 282 392 Q200 424 118 392 Z" fill="url(#capuz)"/>
-<path d="M118 392 Q200 348 282 392" stroke="#FF2D95" stroke-width="5"
+<!-- Os ombros SANGRAM pelas bordas, de proposito, e e isto que conserta a
+     proporcao. Antes iam de x=22 a x=378 num viewBox de 0 a 400: sobrava
+     margem dos dois lados, o corpo virava uma figura fechada e completa dentro
+     do quadro, e o conjunto lia como bonequinho de cabeca grande.
+
+     Um close nao mostra o corpo inteiro menor; ele CORTA o corpo. Enquadramento
+     que cabe todo dentro da moldura nao e close, e retrato de corpo inteiro
+     pequeno. E o mesmo principio ja registrado no CLAUDE.md para a variante
+     miuda do mascote: em outro tamanho nao se reduz o desenho, redesenha-se.
+
+     Vale notar que na arte canonica a cabeca (104 de largura) e MAIS larga que
+     os ombros (88). O personagem tem cabeca grande mesmo, e isso e o estilo
+     dele; o que equilibra la sao as pernas longas, que num busto nao existem.
+     Por isso aqui o equilibrio precisa vir do corte. -->
+<!-- A linha do ombro cai em DIAGONAL quase reta, e so as pontas arredondam.
+     A versao anterior era uma quadratica unica de ponta a ponta, o que produziu
+     uma colina: com o topo tao alto em relacao a largura, a silhueta virou um
+     morro em vez de um par de ombros. Ombro tem quina; o moletom so a suaviza. -->
+<path d="M-40 520
+         L-6 456
+         Q16 422 104 392
+         Q200 372 296 392
+         Q384 422 406 456
+         L440 520 Z" fill="url(#moletom)"/>
+
+<!-- Abertura do capuz em volta do pescoco. Chapada e bem mais escura que o
+     moletom: com o gradiente `capuz`, as duas cores ficavam tao proximas que a
+     gola sumia e sobrava so o cordao magenta boiando. -->
+<path d="M108 386 Q200 344 292 386 Q200 418 108 386 Z" fill="#120826"/>
+<path d="M108 386 Q200 344 292 386" stroke="#FF2D95" stroke-width="5.5"
       fill="none" stroke-linecap="round"/>
-<path d="M118 392 Q200 348 282 392" stroke="#FF9AE4" stroke-width="1.6"
+<path d="M108 386 Q200 344 292 386" stroke="#FF9AE4" stroke-width="1.8"
       fill="none" opacity="0.8"/>
 
-<!-- Cordoes do capuz, com ponteiras -->
-<path d="M176 408 Q170 448 174 476" stroke="#FF2D95" stroke-width="4"
+<!-- Cordoes do capuz, saindo de DENTRO da gola, com ponteiras -->
+<path d="M174 410 Q166 450 170 480" stroke="#FF2D95" stroke-width="4.5"
       fill="none" stroke-linecap="round"/>
-<path d="M226 408 Q234 446 230 470" stroke="#FF2D95" stroke-width="4"
+<path d="M228 410 Q238 448 234 474" stroke="#FF2D95" stroke-width="4.5"
       fill="none" stroke-linecap="round"/>
-<rect x="169" y="474" width="11" height="16" rx="3" fill="#8B92AE"/>
-<rect x="225" y="468" width="11" height="16" rx="3" fill="#8B92AE"/>
+<rect x="164" y="478" width="12" height="18" rx="3" fill="#8B92AE"/>
+<rect x="229" y="472" width="12" height="18" rx="3" fill="#8B92AE"/>
 
 <!-- Ombro direito: placas, e a divisa seguindo para baixo -->
-<path d="M206 382 Q300 392 342 424 L362 500 L206 500 Z" fill="#241748" opacity="0.55"/>
-<line x1="200" y1="366" x2="200" y2="520" stroke="#00E5FF" stroke-width="2.5" opacity="0.5"/>
-<circle cx="306" cy="446" r="5" fill="#5C6382"/>
-<circle cx="330" cy="470" r="4" fill="#5C6382"/>
-<path d="M264 430 L340 452" stroke="#5C6382" stroke-width="2" opacity="0.7"/>
+<path d="M208 388 Q320 400 396 452 L424 520 L208 520 Z" fill="#241748" opacity="0.5"/>
+<line x1="200" y1="372" x2="200" y2="520" stroke="#00E5FF" stroke-width="2.5" opacity="0.5"/>
+<circle cx="326" cy="458" r="6" fill="#5C6382"/>
+<circle cx="360" cy="490" r="5" fill="#5C6382"/>
+<path d="M286 442 L372 470" stroke="#5C6382" stroke-width="2.2" opacity="0.7"/>
 
 <!-- Remendo de terminal, no peito esquerdo. Centralizado ele competia com a
      costura e parecia botao de aparelho, nao remendo de moletom. -->
-<g transform="rotate(-5 128 468)">
-  <rect x="86" y="444" width="84" height="46" rx="6" fill="#170A31"
+<g transform="rotate(-5 106 472)">
+  <rect x="66" y="450" width="80" height="44" rx="6" fill="#170A31"
         stroke="#39FF14" stroke-width="2.5"/>
-  <text x="100" y="478" font-family="ui-monospace, monospace" font-size="26"
+  <text x="80" y="482" font-family="ui-monospace, monospace" font-size="25"
         font-weight="700" fill="#39FF14">&gt;_</text>
 </g>
 </svg>

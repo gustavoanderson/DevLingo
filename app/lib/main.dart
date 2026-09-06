@@ -113,6 +113,11 @@ class _CargaState extends State<_Carga> {
 
         // Tela de escolha com um item so e cerimonia vazia: com uma trilha
         // apenas, o app abre direto nela.
+        // Devolver para a tela de titulo e so desligar `_comecou`: a carga ja
+        // terminou, entao ela reaparece com `pronto: true` e o proximo START
+        // entra na hora. Nada e recarregado, e o progresso continua onde estava.
+        void aoVoltarAoTitulo() => setState(() => _comecou = false);
+
         if (trilhas.length == 1) {
           return TelaTrilha(
             banco: partida.banco,
@@ -120,6 +125,7 @@ class _CargaState extends State<_Carga> {
             level: trilhas.single.level,
             progresso: partida.progresso,
             podeVoltar: false,
+            aoVoltarAoTitulo: aoVoltarAoTitulo,
             sineta: _sineta,
           );
         }
@@ -127,6 +133,7 @@ class _CargaState extends State<_Carga> {
         return TelaLinguagens(
           banco: partida.banco,
           progresso: partida.progresso,
+          aoVoltarAoTitulo: aoVoltarAoTitulo,
           sineta: _sineta,
         );
       },

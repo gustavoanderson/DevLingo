@@ -205,6 +205,29 @@ Três regras aprendidas apanhando na tela do emulador, ao fazer `tronikat-retrat
 
 E a regra que vale mais que as três: **nenhuma cor é escolhida até ser vista renderizada.** A primeira versão do retrato tinha o aço começando em `#DCDEEC`, quase o branco do pelo — no papel era "metal claro", na tela era um gato branco comum, com o conceito do personagem invisível. A ferramenta para isso é a captura de tela, não a leitura do arquivo.
 
+### Traço de identidade se copia, não se inventa
+
+`assets/mascot/tronikat.svg` é a **fonte da verdade do personagem**. Ao desenhar o Tr∅nikAt em qualquer enquadramento novo, abra aquele arquivo e copie os traços que definem quem ele é, com as proporções convertidas para o novo tamanho.
+
+Isso virou regra porque eu errei: o retrato saiu com **olho âmbar de pupila em fenda**, invenção minha. Na arte canônica o olho é `<ellipse ... fill="#17092E">` inteiro com um `<circle>` branco em cima — preto, redondo, simples. Ficou bonito e ficou errado: um gato de olho âmbar é outro gato. O Gustavo notou na hora, comparando as duas telas.
+
+A linha entre copiar e recriar:
+
+- **Identidade — copie:** cor e forma do olho, verde do visor, costura ciano da divisa, rosa do focinho e da orelha interna, o `>_` no peito, a assimetria pelo/metal
+- **Densidade — pode recriar:** quantas placas, quantos rebites, marcas de calibragem, reflexos. Em close cabe mais detalhe, do mesmo jeito que na variante miúda cabe menos
+
+Não é liberdade menor do que parece: é a mesma regra já registrada para a variante pequena, onde **em outro tamanho não se reduz o desenho, redesenha-se**. O que não muda de tamanho é quem o personagem é.
+
+### Close é corte, não redução
+
+O retrato tinha "cabeção para corpo pequeno", e a causa não era a cabeça: os ombros iam de `x=22` a `x=378` num viewBox de `0` a `400`. Sobrava margem dos dois lados, o corpo virava uma **figura fechada e completa dentro do quadro**, e o conjunto lia como bonequinho.
+
+Enquadramento que cabe todo dentro da moldura não é close — é retrato de corpo inteiro pequeno. Hoje os ombros são desenhados de `x=-40` a `x=440`, **sangrando de propósito**, e o `_Mascote` não tem folga lateral nenhuma, senão os traria de volta para dentro.
+
+Vale saber, ao mexer nisso, que **na arte canônica a cabeça (104 de largura) é mais larga que os ombros (88)**. O personagem tem cabeça grande mesmo, e é o estilo dele; o que equilibra lá são as pernas longas, que num busto não existem. Por isso num close o equilíbrio precisa vir do corte.
+
+Duas armadilhas menores da mesma rodada: **pescoço que afina para baixo** vira balde, porque não encontra ombro nenhum — ele tem que alargar; e **linha de ombro feita com uma quadrática única de ponta a ponta** vira colina, porque o topo fica alto demais para a largura. Ombro tem quina; o moletom só a suaviza.
+
 Quando um desenho não aparece, **sonde antes de teorizar**: pinte a forma de `#FF0000` chapado e rode. Se o vermelho aparece, o caminho está certo e o problema é o preenchimento. Isso derrubou duas hipóteses minhas em um build.
 
 ---
@@ -231,6 +254,23 @@ Detalhes de implementação com motivo:
 - **Recorte no disco do sol é obrigatório.** As fatias são retângulos da largura do sol; sem `clipPath`, no topo — onde o círculo é estreito — elas sobram para os lados e viram traços escuros soltos no céu. Isso apareceu na tela como se fossem falhas de renderização
 
 A tela recebe `pronto` e `aoIniciar` de fora justamente para ser testável sem I/O: ela não sabe o que é um banco de questões. Ver "Testes de widget não enxergam I/O real".
+
+### Dá para voltar à tela de título
+
+Sem isso, **rever a abertura exigia fechar e reabrir o app** — que é um jeito ruim de dizer "esta tela não é para ser vista de novo". Ela é a porta do fliperama, não um vídeo de introdução que se pula uma vez.
+
+Voltar é só `setState(() => _comecou = false)` em `main.dart`. A carga já terminou, então a tela reaparece com `pronto: true`, o próximo START entra na hora, e **nada é recarregado**: o progresso continua onde estava.
+
+São dois caminhos porque há dois pontos de entrada:
+
+| Onde | Como |
+|---|---|
+| Escolha de linguagem | Botão `TELA DE INÍCIO`, discreto, no topo |
+| Trilha, quando é a primeira tela | A **mesma** seta de voltar que já existia, que antes ficava nula |
+
+A segunda merece atenção: com uma linguagem só no banco, o app abre direto na trilha e a tela de escolha nem existe. Em vez de um segundo botão, a seta que já estava lá muda de destino — ela sempre volta um passo, e qual é esse passo depende de por onde se entrou.
+
+O botão é **secundário de propósito**: a ação principal da tela é escolher uma trilha. E ele **não toca a ficha** — a moeda é o som de entrar no fliperama, e voltar para a abertura não é inserir moeda; inserir moeda é o START de lá.
 
 ---
 
@@ -263,10 +303,14 @@ As alternativas de múltipla escolha são embaralhadas **no momento de renderiza
 ### Navegação
 
 ```
-Escolha de linguagem  →  Trilha  →  Aula  →  Questões
-        ↑                   ↑                   │
-        └───── voltar ──────┴──── ✕ / fim ──────┘
+Título  →  Escolha de linguagem  →  Trilha  →  Aula  →  Questões
+   ↑                 ↑                  ↑                  │
+   └─ TELA DE ───────┘                  │                  │
+      INÍCIO         └───── voltar ─────┴──── ✕ / fim ─────┘
 ```
+
+Com uma linguagem só, a escolha de linguagem some do caminho e a seta da trilha
+passa a levar direto ao título. Ver "Dá para voltar à tela de título".
 
 **A escolha de linguagem só aparece quando há mais de uma trilha.** Com uma só, o app abre direto nela: tela de escolha com um item é cerimônia vazia.
 

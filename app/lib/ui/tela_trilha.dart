@@ -25,6 +25,7 @@ class TelaTrilha extends StatefulWidget {
     required this.level,
     this.progresso,
     this.podeVoltar = true,
+    this.aoVoltarAoTitulo,
     this.sineta,
   });
 
@@ -35,6 +36,15 @@ class TelaTrilha extends StatefulWidget {
 
   /// Falso quando a trilha é a primeira tela, sem escolha de linguagem atrás.
   final bool podeVoltar;
+
+  /// Volta para a tela de título. Só é usado quando [podeVoltar] é falso.
+  ///
+  /// Com uma linguagem só no banco, o app abre direto na trilha e não há
+  /// escolha de linguagem atrás — então, sem isto, a seta de voltar sumiria e
+  /// **rever a tela de título exigiria fechar e reabrir o app**. Em vez de um
+  /// segundo botão, a seta que já existe muda de destino: ela sempre volta um
+  /// passo, e qual é esse passo depende de por onde se entrou.
+  final VoidCallback? aoVoltarAoTitulo;
 
   final Sineta? sineta;
 
@@ -135,7 +145,7 @@ class _TelaTrilhaState extends State<TelaTrilha>
               total: totalQuestoes,
               aoVoltar: widget.podeVoltar
                   ? () => Navigator.of(context).pop()
-                  : null,
+                  : widget.aoVoltarAoTitulo,
               somLigado: _som,
               aoAlternarSom: _alternarSom,
             ),
