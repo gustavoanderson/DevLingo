@@ -8,15 +8,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate:
-    name: Validacao do conteudo
+  conteudo:
+    name: Conteudo e contrato em Python
     runs-on: ubuntu-latest
     steps:
       - name: Baixar o repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Preparar o Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -25,3 +25,35 @@ jobs:
 
       - name: Rodar o validador
         run: python3 tools/validate_questions.py app/assets/content/
+
+      - name: Provar o contrato de normalizacao (lado Python)
+        run: python3 tools/test_normalize.py
+
+  app:
+    name: App em Dart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v5
+
+      # A versao e fixa de proposito. O contrato de normalizacao compara duas
+      # implementacoes; deixar uma delas flutuar sozinha esvazia a comparacao.
+      - name: Preparar o Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+
+      - name: Baixar as dependencias
+        working-directory: app
+        run: flutter pub get
+
+      - name: Analise estatica
+        working-directory: app
+        run: flutter analyze
+
+      # Roda o mesmo tools/normalize_cases.json que o job de Python roda.
+      # Se as duas implementacoes divergirem, um dos dois jobs reprova.
+      - name: Testes
+        working-directory: app
+        run: flutter test

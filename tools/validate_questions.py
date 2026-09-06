@@ -73,6 +73,18 @@ def normalize(text, rules):
     return out
 
 
+def accepts(resposta, aceitas, rules):
+    """Decide se a resposta escrita pelo usuario conta como certa.
+
+    A semantica vive aqui, num lugar so, para o app em Dart ter o que espelhar:
+    normaliza os dois lados e procura correspondencia exata em alguma das
+    respostas aceitas. Nada de correspondencia parcial, nada de heuristica.
+    Determinismo e o ponto: sem falso negativo, sem falso positivo.
+    """
+    alvo = normalize(resposta, rules)
+    return any(normalize(aceita, rules) == alvo for aceita in aceitas)
+
+
 def check_schema(data, filename, validator, report):
     """Regras estruturais: campos obrigatorios, tipos, enums, 5 alternativas."""
     for err in sorted(validator.iter_errors(data), key=lambda e: list(e.path)):

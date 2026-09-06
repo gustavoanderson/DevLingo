@@ -1,0 +1,238 @@
+{
+  "descricao": "Contrato compartilhado da normalizacao de respostas escritas. Lido pelo validador em Python (tools/test_normalize.py) e pelo app em Dart (app/test/normalize_test.dart). As duas implementacoes precisam produzir exatamente estes resultados. Se divergirem, o CI reprova.",
+  "porque": "A normalizacao existe em duas linguagens. Duas implementacoes da mesma regra sao exatamente onde elas divergem em silencio, e divergir aqui significa o app aceitar como certa uma resposta que o validador considera errada, ou o contrario. Este arquivo transforma 'espero que as duas concordem' em 'o CI reprova se discordarem'.",
+  "padroes": {
+    "spaces": true,
+    "quotes": true,
+    "trailingSemicolon": true,
+    "caseSensitive": false
+  },
+
+  "normalizacao": [
+    {
+      "nome": "espaco entre duas palavras e obrigatorio",
+      "entrada": "const total = 0;",
+      "regras": null,
+      "saida": "const total=0"
+    },
+    {
+      "nome": "DEFEITO REAL: consttotal nao pode virar a mesma coisa que const total",
+      "entrada": "consttotal=0",
+      "regras": null,
+      "saida": "consttotal=0"
+    },
+    {
+      "nome": "espaco encostado em operador e irrelevante",
+      "entrada": "n * 2",
+      "regras": null,
+      "saida": "n*2"
+    },
+    {
+      "nome": "operador de dois caracteres",
+      "entrada": "5 ** 2",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "5**2"
+    },
+    {
+      "nome": "espacos repetidos colapsam para um so",
+      "entrada": "const    total   =    0",
+      "regras": null,
+      "saida": "const total=0"
+    },
+    {
+      "nome": "tabulacao e quebra de linha contam como espaco",
+      "entrada": "n\t*\n2",
+      "regras": null,
+      "saida": "n*2"
+    },
+    {
+      "nome": "UNICODE: letra acentuada e caractere de palavra, nao pontuacao",
+      "entrada": "ola mundo",
+      "regras": null,
+      "saida": "ola mundo"
+    },
+    {
+      "nome": "UNICODE: o espaco depois de letra acentuada e obrigatorio",
+      "entrada": "olá mundo",
+      "regras": null,
+      "saida": "olá mundo"
+    },
+    {
+      "nome": "UNICODE: acentuada no fim da palavra nao come o espaco seguinte",
+      "entrada": "café com leite",
+      "regras": null,
+      "saida": "café com leite"
+    },
+    {
+      "nome": "UNICODE: acentuada dentro de chamada de funcao",
+      "entrada": "print(\"Olá, mundo!\")",
+      "regras": null,
+      "saida": "print('olá,mundo!')"
+    },
+    {
+      "nome": "LIMITACAO CONHECIDA: acento decomposto come o espaco seguinte, nas duas linguagens",
+      "comentario": "O acento combinante U+0301 nao e letra nem digito em Python nem em Dart, entao conta como pontuacao e o espaco encostado nele some. As duas implementacoes concordam, entao o contrato esta cumprido, mas o resultado difere do mesmo texto escrito com o caractere precomposto. Este caso existe para travar o comportamento: se um dia ele mudar, foi de proposito.",
+      "entrada": "café com leite",
+      "regras": null,
+      "saida": "cafécom leite"
+    },
+    {
+      "nome": "UNICODE: acentuada em nome de variavel",
+      "entrada": "número = 10",
+      "regras": null,
+      "saida": "número=10"
+    },
+    {
+      "nome": "aspas duplas viram simples",
+      "entrada": "print(\"oi\")",
+      "regras": null,
+      "saida": "print('oi')"
+    },
+    {
+      "nome": "aspas preservadas quando quotes e falso",
+      "entrada": "print(\"oi\")",
+      "regras": { "spaces": true, "quotes": false, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "print(\"oi\")"
+    },
+    {
+      "nome": "ponto e virgula final some",
+      "entrada": "total = 10;",
+      "regras": null,
+      "saida": "total=10"
+    },
+    {
+      "nome": "ponto e virgula final fica quando a regra esta desligada",
+      "entrada": "total = 10;",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": false, "caseSensitive": false },
+      "saida": "total=10;"
+    },
+    {
+      "nome": "caseSensitive falso rebaixa tudo",
+      "entrada": "PRINT(X)",
+      "regras": null,
+      "saida": "print(x)"
+    },
+    {
+      "nome": "caseSensitive verdadeiro preserva a caixa",
+      "entrada": "PRINT(X)",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "PRINT(X)"
+    },
+    {
+      "nome": "spaces falso preserva os espacos internos e apara as pontas",
+      "entrada": "  n * 2  ",
+      "regras": { "spaces": false, "quotes": true, "trailingSemicolon": true, "caseSensitive": false },
+      "saida": "n * 2"
+    },
+    {
+      "nome": "cabecalho de condicao do banco real",
+      "entrada": "if saldo > 0:",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "if saldo>0:"
+    },
+    {
+      "nome": "chamada encadeada do banco real",
+      "entrada": "resposta.lower() == \"sim\"",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "resposta.lower()=='sim'"
+    },
+    {
+      "nome": "operador in com texto do banco real",
+      "entrada": "\"uva\" in frutas",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "'uva'in frutas"
+    },
+    {
+      "nome": "divisao inteira do banco real",
+      "entrada": "print(47 // 10)",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "print(47//10)"
+    },
+    {
+      "nome": "lista do banco real",
+      "entrada": "notas = [7, 8, 9]",
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "saida": "notas=[7,8,9]"
+    }
+  ],
+
+  "aceitacao": [
+    {
+      "nome": "DEFEITO REAL: consttotal=0 NAO responde const total = 0;",
+      "resposta": "consttotal=0",
+      "aceitas": ["const total = 0;"],
+      "regras": null,
+      "aceita": false
+    },
+    {
+      "nome": "a mesma resposta sem o ponto e virgula e aceita",
+      "resposta": "const total=0",
+      "aceitas": ["const total = 0;"],
+      "regras": null,
+      "aceita": true
+    },
+    {
+      "nome": "espacamento generoso e aceito",
+      "resposta": "const  total  =  0 ;",
+      "aceitas": ["const total = 0;"],
+      "regras": null,
+      "aceita": true
+    },
+    {
+      "nome": "caixa errada e recusada quando caseSensitive e verdadeiro",
+      "resposta": "PRINT(NOME)",
+      "aceitas": ["print(nome)"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": false
+    },
+    {
+      "nome": "a mesma resposta na caixa certa e aceita",
+      "resposta": "print(nome)",
+      "aceitas": ["print(nome)"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": true
+    },
+    {
+      "nome": "a segunda forma aceita da questao 0209 vale",
+      "resposta": "5*5",
+      "aceitas": ["5 ** 2", "5 * 5"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": true
+    },
+    {
+      "nome": "a primeira forma aceita da questao 0209 vale",
+      "resposta": "5 ** 2",
+      "aceitas": ["5 ** 2", "5 * 5"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": true
+    },
+    {
+      "nome": "conta parecida mas errada e recusada",
+      "resposta": "5 * 2",
+      "aceitas": ["5 ** 2", "5 * 5"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": false
+    },
+    {
+      "nome": "faltar os dois pontos do bloco e recusado",
+      "resposta": "if saldo > 0",
+      "aceitas": ["if saldo > 0:"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": false
+    },
+    {
+      "nome": "aspas simples no lugar de duplas e aceito",
+      "resposta": "'uva' in frutas",
+      "aceitas": ["\"uva\" in frutas"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": true
+    },
+    {
+      "nome": "grudar duas palavras da resposta e recusado",
+      "resposta": "ifsaldo>0:",
+      "aceitas": ["if saldo > 0:"],
+      "regras": { "spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true },
+      "aceita": false
+    }
+  ]
+}
