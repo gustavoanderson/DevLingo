@@ -37,9 +37,35 @@ Mascote: **Tr∅nikAt**, gato branco bípede ciberneticamente modificado, com vi
 | Conteúdo | JSON versionado no repositório | Funciona offline, custo zero de leitura, revisável em pull request |
 | Validação | Python com jsonschema | Roda em CI sem depender do Flutter instalado, e serve à carreira de QA dele |
 
-**Ambiente do Gustavo:** Windows, VS Code, repositório em `D:\repositorios\DevLingo`. O disco C: está quase cheio, então Flutter SDK, Android SDK, cache do Gradle e emuladores devem ser apontados para o D: via variáveis de ambiente (`ANDROID_USER_HOME`, `GRADLE_USER_HOME`, `PUB_CACHE`). Nada de espaço no caminho de instalação do Flutter.
-
 Repositório remoto: `https://github.com/gustavoanderson/DevLingo` (público).
+
+---
+
+## Ambiente do Gustavo
+
+Windows 11, VS Code, repositório em `D:\repositorio\DevLingo` (singular, sem "s").
+
+**Instalado e verificado.** Nada de espaço no caminho de instalação.
+
+| Peça | Onde | Variável |
+|---|---|---|
+| Flutter 3.47.2 estável, Dart 3.13.2 | `D:\dev\flutter` | no `Path` do usuário |
+| SDK do Android (~21 GB) | `D:\dev\android-sdk` | `ANDROID_HOME`, `ANDROID_SDK_ROOT` |
+| Cache do Gradle | `D:\dev\gradle` | `GRADLE_USER_HOME` |
+| Pacotes Dart | `D:\dev\pub-cache` | `PUB_CACHE` |
+| AVDs dos emuladores | `D:\Android AVDs` | `ANDROID_AVD_HOME` |
+
+### O que este ambiente exige que se saiba
+
+- **O Gustavo tem outro projeto ativo, em Appium**, que compartilha o SDK do Android, o Android Studio e os três emuladores (`CelularResponsivo`, `Pixel_8`, `nightwatch-android-11`). Qualquer mexida no Android afeta os dois projetos. Confira `flutter emulators` depois de qualquer mudança.
+- **`ANDROID_AVD_HOME` não se toca.** Foi ele que colocou os emuladores no D:. Ele tem espaço no caminho, e está assim porque funciona.
+- **`ANDROID_USER_HOME` foi deliberadamente deixado no C:.** Moveria só 220 MB, mas levaria junto a chave do ADB e o estado do Android Studio, que são compartilhados com o Appium. Ganho irrisório, risco real.
+- **Dois JDKs na máquina.** O `JAVA_HOME` do usuário aponta para o **JDK 26**, que o plugin Gradle do Android não suporta. O Flutter usa o **JDK 17** por configuração própria (`flutter config --jdk-dir`), sem mexer no `JAVA_HOME`. Não "conserte" isso trocando o `JAVA_HOME`: outras coisas na máquina dependem do 26.
+- **`flutter doctor` reclama de duas coisas que devem ser ignoradas:**
+  - *Visual Studio installation is incomplete* — é para app Windows desktop. O DevLingo é Android.
+  - *Android license status unknown* — falso alarme. A licença **está** aceita (`<SDK>/licenses/android-sdk-license` existe); a CLI nova do Android aposentou o comando que o Flutter usa para checar.
+- **AVDs guardam caminhos absolutos.** Ao mover o SDK, o `skin.path` do `Pixel_8` apontava para o caminho velho e precisou de correção à mão. O `image.sysdir.1` é relativo e sobrevive. Se um emulador parar de abrir depois de mover algo, é aí que se olha.
+- **O harness do Claude Code bloqueia `Remove-Item` em caminhos de disco.** Remoções precisam ser feitas pelo Gustavo num terminal dele. Se um arquivo estiver travado, é quase sempre o servidor do `adb`: encerre-o antes.
 
 ---
 
@@ -185,9 +211,38 @@ As 4 questões de `python-beg-00` são a lição de referência do formato e **n
 
 A regra de impressão digital, que era o pendente combinado para perto da lição 4, **está implementada** — ver "Validador". O desenho mudou no caminho: ela compara respostas, não enunciados.
 
-Próximo: **Python intermediário**. Depois avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
+### Etapas até o app na mão do Gustavo
 
-Antes de escrever a primeira lição intermediária, decidir **o que separa um nível do outro**. No iniciante o critério foi implícito: uma questão por conceito, sem composição. No intermediário isso precisa virar um critério escrito, senão o nível vira "iniciante com palavras difíceis".
+O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **Escrever mais conteúdo não aproxima uma versão jogável** — a Etapa B aproxima. E calibrar dificuldade sem nunca ter jogado é chute: depois de resolver as 50 questões no celular, o Gustavo vai saber coisas sobre o ritmo da trilha que nenhuma revisão em JSON revela. Por isso o Python intermediário vem **depois** da Etapa B, não antes.
+
+| Etapa | Entrega | Estado |
+|---|---|---|
+| **A** | Ambiente Flutter e Android, tudo no D: | **concluída** — ver "Ambiente do Gustavo" |
+| **B** | **App mínimo jogável** | **próxima** |
+| C | Polimento visual: fundo parallax, mascote animado | depois |
+| D | Firebase: login e progresso na nuvem | depois |
+| E | Python intermediário e avançado, depois JavaScript e Node | depois |
+
+**Etapa B, o escopo mínimo.** Nada além disto entra, porque o objetivo é chegar a algo jogável, não a algo completo:
+
+1. Ler os JSON de `content/` empacotados como asset do app
+2. Tela de exercício conforme `docs/mockup-tela-exercicio.html`
+3. As três formas de resposta: múltipla escolha, lacuna e escrita livre
+4. `normalize()` portado para Dart, com os mesmos testes negativos do validador
+5. Embaralhamento das alternativas a cada exibição
+6. Progresso salvo local a cada questão respondida
+
+Fica **fora** da Etapa B: Firebase, fundo animado, escolha de linguagem, telas de trilha. Uma linguagem, uma trilha, direto ao exercício.
+
+**Antes da Etapa E**, decidir **o que separa um nível do outro**. No iniciante o critério foi implícito: uma questão por conceito, sem composição. Proposta a validar com o Gustavo:
+
+| Nível | Critério |
+|---|---|
+| Iniciante | um conceito por questão, código de até 3 linhas, sem composição |
+| Intermediário | dois conceitos combinados, até 8 linhas, exige rastrear estado |
+| Avançado | comportamento não óbvio, casos de borda, o porquê além do quê |
+
+Sem isso escrito, o intermediário vira "iniciante com palavras difíceis".
 
 O banco aprova hoje com **três avisos, e os três são intencionais**. Todos são distratores que diferem apenas na caixa, num idioma em que a caixa é justamente o conteúdo da questão:
 
@@ -198,5 +253,3 @@ O banco aprova hoje com **três avisos, e os três são intencionais**. Todos s�
 | `python-beg-0403` | `OI` ao lado de `oi` | `OI` é o que apareceria se strings fossem mutáveis |
 
 Se algum desses avisos sumir, alguém mexeu na questão. Se aparecer um quarto, é para conferir antes de aceitar.
-
-O ambiente Flutter ainda **não** foi instalado. Isso foi adiado de propósito: ambiente instalado e não usado envelhece e pede atualização justo no dia em que se precisa dele.
