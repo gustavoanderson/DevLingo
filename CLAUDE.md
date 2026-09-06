@@ -240,12 +240,44 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 
 **Etapa B, o escopo mínimo.** Nada além disto entra, porque o objetivo é chegar a algo jogável, não a algo completo:
 
-1. Ler os JSON de `content/` empacotados como asset do app
-2. Tela de exercício conforme `docs/mockup-tela-exercicio.html`
-3. As três formas de resposta: múltipla escolha, lacuna e escrita livre
-4. `normalize()` portado para Dart, com os mesmos testes negativos do validador
-5. Embaralhamento das alternativas a cada exibição
-6. Progresso salvo local a cada questão respondida
+| | Passo | Estado |
+|---|---|---|
+| **B1** | Projeto Flutter em `app/`, rodando no emulador | **concluído** |
+| B2 | Ler os JSON de `content/` como asset e modelar as questões em Dart | |
+| B3 | `normalize()` portado para Dart, com os mesmos testes negativos do validador | |
+| B4 | Tela de exercício conforme `docs/mockup-tela-exercicio.html` | |
+| B5 | As três formas de resposta e o embaralhamento das alternativas | |
+| B6 | Progresso salvo local a cada questão respondida | |
+
+### O app
+
+Vive em `app/`, com o Dart package `devlingo`. O `applicationId` é **`com.devlingo.app`** e é **imutável na prática**: mudá-lo depois de publicar quebra a atualização para quem já instalou. Mesma natureza do campo `id` das questões. O `flutter create` gera `com.devlingo.devlingo`; foi corrigido à mão no `build.gradle.kts` e na pasta do pacote Kotlin.
+
+### Receita para ver o app rodando
+
+```bash
+# 1. subir o emulador (Android 11 e o piso; se roda nele, roda acima)
+D:/dev/android-sdk/emulator/emulator.exe -avd nightwatch-android-11
+
+# 2. esperar o boot de verdade, sem chutar tempo
+adb wait-for-device
+adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done'
+
+# 3. compilar, instalar, abrir
+cd app && flutter build apk --debug
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+adb shell am start -n com.devlingo.app/.MainActivity
+
+# 4. conferir de verdade, com print
+adb exec-out screencap -p > tela.png
+```
+
+Duas coisas que parecem defeito e não são:
+
+- **A primeira tela fica branca por uns 15 segundos.** É a VM do Dart aquecendo num build de debug. Um print tirado cedo demais mostra tela em branco e faz parecer que o app quebrou. Confira `dumpsys activity activities`: se o `mResumedActivity` for o `com.devlingo.app/.MainActivity`, o app está vivo, só ainda não desenhou.
+- **O Impeller registra `Could not link pipeline program` no logcat.** É o motor gráfico novo falhando em compilar shaders na GPU emulada. O app renderiza normalmente mesmo assim. Ignore, a menos que a tela realmente não apareça.
+
+Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram o parser do PowerShell 5.1. Use o Bash para esses.
 
 Fica **fora** da Etapa B: Firebase, fundo animado, escolha de linguagem, telas de trilha. Uma linguagem, uma trilha, direto ao exercício.
 
