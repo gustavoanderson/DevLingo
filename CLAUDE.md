@@ -209,6 +209,22 @@ As alternativas de múltipla escolha são embaralhadas **no momento de renderiza
 - A regra "distribua os gabaritos" do validador continua valendo como **segunda linha de defesa**: se o embaralhamento for desligado por acessibilidade, config, ou um bug, o banco ainda não deixa a resposta sempre na mesma letra.
 - Se algum dia surgir uma questão que exija ordem fixa ("todas as anteriores", opções numéricas crescentes), criar um flag opcional `keepOrder: true` na questão. Nenhuma questão atual precisa disso.
 
+### Navegação
+
+```
+Escolha de linguagem  →  Trilha  →  Aula  →  Questões
+        ↑                   ↑                   │
+        └───── voltar ──────┴──── ✕ / fim ──────┘
+```
+
+**A escolha de linguagem só aparece quando há mais de uma trilha.** Com uma só, o app abre direto nela: tela de escolha com um item é cerimônia vazia.
+
+**Nada tranca.** Qualquer lição abre a qualquer momento. Trancar puniria — a mesma razão pela qual errar não termina a questão — e atrapalharia quem quer revisar uma lição antiga ou espiar a seguinte.
+
+**Lição concluída = todas as questões respondidas**, independente de quantas tentativas cada uma custou. Coerente com "o objetivo é aprender, não acertar de primeira".
+
+A trilha é onde o progresso gravado a cada questão deixa de ser dado guardado e vira algo que o aluno enxerga. A contagem vem de **uma consulta agrupada**, não uma por lição.
+
 ### A aula do Tr∅nikAt
 
 Antes das questões, cada lição tem uma **aula**: uma apresentação em texto cobrindo o beabá que as questões vão exigir. Ela existe porque sem ela o jogador cai de paraquedas, e **nenhum ajuste de dica conserta não saber o que é `print`**.
@@ -341,6 +357,7 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 **A Etapa B está fechada: o DevLingo é jogável de ponta a ponta.**
 
 | **C1** | Aulas introdutórias do Tr∅nikAt | **concluída** |
+| **C2** | Trilha e escolha de linguagem | **concluída** |
 
 **Combinado e ainda não feito:**
 

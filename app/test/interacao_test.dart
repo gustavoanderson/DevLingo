@@ -404,6 +404,9 @@ class ProgressoFalso implements RegistroDeProgresso {
   Future<void> marcarAulaVista(String lessonId, {DateTime? quando}) async {
     aulasVistas.add(lessonId);
   }
+
+  @override
+  Future<Map<String, int>> respondidasPorLicao() async => const {};
 }
 
 void progressoNaTela() {

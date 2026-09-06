@@ -43,6 +43,7 @@ class TelaExercicio extends StatefulWidget {
 
   static const Key chaveSombra = Key('sombra-de-recorte');
   static const Key chaveFimDaLicao = Key('fim-da-licao');
+  static const Key chaveVoltarDaLicao = Key('voltar-da-licao');
 
   @override
   State<TelaExercicio> createState() => _TelaExercicioState();
@@ -245,6 +246,7 @@ class _Topo extends StatelessWidget {
   final VoidCallback? aoRelerAula;
 
   static const Key chaveReler = Key('acao-reler-aula');
+  static const Key chaveSair = Key('acao-sair');
 
   @override
   Widget build(BuildContext context) {
@@ -252,11 +254,17 @@ class _Topo extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       child: Row(
         children: [
-          // Sair nao pergunta "tem certeza": o progresso e salvo a cada questao,
-          // entao perguntar seria ruido.
-          const Text(
-            '✕',
-            style: TextStyle(color: Paleta.suave, fontSize: 22, height: 1),
+          // Sair nao pergunta "tem certeza": o progresso e salvo a cada
+          // questao, entao perguntar seria ruido. maybePop em vez de pop
+          // porque em teste de widget nao ha rota atras para voltar.
+          GestureDetector(
+            key: chaveSair,
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).maybePop(),
+            child: const Text(
+              '✕',
+              style: TextStyle(color: Paleta.suave, fontSize: 22, height: 1),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -838,6 +846,30 @@ class _FimDaLicao extends StatelessWidget {
                     color: Paleta.suave,
                     fontFamily: fonteMono,
                     fontSize: Escala.chip,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                GestureDetector(
+                  key: TelaExercicio.chaveVoltarDaLicao,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Paleta.acerto,
+                      borderRadius: BorderRadius.circular(Escala.raio),
+                    ),
+                    child: const Text(
+                      'Voltar à trilha',
+                      style: TextStyle(
+                        color: Paleta.sobreAcerto,
+                        fontSize: Escala.verificar,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],

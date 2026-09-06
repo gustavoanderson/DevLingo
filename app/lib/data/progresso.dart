@@ -87,6 +87,8 @@ abstract interface class RegistroDeProgresso {
   Future<bool> aulaFoiVista(String lessonId);
 
   Future<void> marcarAulaVista(String lessonId, {DateTime? quando});
+
+  Future<Map<String, int>> respondidasPorLicao();
 }
 
 /// Guarda o progresso do aluno no aparelho.
@@ -275,6 +277,24 @@ class Progresso implements RegistroDeProgresso {
       'lesson_id': lessonId,
       'vista_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  /// Quantas questoes ja foram respondidas em cada licao.
+  ///
+  /// Uma consulta so, agrupada, em vez de uma por licao: a trilha mostra todas
+  /// de uma vez, e cinco idas ao banco para desenhar uma lista seriam
+  /// desperdicio que cresce com o numero de licoes.
+  ///
+  /// E aqui o progresso gravado deixa de ser dado guardado e vira algo que o
+  /// aluno enxerga.
+  @override
+  Future<Map<String, int>> respondidasPorLicao() async {
+    final linhas = await _bd.rawQuery(
+      'SELECT lesson_id, COUNT(*) AS total FROM resposta GROUP BY lesson_id',
+    );
+    return {
+      for (final l in linhas) l['lesson_id'] as String: l['total'] as int,
+    };
   }
 
   /// Quanto cada topico custou, do mais caro para o mais barato.

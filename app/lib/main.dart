@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'data/progresso.dart';
 import 'data/question_bank.dart';
-import 'models/lesson.dart';
-import 'ui/fluxo_da_licao.dart';
 import 'ui/paleta.dart';
+import 'ui/tela_linguagens.dart';
+import 'ui/tela_trilha.dart';
 
 void main() => runApp(const DevLingoApp());
 
@@ -30,19 +30,14 @@ class DevLingoApp extends StatelessWidget {
   }
 }
 
-/// O que o app precisa ter em maos antes de abrir a tela de exercicio.
 class _Partida {
-  final Lesson licao;
+  final QuestionBank banco;
   final Progresso progresso;
-  final int indice;
-  final bool aulaJaVista;
 
-  const _Partida(this.licao, this.progresso, this.indice, this.aulaJaVista);
+  const _Partida(this.banco, this.progresso);
 }
 
-/// Abre o banco de questoes e o progresso, e retoma de onde o aluno parou.
-///
-/// A licao esta fixa enquanto nao existe tela de escolha de linguagem e trilha.
+/// Abre o banco de questoes e o progresso, e entrega a primeira tela.
 class _Carga extends StatefulWidget {
   const _Carga();
 
@@ -53,20 +48,10 @@ class _Carga extends StatefulWidget {
 class _CargaState extends State<_Carga> {
   late final Future<_Partida> _partida = _preparar();
 
-  static const String _licaoDemo = 'python-beg-01';
-
   Future<_Partida> _preparar() async {
     final banco = await QuestionBank.carregar();
-    final licao = banco.lessons.firstWhere(
-      (l) => l.lessonId == _licaoDemo,
-      orElse: () => banco.lessons.first,
-    );
     final progresso = await Progresso.abrir();
-    final salvo = await progresso.posicaoDe(licao.lessonId) ?? 0;
-    // Uma licao que encolheu entre versoes do app nao pode abrir fora do fim.
-    final indice = salvo.clamp(0, licao.questions.length - 1);
-    final aulaJaVista = await progresso.aulaFoiVista(licao.lessonId);
-    return _Partida(licao, progresso, indice, aulaJaVista);
+    return _Partida(banco, progresso);
   }
 
   @override
@@ -87,11 +72,23 @@ class _CargaState extends State<_Carga> {
         }
 
         final partida = snapshot.requireData;
-        return FluxoDaLicao(
-          licao: partida.licao,
+        final trilhas = TelaLinguagens.trilhasDe(partida.banco);
+
+        // Tela de escolha com um item so e cerimonia vazia: com uma trilha
+        // apenas, o app abre direto nela.
+        if (trilhas.length == 1) {
+          return TelaTrilha(
+            banco: partida.banco,
+            language: trilhas.single.language,
+            level: trilhas.single.level,
+            progresso: partida.progresso,
+            podeVoltar: false,
+          );
+        }
+
+        return TelaLinguagens(
+          banco: partida.banco,
           progresso: partida.progresso,
-          indiceInicial: partida.indice,
-          aulaJaVista: partida.aulaJaVista,
         );
       },
     );

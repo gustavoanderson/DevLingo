@@ -1,5 +1,26 @@
 import 'question.dart';
 
+/// Como o nome da linguagem aparece na tela.
+///
+/// No banco a linguagem e uma chave em minusculas, boa para caminho de arquivo
+/// e comparacao. Aqui ela vira o nome que as pessoas escrevem: `javascript` na
+/// pasta, JavaScript na tela.
+const Map<String, String> nomeDaLinguagem = {
+  'python': 'Python',
+  'javascript': 'JavaScript',
+  'node': 'Node',
+  'html': 'HTML',
+  'css': 'CSS',
+  'sql': 'SQL',
+  'csharp': 'C#',
+  'golang': 'Go',
+  'cpp': 'C++',
+  'cobol': 'COBOL',
+  'ruby': 'Ruby',
+};
+
+String nomeBonito(String chave) => nomeDaLinguagem[chave] ?? chave;
+
 /// Uma parte da aula, preparando um topico especifico.
 class SecaoDaAula {
   /// Qual `topic` das questoes esta secao prepara.
