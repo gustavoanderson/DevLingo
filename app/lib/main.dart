@@ -5,6 +5,7 @@ import 'data/question_bank.dart';
 import 'ui/paleta.dart';
 import 'ui/som.dart';
 import 'ui/tela_linguagens.dart';
+import 'ui/tela_titulo.dart';
 import 'ui/tela_trilha.dart';
 
 void main() => runApp(const DevLingoApp());
@@ -49,12 +50,27 @@ class _Carga extends StatefulWidget {
 class _CargaState extends State<_Carga> {
   late final Future<_Partida> _partida = _preparar();
 
+  /// O usuario ja apertou START e a tela de titulo saiu de cena.
+  ///
+  /// A tela de titulo aparece em **toda** abertura, e nao so na primeira: ela e
+  /// a porta do fliperama. Este campo e o que faz o app nao voltar para ela
+  /// quando o `FutureBuilder` reconstroi.
+  bool _comecou = false;
+
   /// A sineta le a preferencia do banco a cada toque, sem cache: assim o botao
   /// de desligar tem efeito imediato e nao ha duas copias do mesmo dado para
   /// manter em sincronia.
-  Progresso? _progresso;
+  ///
+  /// Ela espera a **promessa** da carga, e nao um campo preenchido no fim dela.
+  /// A versao anterior lia um `Progresso?` que so existia depois da carga e
+  /// respondia `false` enquanto fosse nulo -- o que era inofensivo quando o
+  /// unico som vinha da tela de exercicio, que so existe depois da carga, e
+  /// virou defeito com a tela de titulo, que aceita toque **durante** ela: a
+  /// ficha simplesmente nao tocaria em quem apertasse START rapido. Esperando a
+  /// promessa, o som sai com a preferencia certa, nem que saia um instante
+  /// depois. Se a carga falhar, o `catch` da propria sineta engole.
   late final Sineta _sineta = SinetaDeVerdade(
-    estaLigado: () async => await _progresso?.somLigado() ?? false,
+    estaLigado: () async => (await _partida).progresso.somLigado(),
   );
 
   @override
@@ -66,7 +82,6 @@ class _CargaState extends State<_Carga> {
   Future<_Partida> _preparar() async {
     final banco = await QuestionBank.carregar();
     final progresso = await Progresso.abrir();
-    _progresso = progresso;
     return _Partida(banco, progresso);
   }
 
@@ -75,16 +90,22 @@ class _CargaState extends State<_Carga> {
     return FutureBuilder<_Partida>(
       future: _partida,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            backgroundColor: Paleta.fundo,
-            body: Center(
-              child: CircularProgressIndicator(color: Paleta.destaque),
-            ),
-          );
-        }
+        // O erro tem prioridade sobre a tela de titulo: nao adianta oferecer
+        // START para um app que nao tem questoes para mostrar.
         if (snapshot.hasError) {
           return _Falha(erro: '${snapshot.error}');
+        }
+
+        final pronto = snapshot.connectionState == ConnectionState.done;
+
+        // A tela de titulo cobre a carga em vez de uma roda de progresso. Ela
+        // aceita o toque mesmo antes de `pronto`, e so entao entra sozinha.
+        if (!_comecou) {
+          return TelaTitulo(
+            pronto: pronto,
+            sineta: _sineta,
+            aoIniciar: () => setState(() => _comecou = true),
+          );
         }
 
         final partida = snapshot.requireData;

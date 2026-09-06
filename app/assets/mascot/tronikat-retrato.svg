@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="520" viewBox="0 0 400 520" role="img">
+<title>Tr∅nikAt — retrato</title>
+<desc>Close no rosto e ombros do Tr∅nikAt: metade esquerda de pelo branco com olho ambar de pupila em fenda, metade direita de aco escovado com scouter verde aceso. Moletom roxo com capuz e remendo de terminal.</desc>
+
+<defs>
+  <!-- Volume do pelo: claro em cima, sombra embaixo. -->
+  <linearGradient id="pelo" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#FFFFFF"/>
+    <stop offset="62%" stop-color="#F2F0FF"/>
+    <stop offset="100%" stop-color="#D6D2EA"/>
+  </linearGradient>
+
+  <!-- Nao ha gradiente de metal aqui, e isso foi aprendido no aparelho.
+
+       O aco era um `linearGradient` e a metade metalica da cabeca saia branca,
+       com o pelo de baixo aparecendo. Duas tentativas nao resolveram: escurecer
+       os stops e trocar para `gradientUnits="userSpaceOnUse"`. O que resolveu a
+       duvida foi uma sonda : o MESMO caminho pintado de #FF0000 chapado
+       apareceu inteiro e perfeito. Ou seja: o caminho estava certo o tempo todo
+       e o preenchimento com gradiente e que nao era aplicado NAQUELE elemento.
+
+       A causa raiz nao foi isolada, e nao vou fingir que foi. O mesmo gradiente
+       funciona no `<polygon>` da orelha, e `moletom` e `capuz` funcionam em
+       `<path>` com curvas : entao "gradiente em path nao funciona" seria uma
+       regra larga demais para a evidencia que eu tenho.
+
+       Por isso o volume do aco e feito com tons chapados, um sobre o outro:
+       chapado desenhou em todos os testes. Arte que so aparece se o renderizador
+       colaborar nao e arte, e aposta. Os tres tons ficam anotados aqui para a
+       cabeca e a orelha nao divergirem:
+         aco claro  #6E7597   aco medio #545B7A   aco escuro #3E4460 -->
+
+  <!-- Vidro do scouter. LINEAR, e nao radial: o `radialGradient` da primeira
+       versao nao foi aplicado e o visor renderizou preto no aparelho. -->
+  <linearGradient id="vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#2FA81C"/>
+    <stop offset="55%" stop-color="#166F0E"/>
+    <stop offset="100%" stop-color="#0B3D07"/>
+  </linearGradient>
+
+  <linearGradient id="moletom" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#3A2568"/>
+    <stop offset="100%" stop-color="#1E1240"/>
+  </linearGradient>
+
+  <linearGradient id="capuz" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#160C2E"/>
+    <stop offset="100%" stop-color="#2B1B52"/>
+  </linearGradient>
+</defs>
+
+<!-- ============================ ORELHAS ============================ -->
+<!-- Ficam atras da cabeca, entao vem primeiro. A direita e o espelho exato da
+     esquerda: na versao anterior ela tinha outro angulo e lia como estilhaco
+     solto, e nao como orelha. -->
+<polygon points="92,22 124,132 192,92" fill="url(#pelo)"/>
+<polygon points="106,48 134,122 178,96" fill="#FF7AD9"/>
+<polygon points="106,48 134,122 178,96" fill="#FF2D95" opacity="0.35"/>
+
+<polygon points="308,22 276,132 208,92" fill="#6E7597"/>
+<polygon points="294,48 266,122 222,96" fill="#3E4460"/>
+<line x1="300" y1="40" x2="272" y2="128" stroke="#B9BFD8" stroke-width="2.5" opacity="0.7"/>
+
+<!-- ============================ CABECA ============================ -->
+<ellipse cx="200" cy="205" rx="128" ry="118" fill="url(#pelo)"/>
+
+<!-- A metade metalica, em tres tons chapados, um sobre o outro.
+     A de baixo sobra apenas na borda e vira o bisel escuro; a de cima e a face
+     iluminada. O motivo de nao ser um gradiente esta nos `defs`.
+     Os pontos de controle estao a 0,5523 do raio, que e a aproximacao classica
+     de um quarto de elipse por Bezier cubica. -->
+<path d="M200 87
+         C 270.7 87 328 139.8 328 205
+         C 328 270.2 270.7 323 200 323 Z" fill="#3E4460"/>
+<path d="M200 95
+         C 266.3 95 320 144.7 320 205
+         C 320 265.3 266.3 315 200 315 Z" fill="#545B7A"/>
+<path d="M200 103
+         C 261.3 103 310 149.6 310 205
+         C 310 249 285 285 246 303 L200 303 Z" fill="#6E7597"/>
+
+<!-- Reflexo especular: e o que faz aco parecer aco, e nao cinza chapado. -->
+<path d="M232 122 Q282 152 292 212" stroke="#E4E8F7" stroke-width="9"
+      stroke-linecap="round" fill="none" opacity="0.40"/>
+<path d="M244 258 Q280 248 294 224" stroke="#E4E8F7" stroke-width="4"
+      stroke-linecap="round" fill="none" opacity="0.22"/>
+
+<!-- Placas, rebites e uma grelha de ventilacao no maxilar -->
+<path d="M258 118 Q306 205 264 296" stroke="#333850" stroke-width="2.5" fill="none"/>
+<circle cx="276" cy="146" r="4.5" fill="#333850"/>
+<circle cx="292" cy="205" r="4.5" fill="#333850"/>
+<g stroke="#333850" stroke-width="3" stroke-linecap="round">
+  <line x1="246" y1="284" x2="278" y2="272"/>
+  <line x1="250" y1="296" x2="278" y2="285"/>
+  <line x1="256" y1="307" x2="276" y2="298"/>
+</g>
+
+<!-- Tufos de pelo na silhueta do lado vivo -->
+<path d="M76 190 L95 184 L78 175 Z" fill="url(#pelo)"/>
+<path d="M74 228 L93 226 L75 215 Z" fill="url(#pelo)"/>
+<path d="M82 266 L99 259 L86 250 Z" fill="url(#pelo)"/>
+
+<!-- Luz no alto da cabeca, do lado do pelo -->
+<path d="M114 148 Q158 110 196 104" stroke="#FFFFFF" stroke-width="8"
+      stroke-linecap="round" fill="none" opacity="0.6"/>
+
+<!-- Costura ciano: a divisa entre o gato e a maquina -->
+<line x1="200" y1="87" x2="200" y2="323" stroke="#00E5FF" stroke-width="4"/>
+<line x1="200" y1="87" x2="200" y2="323" stroke="#B6F7FF" stroke-width="1.4" opacity="0.9"/>
+<circle cx="200" cy="130" r="4" fill="#00E5FF"/>
+<circle cx="200" cy="286" r="4" fill="#00E5FF"/>
+
+<!-- ============================ OLHO VIVO ============================ -->
+<!-- Ambar quente do lado organico, contra o verde frio do visor. -->
+<ellipse cx="144" cy="196" rx="36" ry="40" fill="#17092E"/>
+<ellipse cx="144" cy="196" rx="29" ry="33" fill="#FFE14D"/>
+<ellipse cx="144" cy="196" rx="21" ry="29" fill="#F5B92E"/>
+<!-- Pupila em fenda: e o que faz parecer gato, e nao boneco -->
+<ellipse cx="144" cy="196" rx="7.5" ry="26" fill="#17092E"/>
+<circle cx="131" cy="177" r="8.5" fill="#FFFFFF"/>
+<circle cx="155" cy="215" r="4" fill="#FFFFFF" opacity="0.85"/>
+<path d="M106 150 Q144 138 182 152" stroke="#CFCAE6" stroke-width="5.5"
+      stroke-linecap="round" fill="none"/>
+
+<!-- ============================ BIGODES ============================ -->
+<g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.95">
+  <path d="M110 228 Q62 216 24 202"/>
+  <path d="M108 244 Q58 242 18 240"/>
+  <path d="M110 260 Q62 270 26 284"/>
+</g>
+<!-- Claros o bastante para existirem sobre o fundo escuro. Na versao anterior
+     eram #9BA0B8 e sumiam na noite atras do personagem. -->
+<g stroke="#C9CFE6" stroke-width="3" stroke-linecap="round" opacity="0.9">
+  <path d="M290 228 Q338 216 376 202"/>
+  <path d="M292 244 Q342 242 382 240"/>
+  <path d="M290 260 Q338 270 374 284"/>
+</g>
+<g stroke="#8B92AE" stroke-width="2">
+  <line x1="334" y1="210" x2="342" y2="222"/><line x1="342" y1="210" x2="334" y2="222"/>
+  <line x1="346" y1="262" x2="354" y2="274"/><line x1="354" y1="262" x2="346" y2="274"/>
+</g>
+
+<!-- ============================ FOCINHO ============================ -->
+<polygon points="182,240 218,240 200,260" fill="#FF4FD8"/>
+<polygon points="188,243 212,243 200,253" fill="#FF9AE4"/>
+<line x1="200" y1="260" x2="200" y2="271" stroke="#17092E" stroke-width="3" stroke-linecap="round"/>
+<path d="M200 271 Q183 288 166 273" stroke="#17092E" stroke-width="3.5"
+      fill="none" stroke-linecap="round"/>
+<path d="M200 271 Q217 288 234 273" stroke="#20243A" stroke-width="3.5"
+      fill="none" stroke-linecap="round"/>
+
+<!-- ============================ SCOUTER ============================ -->
+<!-- Menor e mais alto que na primeira versao, onde cobria metade do rosto e
+     lia como venda de realidade virtual. Um scouter cobre UM olho. -->
+<g transform="rotate(-8 262 188)">
+  <!-- Haste passando sobre a orelha -->
+  <rect x="330" y="168" width="48" height="34" rx="14" fill="#3A3E52"/>
+  <circle cx="356" cy="185" r="8" fill="#8B92AE"/>
+  <circle cx="356" cy="185" r="3.5" fill="#4A5069"/>
+
+  <!-- Halo do visor: duas bordas verdes desbotando, no lugar de um filtro de
+       desfoque, que nem todo renderizador de SVG aplica. -->
+  <rect x="204" y="152" width="140" height="72" rx="18" fill="#39FF14" opacity="0.12"/>
+  <rect x="209" y="157" width="130" height="62" rx="15" fill="#39FF14" opacity="0.18"/>
+
+  <rect x="212" y="160" width="124" height="56" rx="13" fill="#4A5069"/>
+  <rect x="220" y="167" width="108" height="42" rx="8" fill="#0A1F06"/>
+  <rect x="224" y="171" width="100" height="34" rx="5" fill="url(#vidro)"/>
+
+  <!-- Varredura: linhas finas que dao textura de tela acesa -->
+  <g stroke="#7CFF4D" stroke-width="1.3" opacity="0.30">
+    <line x1="224" y1="177" x2="324" y2="177"/>
+    <line x1="224" y1="185" x2="324" y2="185"/>
+    <line x1="224" y1="193" x2="324" y2="193"/>
+    <line x1="224" y1="201" x2="324" y2="201"/>
+  </g>
+
+  <text x="232" y="196" font-family="ui-monospace, monospace" font-size="21"
+        font-weight="700" fill="#FFE14D">h0Oman</text>
+
+  <!-- Reflexo no vidro -->
+  <path d="M228 203 L252 173 L268 173 L240 205 Z" fill="#FFFFFF" opacity="0.14"/>
+
+  <!-- Aro -->
+  <rect x="212" y="160" width="124" height="56" rx="13" fill="none"
+        stroke="#39FF14" stroke-width="2.5" opacity="0.75"/>
+  <rect x="212" y="160" width="124" height="56" rx="13" fill="none"
+        stroke="#5C6382" stroke-width="6" opacity="0.55"/>
+</g>
+
+<!-- ============================ PESCOCO ============================ -->
+<!-- Sem ele a cabeca flutuava sobre um trapezio, que foi o defeito mais visivel
+     da primeira versao. A divisa desce por ele e continua no peito. -->
+<path d="M158 288 Q160 342 172 366 L200 366 L200 288 Z" fill="#D6D2EA"/>
+<path d="M200 288 L200 366 L228 366 Q240 342 242 288 Z" fill="#5C6382"/>
+<!-- Sombra do queixo sobre o pescoco -->
+<path d="M158 288 Q200 322 242 288 Q200 306 158 288 Z" fill="#17092E" opacity="0.28"/>
+
+<!-- ============================ OMBROS ============================ -->
+<path d="M22 520 L54 424 Q200 364 346 424 L378 520 Z" fill="url(#moletom)"/>
+<!-- Abertura do capuz em volta do pescoco -->
+<path d="M118 392 Q200 348 282 392 Q200 424 118 392 Z" fill="url(#capuz)"/>
+<path d="M118 392 Q200 348 282 392" stroke="#FF2D95" stroke-width="5"
+      fill="none" stroke-linecap="round"/>
+<path d="M118 392 Q200 348 282 392" stroke="#FF9AE4" stroke-width="1.6"
+      fill="none" opacity="0.8"/>
+
+<!-- Cordoes do capuz, com ponteiras -->
+<path d="M176 408 Q170 448 174 476" stroke="#FF2D95" stroke-width="4"
+      fill="none" stroke-linecap="round"/>
+<path d="M226 408 Q234 446 230 470" stroke="#FF2D95" stroke-width="4"
+      fill="none" stroke-linecap="round"/>
+<rect x="169" y="474" width="11" height="16" rx="3" fill="#8B92AE"/>
+<rect x="225" y="468" width="11" height="16" rx="3" fill="#8B92AE"/>
+
+<!-- Ombro direito: placas, e a divisa seguindo para baixo -->
+<path d="M206 382 Q300 392 342 424 L362 500 L206 500 Z" fill="#241748" opacity="0.55"/>
+<line x1="200" y1="366" x2="200" y2="520" stroke="#00E5FF" stroke-width="2.5" opacity="0.5"/>
+<circle cx="306" cy="446" r="5" fill="#5C6382"/>
+<circle cx="330" cy="470" r="4" fill="#5C6382"/>
+<path d="M264 430 L340 452" stroke="#5C6382" stroke-width="2" opacity="0.7"/>
+
+<!-- Remendo de terminal, no peito esquerdo. Centralizado ele competia com a
+     costura e parecia botao de aparelho, nao remendo de moletom. -->
+<g transform="rotate(-5 128 468)">
+  <rect x="86" y="444" width="84" height="46" rx="6" fill="#170A31"
+        stroke="#39FF14" stroke-width="2.5"/>
+  <text x="100" y="478" font-family="ui-monospace, monospace" font-size="26"
+        font-weight="700" fill="#39FF14">&gt;_</text>
+</g>
+</svg>

@@ -1,6 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 
-/// Toca a fanfarra de acerto.
+/// Toca os efeitos sonoros do app.
 ///
 /// Três regras, todas do CLAUDE.md, e todas com motivo:
 ///
@@ -10,10 +10,19 @@ import 'package:audioplayers/audioplayers.dart';
 ///   com o som mudo, então desligar não tira informação nenhuma de ninguém.
 /// - **Dá para desligar.** A preferência mora no banco, junto do progresso.
 ///
-/// O arquivo é uma onda quadrada sintetizada, não um trompete gravado. Chiptune
-/// combina com um gato ciborgue de visor neon melhor que orquestra.
+/// Os arquivos são ondas quadradas sintetizadas, não instrumentos gravados.
+/// Chiptune combina com um gato ciborgue de visor neon melhor que orquestra.
 abstract interface class Sineta {
+  /// Fanfarra de quem acertou uma questão.
   Future<void> acerto();
+
+  /// Ficha caindo no fliperama, no START da tela de título.
+  ///
+  /// Divide a mesma chave de preferência da fanfarra, e não uma chave própria.
+  /// Duas chaves obrigariam o usuário a desligar som em dois lugares para ficar
+  /// em silêncio, e "desliguei o som e ainda apitou" é um defeito de produto.
+  Future<void> ficha();
+
   void dispose();
 }
 
@@ -28,7 +37,8 @@ class SinetaDeVerdade implements Sineta {
   /// uma vez por questão respondida, não por quadro.
   final Future<bool> Function() estaLigado;
 
-  static const String arquivo = 'som/acerto.wav';
+  static const String arquivoAcerto = 'som/acerto.wav';
+  static const String arquivoFicha = 'som/ficha.wav';
 
   /// Criado só no primeiro acerto, nunca antes.
   ///
@@ -68,7 +78,17 @@ class SinetaDeVerdade implements Sineta {
   }
 
   @override
-  Future<void> acerto() async {
+  Future<void> acerto() => _tocar(arquivoAcerto);
+
+  @override
+  Future<void> ficha() => _tocar(arquivoFicha);
+
+  /// Um tocador só, reaproveitado pelos dois sons.
+  ///
+  /// Não há risco de sobreposição: os dois efeitos vivem em telas diferentes e
+  /// nunca disputam a saída. Um tocador por som seria uma segunda conversa com
+  /// a plataforma de áudio em troca de nada.
+  Future<void> _tocar(String arquivo) async {
     try {
       if (!await estaLigado()) return;
       final tocador = await _preparar();
@@ -89,13 +109,21 @@ class SinetaDeVerdade implements Sineta {
 
 /// Sineta que não toca nada, e conta quantas vezes foi chamada.
 ///
-/// O contador é de instância, e não estático: contador global vazaria de um
-/// teste para o seguinte, e o teste que falhasse não seria o que tem o defeito.
+/// Os contadores são de instância, e não estáticos: contador global vazaria de
+/// um teste para o seguinte, e o teste que falhasse não seria o que tem o
+/// defeito.
+///
+/// Cada som tem seu próprio contador. Um contador só provaria que *algum* som
+/// tocou, e o teste passaria se a tela de título tocasse a fanfarra por engano.
 class SinetaMuda implements Sineta {
   int toques = 0;
+  int fichas = 0;
 
   @override
   Future<void> acerto() async => toques++;
+
+  @override
+  Future<void> ficha() async => fichas++;
 
   @override
   void dispose() {}

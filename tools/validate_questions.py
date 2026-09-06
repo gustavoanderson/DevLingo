@@ -18,6 +18,7 @@ import re
 import sys
 from collections import defaultdict
 from pathlib import Path
+from xml.etree import ElementTree
 
 try:
     from jsonschema import Draft7Validator
@@ -165,6 +166,39 @@ def find_pubspec(content_dir):
             break
         atual = atual.parent
     return None
+
+
+def check_svgs_bem_formados(content_dir, report):
+    """Garante que todo SVG do repositorio seja XML bem formado.
+
+    Isto virou regra depois de um defeito real. Um comentario da arte do mascote
+    tinha '--' no miolo, o que XML proibe. O `flutter_svg` tolerou e a arte
+    apareceu no aparelho; o `expat` do Python reprovou. Ou seja: o arquivo estava
+    quebrado e o app nao reclamava.
+
+    Tolerancia de um renderizador nao e contrato. Basta trocar de biblioteca, de
+    versao ou de plataforma para o desenho sumir sem ninguem ter mexido nele: o
+    tipo de defeito que aparece meses depois e cuja causa ninguem mais lembra.
+
+    A checagem so olha se o XML fecha. Nao tenta julgar o desenho: para isso e
+    preciso renderizar e olhar, e foi olhando a captura de tela do emulador que
+    os defeitos de arte deste arquivo foram encontrados, um por um.
+    """
+    raiz = find_pubspec(content_dir)
+    raiz = raiz.parent.parent if raiz is not None else content_dir.resolve().parent
+
+    for svg in sorted(raiz.rglob("*.svg")):
+        if "build" in svg.parts:  # copias geradas, nao fonte
+            continue
+        try:
+            ElementTree.parse(svg)
+        except ElementTree.ParseError as exc:
+            report.error(
+                str(svg.relative_to(raiz)),
+                f"SVG mal formado: {exc}. "
+                f"A causa mais comum aqui e '--' dentro de um comentario XML, "
+                f"que o flutter_svg aceita e o padrao proibe.",
+            )
 
 
 def check_pubspec_assets(content_dir, report):
@@ -496,6 +530,7 @@ def validate(paths):
             files.extend(sorted(p for p in path.rglob("*.json") if p.name != SCHEMA_FILE.name))
             if path.name == "content":
                 check_pubspec_assets(path, report)
+                check_svgs_bem_formados(path, report)
         else:
             files.append(path)
 

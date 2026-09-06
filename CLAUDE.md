@@ -195,6 +195,43 @@ Paleta e tipografia detalhadas em `docs/paleta.md`. Resumo do que mais importa:
 - As três faixas de cenário estão em `assets/cenarios/`, geradas por `tools/gerar_faixas.py`. Edite o gerador, nunca os SVGs à mão, senão as três divergem
 - O mockup navegável da tela está em `docs/mockup-tela-exercicio.html`. Abra no navegador para consultar durante a implementação
 
+### Escrever SVG que o `flutter_svg` desenha de verdade
+
+Três regras aprendidas apanhando na tela do emulador, ao fazer `tronikat-retrato.svg`. Todas custaram um ciclo de build inteiro para descobrir:
+
+1. **Volume se faz com tons chapados, não com gradiente.** Um `linearGradient` num `<path>` da meia-cabeça simplesmente não foi aplicado: a metade metálica saía branca, com a camada de baixo aparecendo. O mesmo gradiente funciona em `<polygon>`, `<rect>` e `<ellipse>`. A causa raiz não foi isolada — e o `moletom` funciona num `<path>` com curva, então "gradiente em path não funciona" seria conclusão larga demais. O que se sabe é o suficiente: **preenchimento chapado desenhou em todos os testes.** Empilhe formas chapadas para fazer o bisel e a face iluminada.
+2. **`radialGradient` não apareceu.** O visor renderizou preto. Troque por `linearGradient`.
+3. **Nada de `--` dentro de comentário XML.** O padrão proíbe, o `flutter_svg` tolera e desenha assim mesmo. Tolerância não é contrato: basta trocar de versão para o desenho sumir sem ninguém ter mexido nele. O validador agora reprova (`check_svgs_bem_formados`).
+
+E a regra que vale mais que as três: **nenhuma cor é escolhida até ser vista renderizada.** A primeira versão do retrato tinha o aço começando em `#DCDEEC`, quase o branco do pelo — no papel era "metal claro", na tela era um gato branco comum, com o conceito do personagem invisível. A ferramenta para isso é a captura de tela, não a leitura do arquivo.
+
+Quando um desenho não aparece, **sonde antes de teorizar**: pinte a forma de `#FF0000` chapado e rode. Se o vermelho aparece, o caminho está certo e o problema é o preenchimento. Isso derrubou duas hipóteses minhas em um build.
+
+---
+
+## Tela de título
+
+A primeira tela do app, no formato de fliperama: o Tr∅nikAt em close respirando, fundo synthwave e "Aperte START para iniciar" piscando. Toque em qualquer lugar toca a ficha e entra.
+
+Ela não é só enfeite: **ocupa o tempo de abrir o banco de questões e o de progresso**, que antes era uma roda de carregamento num fundo vazio. A espera não diminuiu; deixou de ser uma espera.
+
+Quatro decisões combinadas com o Gustavo, e o motivo de cada uma:
+
+- **Aparece em toda abertura**, não só na primeira. É a porta do fliperama. Quem faz isso valer é o campo `_comecou` em `main.dart`, que impede o `FutureBuilder` de voltar para ela ao reconstruir
+- **O toque nunca é ignorado.** Se a carga não terminou, a ficha toca na mesma hora e a tela passa a dizer "CARREGANDO...", entrando sozinha quando ficar pronta. Botão que não responde é lido como app travado, e o usuário toca de novo, mais forte
+- **A ficha divide a chave de som da fanfarra.** Duas chaves obrigariam a desligar som em dois lugares, e "desliguei o som e ainda apitou" é defeito de produto
+- **Respeita "reduzir animações" do Android.** Respiração e piscar param, a tela continua inteira e o START continua funcionando
+
+Detalhes de implementação com motivo:
+
+- **Um `AnimationController` só.** A respiração é o ciclo (3,6 s); o piscar é uma subdivisão dele (4 por ciclo, 900 ms). Dois controladores seriam dois relógios acordando o mesmo quadro
+- Respiração de **2%**, ancorada em `Alignment.bottomCenter`. Mais que isso vira zoom, e zoom em loop embrulha o estômago. Ancorar no centro afastaria a cabeça dos ombros, que não é respirar
+- O piscar liga e desliga **seco**, sem transição: fliperama de 32 bits não tinha canal alfa para desvanecer. Usa `Opacity`, e não `Visibility`, senão o que está em volta pularia de lugar a cada 900 ms
+- O fundo é `CustomPainter`, não SVG: **grade em fuga é geometria calculada**, e coordenadas escritas à mão não se adaptam a tela nenhuma. Ele é estático e fica dentro de um `RepaintBoundary`, senão cada quadro da respiração repintaria a grade inteira
+- **Recorte no disco do sol é obrigatório.** As fatias são retângulos da largura do sol; sem `clipPath`, no topo — onde o círculo é estreito — elas sobram para os lados e viram traços escuros soltos no céu. Isso apareceu na tela como se fossem falhas de renderização
+
+A tela recebe `pronto` e `aoIniciar` de fora justamente para ser testável sem I/O: ela não sabe o que é um banco de questões. Ver "Testes de widget não enxergam I/O real".
+
 ---
 
 ## Tela de exercício
@@ -347,7 +384,9 @@ A regra de impressão digital, que era o pendente combinado para perto da liçã
 
 ### Etapas até o app na mão do Gustavo
 
-O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **Escrever mais conteúdo não aproxima uma versão jogável** — a Etapa B aproxima. E calibrar dificuldade sem nunca ter jogado é chute: depois de resolver as 50 questões no celular, o Gustavo vai saber coisas sobre o ritmo da trilha que nenhuma revisão em JSON revela. Por isso o Python intermediário vem **depois** da Etapa B, não antes.
+Hoje são **104 questões** em 11 arquivos, e o app é jogável de ponta a ponta: título, escolha de linguagem, trilha, aula e exercício, com progresso salvo.
+
+O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo não aproxima uma versão jogável**, e calibrar dificuldade sem nunca ter jogado é chute. Foi por isso que o Python intermediário esperou a Etapa B, e é por isso que o próximo nível espera o Gustavo jogar o JavaScript.
 
 | Etapa | Entrega | Estado |
 |---|---|---|
@@ -372,12 +411,25 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 
 | **C1** | Aulas introdutórias do Tr∅nikAt | **concluída** |
 | **C2** | Trilha e escolha de linguagem | **concluída** |
+| **C3** | JavaScript iniciante, 50 questões | **concluída, e ainda não jogada pelo Gustavo** |
+| **C4** | Realce de sintaxe nos blocos de código | **concluída** |
+| **C5** | Som de acerto | **concluída** |
+| **C6** | Tela de título de fliperama, com a ficha | **concluída** |
 
 **Combinado e ainda não feito:**
 
+- **O Gustavo ainda não jogou o JavaScript.** As 50 questões foram calibradas sem ele jogar nenhuma; a dificuldade é palpite meu até ele passar por elas. É a mesma razão que fez o Python intermediário esperar
+- Fundo parallax e mascote caminhando na tela de exercício (Etapa C original)
+- Tela de revisão dirigida, usando o `custoPorTopico()` que já existe no progresso e ninguém chama ainda
+- Verificar o comportamento do som no modo silencioso, num celular de verdade
+
 ### Som de acerto
 
-`app/assets/som/acerto.wav` é uma **onda quadrada sintetizada**, não um trompete gravado — chiptune combina com um gato ciborgue de visor neon melhor que orquestra. Foi gerado por script com a biblioteca padrão do Python; para refazê-lo, sintetize de novo em vez de editar o WAV.
+Os dois WAVs são **ondas quadradas sintetizadas**, não instrumentos gravados — chiptune combina com um gato ciborgue de visor neon melhor que orquestra.
+
+**A fonte deles é `tools/gerar_sons.py`, não os arquivos.** Para mudar um efeito, mude as notas no script e rode `python3 tools/gerar_sons.py`; nunca edite o WAV. Mesma regra de `gerar_faixas.py`, e pelo mesmo motivo: arquivo gerado que passa a ser editado à mão diverge do gerador, e ninguém descobre qual dos dois está certo. O script reproduz os dois arquivos **byte a byte** — se parar de reproduzir, alguém mexeu num lado só.
+
+A ficha sai mais baixa (0,30 contra 0,32) e com ataque mais seco que a fanfarra. É deliberado: a moeda é confirmação de interface, a fanfarra é recompensa. No mesmo volume, uma achata a outra.
 
 **Só o acerto tem som.** Errar e revelar são silenciosos: som de erro é punição sonora, e revelar não é conquista. Três testes travam isso.
 
@@ -386,6 +438,11 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 **Nada de áudio pode tocar a plataforma antes do primeiro acerto.** O `AudioPlayer` é criado dentro do primeiro `acerto()`, nunca no construtor: criá-lo no construtor punha conversa com o serviço de áudio dentro do `build` de uma tela, que é onde ela não pode estar.
 
 **Pendente de verificação:** o áudio está configurado no canal de notificação, que é o que o modo silencioso do aparelho silencia. Isso **não foi verificado** — no emulador não há como confirmar por `adb` se o som saiu. Confira num celular de verdade.
+
+**Há dois sons, e uma chave só.** `acerto.wav` é a fanfarra; `ficha.wav` é a moeda da tela de título. Os dois passam pelo mesmo `estaLigado` e pelo mesmo tocador — não há por que abrir uma segunda conversa com a plataforma de áudio para telas que nunca disputam a saída. Ambos são gerados por script Python com o módulo `wave`, onda quadrada; não há gravação no repositório.
+
+`SinetaMuda` conta os dois **separadamente** (`toques` e `fichas`). Um contador só provaria que *algum* som tocou, e o teste da tela de título passaria mesmo se ela disparasse a fanfarra de acerto por engano.
+
 ### Realce de sintaxe
 
 O tokenizador vive em `app/lib/ui/realce.dart` e é **Dart puro, sem importar Flutter**: classificar código é lógica, pintar é apresentação. As cores vêm do mockup.
@@ -416,13 +473,20 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 adb shell am start -n com.devlingo.app/.MainActivity
 
 # 4. conferir de verdade, com print
-adb exec-out screencap -p > tela.png
+#    Captura NO APARELHO e depois puxa. Nao use `adb exec-out screencap -p > x.png`
+#    no PowerShell: o `>` de la e redirecionamento de TEXTO, grava BOM na frente
+#    e corrompe o PNG. O arquivo sai com tamanho plausivel e nao abre.
+adb shell screencap -p /sdcard/tela.png
+adb pull /sdcard/tela.png tela.png
 ```
 
-Duas coisas que parecem defeito e não são:
+O print é a única ferramenta que enxerga defeito visual. Cinco vezes neste repositório a suíte ficou verde escondendo algo que só apareceu na tela: a sombra de recorte invisível, os textos sem acento, o aço claro demais no retrato do mascote, o gradiente que não era aplicado e as fatias do sol vazando para fora do disco. **Verde quer dizer "passou nas checagens que existem".**
+
+Três coisas que parecem defeito e não são:
 
 - **A primeira tela fica branca por muito tempo.** É a VM do Dart aquecendo num build de debug. Em relançamento são uns 15 segundos; **numa instalação limpa já levou 57**, com o `ProfileInstaller` rodando junto. Um print tirado cedo demais mostra tela em branco e faz parecer que o app quebrou. Antes de investigar, confira `adb logcat | grep Displayed`: ele imprime `Displayed com.devlingo.app/.MainActivity: +56s887ms`, e `dumpsys activity activities` mostra se o `mResumedActivity` já é o app.
 - **O Impeller registra `Could not link pipeline program` no logcat.** É o motor gráfico novo falhando em compilar shaders na GPU emulada. O app renderiza normalmente mesmo assim. Ignore, a menos que a tela realmente não apareça.
+- **O Impeller também repete `Attempted to add an invalid command to the render pass`** a cada quadro na tela de título. A tela desenha corretamente, inclusive as sombras do texto e os degradês do fundo. É ruído de validação da GPU emulada. **Ainda não foi confirmado num aparelho de verdade** — se aparecer lá, ou se algo sumir da tela, o primeiro suspeito é `Shadow(blurRadius:)` no texto piscante.
 
 Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram o parser do PowerShell 5.1. Use o Bash para esses.
 
