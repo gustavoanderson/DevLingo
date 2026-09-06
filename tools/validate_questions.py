@@ -168,6 +168,108 @@ def find_pubspec(content_dir):
     return None
 
 
+# Um nome recebendo valor: `x =`, `const x =`, `let x =`. Fica de fora `==`,
+# `<=`, `>=` e `!=`, que sao comparacao e nao atribuicao.
+ATRIBUICAO_RE = re.compile(r"^\s*(?:const |let |var )?([A-Za-z_]\w*)\s*(?<![=!<>])=(?!=)")
+LACO_RE = re.compile(r"\b(for|while)\b")
+DEFINE_FUNCAO_RE = re.compile(r"\b(def|function)\b|=>")
+# Acumulador: `total += x` ou `total = total + x`. E o sinal de estado que muda
+# ao longo das voltas, que e o que separa um laco de exemplo de um laco de
+# verdade.
+ACUMULADOR_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*(?:\+=|-=|\*=|=\s*\1\b)")
+
+# Quantos sinais o nivel iniciante tolera. Os numeros vieram de MEDIR o banco,
+# nao de opinar: nenhuma das 76 questoes com codigo usa 3 nomes, e apenas 3
+# reatribuem algum. Ver "O que separa um nivel do outro" no CLAUDE.md.
+TETO_INICIANTE = {"nomes": 2, "reatribuidos": 1}
+
+
+def sinais_do_codigo(texto):
+    """Conta o que aproxima 'passos de raciocinio' num trecho de codigo.
+
+    Deliberadamente grosseiro: le com expressao regular, nao com interpretador.
+    Serve para levantar suspeita, nao para julgar -- e por isso o resultado sai
+    como aviso.
+    """
+    linhas = texto.splitlines()
+    contagem = {}
+    for linha in linhas:
+        achou = ATRIBUICAO_RE.match(linha)
+        if achou:
+            nome = achou.group(1)
+            contagem[nome] = contagem.get(nome, 0) + 1
+
+    tem_laco = bool(LACO_RE.search(texto))
+    acumula = tem_laco and any(ACUMULADOR_RE.match(l) for l in linhas)
+
+    return {
+        "linhas": len(linhas),
+        "nomes": len(contagem),
+        "reatribuidos": sum(1 for c in contagem.values() if c > 1),
+        "laco": tem_laco,
+        "acumulador": acumula,
+        "funcao": bool(DEFINE_FUNCAO_RE.search(texto)),
+    }
+
+
+def check_nivel_coerente(question, level, filename, report):
+    """Avisa quando os sinais do codigo destoam do nivel declarado.
+
+    **Aviso, nunca erro.** A medicao e aproximada e falso positivo e tao grave
+    quanto defeito nao pego: uma regra que reprova conteudo legitimo ensina a
+    contornar o validador em vez de confiar nele. Isso ja aconteceu duas vezes
+    neste projeto, com a regra de alternativas repetidas e com a de impressao
+    digital, e nas duas a saida certa foi rebaixar para aviso.
+
+    Numero de LINHAS nao entra aqui. As duas questoes mais longas do iniciante
+    tem 9 e 8 linhas e sao `if/elif/else` de varios ramos: um passo de
+    raciocinio so. Tamanho mede outra coisa.
+    """
+    code = question.get("code")
+    if not code or not code.get("content"):
+        return
+
+    s = sinais_do_codigo(code["content"])
+    onde = f"{filename} -> {question.get('id', '?')}"
+
+    if level == "beginner":
+        excessos = []
+        if s["nomes"] > TETO_INICIANTE["nomes"]:
+            excessos.append(f"{s['nomes']} nomes (o banco iniciante nunca passa de {TETO_INICIANTE['nomes']})")
+        if s["reatribuidos"] > TETO_INICIANTE["reatribuidos"]:
+            excessos.append(f"{s['reatribuidos']} nomes reatribuidos")
+        if s["acumulador"]:
+            excessos.append("laco com acumulador")
+        if excessos:
+            report.warn(
+                onde,
+                "sinais de nivel intermediario numa questao iniciante: "
+                + "; ".join(excessos)
+                + ". Confira se a questao cobra combinar dois fatos ou rastrear "
+                "estado que muda; se cobrar, ela pertence ao intermediario.",
+            )
+        return
+
+    if level in ("intermediate", "advanced"):
+        # O caminho contrario: questao declarada como avancada que nao tem
+        # sinal nenhum de composicao pode ser uma iniciante com outro rotulo,
+        # que e exatamente o risco que o criterio existe para evitar.
+        composta = (
+            s["nomes"] > TETO_INICIANTE["nomes"]
+            or s["reatribuidos"] > TETO_INICIANTE["reatribuidos"]
+            or s["acumulador"]
+            or s["funcao"]
+        )
+        if not composta:
+            report.warn(
+                onde,
+                f"questao de nivel '{level}' sem nenhum sinal de composicao no "
+                "codigo. Pode ser legitima -- no avancado o que conta e o "
+                "comportamento nao obvio, nao o tamanho -- mas confira se nao "
+                "e uma questao iniciante com outro rotulo.",
+            )
+
+
 def check_gerados_em_dia(content_dir, report):
     """Garante que os arquivos de `gerar_faixas.py` batem com o gerador.
 
@@ -620,6 +722,7 @@ def validate(paths):
                 seen_ids[qid] = filename
 
             check_question_rules(question, filename, report)
+            check_nivel_coerente(question, data.get("level", ""), filename, report)
 
             if qid:
                 for chave in question_fingerprints(question, data.get("language", "")):

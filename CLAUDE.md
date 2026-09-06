@@ -642,15 +642,58 @@ Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram
 
 Fica **fora** da Etapa B: Firebase, fundo animado, escolha de linguagem, telas de trilha. Uma linguagem, uma trilha, direto ao exercício.
 
-**Antes da Etapa E**, decidir **o que separa um nível do outro**. No iniciante o critério foi implícito: uma questão por conceito, sem composição. Proposta a validar com o Gustavo:
-
-| Nível | Critério |
-|---|---|
-| Iniciante | um conceito por questão, código de até 3 linhas, sem composição |
-| Intermediário | dois conceitos combinados, até 8 linhas, exige rastrear estado |
-| Avançado | comportamento não óbvio, casos de borda, o porquê além do quê |
+## O que separa um nível do outro
 
 Sem isso escrito, o intermediário vira "iniciante com palavras difíceis".
+
+O critério abaixo **não é opinião**: ele foi extraído medindo as 100 questões jogáveis do iniciante. A proposta anterior, escrita de cabeça, dizia *"iniciante: código de até 3 linhas"* — e reprovava 17 questões legítimas do próprio banco. Medir antes de legislar evitou uma regra que já nasceria brigando com o conteúdo.
+
+### O achado: tamanho de código não mede dificuldade
+
+As duas questões **mais longas** do iniciante são `python-beg-0306` (9 linhas) e `javascript-beg-0205` (8 linhas). As duas são o mesmo padrão:
+
+```python
+nota = 7
+if nota >= 9:
+    print("Excelente")
+elif nota >= 7:
+    print("Bom")
+...
+```
+
+Nove linhas, e **um único passo de raciocínio**: ler o valor, descer até o primeiro ramo verdadeiro. Sete questões do iniciante têm 5 linhas ou mais e nenhum estado que mude.
+
+O que cobra passos de verdade é **estado que muda** — um nome reatribuído, um acumulador dentro de laço. É nisso que o critério se apoia.
+
+### O que o iniciante é, medido
+
+| Sinal | O banco atual |
+|---|---|
+| Nomes distintos no código | 0 em 31 questões, 1 em 39, 2 em 6. **Nenhuma tem 3** |
+| Nomes reatribuídos | apenas 3 de 76, e as 3 são sobre variáveis, escopo ou laços |
+| Laços | 8 de 76, todas na lição de laços, **nenhuma com acumulador** |
+| Linhas de código | mediana 2, máximo 9 — não separa nada |
+| Formato | 60% múltipla escolha, 20% escrita livre, 20% lacuna |
+
+### O critério
+
+| Nível | O que a resposta exige | Sinais verificáveis |
+|---|---|---|
+| **Iniciante** | **um fato, aplicado direto.** Você sabe ou não sabe o que o operador faz | no máximo 2 nomes; no máximo 1 reatribuição; laço só quando o laço é o tema, e sem acumulador |
+| **Intermediário** | **dois fatos combinados, ou estado que muda ao longo do código** | 3 ou mais nomes, ou 2 ou mais reatribuições, ou laço com acumulador, ou função definida cujo retorno é usado adiante |
+| **Avançado** | **o caso em que a intuição erra.** A pessoa que "já sabe" responde errado | não tem teto de tamanho; o que define é a surpresa, não a extensão |
+
+Regras de conteúdo que acompanham:
+
+- **A explicação muda de foco a cada nível.** Iniciante ensina *o quê*; intermediário ensina *como combinar*; avançado ensina *por quê*
+- **Dependência entre questões cresce.** Iniciante não pode depender de ter visto outra questão. Intermediário pode compor conceitos já ensinados na mesma trilha. Avançado pode assumir a trilha inteira
+- **Número de linhas não entra no critério.** A evidência acima mostra que ele mede outra coisa
+
+### O validador avisa, mas não reprova
+
+`check_nivel_coerente` compara os sinais medidos com o nível declarado e emite **`[AVISO]`**, nunca `[ERRO]`.
+
+Isso é deliberado, e segue a regra de falso positivo já registrada: a medição é aproximada — ela lê o código com expressão regular, não com um interpretador — e reprovar conteúdo legítimo ensina a contornar o validador em vez de confiar nele. O aviso pede uma segunda olhada; a decisão continua de quem escreve.
 
 O banco aprova hoje com **quatro avisos, e os quatro são intencionais**. Todos são distratores que diferem apenas na caixa, num idioma em que a caixa é justamente o conteúdo da questão:
 
@@ -661,4 +704,14 @@ O banco aprova hoje com **quatro avisos, e os quatro são intencionais**. Todos 
 | `python-beg-0403` | `OI` ao lado de `oi` | `OI` é o que apareceria se strings fossem mutáveis |
 | `javascript-beg-0401` | `ada`, `Ada` ao lado de `ADA` | O distrator natural de `toUpperCase` é o texto intacto |
 
-Se algum desses avisos sumir, alguém mexeu na questão. Se aparecer um quarto, é para conferir antes de aceitar.
+E um quinto, de outra natureza:
+
+| Questão | Aviso | Por que fica |
+|---|---|---|
+| `python-beg-0504` | laço com acumulador numa questão iniciante | É o **único acumulador do banco**, e é o motivo de laços existirem. Uma lição de laços sem `total = total + n` ensina laços pela metade |
+
+Esse aviso é **legítimo**, e não falso positivo: a questão realmente exige rastrear `total` mudando a cada volta (0 → 1 → 3 → 6), que é o critério do intermediário. Ela fica no iniciante como **ponte** para o nível seguinte — a última coisa que a trilha mostra antes de o próximo nível assumir. Se o intermediário de Python for escrito e retomar acumuladores do zero, vale reconsiderar.
+
+A tentação aqui era enfraquecer a regra para o caso caber — tolerar acumulador quando o tópico é `lacos`. Foi recusado: a regra está certa, e é a exceção que precisa ser justificada, não o contrário.
+
+Se algum desses avisos sumir, alguém mexeu na questão. Se aparecer um sexto, é para conferir antes de aceitar.
