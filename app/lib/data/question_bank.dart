@@ -59,8 +59,8 @@ class QuestionBank {
 
     if (caminhos.isEmpty) {
       throw StateError(
-        'Nenhuma licao encontrada em $_prefixo. '
-        'Confira se as pastas de linguagem estao declaradas no pubspec.yaml.',
+        'Nenhuma lição encontrada em $_prefixo. '
+        'Confira se as pastas de linguagem estão declaradas no pubspec.yaml.',
       );
     }
 
@@ -83,7 +83,7 @@ class QuestionBank {
         final anterior = idsVistos[questao.id];
         if (anterior != null) {
           throw StateError(
-            'id de questao repetido: "${questao.id}" aparece em $anterior e em $caminho.',
+            'id de questão repetido: "${questao.id}" aparece em $anterior e em $caminho.',
           );
         }
         idsVistos[questao.id] = caminho;

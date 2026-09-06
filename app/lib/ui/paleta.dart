@@ -22,6 +22,24 @@ abstract final class Paleta {
 
   // --- acentos com funcao definida ---
   static const acerto = Color(0xFFFF2D95);
+
+  /// Magenta rebaixado, para preencher sem competir com o texto por cima.
+  static const acertoTenue = Color(0x33FF2D95);
+
+  // --- retorno da resposta ---
+  //
+  // Verde para certo, vermelho para errado. Os dois entram apenas em **rotulo,
+  // borda e preenchimento**, nunca no corpo do texto: verde saturado sobre
+  // fundo escuro reprova em contraste quando usado em texto longo, que e a
+  // regra registrada em docs/paleta.md. A explicacao continua em [texto].
+
+  /// Verde do visor, reaproveitado como sinal de acerto.
+  static const certo = visor;
+  static const certoTenue = Color(0x3339FF14);
+
+  /// Vermelho suave, o mesmo ja usado no pontinho da aba da IDE.
+  static const erro = Color(0xFFFF5F57);
+  static const erroTenue = Color(0x33FF5F57);
   static const destaque = Color(0xFF00E5FF);
   static const visor = Color(0xFF39FF14);
   static const telemetria = Color(0xFFFFE14D);

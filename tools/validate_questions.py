@@ -311,6 +311,47 @@ def check_question_rules(question, filename, report):
             if len(answer) >= 4 and answer in hint:
                 report.error(where, "a dica contem a resposta correta literalmente.")
 
+        # --- 'why' e opcional, mas nao pode ficar pela metade ---
+        # O campo aparece quando o aluno escolhe aquela alternativa. Se so
+        # algumas tiverem, o aluno recebe explicacao numa tentativa e silencio
+        # na seguinte, sem entender por que. Ou a questao inteira tem, ou
+        # nenhuma tem e o app cai na linha neutra.
+        erradas = [o for o in options if not o.get("correct")]
+        com_why = [o for o in erradas if o.get("why")]
+        if com_why and len(com_why) != len(erradas):
+            faltando = sorted(o["id"] for o in erradas if not o.get("why"))
+            report.error(
+                where,
+                f"{len(com_why)} de {len(erradas)} alternativas erradas tem 'why'. "
+                f"Ou todas tem, ou nenhuma tem. Faltam: {faltando}.",
+            )
+
+        for correct in corrects:
+            if correct.get("why"):
+                report.error(
+                    where,
+                    f"a alternativa correta '{correct['id']}' tem 'why'. Esse campo "
+                    f"explica por que uma alternativa esta ERRADA; o papel da certa "
+                    f"cabe a explanation.",
+                )
+
+        # --- 'why' nao pode entregar qual e a certa ---
+        # Se entregasse, a eliminacao progressiva perderia o sentido: bastaria
+        # errar uma vez para saber a resposta.
+        for errada in erradas:
+            texto_why = (errada.get("why") or "").lower()
+            if not texto_why:
+                continue
+            for correct in corrects:
+                answer = correct.get("text", "").strip().lower()
+                if len(answer) >= 4 and answer in texto_why:
+                    report.error(
+                        where,
+                        f"o 'why' da alternativa '{errada['id']}' contem a resposta "
+                        f"correta literalmente, e entregaria o jogo na primeira "
+                        f"tentativa errada.",
+                    )
+
     elif answer_type in ("fillBlank", "freeWrite"):
         accepted = question.get("accepted", [])
         rules = question.get("normalize")

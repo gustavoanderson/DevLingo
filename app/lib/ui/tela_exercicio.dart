@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../answer/sessao_questao.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import 'bloco_codigo.dart';
@@ -7,31 +9,23 @@ import 'paleta.dart';
 
 /// A tela de exercicio.
 ///
-/// Layout decidido em `docs/mockup-tela-exercicio.html` e no CLAUDE.md:
+/// - **Fixo no topo:** sair, barra de progresso da licao, contador
+/// - **Rola no meio:** chip de topico, enunciado, codigo, dica, alternativas
+/// - **Fixo no rodape:** painel de retorno, regua de simbolos e barra de acoes
 ///
-/// - **Fixo no topo:** botao sair, barra de progresso da licao, contador
-/// - **Rola no meio:** chip de topico, enunciado, bloco de codigo, alternativas
-/// - **Fixo no rodape:** barra de acoes com Dica e Verificar
+/// O mockup desenha a barra de acoes rolando junto porque e HTML estatico e nao
+/// consegue demonstrar a divisao. O CLAUDE.md e a autoridade: a barra fica fixa.
 ///
-/// O mockup e HTML estatico e desenha a barra de acoes rolando junto com o
-/// miolo, porque nao consegue demonstrar a divisao. O CLAUDE.md e a autoridade
-/// aqui: a barra fica fixa.
-///
-/// Ainda sem interacao. Responder, embaralhar e a dica entram no passo seguinte.
+/// A logica de tentativas, eliminacao e revelacao mora em [SessaoQuestao], fora
+/// daqui, para ser testavel sem montar tela.
 class TelaExercicio extends StatefulWidget {
-  const TelaExercicio({
-    super.key,
-    required this.licao,
-    required this.indice,
-  });
+  const TelaExercicio({super.key, required this.licao, this.indiceInicial = 0});
 
   final Lesson licao;
+  final int indiceInicial;
 
-  /// Posicao da questao dentro da licao, contando de zero.
-  final int indice;
-
-  /// Permite ao teste conferir a sombra sem depender de detalhe de pintura.
   static const Key chaveSombra = Key('sombra-de-recorte');
+  static const Key chaveFimDaLicao = Key('fim-da-licao');
 
   @override
   State<TelaExercicio> createState() => _TelaExercicioState();
@@ -39,17 +33,24 @@ class TelaExercicio extends StatefulWidget {
 
 class _TelaExercicioState extends State<TelaExercicio> {
   final ScrollController _rolagem = ScrollController();
+  final TextEditingController _texto = TextEditingController();
+  final FocusNode _foco = FocusNode();
 
-  /// Ha conteudo abaixo do que esta visivel.
-  ///
-  /// Sem essa sombra o usuario nao descobre a quinta alternativa: a tela parece
-  /// terminar onde o recorte termina.
+  late int _indice = widget.indiceInicial;
+  late SessaoQuestao _sessao = SessaoQuestao(_questaoAtual);
+
   bool _temMaisAbaixo = false;
+  bool _licaoConcluida = false;
+
+  Question get _questaoAtual => widget.licao.questions[_indice];
 
   @override
   void initState() {
     super.initState();
     _rolagem.addListener(_conferirRecorte);
+    // Sem isto o botao Verificar nao sairia do estado desabilitado ao digitar:
+    // o texto muda dentro do controlador, sem passar por setState.
+    _texto.addListener(_aoDigitar);
     WidgetsBinding.instance.addPostFrameCallback((_) => _conferirRecorte());
   }
 
@@ -57,8 +58,13 @@ class _TelaExercicioState extends State<TelaExercicio> {
   void dispose() {
     _rolagem.removeListener(_conferirRecorte);
     _rolagem.dispose();
+    _texto.removeListener(_aoDigitar);
+    _texto.dispose();
+    _foco.dispose();
     super.dispose();
   }
+
+  void _aoDigitar() => setState(() {});
 
   void _conferirRecorte() {
     if (!_rolagem.hasClients) return;
@@ -69,11 +75,52 @@ class _TelaExercicioState extends State<TelaExercicio> {
     }
   }
 
-  Question get _questao => widget.licao.questions[widget.indice];
+  void _verificar() {
+    setState(() {
+      if (_sessao.ehEscrita) {
+        _sessao.verificarEscrita(_texto.text);
+      } else {
+        _sessao.verificar();
+      }
+    });
+    if (_sessao.terminou) _foco.unfocus();
+  }
+
+  void _continuar() {
+    _foco.unfocus();
+    if (_indice + 1 >= widget.licao.questions.length) {
+      setState(() => _licaoConcluida = true);
+      return;
+    }
+    setState(() {
+      _indice++;
+      _sessao = SessaoQuestao(_questaoAtual);
+      _texto.clear();
+      _temMaisAbaixo = false;
+    });
+    if (_rolagem.hasClients) _rolagem.jumpTo(0);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _conferirRecorte());
+  }
+
+  void _inserirSimbolo(String simbolo) {
+    final selecao = _texto.selection;
+    final base = _texto.text;
+    final inicio = selecao.isValid ? selecao.start : base.length;
+    final fim = selecao.isValid ? selecao.end : base.length;
+    final novo = base.replaceRange(inicio, fim, simbolo);
+    _texto.value = TextEditingValue(
+      text: novo,
+      selection: TextSelection.collapsed(offset: inicio + simbolo.length),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final questao = _questao;
+    if (_licaoConcluida) {
+      return _FimDaLicao(licao: widget.licao);
+    }
+
+    final questao = _questaoAtual;
     final total = widget.licao.questions.length;
 
     return Scaffold(
@@ -81,12 +128,10 @@ class _TelaExercicioState extends State<TelaExercicio> {
       body: SafeArea(
         child: Column(
           children: [
-            _Topo(atual: widget.indice + 1, total: total),
+            _Topo(atual: _indice + 1, total: total),
             Expanded(
               child: Stack(
                 children: [
-                  // NotificationListener pega a metrica no primeiro layout, que
-                  // e quando o conteudo ainda nem foi medido pelo controlador.
                   NotificationListener<ScrollMetricsNotification>(
                     onNotification: (_) {
                       WidgetsBinding.instance.addPostFrameCallback(
@@ -112,9 +157,28 @@ class _TelaExercicioState extends State<TelaExercicio> {
                           const SizedBox(height: 14),
                           BlocoCodigo(code: questao.code!),
                         ],
+                        if (_sessao.dicaAberta) ...[
+                          const SizedBox(height: 14),
+                          _PainelDica(texto: questao.hint),
+                        ],
                         const SizedBox(height: 16),
-                        if (questao.options != null)
-                          _Alternativas(opcoes: questao.options!),
+                        if (_sessao.ehEscrita)
+                          _CampoResposta(
+                            controlador: _texto,
+                            foco: _foco,
+                            habilitado: !_sessao.terminou,
+                            aoEnviar: _verificar,
+                          )
+                        else
+                          _Alternativas(
+                            sessao: _sessao,
+                            aoTocar: (opcao) =>
+                                setState(() => _sessao.selecionar(opcao)),
+                          ),
+                        if (_sessao.respostaRevelada != null) ...[
+                          const SizedBox(height: 12),
+                          _RespostaRevelada(texto: _sessao.respostaRevelada!),
+                        ],
                       ],
                     ),
                   ),
@@ -130,13 +194,24 @@ class _TelaExercicioState extends State<TelaExercicio> {
                 ],
               ),
             ),
-            const _BarraAcoes(),
+            _PainelRetorno(sessao: _sessao),
+            if (_sessao.ehEscrita && !_sessao.terminou)
+              _ReguaDeSimbolos(aoTocar: _inserirSimbolo),
+            _BarraAcoes(
+              sessao: _sessao,
+              temTexto: _texto.text.trim().isNotEmpty,
+              aoAbrirDica: () => setState(_sessao.abrirDica),
+              aoVerificar: _verificar,
+              aoContinuar: _continuar,
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------- topo
 
 class _Topo extends StatelessWidget {
   const _Topo({required this.atual, required this.total});
@@ -193,13 +268,8 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final partes = [
-      licao.language,
-      licao.level.rotulo.toLowerCase(),
-      questao.topic,
-    ];
     return Text(
-      partes.join(' · '),
+      [licao.language, licao.level.rotulo.toLowerCase(), questao.topic].join(' · '),
       style: const TextStyle(
         color: Paleta.destaque,
         fontFamily: fonteMono,
@@ -209,34 +279,26 @@ class _Chip extends StatelessWidget {
   }
 }
 
-class _Alternativas extends StatelessWidget {
-  const _Alternativas({required this.opcoes});
+// ------------------------------------------------------- alternativas
 
-  final List<Option> opcoes;
+class _Alternativas extends StatelessWidget {
+  const _Alternativas({required this.sessao, required this.aoTocar});
+
+  final SessaoQuestao sessao;
+  final void Function(Option) aoTocar;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final opcao in opcoes)
+        for (final opcao in sessao.alternativas)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Paleta.linha),
-                borderRadius: BorderRadius.circular(Escala.raio),
-              ),
-              child: Text(
-                opcao.text,
-                style: const TextStyle(
-                  color: Paleta.texto,
-                  fontFamily: fonteMono,
-                  fontSize: Escala.alternativa,
-                  height: 1.35,
-                ),
-              ),
+            child: _Alternativa(
+              opcao: opcao,
+              sessao: sessao,
+              aoTocar: () => aoTocar(opcao),
             ),
           ),
       ],
@@ -244,7 +306,338 @@ class _Alternativas extends StatelessWidget {
   }
 }
 
-/// Degrade no limite do miolo, avisando que ha conteudo cortado abaixo.
+class _Alternativa extends StatelessWidget {
+  const _Alternativa({
+    required this.opcao,
+    required this.sessao,
+    required this.aoTocar,
+  });
+
+  final Option opcao;
+  final SessaoQuestao sessao;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final eliminada = sessao.estaEliminada(opcao);
+    final selecionada = sessao.selecionada?.id == opcao.id;
+    final revelarCerta = sessao.terminou && opcao.correct;
+
+    final (Color borda, Color? fundo) = switch (true) {
+      _ when revelarCerta => (Paleta.certo, Paleta.certoTenue),
+      _ when eliminada => (Paleta.erro, Paleta.erroTenue),
+      _ when selecionada => (Paleta.destaque, Paleta.altSelecionadaFundo),
+      _ => (Paleta.linha, null),
+    };
+
+    final conteudo = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+      decoration: BoxDecoration(
+        color: fundo,
+        border: Border.all(
+          color: borda,
+          width: revelarCerta || selecionada ? 2 : 1,
+        ),
+        borderRadius: BorderRadius.circular(Escala.raio),
+      ),
+      child: Text(
+        opcao.text,
+        style: TextStyle(
+          color: Paleta.texto,
+          fontFamily: fonteMono,
+          fontSize: Escala.alternativa,
+          height: 1.35,
+          // Riscar deixa claro que a alternativa saiu da lista, sem apaga-la:
+          // ver o que ja foi descartado faz parte do raciocinio por exclusao.
+          decoration: eliminada ? TextDecoration.lineThrough : null,
+          decorationColor: Paleta.erro,
+        ),
+      ),
+    );
+
+    if (eliminada) {
+      return Opacity(opacity: 0.38, child: conteudo);
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: sessao.terminou ? null : aoTocar,
+      child: conteudo,
+    );
+  }
+}
+
+// -------------------------------------------------- resposta escrita
+
+class _CampoResposta extends StatelessWidget {
+  const _CampoResposta({
+    required this.controlador,
+    required this.foco,
+    required this.habilitado,
+    required this.aoEnviar,
+  });
+
+  final TextEditingController controlador;
+  final FocusNode foco;
+  final bool habilitado;
+  final VoidCallback aoEnviar;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controlador,
+      focusNode: foco,
+      enabled: habilitado,
+      autocorrect: false,
+      enableSuggestions: false,
+      // Codigo nao se escreve com a primeira letra maiuscula automatica.
+      textCapitalization: TextCapitalization.none,
+      inputFormatters: [FilteringTextInputFormatter.singleLineFormatter],
+      onSubmitted: (_) => aoEnviar(),
+      style: const TextStyle(
+        color: Paleta.texto,
+        fontFamily: fonteMono,
+        fontSize: Escala.alternativa,
+      ),
+      cursorColor: Paleta.destaque,
+      decoration: InputDecoration(
+        hintText: 'Escreva aqui',
+        hintStyle: const TextStyle(
+          color: Paleta.suave,
+          fontFamily: fonteMono,
+          fontSize: Escala.alternativa,
+        ),
+        filled: true,
+        fillColor: Paleta.ideFundo,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Escala.raio),
+          borderSide: const BorderSide(color: Paleta.linha),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Escala.raio),
+          borderSide: const BorderSide(color: Paleta.destaque, width: 2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Escala.raio),
+          borderSide: const BorderSide(color: Paleta.linha),
+        ),
+      ),
+    );
+  }
+}
+
+/// Regua de simbolos acima do teclado.
+///
+/// Parenteses, colchetes, dois pontos, asterisco e igual sao os caracteres que
+/// mais aparecem no codigo das questoes e os mais escondidos no teclado do
+/// celular, atras de troca de pagina.
+class _ReguaDeSimbolos extends StatelessWidget {
+  const _ReguaDeSimbolos({required this.aoTocar});
+
+  final void Function(String) aoTocar;
+
+  static const List<String> simbolos = ['(', ')', '[', ']', ':', '*', '='];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Row(
+        children: [
+          for (final simbolo in simbolos)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => aoTocar(simbolo),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    decoration: BoxDecoration(
+                      color: Paleta.ideAba,
+                      border: Border.all(color: Paleta.linha),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      simbolo,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Paleta.texto,
+                        fontFamily: fonteMono,
+                        fontSize: Escala.alternativa,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RespostaRevelada extends StatelessWidget {
+  const _RespostaRevelada({required this.texto});
+
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+      decoration: BoxDecoration(
+        color: Paleta.certoTenue,
+        border: Border.all(color: Paleta.certo, width: 2),
+        borderRadius: BorderRadius.circular(Escala.raio),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'A RESPOSTA ERA',
+            style: TextStyle(
+              color: Paleta.certo,
+              fontFamily: fonteMono,
+              fontSize: 11,
+              letterSpacing: 1.6,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            texto,
+            style: const TextStyle(
+              color: Paleta.texto,
+              fontFamily: fonteMono,
+              fontSize: Escala.alternativa,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------------ paineis
+
+class _PainelDica extends StatelessWidget {
+  const _PainelDica({required this.texto});
+
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: Paleta.telemetria, width: 3)),
+        color: Paleta.superficie,
+      ),
+      child: Text(
+        texto,
+        style: const TextStyle(
+          color: Paleta.texto,
+          fontSize: Escala.alternativa,
+          height: 1.45,
+        ),
+      ),
+    );
+  }
+}
+
+/// Painel fixo acima da barra de acoes, com o retorno da tentativa.
+///
+/// Fica fixo porque e o pagamento do exercicio: a explicacao nao pode depender
+/// de o aluno rolar a tela para descobrir que ela existe.
+class _PainelRetorno extends StatelessWidget {
+  const _PainelRetorno({required this.sessao});
+
+  final SessaoQuestao sessao;
+
+  static const Key chaveAcerto = Key('retorno-acerto');
+  static const Key chaveErro = Key('retorno-erro');
+  static const Key chaveRevelado = Key('retorno-revelado');
+
+  @override
+  Widget build(BuildContext context) {
+    final explicacao = sessao.explicacao;
+    final recado = sessao.recado;
+
+    if (explicacao == null && recado == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Verde para certo, vermelho para errado, so em rotulo e borda. O corpo da
+    // explicacao continua em Paleta.texto: verde saturado em texto longo sobre
+    // fundo escuro reprova em contraste, e essa regra nao se negocia.
+    //
+    // O vermelho pinta a cor, nao o tom: o titulo continua sendo "AINDA NÃO", e
+    // ao revelar continua "VAMOS JUNTOS". A mecanica nao pune, e a escrita
+    // acompanha isso mesmo com a cor de alerta.
+    final cor = switch (sessao.fase) {
+      FaseResposta.acertou => Paleta.certo,
+      FaseResposta.revelado => Paleta.certo,
+      FaseResposta.respondendo => Paleta.erro,
+    };
+    final titulo = switch (sessao.fase) {
+      FaseResposta.acertou => 'CERTO',
+      FaseResposta.revelado => 'VAMOS JUNTOS',
+      FaseResposta.respondendo => 'AINDA NÃO',
+    };
+    final chave = switch (sessao.fase) {
+      FaseResposta.acertou => chaveAcerto,
+      FaseResposta.revelado => chaveRevelado,
+      FaseResposta.respondendo => chaveErro,
+    };
+
+    return Container(
+      key: chave,
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+      decoration: BoxDecoration(
+        color: Paleta.superficie,
+        border: Border(left: BorderSide(color: cor, width: 3)),
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(Escala.raio),
+          bottomRight: Radius.circular(Escala.raio),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            titulo,
+            style: TextStyle(
+              color: cor,
+              fontFamily: fonteMono,
+              fontSize: 11,
+              letterSpacing: 1.6,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 168),
+            child: SingleChildScrollView(
+              child: Text(
+                explicacao ?? recado!,
+                style: const TextStyle(
+                  color: Paleta.texto,
+                  fontSize: Escala.alternativa,
+                  height: 1.45,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SombraDeRecorte extends StatelessWidget {
   const _SombraDeRecorte({super.key});
 
@@ -253,7 +646,7 @@ class _SombraDeRecorte extends StatelessWidget {
     // O degrade termina num tom mais fundo que o fundo da tela. Terminar na
     // propria cor do fundo deixaria a sombra invisivel: ela so escurece o que
     // estiver por baixo, e no limite do miolo costuma haver so a borda fina de
-    // um cartao. Com o tom mais escuro, o degrade se ve mesmo sobre area vazia.
+    // um cartao.
     return Container(
       height: 44,
       decoration: BoxDecoration(
@@ -272,52 +665,151 @@ class _SombraDeRecorte extends StatelessWidget {
   }
 }
 
+// ------------------------------------------------------ barra de acoes
+
 class _BarraAcoes extends StatelessWidget {
-  const _BarraAcoes();
+  const _BarraAcoes({
+    required this.sessao,
+    required this.temTexto,
+    required this.aoAbrirDica,
+    required this.aoVerificar,
+    required this.aoContinuar,
+  });
+
+  final SessaoQuestao sessao;
+  final bool temTexto;
+  final VoidCallback aoAbrirDica;
+  final VoidCallback aoVerificar;
+  final VoidCallback aoContinuar;
+
+  static const Key chaveVerificar = Key('acao-verificar');
+  static const Key chaveContinuar = Key('acao-continuar');
+  static const Key chaveDica = Key('acao-dica');
 
   @override
   Widget build(BuildContext context) {
+    final terminou = sessao.terminou;
+
+    // Verificar so habilita quando ha o que verificar: alternativa marcada, ou
+    // texto digitado.
+    final podeVerificar = sessao.ehEscrita ? temTexto : sessao.selecionada != null;
+    final habilitado = terminou || podeVerificar;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
       child: Row(
         children: [
           // Dica e acao secundaria: contornada, amarela. Se tivesse o mesmo peso
           // do Verificar, viraria o caminho de menor resistencia.
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-            decoration: BoxDecoration(
-              border: Border.all(color: Paleta.telemetria),
-              borderRadius: BorderRadius.circular(Escala.raio),
-            ),
-            child: const Text(
-              'Dica',
-              style: TextStyle(
-                color: Paleta.telemetria,
-                fontSize: Escala.dica,
+          if (!terminou)
+            GestureDetector(
+              key: chaveDica,
+              behavior: HitTestBehavior.opaque,
+              onTap: sessao.dicaAberta ? null : aoAbrirDica,
+              child: Opacity(
+                opacity: sessao.dicaAberta ? 0.4 : 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 13,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Paleta.telemetria),
+                    borderRadius: BorderRadius.circular(Escala.raio),
+                  ),
+                  child: const Text(
+                    'Dica',
+                    style: TextStyle(
+                      color: Paleta.telemetria,
+                      fontSize: Escala.dica,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          // Verificar e a unica acao primaria: preenchida, magenta.
+          if (!terminou) const SizedBox(width: 10),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: Paleta.acerto,
-                borderRadius: BorderRadius.circular(Escala.raio),
-              ),
-              child: const Text(
-                'Verificar',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Paleta.sobreAcerto,
-                  fontSize: Escala.verificar,
-                  fontWeight: FontWeight.w600,
+            child: GestureDetector(
+              key: terminou ? chaveContinuar : chaveVerificar,
+              behavior: HitTestBehavior.opaque,
+              onTap: habilitado ? (terminou ? aoContinuar : aoVerificar) : null,
+              child: Opacity(
+                opacity: habilitado ? 1 : 0.35,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Paleta.acerto,
+                    borderRadius: BorderRadius.circular(Escala.raio),
+                  ),
+                  child: Text(
+                    terminou ? 'Continuar' : 'Verificar',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Paleta.sobreAcerto,
+                      fontSize: Escala.verificar,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FimDaLicao extends StatelessWidget {
+  const _FimDaLicao({required this.licao});
+
+  final Lesson licao;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: TelaExercicio.chaveFimDaLicao,
+      backgroundColor: Paleta.fundo,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'LIÇÃO CONCLUÍDA',
+                  style: TextStyle(
+                    color: Paleta.visor,
+                    fontFamily: fonteMono,
+                    fontSize: 12,
+                    letterSpacing: 2.4,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  licao.lessonTitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Paleta.texto,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${licao.questions.length} questões',
+                  style: const TextStyle(
+                    color: Paleta.suave,
+                    fontFamily: fonteMono,
+                    fontSize: Escala.chip,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

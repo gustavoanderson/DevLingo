@@ -209,6 +209,28 @@ As alternativas de múltipla escolha são embaralhadas **no momento de renderiza
 - A regra "distribua os gabaritos" do validador continua valendo como **segunda linha de defesa**: se o embaralhamento for desligado por acessibilidade, config, ou um bug, o banco ainda não deixa a resposta sempre na mesma letra.
 - Se algum dia surgir uma questão que exija ordem fixa ("todas as anteriores", opções numéricas crescentes), criar um flag opcional `keepOrder: true` na questão. Nenhuma questão atual precisa disso.
 
+### Como uma questão é respondida
+
+O princípio: **o objetivo do jogo é a pessoa aprender, não ser punida.** Toda questão termina com o aluno sabendo a resposta e o porquê. A lógica vive em `app/lib/answer/sessao_questao.dart`, fora do widget, para ser testável sem montar tela.
+
+**Múltipla escolha.** Errar **elimina** a alternativa escolhida — riscada, não apagada, porque ver o que já foi descartado faz parte do raciocínio por exclusão — e devolve a vez. Com cinco alternativas, quatro erros deixariam só a correta na lista, e fazer o aluno tocar nela seria clicar no único botão disponível fingindo que é escolha: **por isso o quarto erro já revela.**
+
+**Lacuna e escrita livre.** Não há o que eliminar, então a ajuda cresce: o primeiro erro só avisa, o segundo **abre a dica sozinho**, o terceiro revela a resposta. Sem isso, tentativa infinita significaria que o aluno pode nunca descobrir a resposta.
+
+**A explicação só aparece no fim.** Mostrá-la no primeiro erro entregaria a resposta e esvaziaria a eliminação. Durante as tentativas aparece apenas o `why` da alternativa escolhida, ou uma linha neutra.
+
+**Verde para certo, vermelho para errado — mas só em rótulo, borda e preenchimento.** O corpo da explicação continua em `#F2F0FF`. Verde saturado em texto longo sobre fundo escuro reprova em contraste, e a explicação é o texto mais longo da tela: pintá-la de verde a tornaria difícil de ler justo quando mais importa ser lida. O vermelho é `#FF5F57`, o mesmo já usado no pontinho da aba da IDE — não foi inventada cor nova.
+
+**A cor sinaliza, o texto não pune.** O título é `AINDA NÃO`, e ao revelar é `VAMOS JUNTOS` — nunca `ERRADO`. O vermelho deixa claro que algo não deu certo; a escrita continua do lado do aluno.
+
+### Texto que o usuário lê leva acento
+
+Comentários de código, mensagens de commit e nomes de variável ficam em ASCII, por convenção do repositório. **Texto de interface, não.** Já entrou defeito por isso: o painel de retorno mostrava *"Nao e essa"* para o usuário, porque a string foi escrita como se fosse comentário. Ao criar qualquer texto visível na tela, escreva português correto.
+
+**O painel de retorno é fixo acima da barra de ações**, nunca dentro da rolagem: a explicação é o pagamento do exercício e não pode depender de o aluno descobrir que precisa rolar.
+
+**O número de tentativas fica gravado, mas a tela nunca o mostra.** Não existe "você errou 3 vezes". O dado existe para o progresso poder distinguir, mais tarde, o que foi fácil do que custou — que é o que torna revisão dirigida possível, o uso que o campo `topic` já antecipa.
+
 ### Fundo animado: regras de performance
 
 O cenário é parallax em camadas. O Tr∅nikAt caminha parado e o cenário desliza atrás dele, no sentido oposto ao que ele aponta. Cada camada é desenhada duas vezes e desliza exatamente a largura de um bloco, o que torna o loop invisível.
@@ -272,11 +294,16 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 | | Passo | Estado |
 |---|---|---|
 | **B1** | Projeto Flutter em `app/`, rodando no emulador | **concluído** |
-| B2 | Ler os JSON de `content/` como asset e modelar as questões em Dart | |
-| B3 | `normalize()` portado para Dart, com os mesmos testes negativos do validador | |
-| B4 | Tela de exercício conforme `docs/mockup-tela-exercicio.html` | |
-| B5 | As três formas de resposta e o embaralhamento das alternativas | |
-| B6 | Progresso salvo local a cada questão respondida | |
+| **B2** | Ler os JSON como asset e modelar as questões em Dart | **concluído** |
+| **B3** | `normalize()` em Dart, presa ao contrato compartilhado | **concluído** |
+| **B4** | Tela de exercício conforme o mockup | **concluído** |
+| **B5** | As três formas de resposta, embaralhamento e correção | **concluído** |
+| B6 | Progresso salvo local a cada questão respondida | **próximo** |
+
+**Combinado e ainda não feito, depois do B6:**
+
+- **Som de acerto.** Uma fanfarra de trompete comemorando, no espírito "tã-tã-tã-tãã". Exige um arquivo de áudio, um pacote (`audioplayers`), respeito ao modo silencioso e uma chave para desligar — mesmo padrão do fundo animado. Ficou fora do B5 porque som é camada, não requisito para jogar.
+- **Realce de sintaxe no bloco de código.** É a única parte da tela que não é traduzir CSS para Flutter, e código legível sem cor não impede ninguém de responder.
 
 ### O app
 

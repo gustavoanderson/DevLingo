@@ -96,7 +96,12 @@
             "properties": {
               "id": { "type": "string", "enum": ["a", "b", "c", "d", "e"] },
               "text": { "type": "string", "minLength": 1 },
-              "correct": { "type": "boolean" }
+              "correct": { "type": "boolean" },
+              "why": {
+                "description": "Opcional. Por que ESTA alternativa esta errada. Aparece no momento em que o aluno a escolhe, e nunca entrega qual e a certa: se entregasse, a eliminacao progressiva perderia o sentido. Nao existe na alternativa correta, cujo papel cabe a explanation.",
+                "type": "string",
+                "minLength": 10
+              }
             }
           }
         },

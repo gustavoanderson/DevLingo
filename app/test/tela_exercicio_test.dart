@@ -86,7 +86,7 @@ Future<void> montar(WidgetTester tester, Lesson licao, {Size? tela}) async {
     addTearDown(tester.view.reset);
   }
   await tester.pumpWidget(
-    MaterialApp(home: TelaExercicio(licao: licao, indice: 0)),
+    MaterialApp(home: TelaExercicio(licao: licao)),
   );
   await tester.pumpAndSettle();
 }

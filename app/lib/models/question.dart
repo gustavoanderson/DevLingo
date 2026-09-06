@@ -71,12 +71,30 @@ class Option {
   final String text;
   final bool correct;
 
-  const Option({required this.id, required this.text, required this.correct});
+  /// Opcional. Por que **esta** alternativa esta errada.
+  ///
+  /// Aparece no momento em que o aluno a escolhe. Nunca entrega qual e a certa:
+  /// se entregasse, a eliminacao progressiva perderia o sentido, porque bastaria
+  /// errar uma vez para saber a resposta. O papel de explicar a certa cabe a
+  /// [Question.explanation], que so aparece no fim.
+  ///
+  /// Nulo quando a questao nao tem esse detalhamento. Nesse caso o app mostra
+  /// uma linha neutra. O validador exige que ou todas as alternativas erradas
+  /// tenham o campo, ou nenhuma tenha.
+  final String? why;
+
+  const Option({
+    required this.id,
+    required this.text,
+    required this.correct,
+    this.why,
+  });
 
   factory Option.fromJson(Map<String, dynamic> json) => Option(
     id: json['id'] as String,
     text: json['text'] as String,
     correct: json['correct'] as bool,
+    why: json['why'] as String?,
   );
 }
 

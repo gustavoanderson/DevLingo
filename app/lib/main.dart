@@ -45,8 +45,7 @@ class _Carga extends StatefulWidget {
 class _CargaState extends State<_Carga> {
   late final Future<QuestionBank> _banco = QuestionBank.carregar();
 
-  static const String _licaoDemo = 'python-beg-03';
-  static const int _indiceDemo = 5;
+  static const String _licaoDemo = 'python-beg-01';
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +69,7 @@ class _CargaState extends State<_Carga> {
           (l) => l.lessonId == _licaoDemo,
           orElse: () => banco.lessons.first,
         );
-        final indice = _indiceDemo < licao.questions.length ? _indiceDemo : 0;
-
-        return TelaExercicio(licao: licao, indice: indice);
+        return TelaExercicio(licao: licao);
       },
     );
   }
@@ -95,7 +92,7 @@ class _Falha extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Nao foi possivel carregar o banco',
+                'Não foi possível carregar o banco',
                 style: TextStyle(
                   color: Paleta.acerto,
                   fontSize: 20,
