@@ -79,6 +79,8 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   });
 
+  migracao();
+
   late Progresso progresso;
 
   setUp(() async {
@@ -240,6 +242,94 @@ void main() {
 
     test('banco vazio devolve lista vazia em vez de quebrar', () async {
       expect(await progresso.custoPorTopico(), isEmpty);
+    });
+  });
+}
+
+/// Migracao de esquema.
+///
+/// O app ja esta no celular de alguem com dados dentro. Recriar o banco do zero
+/// seria mais simples e apagaria o progresso do aluno, que e exatamente o que
+/// este arquivo existe para nao fazer.
+void migracao() {
+  group('migracao da versao 1 para a 2', () {
+    late String arquivo;
+
+    setUp(() async {
+      arquivo = '${await databaseFactory.getDatabasesPath()}/migracao.db';
+      await databaseFactory.deleteDatabase(arquivo);
+    });
+
+    tearDown(() => databaseFactory.deleteDatabase(arquivo));
+
+    /// Cria um banco exatamente como a versao 1 o deixava.
+    Future<void> criarBancoAntigo() async {
+      final bd = await databaseFactory.openDatabase(
+        arquivo,
+        options: OpenDatabaseOptions(version: 1),
+      );
+      await bd.execute('''
+        CREATE TABLE resposta (
+          question_id   TEXT PRIMARY KEY,
+          lesson_id     TEXT NOT NULL,
+          language      TEXT NOT NULL,
+          level         TEXT NOT NULL,
+          topic         TEXT NOT NULL,
+          tentativas    INTEGER NOT NULL,
+          desfecho      TEXT NOT NULL,
+          respondida_em INTEGER NOT NULL
+        )
+      ''');
+      await bd.execute('''
+        CREATE TABLE posicao (
+          lesson_id     TEXT PRIMARY KEY,
+          indice        INTEGER NOT NULL,
+          atualizada_em INTEGER NOT NULL
+        )
+      ''');
+      await bd.insert('resposta', {
+        'question_id': 'python-beg-0101',
+        'lesson_id': 'python-beg-01',
+        'language': 'python',
+        'level': 'beginner',
+        'topic': 'saida',
+        'tentativas': 2,
+        'desfecho': 'acertou',
+        'respondida_em': 1700000000000,
+      });
+      await bd.insert('posicao', {
+        'lesson_id': 'python-beg-01',
+        'indice': 4,
+        'atualizada_em': 1700000000000,
+      });
+      await bd.close();
+    }
+
+    test('o progresso do aluno sobrevive a atualizacao do app', () async {
+      await criarBancoAntigo();
+
+      final progresso = await Progresso.abrir(caminho: arquivo);
+
+      expect(
+        (await progresso.respostaDe('python-beg-0101'))!.tentativas,
+        2,
+        reason: 'a resposta gravada na versao antiga nao pode se perder',
+      );
+      expect(await progresso.posicaoDe('python-beg-01'), 4);
+
+      await progresso.fechar();
+    });
+
+    test('a tabela nova existe depois de migrar', () async {
+      await criarBancoAntigo();
+
+      final progresso = await Progresso.abrir(caminho: arquivo);
+
+      expect(await progresso.aulaFoiVista('python-beg-01'), isFalse);
+      await progresso.marcarAulaVista('python-beg-01');
+      expect(await progresso.aulaFoiVista('python-beg-01'), isTrue);
+
+      await progresso.fechar();
     });
   });
 }

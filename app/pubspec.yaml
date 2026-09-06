@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   sqflite: ^2.4.3
   path: ^1.9.1
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +69,7 @@ flutter:
   assets:
     - assets/content/python/
     - assets/content/javascript/
+    - assets/mascot/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

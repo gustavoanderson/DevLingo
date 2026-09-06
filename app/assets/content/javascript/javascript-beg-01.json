@@ -4,6 +4,88 @@
   "level": "beginner",
   "lessonId": "javascript-beg-01",
   "lessonTitle": "Primeiros passos: console, tipos e comparação",
+  "aula": {
+    "titulo": "O básico do JavaScript",
+    "secoes": [
+      {
+        "topico": "saida",
+        "titulo": "Mostrar coisas no console",
+        "texto": "JavaScript nasceu no navegador, e o lugar onde ele fala é o console, aquela aba que abre com F12.\n\nO comando é console.log, com o valor entre parênteses. Diferente do Python, não é uma função solta: é um método do objeto console.",
+        "code": {
+          "language": "javascript",
+          "content": "console.log(\"Oi\");\nconsole.log(42);"
+        }
+      },
+      {
+        "topico": "variaveis",
+        "titulo": "Criar variáveis com const e let",
+        "texto": "JavaScript tem duas formas modernas de criar variável. O const cria um vínculo que não pode receber outro valor depois. O let cria um que pode.\n\nA recomendação prática é começar sempre com const, e trocar para let só quando descobrir que precisa reatribuir. Assim o código diz quais valores mudam e quais não.",
+        "code": {
+          "language": "javascript",
+          "content": "const total = 0;\nlet contador = 0;\ncontador = 1;"
+        }
+      },
+      {
+        "topico": "sintaxe",
+        "titulo": "O ponto e vírgula",
+        "texto": "Cada instrução termina em ponto e vírgula. Na prática ele é opcional, porque o JavaScript insere sozinho quando você esquece.\n\nMas essa inserção automática tem casos de borda que surpreendem, então a maioria das equipes escreve o ponto e vírgula sempre. Comentário de uma linha começa com duas barras.",
+        "code": {
+          "language": "javascript",
+          "content": "// guarda o nome de quem vai jogar\nconst nome = \"Ada\";"
+        }
+      },
+      {
+        "topico": "strings",
+        "titulo": "Montar frases com template string",
+        "texto": "Além das aspas simples e duplas, o JavaScript tem a crase. Texto entre crases se chama template string.\n\nDentro dela, cifrão seguido de chaves insere o valor de uma variável. É a mesma ideia da f-string do Python, com símbolos diferentes.",
+        "code": {
+          "language": "javascript",
+          "content": "const nome = \"Ada\";\nconsole.log(`Oi, ${nome}!`);",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "tipos",
+        "titulo": "Os tipos, e a soma que vira texto",
+        "texto": "O operador typeof mostra o tipo de um valor: string, number, boolean.\n\nE aqui está a peculiaridade que mais confunde: quando você soma texto com número, o JavaScript converte o número em texto e gruda os dois. Já a subtração faz o contrário, converte o texto em número.\n\nO Python recusa a mistura com um erro; o JavaScript aceita e faz alguma coisa. Nem sempre o que você queria.",
+        "code": {
+          "language": "javascript",
+          "content": "console.log(typeof \"42\");\nconsole.log(\"5\" + 3);\nconsole.log(\"5\" - 3);",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "comparacao",
+        "titulo": "Dois iguais e três iguais",
+        "texto": "Por causa dessa conversão automática, o JavaScript tem dois operadores de igualdade.\n\nDois sinais comparam depois de converter os tipos, então o número 5 e o texto 5 entre aspas saem como iguais. Três sinais comparam valor e tipo, e aí eles saem como diferentes.\n\nA recomendação é usar sempre três sinais. Dois sinais escondem defeitos que só aparecem muito depois.",
+        "code": {
+          "language": "javascript",
+          "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a == b);\nconsole.log(a === b);",
+          "highlightLine": 4
+        }
+      },
+      {
+        "topico": "funcoes",
+        "titulo": "Criar uma função",
+        "texto": "A palavra function cria uma função. Entre parênteses vão os parâmetros, e entre chaves vai o corpo.\n\nA palavra return diz qual valor a função devolve para quem a chamou. Sem ela, a função executa e devolve undefined.",
+        "code": {
+          "language": "javascript",
+          "content": "function dobro(n) {\n  return n * 2;\n}\nconsole.log(dobro(4));",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "arrays",
+        "titulo": "Listas de valores",
+        "texto": "Colchetes criam um array, que é a lista do JavaScript. A contagem das posições começa em zero.\n\nO método push acrescenta um item no fim e altera o array original. Repare que isso funciona mesmo com const: o const impede trocar o array por outro, mas não impede mexer no conteúdo dele.",
+        "code": {
+          "language": "javascript",
+          "content": "const cores = [\"azul\", \"verde\"];\ncores.push(\"rosa\");\nconsole.log(cores);",
+          "highlightLine": 2
+        }
+      }
+    ]
+  },
   "questions": [
     {
       "id": "javascript-beg-0101",
@@ -11,11 +93,31 @@
       "prompt": "Qual comando exibe uma mensagem no console do navegador?",
       "answerType": "multipleChoice",
       "options": [
-        { "id": "a", "text": "print()", "correct": false },
-        { "id": "b", "text": "console.log()", "correct": true },
-        { "id": "c", "text": "echo()", "correct": false },
-        { "id": "d", "text": "alert.log()", "correct": false },
-        { "id": "e", "text": "System.out.println()", "correct": false }
+        {
+          "id": "a",
+          "text": "print()",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "console.log()",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "echo()",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "alert.log()",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "System.out.println()",
+          "correct": false
+        }
       ],
       "hint": "Uma das opções é de Python, outra de PHP e outra de Java. Das duas que sobram, uma mistura dois comandos que existem separadamente.",
       "explanation": "O objeto console tem o método log, usado para escrever na saída de depuração. A opção com alert é uma armadilha: alert existe de verdade, mas não tem método log."
@@ -26,11 +128,31 @@
       "prompt": "Qual símbolo encerra uma instrução em JavaScript?",
       "answerType": "multipleChoice",
       "options": [
-        { "id": "a", "text": ":", "correct": false },
-        { "id": "b", "text": ".", "correct": false },
-        { "id": "c", "text": "|", "correct": false },
-        { "id": "d", "text": ";", "correct": true },
-        { "id": "e", "text": "end", "correct": false }
+        {
+          "id": "a",
+          "text": ":",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": ".",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "|",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": ";",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "end",
+          "correct": false
+        }
       ],
       "hint": "É o mesmo sinal que C e Java usam para fechar uma linha de código.",
       "explanation": "O ponto e vírgula encerra a instrução. Em JavaScript ele é opcional na maioria dos casos, porque o interpretador insere automaticamente, mas omiti-lo causa surpresas em linhas que começam com parêntese ou colchete."
@@ -46,11 +168,31 @@
       },
       "answerType": "multipleChoice",
       "options": [
-        { "id": "a", "text": "Oi, Ada!", "correct": true },
-        { "id": "b", "text": "Oi, ${nome}!", "correct": false },
-        { "id": "c", "text": "Oi, nome!", "correct": false },
-        { "id": "d", "text": "`Oi, Ada!`", "correct": false },
-        { "id": "e", "text": "Erro de sintaxe", "correct": false }
+        {
+          "id": "a",
+          "text": "Oi, Ada!",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Oi, ${nome}!",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Oi, nome!",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "`Oi, Ada!`",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Erro de sintaxe",
+          "correct": false
+        }
       ],
       "hint": "As crases mudam o comportamento do texto. Repare no trecho que fica entre o cifrão e as chaves.",
       "explanation": "Texto entre crases é um template literal. O trecho dentro de cifrão e chaves é avaliado e substituído pelo valor da variável. As crases delimitam o texto e não aparecem na saída."
@@ -65,7 +207,9 @@
         "highlightLine": 3
       },
       "answerType": "fillBlank",
-      "accepted": ["==="],
+      "accepted": [
+        "==="
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -86,11 +230,31 @@
       },
       "answerType": "multipleChoice",
       "options": [
-        { "id": "a", "text": "number", "correct": false },
-        { "id": "b", "text": "int", "correct": false },
-        { "id": "c", "text": "text", "correct": false },
-        { "id": "d", "text": "undefined", "correct": false },
-        { "id": "e", "text": "string", "correct": true }
+        {
+          "id": "a",
+          "text": "number",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "int",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "text",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "string",
+          "correct": true
+        }
       ],
       "hint": "O operador typeof olha para o que o valor é de fato, não para o que ele parece. Repare bem nas aspas.",
       "explanation": "As aspas transformam 42 em um valor de texto, e é isso que o typeof reporta. Sem as aspas o resultado seria number."
@@ -100,7 +264,9 @@
       "topic": "saida",
       "prompt": "Escreva a linha que exibe no console exatamente: Oi, mundo!",
       "answerType": "freeWrite",
-      "accepted": ["console.log(\"Oi, mundo!\");"],
+      "accepted": [
+        "console.log(\"Oi, mundo!\");"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -121,11 +287,31 @@
       },
       "answerType": "multipleChoice",
       "options": [
-        { "id": "a", "text": "8 e 2", "correct": false },
-        { "id": "b", "text": "53 e 53", "correct": false },
-        { "id": "c", "text": "53 e 2", "correct": true },
-        { "id": "d", "text": "8 e 8", "correct": false },
-        { "id": "e", "text": "Erro de tipo", "correct": false }
+        {
+          "id": "a",
+          "text": "8 e 2",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "53 e 53",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "53 e 2",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "8 e 8",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Erro de tipo",
+          "correct": false
+        }
       ],
       "hint": "Os dois operadores reagem de forma diferente quando um dos lados é texto. Um deles sabe juntar textos, o outro não sabe fazer nada com texto.",
       "explanation": "O sinal de mais junta textos quando um dos lados é texto, então o número é convertido e o resultado vira 53. O sinal de menos não junta nada, então o JavaScript converte o texto em número e faz a subtração, resultando em 2. Essa assimetria é uma das armadilhas clássicas da linguagem."
@@ -140,7 +326,9 @@
         "highlightLine": 2
       },
       "answerType": "fillBlank",
-      "accepted": ["return"],
+      "accepted": [
+        "return"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -161,11 +349,31 @@
       },
       "answerType": "multipleChoice",
       "options": [
-        { "id": "a", "text": "2", "correct": false },
-        { "id": "b", "text": "3", "correct": true },
-        { "id": "c", "text": "4", "correct": false },
-        { "id": "d", "text": "rosa", "correct": false },
-        { "id": "e", "text": "undefined", "correct": false }
+        {
+          "id": "a",
+          "text": "2",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "3",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "4",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "rosa",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "undefined",
+          "correct": false
+        }
       ],
       "hint": "O método usado na segunda linha modifica o próprio array em vez de criar outro. Conte quantos itens restam no final.",
       "explanation": "O método push acrescenta um item ao final e altera o array original. Com três itens dentro, a propriedade length vale 3. Repare que const impede reatribuir a variável, mas não impede modificar o conteúdo do array."
@@ -175,7 +383,9 @@
       "topic": "variaveis",
       "prompt": "Escreva a linha que cria uma constante chamada total valendo 0.",
       "answerType": "freeWrite",
-      "accepted": ["const total = 0;"],
+      "accepted": [
+        "const total = 0;"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

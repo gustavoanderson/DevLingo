@@ -4,6 +4,40 @@
   "level": "beginner",
   "lessonId": "python-beg-02",
   "lessonTitle": "Números e contas: operadores aritméticos",
+  "aula": {
+    "titulo": "Contas em Python",
+    "secoes": [
+      {
+        "topico": "numeros",
+        "titulo": "Como se escreve um número",
+        "texto": "Número inteiro vai sem aspas e sem mais nada: 42.\n\nNúmero com casas decimais usa ponto, não vírgula. Isso pega muita gente no Brasil, porque escrevemos 19,90 no dia a dia. Em Python é 19.90.\n\nSe você escrever com vírgula, o Python não reclama: ele entende que são dois números separados, e a saída fica diferente do que você esperava. É o tipo de engano que não quebra nada e passa despercebido.",
+        "code": {
+          "language": "python",
+          "content": "preco = 19.90\nprint(preco)\nprint(19, 90)",
+          "highlightLine": 3
+        }
+      },
+      {
+        "topico": "operadores",
+        "titulo": "Os operadores de conta",
+        "texto": "Além de somar, subtrair e multiplicar, o Python tem três operadores que costumam ser novidade.\n\nA barra dupla faz divisão inteira: guarda só a parte inteira e descarta o resto. O sinal de porcentagem faz o contrário, devolve o que sobrou. E o asterisco duplo é potência, não multiplicação.\n\nA ordem das operações é a da matemática do papel: multiplicação e divisão acontecem antes de soma e subtração. Parênteses mudam isso.",
+        "code": {
+          "language": "python",
+          "content": "print(7 // 2)\nprint(7 % 3)\nprint(2 ** 3)\nprint(2 + 3 * 4)"
+        }
+      },
+      {
+        "topico": "tipos",
+        "titulo": "A divisão sempre devolve decimal",
+        "texto": "Uma surpresa comum: a barra simples devolve float mesmo quando a conta é exata. 10 dividido por 2 dá 5.0, não 5.\n\nIsso acontece porque o Python não sabe de antemão se a divisão vai ser exata, então escolhe sempre o tipo que comporta as duas situações.\n\nPela mesma razão, misturar inteiro com decimal numa conta produz decimal: o float comporta o inteiro sem perder informação. Se você quer o inteiro, use a barra dupla.",
+        "code": {
+          "language": "python",
+          "content": "print(10 / 2)\nprint(type(3 + 2.0))\nprint(10 // 2)",
+          "highlightLine": 1
+        }
+      }
+    ]
+  },
   "questions": [
     {
       "id": "python-beg-0201",

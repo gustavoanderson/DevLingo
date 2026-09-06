@@ -4,6 +4,30 @@
   "level": "beginner",
   "lessonId": "python-beg-04",
   "lessonTitle": "Strings: medir, cortar e transformar",
+  "aula": {
+    "titulo": "Trabalhar com texto",
+    "secoes": [
+      {
+        "topico": "strings",
+        "titulo": "Medir e transformar texto",
+        "texto": "A função len devolve quantos caracteres um texto tem. Os métodos vêm depois do texto, separados por ponto: upper deixa tudo maiúsculo, lower deixa minúsculo, strip apara os espaços das pontas, replace troca um pedaço por outro.\n\nE aqui está o ponto que separa quem entende de quem decora: texto em Python é imutável. Nenhum desses métodos altera o texto original. Todos devolvem um texto novo.\n\nEntão chamar o método sozinho, sem guardar o resultado, não faz nada: o valor novo é calculado e jogado fora. O operador in pergunta se um pedaço aparece dentro do texto.",
+        "code": {
+          "language": "python",
+          "content": "nome = \"ada\"\nnome.upper()\nprint(nome)\nprint(nome.upper())\nprint(\"d\" in nome)",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "fatiamento",
+        "titulo": "Pegar um pedaço",
+        "texto": "Colchetes depois do texto pegam um pedaço dele. A contagem das posições começa em zero: a primeira letra é a de índice 0.\n\nCom dois números separados por dois pontos, você pede um intervalo. O da esquerda entra; o da direita fica de fora. Então [0:3] devolve três letras, das posições 0, 1 e 2.\n\nÍndices negativos contam de trás para frente, e -1 é sempre o último. É mais seguro que contar do começo, porque continua certo se o texto mudar de tamanho.",
+        "code": {
+          "language": "python",
+          "content": "palavra = \"Python\"\nprint(palavra[0])\nprint(palavra[0:3])\nprint(palavra[-1])"
+        }
+      }
+    ]
+  },
   "questions": [
     {
       "id": "python-beg-0401",

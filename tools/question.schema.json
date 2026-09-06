@@ -7,6 +7,34 @@
   "required": ["schemaVersion", "language", "level", "lessonId", "lessonTitle", "questions"],
   "additionalProperties": false,
   "properties": {
+    "aula": {
+      "description": "Apresentacao que o Tr0nikAt faz ANTES das questoes, cobrindo o beabá que elas exigem. Opcional no esquema para nao quebrar licoes antigas, mas o validador avisa quando falta: sem ela o jogador cai de paraquedas. Mora no mesmo arquivo das questoes de proposito, para aula e questoes nao poderem divergir.",
+      "type": "object",
+      "required": ["titulo", "secoes"],
+      "additionalProperties": false,
+      "properties": {
+        "titulo": { "type": "string", "minLength": 3, "maxLength": 60 },
+        "secoes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["topico", "titulo", "texto"],
+            "additionalProperties": false,
+            "properties": {
+              "topico": {
+                "description": "Qual topic das questoes esta secao prepara. E o que permite ao validador conferir, por conjunto e nao por semelhanca de texto, que a aula cobre tudo o que sera cobrado.",
+                "type": "string",
+                "minLength": 2
+              },
+              "titulo": { "type": "string", "minLength": 3, "maxLength": 60 },
+              "texto": { "type": "string", "minLength": 30 },
+              "code": { "$ref": "#/definitions/codeBlock" }
+            }
+          }
+        }
+      }
+    },
     "schemaVersion": {
       "description": "Versao do formato. Permite o app ler arquivos antigos sem quebrar.",
       "type": "integer",
@@ -38,6 +66,27 @@
     }
   },
   "definitions": {
+    "codeBlock": {
+      "description": "Bloco de codigo exibido na IDE simulada. Usado tanto pelas questoes quanto pelas secoes da aula.",
+      "type": "object",
+      "required": ["language", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "description": "Usada apenas para o realce de sintaxe. Pode diferir da linguagem da licao.",
+          "type": "string"
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "highlightLine": {
+          "description": "Linha destacada na IDE, contando a partir de 1.",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
     "question": {
       "type": "object",
       "required": ["id", "topic", "prompt", "answerType", "hint", "explanation"],
@@ -58,27 +107,7 @@
           "type": "string",
           "minLength": 5
         },
-        "code": {
-          "description": "Bloco opcional exibido na IDE simulada. Ausente em questoes puramente teoricas.",
-          "type": "object",
-          "required": ["language", "content"],
-          "additionalProperties": false,
-          "properties": {
-            "language": {
-              "description": "Usada apenas para o realce de sintaxe. Pode diferir da linguagem da licao.",
-              "type": "string"
-            },
-            "content": {
-              "type": "string",
-              "minLength": 1
-            },
-            "highlightLine": {
-              "description": "Linha destacada na IDE, contando a partir de 1.",
-              "type": "integer",
-              "minimum": 1
-            }
-          }
-        },
+        "code": { "$ref": "#/definitions/codeBlock" },
         "answerType": {
           "description": "Como o usuario responde. Independente do que a questao mostra.",
           "type": "string",

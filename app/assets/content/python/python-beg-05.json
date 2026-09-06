@@ -4,6 +4,31 @@
   "level": "beginner",
   "lessonId": "python-beg-05",
   "lessonTitle": "Listas e o laço for",
+  "aula": {
+    "titulo": "Listas e repetição",
+    "secoes": [
+      {
+        "topico": "listas",
+        "titulo": "Guardar vários valores num nome só",
+        "texto": "Colchetes criam uma lista, e vírgulas separam os itens. Para pegar um item, use colchetes com a posição: mesma contagem do texto, começando em zero, e -1 para o último.\n\nAqui vem o contraste com texto: listas são mutáveis. O método append acrescenta um item no fim e altera a lista original, sem precisar de atribuição.\n\nE justamente por alterar no lugar, o append não devolve a lista: devolve None. Guardar o retorno dele numa variável é um engano comum, e a variável fica com None em vez da lista.",
+        "code": {
+          "language": "python",
+          "content": "nums = [1, 2]\nnums.append(3)\nprint(nums)\nresultado = nums.append(4)\nprint(resultado)",
+          "highlightLine": 5
+        }
+      },
+      {
+        "topico": "lacos",
+        "titulo": "Repetir para cada item",
+        "texto": "O for percorre uma sequência item por item. A cada volta, a variável do laço recebe o item seguinte, e a palavra in liga uma coisa à outra.\n\nComo no if, a linha termina em dois pontos e o corpo fica recuado. É o recuo que decide o que repete: uma linha sem recuo, depois do laço, roda uma vez só.\n\nA função range produz uma sequência de números começando em zero e parando antes do número informado, pelo mesmo princípio do fatiamento.",
+        "code": {
+          "language": "python",
+          "content": "for n in [1, 2, 3]:\n    print(n)\nprint(\"acabou\")\n\nfor i in range(3):\n    print(i)",
+          "highlightLine": 3
+        }
+      }
+    ]
+  },
   "questions": [
     {
       "id": "python-beg-0501",

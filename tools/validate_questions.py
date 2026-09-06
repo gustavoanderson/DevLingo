@@ -248,6 +248,52 @@ def check_duplicate_fingerprints(fingerprints, report):
         )
 
 
+def check_aula(data, filename, report):
+    """A aula precisa cobrir exatamente os topicos que a licao vai cobrar.
+
+    Sem essa regra a aula envelhece em silencio: as questoes mudam, a aula fica,
+    e o jogador continua caindo de paraquedas — so que agora achando que foi
+    preparado, o que e pior que nao ter aula nenhuma.
+
+    A conferencia e por conjunto, nao por semelhanca de texto, porque cada secao
+    declara qual topico prepara. Isso torna a regra exata em vez de heuristica.
+    """
+    lesson_id = data.get("lessonId", "")
+    aula = data.get("aula")
+
+    topicos_das_questoes = {
+        q.get("topic") for q in data.get("questions", []) if q.get("topic")
+    }
+
+    if aula is None:
+        # A licao de referencia do formato nao e jogada por ninguem.
+        if not lesson_id.endswith("-00"):
+            report.warn(
+                f"{filename} -> aula",
+                "licao sem aula. O jogador cai direto nas questoes sem ver o "
+                "beaba que elas exigem.",
+            )
+        return
+
+    topicos_da_aula = {
+        s.get("topico") for s in aula.get("secoes", []) if s.get("topico")
+    }
+
+    for topico in sorted(topicos_das_questoes - topicos_da_aula):
+        report.error(
+            f"{filename} -> aula",
+            f"o topico '{topico}' e cobrado nas questoes mas nao e preparado na "
+            f"aula. Acrescente uma secao com \"topico\": \"{topico}\".",
+        )
+
+    for topico in sorted(topicos_da_aula - topicos_das_questoes):
+        report.error(
+            f"{filename} -> aula",
+            f"a aula prepara o topico '{topico}', que nenhuma questao da licao "
+            f"cobra. Ou a secao sobra, ou esta faltando questao.",
+        )
+
+
 def check_question_rules(question, filename, report):
     """Regras de qualidade de uma questao isolada."""
     qid = question.get("id", "(sem id)")
@@ -454,6 +500,7 @@ def validate(paths):
 
         check_schema(data, filename, validator, report)
         check_lesson_rules(data, filename, report)
+        check_aula(data, filename, report)
 
         for question in data.get("questions", []):
             total_questions += 1

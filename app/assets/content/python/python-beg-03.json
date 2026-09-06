@@ -4,6 +4,51 @@
   "level": "beginner",
   "lessonId": "python-beg-03",
   "lessonTitle": "Decidir: comparação, booleanos e condicionais",
+  "aula": {
+    "titulo": "Tomar decisões",
+    "secoes": [
+      {
+        "topico": "comparacao",
+        "titulo": "Perguntar se dois valores são iguais",
+        "texto": "Um sinal de igual guarda um valor numa variável. Dois sinais de igual perguntam se dois valores são iguais. Trocar um pelo outro é o tropeço mais comum de quem começa.\n\nOs outros operadores de comparação são os da matemática: maior, menor, maior ou igual, menor ou igual. Para perguntar se dois valores são diferentes, use exclamação seguida de igual.",
+        "code": {
+          "language": "python",
+          "content": "idade = 18\nprint(idade == 18)\nprint(idade != 20)\nprint(idade >= 18)",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "booleanos",
+        "titulo": "Verdadeiro e falso",
+        "texto": "Toda comparação devolve um de dois valores: True ou False. Esse tipo se chama bool.\n\nRepare na letra maiúscula. O Python distingue maiúsculas de minúsculas, e true em minúsculas não é o booleano: é um nome de variável que não existe, e o programa para com NameError.\n\nPara combinar duas condições existem as palavras and e or. O and exige que os dois lados sejam verdadeiros; o or se contenta com um.",
+        "code": {
+          "language": "python",
+          "content": "print(10 > 3)\nidade = 20\ntem_carteira = False\nprint(idade >= 18 and tem_carteira)",
+          "highlightLine": 4
+        }
+      },
+      {
+        "topico": "condicionais",
+        "titulo": "Escolher um caminho",
+        "texto": "O if executa um bloco só quando a condição é verdadeira. O else dá o caminho alternativo, e não leva condição nenhuma.\n\nQuando há mais de duas saídas, o elif entra no meio. A cadeia é lida de cima para baixo e para no primeiro teste que der certo: os seguintes nem chegam a ser avaliados.\n\nPor isso a ordem importa. Se o teste mais frouxo vier primeiro, ele captura casos que deveriam cair num teste mais específico logo abaixo.",
+        "code": {
+          "language": "python",
+          "content": "nota = 7\nif nota >= 9:\n    print(\"Excelente\")\nelif nota >= 7:\n    print(\"Bom\")\nelse:\n    print(\"Melhorar\")",
+          "highlightLine": 4
+        }
+      },
+      {
+        "topico": "sintaxe",
+        "titulo": "Os dois pontos e o recuo",
+        "texto": "Aqui aparece a regra que mais confunde quem vem de outra linguagem: em Python o recuo é sintaxe, não estética.\n\nA linha da condição termina em dois pontos. As linhas que pertencem a ela ficam recuadas, e é o recuo que diz onde o bloco começa e termina. Outras linguagens usam chaves para isso; o Python usa espaço em branco.\n\nEsquecer o recuo não é desleixo de formatação: o programa nem chega a rodar, para com IndentationError.",
+        "code": {
+          "language": "python",
+          "content": "if 5 > 3:\n    print(\"dentro do if\")\nprint(\"fora do if\")",
+          "highlightLine": 2
+        }
+      }
+    ]
+  },
   "questions": [
     {
       "id": "python-beg-0301",

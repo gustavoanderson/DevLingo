@@ -393,6 +393,17 @@ class ProgressoFalso implements RegistroDeProgresso {
 
   @override
   Future<int?> posicaoDe(String lessonId) async => posicoes[lessonId];
+
+  final Set<String> aulasVistas = {};
+
+  @override
+  Future<bool> aulaFoiVista(String lessonId) async =>
+      aulasVistas.contains(lessonId);
+
+  @override
+  Future<void> marcarAulaVista(String lessonId, {DateTime? quando}) async {
+    aulasVistas.add(lessonId);
+  }
 }
 
 void progressoNaTela() {

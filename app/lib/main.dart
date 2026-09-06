@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'data/progresso.dart';
 import 'data/question_bank.dart';
 import 'models/lesson.dart';
+import 'ui/fluxo_da_licao.dart';
 import 'ui/paleta.dart';
-import 'ui/tela_exercicio.dart';
 
 void main() => runApp(const DevLingoApp());
 
@@ -35,8 +35,9 @@ class _Partida {
   final Lesson licao;
   final Progresso progresso;
   final int indice;
+  final bool aulaJaVista;
 
-  const _Partida(this.licao, this.progresso, this.indice);
+  const _Partida(this.licao, this.progresso, this.indice, this.aulaJaVista);
 }
 
 /// Abre o banco de questoes e o progresso, e retoma de onde o aluno parou.
@@ -64,7 +65,8 @@ class _CargaState extends State<_Carga> {
     final salvo = await progresso.posicaoDe(licao.lessonId) ?? 0;
     // Uma licao que encolheu entre versoes do app nao pode abrir fora do fim.
     final indice = salvo.clamp(0, licao.questions.length - 1);
-    return _Partida(licao, progresso, indice);
+    final aulaJaVista = await progresso.aulaFoiVista(licao.lessonId);
+    return _Partida(licao, progresso, indice, aulaJaVista);
   }
 
   @override
@@ -85,10 +87,11 @@ class _CargaState extends State<_Carga> {
         }
 
         final partida = snapshot.requireData;
-        return TelaExercicio(
+        return FluxoDaLicao(
           licao: partida.licao,
           progresso: partida.progresso,
           indiceInicial: partida.indice,
+          aulaJaVista: partida.aulaJaVista,
         );
       },
     );

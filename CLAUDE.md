@@ -209,6 +209,20 @@ As alternativas de múltipla escolha são embaralhadas **no momento de renderiza
 - A regra "distribua os gabaritos" do validador continua valendo como **segunda linha de defesa**: se o embaralhamento for desligado por acessibilidade, config, ou um bug, o banco ainda não deixa a resposta sempre na mesma letra.
 - Se algum dia surgir uma questão que exija ordem fixa ("todas as anteriores", opções numéricas crescentes), criar um flag opcional `keepOrder: true` na questão. Nenhuma questão atual precisa disso.
 
+### A aula do Tr∅nikAt
+
+Antes das questões, cada lição tem uma **aula**: uma apresentação em texto cobrindo o beabá que as questões vão exigir. Ela existe porque sem ela o jogador cai de paraquedas, e **nenhum ajuste de dica conserta não saber o que é `print`**.
+
+A aula mora no **mesmo arquivo** das questões, no campo `aula`. Cada seção declara qual `topico` prepara.
+
+**O validador reprova quando os tópicos das duas deixam de bater**, nos dois sentidos: tópico cobrado sem seção que o prepare, e seção que prepara algo que nenhuma questão cobra. Sem essa regra, as questões mudariam e a aula ficaria para trás — e o jogador continuaria despreparado, só que agora **achando que foi preparado**, o que é pior que não ter aula.
+
+Lição sem aula gera `[AVISO]`, não erro, para não travar conteúdo antigo. A lição de referência `-00` é exceção: ninguém a joga.
+
+**Custo permanente aceito:** a partir daqui, toda lição nova custa lição **e** aula.
+
+A aula aparece sozinha na primeira vez que a lição abre, e depois fica acessível pelo ícone de livro no topo do exercício. Reler não remarca a data da primeira leitura.
+
 ### Como uma questão é respondida
 
 O princípio: **o objetivo do jogo é a pessoa aprender, não ser punida.** Toda questão termina com o aluno sabendo a resposta e o porquê. A lógica vive em `app/lib/answer/sessao_questao.dart`, fora do widget, para ser testável sem montar tela.
@@ -240,6 +254,14 @@ Guardado em SQLite, em `app/lib/data/progresso.dart`. Duas tabelas: `resposta`, 
 **A gravação acontece quando a questão termina, não no `Continuar`.** Se o app fechar entre uma coisa e outra, o que já foi respondido não se perde — e é isso que dá direito ao ✕ não perguntar "tem certeza".
 
 **`question_id` é chave primária**, então refazer a lição substitui o registro em vez de duplicar. Isso só funciona porque o `id` da questão é imutável no banco de conteúdo: aquela regra ganhou consequência real aqui.
+
+### Migração do banco: nunca recriar
+
+O app já está no celular de alguém, com progresso dentro. Ao mudar o esquema, **recriar o banco do zero é mais simples e apaga o progresso do aluno** — que é exatamente o que o `Progresso` existe para não fazer.
+
+Suba a `versao`, acrescente o degrau em `_migrar`, e mantenha o `CREATE TABLE` numa função só, usada pelo `onCreate` e pelo `onUpgrade`. Duas cópias do mesmo `CREATE TABLE` divergem com o tempo, e a diferença só aparece em quem instalou o app numa versão específica.
+
+**E escreva o teste de migração:** ele cria um banco exatamente como a versão antiga o deixava, com dados dentro, abre com o código novo e confere que o progresso sobreviveu. É a única forma de saber que a atualização não vai destruir dado de usuário, e não dá para descobrir isso em produção.
 
 ### Testes de widget não enxergam I/O real
 
@@ -318,7 +340,9 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 
 **A Etapa B está fechada: o DevLingo é jogável de ponta a ponta.**
 
-**Combinado e ainda não feito, depois do B6:**
+| **C1** | Aulas introdutórias do Tr∅nikAt | **concluída** |
+
+**Combinado e ainda não feito:**
 
 - **Som de acerto.** Uma fanfarra de trompete comemorando, no espírito "tã-tã-tã-tãã". Exige um arquivo de áudio, um pacote (`audioplayers`), respeito ao modo silencioso e uma chave para desligar — mesmo padrão do fundo animado. Ficou fora do B5 porque som é camada, não requisito para jogar.
 - **Realce de sintaxe no bloco de código.** É a única parte da tela que não é traduzir CSS para Flutter, e código legível sem cor não impede ninguém de responder.

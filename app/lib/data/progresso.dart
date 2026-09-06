@@ -83,6 +83,10 @@ abstract interface class RegistroDeProgresso {
   Future<void> salvarPosicao(String lessonId, int indice, {DateTime? quando});
 
   Future<int?> posicaoDe(String lessonId);
+
+  Future<bool> aulaFoiVista(String lessonId);
+
+  Future<void> marcarAulaVista(String lessonId, {DateTime? quando});
 }
 
 /// Guarda o progresso do aluno no aparelho.
@@ -98,7 +102,10 @@ class Progresso implements RegistroDeProgresso {
   final Database _bd;
 
   static const String arquivo = 'devlingo.db';
-  static const int versao = 1;
+
+  /// Versao 1: tabelas `resposta` e `posicao`.
+  /// Versao 2: tabela `aula_vista`.
+  static const int versao = 2;
 
   static Future<Progresso> abrir({String? caminho, DatabaseFactory? fabrica}) async {
     final fab = fabrica ?? databaseFactory;
@@ -109,9 +116,24 @@ class Progresso implements RegistroDeProgresso {
         version: versao,
         onConfigure: (bd) => bd.execute('PRAGMA foreign_keys = ON'),
         onCreate: _criar,
+        onUpgrade: _migrar,
       ),
     );
     return Progresso(bd);
+  }
+
+  /// Leva um banco ja instalado no aparelho ate a versao atual.
+  ///
+  /// Migracao existe porque o aplicativo ja esta no celular de alguem com dados
+  /// dentro. Recriar o banco do zero seria mais simples e apagaria o progresso
+  /// do aluno, que e exatamente o que este arquivo existe para nao fazer.
+  ///
+  /// Cada degrau roda em sequencia, entao um aparelho parado na versao 1 chega
+  /// na 3 passando pela 2, sem caminho especial.
+  static Future<void> _migrar(Database bd, int de, int para) async {
+    if (de < 2) {
+      await _criarAulaVista(bd);
+    }
   }
 
   static Future<void> _criar(Database bd, int _) async {
@@ -139,7 +161,19 @@ class Progresso implements RegistroDeProgresso {
         atualizada_em INTEGER NOT NULL
       )
     ''');
+
+    await _criarAulaVista(bd);
   }
+
+  /// Fica em funcao propria para o `onCreate` e o `onUpgrade` usarem a mesma
+  /// definicao. Duas copias do mesmo CREATE TABLE divergem com o tempo, e a
+  /// diferenca so aparece em quem instalou o app numa versao especifica.
+  static Future<void> _criarAulaVista(Database bd) => bd.execute('''
+    CREATE TABLE aula_vista (
+      lesson_id TEXT PRIMARY KEY,
+      vista_em  INTEGER NOT NULL
+    )
+  ''');
 
   Future<void> fechar() => _bd.close();
 
@@ -215,6 +249,31 @@ class Progresso implements RegistroDeProgresso {
       'lesson_id': lessonId,
       'indice': indice,
       'atualizada_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  /// Se o aluno ja viu a aula desta licao.
+  ///
+  /// A aula aparece sozinha na primeira vez. Depois disso ela continua
+  /// acessivel, mas nao se impoe: quem ja leu nao precisa passar por ela de
+  /// novo para chegar nas questoes.
+  @override
+  Future<bool> aulaFoiVista(String lessonId) async {
+    final linhas = await _bd.query(
+      'aula_vista',
+      columns: ['lesson_id'],
+      where: 'lesson_id = ?',
+      whereArgs: [lessonId],
+      limit: 1,
+    );
+    return linhas.isNotEmpty;
+  }
+
+  @override
+  Future<void> marcarAulaVista(String lessonId, {DateTime? quando}) {
+    return _bd.insert('aula_vista', {
+      'lesson_id': lessonId,
+      'vista_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 

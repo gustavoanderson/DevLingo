@@ -9,6 +9,7 @@ import '../models/lesson.dart';
 import '../models/question.dart';
 import 'bloco_codigo.dart';
 import 'paleta.dart';
+import 'sombra_de_recorte.dart';
 
 /// A tela de exercicio.
 ///
@@ -27,6 +28,7 @@ class TelaExercicio extends StatefulWidget {
     required this.licao,
     this.progresso,
     this.indiceInicial = 0,
+    this.aoRelerAula,
   });
 
   final Lesson licao;
@@ -36,6 +38,9 @@ class TelaExercicio extends StatefulWidget {
 
   final int indiceInicial;
 
+  /// Reabre a aula da licao. Nulo quando a licao nao tem aula.
+  final VoidCallback? aoRelerAula;
+
   static const Key chaveSombra = Key('sombra-de-recorte');
   static const Key chaveFimDaLicao = Key('fim-da-licao');
 
@@ -43,15 +48,14 @@ class TelaExercicio extends StatefulWidget {
   State<TelaExercicio> createState() => _TelaExercicioState();
 }
 
-class _TelaExercicioState extends State<TelaExercicio> {
-  final ScrollController _rolagem = ScrollController();
+class _TelaExercicioState extends State<TelaExercicio>
+    with AvisaConteudoCortado<TelaExercicio> {
   final TextEditingController _texto = TextEditingController();
   final FocusNode _foco = FocusNode();
 
   late int _indice = widget.indiceInicial;
   late SessaoQuestao _sessao = SessaoQuestao(_questaoAtual);
 
-  bool _temMaisAbaixo = false;
   bool _licaoConcluida = false;
 
   Question get _questaoAtual => widget.licao.questions[_indice];
@@ -59,17 +63,15 @@ class _TelaExercicioState extends State<TelaExercicio> {
   @override
   void initState() {
     super.initState();
-    _rolagem.addListener(_conferirRecorte);
+    iniciarAvisoDeRecorte();
     // Sem isto o botao Verificar nao sairia do estado desabilitado ao digitar:
     // o texto muda dentro do controlador, sem passar por setState.
     _texto.addListener(_aoDigitar);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _conferirRecorte());
   }
 
   @override
   void dispose() {
-    _rolagem.removeListener(_conferirRecorte);
-    _rolagem.dispose();
+    encerrarAvisoDeRecorte();
     _texto.removeListener(_aoDigitar);
     _texto.dispose();
     _foco.dispose();
@@ -77,15 +79,6 @@ class _TelaExercicioState extends State<TelaExercicio> {
   }
 
   void _aoDigitar() => setState(() {});
-
-  void _conferirRecorte() {
-    if (!_rolagem.hasClients) return;
-    final posicao = _rolagem.position;
-    final cortado = posicao.maxScrollExtent - posicao.pixels > 1;
-    if (cortado != _temMaisAbaixo) {
-      setState(() => _temMaisAbaixo = cortado);
-    }
-  }
 
   void _verificar() {
     final questao = _questaoAtual;
@@ -128,10 +121,10 @@ class _TelaExercicioState extends State<TelaExercicio> {
       _indice = proximo;
       _sessao = SessaoQuestao(_questaoAtual);
       _texto.clear();
-      _temMaisAbaixo = false;
+      temMaisAbaixo = false;
     });
-    if (_rolagem.hasClients) _rolagem.jumpTo(0);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _conferirRecorte());
+    if (rolagem.hasClients) rolagem.jumpTo(0);
+    WidgetsBinding.instance.addPostFrameCallback((_) => conferirRecorte());
   }
 
   Future<void> _salvarPosicao(int indice) async {
@@ -164,19 +157,16 @@ class _TelaExercicioState extends State<TelaExercicio> {
       body: SafeArea(
         child: Column(
           children: [
-            _Topo(atual: _indice + 1, total: total),
+            _Topo(
+              atual: _indice + 1,
+              total: total,
+              aoRelerAula: widget.aoRelerAula,
+            ),
             Expanded(
-              child: Stack(
-                children: [
-                  NotificationListener<ScrollMetricsNotification>(
-                    onNotification: (_) {
-                      WidgetsBinding.instance.addPostFrameCallback(
-                        (_) => _conferirRecorte(),
-                      );
-                      return false;
-                    },
-                    child: ListView(
-                      controller: _rolagem,
+              child: comSombraDeRecorte(
+                chaveSombra: TelaExercicio.chaveSombra,
+                rolavel: ListView(
+                      controller: rolagem,
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                       children: [
                         _Chip(licao: widget.licao, questao: questao),
@@ -211,23 +201,12 @@ class _TelaExercicioState extends State<TelaExercicio> {
                             aoTocar: (opcao) =>
                                 setState(() => _sessao.selecionar(opcao)),
                           ),
-                        if (_sessao.respostaRevelada != null) ...[
-                          const SizedBox(height: 12),
-                          _RespostaRevelada(texto: _sessao.respostaRevelada!),
-                        ],
-                      ],
-                    ),
-                  ),
-                  if (_temMaisAbaixo)
-                    const Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: IgnorePointer(
-                        child: _SombraDeRecorte(key: TelaExercicio.chaveSombra),
-                      ),
-                    ),
-                ],
+                    if (_sessao.respostaRevelada != null) ...[
+                      const SizedBox(height: 12),
+                      _RespostaRevelada(texto: _sessao.respostaRevelada!),
+                    ],
+                  ],
+                ),
               ),
             ),
             _PainelRetorno(sessao: _sessao),
@@ -255,10 +234,17 @@ class _TelaExercicioState extends State<TelaExercicio> {
 // ---------------------------------------------------------------- topo
 
 class _Topo extends StatelessWidget {
-  const _Topo({required this.atual, required this.total});
+  const _Topo({
+    required this.atual,
+    required this.total,
+    this.aoRelerAula,
+  });
 
   final int atual;
   final int total;
+  final VoidCallback? aoRelerAula;
+
+  static const Key chaveReler = Key('acao-reler-aula');
 
   @override
   Widget build(BuildContext context) {
@@ -295,6 +281,22 @@ class _Topo extends StatelessWidget {
               fontSize: Escala.contador,
             ),
           ),
+          // A aula fica a um toque durante o exercicio. Consultar o material no
+          // meio da questao e estudo, nao cola: a explicacao continua so
+          // aparecendo depois de responder.
+          if (aoRelerAula != null) ...[
+            const SizedBox(width: 12),
+            GestureDetector(
+              key: chaveReler,
+              behavior: HitTestBehavior.opaque,
+              onTap: aoRelerAula,
+              child: const Icon(
+                Icons.menu_book_outlined,
+                color: Paleta.suave,
+                size: 22,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -692,33 +694,6 @@ class _PainelRetorno extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SombraDeRecorte extends StatelessWidget {
-  const _SombraDeRecorte({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // O degrade termina num tom mais fundo que o fundo da tela. Terminar na
-    // propria cor do fundo deixaria a sombra invisivel: ela so escurece o que
-    // estiver por baixo, e no limite do miolo costuma haver so a borda fina de
-    // um cartao.
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Paleta.veu.withValues(alpha: 0),
-            Paleta.veu.withValues(alpha: 0.75),
-            Paleta.veu,
-          ],
-          stops: const [0, 0.55, 1],
-        ),
       ),
     );
   }

@@ -4,6 +4,60 @@
   "level": "beginner",
   "lessonId": "python-beg-01",
   "lessonTitle": "Primeiros passos: exibir e guardar valores",
+  "aula": {
+    "titulo": "O básico do Python",
+    "secoes": [
+      {
+        "topico": "saida",
+        "titulo": "Mostrar coisas na tela",
+        "texto": "Um programa que não mostra nada é como uma conversa em que ninguém fala. Em Python, quem fala é a função print.\n\nVocê escreve print, abre parênteses, coloca o que quer mostrar, e fecha. Texto vai entre aspas; número vai sem.\n\nSe você passar mais de uma coisa separada por vírgula, o print junta tudo colocando um espaço entre elas. Repare que o espaço aparece sozinho, sem você digitar.",
+        "code": {
+          "language": "python",
+          "content": "print(\"Oi\")\nprint(42)\nprint(\"Oi\", \"mundo\")"
+        }
+      },
+      {
+        "topico": "variaveis",
+        "titulo": "Guardar um valor com um nome",
+        "texto": "Variável é um nome que aponta para um valor. Você escreve o nome, um sinal de igual, e o valor.\n\nEm Python não se declara nada antes: a variável nasce na primeira vez que recebe um valor. E não se diz o tipo dela — o Python descobre sozinho olhando o que você guardou.\n\nDepois disso, escrever o nome sem aspas devolve o valor guardado. Com aspas, o Python entende que você quis dizer as próprias letras.",
+        "code": {
+          "language": "python",
+          "content": "nome = \"Ada\"\nprint(nome)\nprint(\"nome\")",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "tipos",
+        "titulo": "Texto e número não se misturam",
+        "texto": "Todo valor tem um tipo. Texto é str, número inteiro é int, número com casas decimais é float. A função type mostra o tipo de qualquer coisa.\n\nIsso importa por um motivo prático: o sinal de mais junta dois textos ou soma dois números, mas se recusa a misturar os dois. Tentar isso para o programa com TypeError.\n\nE tem uma armadilha: a função input, que lê o que o usuário digita, devolve sempre texto — mesmo quando ele digitou algarismos. Para fazer conta com esse valor, converta antes com int, para inteiro, ou float, para decimal.",
+        "code": {
+          "language": "python",
+          "content": "print(type(10))\nidade = int(input(\"Sua idade: \"))\nprint(idade + 1)",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "strings",
+        "titulo": "Montar frases com f-string",
+        "texto": "Como texto e número não se somam, montar uma frase com um valor dentro exigiria converter tudo na mão. A f-string resolve isso.\n\nEscreva a letra f logo antes das aspas. Dentro do texto, o que estiver entre chaves é substituído pelo valor da variável.\n\nDepois dos dois pontos, ainda dentro das chaves, dá para pedir formatação. O .2f significa duas casas decimais, útil para dinheiro.",
+        "code": {
+          "language": "python",
+          "content": "nome = \"Ada\"\npreco = 19.9\nprint(f\"{nome} paga R$ {preco:.2f}\")",
+          "highlightLine": 3
+        }
+      },
+      {
+        "topico": "sintaxe",
+        "titulo": "Deixar recado no código",
+        "texto": "Tudo que vem depois de uma cerquilha na linha é comentário: o Python ignora completamente.\n\nServe para explicar por que o código faz o que faz. Cada linguagem usa um símbolo diferente para isso, e confundir os símbolos é um erro comum de quem vem de outra linguagem.",
+        "code": {
+          "language": "python",
+          "content": "# guarda o nome de quem vai jogar\nnome = \"Ada\"",
+          "highlightLine": 1
+        }
+      }
+    ]
+  },
   "questions": [
     {
       "id": "python-beg-0101",
