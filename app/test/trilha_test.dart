@@ -5,6 +5,7 @@ import 'package:devlingo/data/progresso.dart';
 import 'package:devlingo/data/question_bank.dart';
 import 'package:devlingo/models/lesson.dart';
 import 'package:devlingo/models/question.dart';
+import 'package:devlingo/ui/faixa_cenario.dart';
 import 'package:devlingo/ui/tela_exercicio.dart';
 import 'package:devlingo/ui/tela_linguagens.dart';
 import 'package:devlingo/ui/tela_trilha.dart';
@@ -66,7 +67,16 @@ final bancoDuasLinguagens = QuestionBank([
 
 /// Registro em memória com contagens combinadas para o teste.
 class ProgressoFalso implements RegistroDeProgresso {
-  ProgressoFalso([this.contagem = const {}]);
+  /// O cenario nasce DESLIGADO aqui, ao contrario do app.
+  ///
+  /// Estes testes navegam ate a tela de exercicio pelo caminho de verdade, e
+  /// `pumpAndSettle` espera a arvore ficar parada -- coisa que uma animacao em
+  /// repeticao infinita nunca faz. Ligado por padrao, tres testes estouravam o
+  /// limite de tempo sem ter defeito nenhum.
+  ///
+  /// Que a preferencia LIGADA tambem funciona esta provado logo abaixo, no
+  /// grupo 'cenario animado', com `pump` em vez de `pumpAndSettle`.
+  ProgressoFalso([this.contagem = const {}, this.cenario = false]);
 
   final Map<String, int> contagem;
   final Map<String, int> posicoes = {};
@@ -103,6 +113,14 @@ class ProgressoFalso implements RegistroDeProgresso {
 
   @override
   Future<void> definirSom({required bool ligado}) async => som = ligado;
+
+  bool cenario;
+
+  @override
+  Future<bool> cenarioLigado() async => cenario;
+
+  @override
+  Future<void> definirCenario({required bool ligado}) async => cenario = ligado;
 }
 
 Future<void> montar(WidgetTester tester, Widget tela) async {
@@ -307,6 +325,74 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Escolha por onde começar.'), findsOneWidget);
+    });
+  });
+
+  group('cenario animado', () {
+    testWidgets('a preferencia LIGADA chega ate a tela de exercicio', (
+      tester,
+    ) async {
+      // `pump`, e nao `pumpAndSettle`: com o cenario ligado a arvore nunca
+      // fica parada, porque a animacao repete para sempre. Este teste existe
+      // justamente porque o resto do arquivo usa a preferencia desligada.
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          progresso: ProgressoFalso(const {}, true),
+          podeVoltar: false,
+        ),
+      );
+
+      await tester.tap(find.text('Primeira'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(FaixaCenario), findsOneWidget);
+    });
+
+    testWidgets('a preferencia DESLIGADA tira a faixa da tela', (tester) async {
+      // Desligar nao e so parar o movimento: a faixa some. Quem desliga quer a
+      // tela sem aquilo, nao um cenario parado ocupando 58 pixels.
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          progresso: ProgressoFalso(const {}, false),
+          podeVoltar: false,
+        ),
+      );
+
+      await tester.tap(find.text('Primeira'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FaixaCenario), findsNothing);
+    });
+
+    testWidgets('o botao da trilha alterna e grava a preferencia', (
+      tester,
+    ) async {
+      final progresso = ProgressoFalso(const {}, true);
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          progresso: progresso,
+          podeVoltar: false,
+        ),
+      );
+
+      expect(find.byKey(TelaTrilha.chaveCenario), findsOneWidget);
+      await tester.tap(find.byKey(TelaTrilha.chaveCenario));
+      await tester.pumpAndSettle();
+
+      expect(progresso.cenario, isFalse, reason: 'a preferencia foi gravada');
     });
   });
 

@@ -174,6 +174,10 @@ abstract interface class RegistroDeProgresso {
   Future<bool> somLigado();
 
   Future<void> definirSom({required bool ligado});
+
+  Future<bool> cenarioLigado();
+
+  Future<void> definirCenario({required bool ligado});
 }
 
 /// Guarda o progresso do aluno no aparelho.
@@ -216,9 +220,13 @@ class Progresso implements RegistroDeProgresso {
     return medida.inMilliseconds;
   }
 
-  /// Chave da preferencia de som. Tabela generica em vez de coluna propria
-  /// porque o CLAUDE.md ja preve outra chave, a do fundo animado.
+  /// Chaves da tabela `preferencia`.
+  ///
+  /// Ela nasceu generica -- chave e valor, em vez de uma coluna por opcao --
+  /// justamente porque o CLAUDE.md ja previa a segunda chave, a do fundo
+  /// animado. Ela chegou, e nao custou migracao nenhuma.
   static const String prefSom = 'som';
+  static const String prefCenario = 'cenario';
 
   static Future<Progresso> abrir({String? caminho, DatabaseFactory? fabrica}) async {
     final fab = fabrica ?? databaseFactory;
@@ -504,22 +512,41 @@ class Progresso implements RegistroDeProgresso {
   /// O som nunca e o unico retorno: o verde e a explicacao continuam
   /// funcionando com ele mudo. Por isso desligar nao tira informacao nenhuma.
   @override
-  Future<bool> somLigado() async {
+  Future<bool> somLigado() => _preferencia(prefSom);
+
+  @override
+  Future<void> definirSom({required bool ligado}) =>
+      _definirPreferencia(prefSom, ligado);
+
+  /// Se o cenario animado da tela de exercicio esta ligado. Ligado por padrao.
+  ///
+  /// E a chave manual prevista nas regras de performance do fundo animado.
+  /// Movimento constante no canto da tela incomoda parte das pessoas, e nem
+  /// todo aparelho tem bateria de sobra para animar a 60 quadros por segundo.
+  @override
+  Future<bool> cenarioLigado() => _preferencia(prefCenario);
+
+  @override
+  Future<void> definirCenario({required bool ligado}) =>
+      _definirPreferencia(prefCenario, ligado);
+
+  /// Toda preferencia e booleana e **ligada por padrao**: ausencia de linha
+  /// significa "nunca mexeram nisto", nao "desligado".
+  Future<bool> _preferencia(String chave) async {
     final linhas = await _bd.query(
       'preferencia',
       columns: ['valor'],
       where: 'chave = ?',
-      whereArgs: [prefSom],
+      whereArgs: [chave],
       limit: 1,
     );
     if (linhas.isEmpty) return true;
     return linhas.first['valor'] == '1';
   }
 
-  @override
-  Future<void> definirSom({required bool ligado}) {
+  Future<void> _definirPreferencia(String chave, bool ligado) {
     return _bd.insert('preferencia', {
-      'chave': prefSom,
+      'chave': chave,
       'valor': ligado ? '1' : '0',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }

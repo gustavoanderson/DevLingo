@@ -168,6 +168,59 @@ def find_pubspec(content_dir):
     return None
 
 
+def check_gerados_em_dia(content_dir, report):
+    """Garante que os arquivos de `gerar_faixas.py` batem com o gerador.
+
+    O cenario existe em dois formatos: os SVGs de `assets/cenarios/`, que sao a
+    referencia de arte, e `app/lib/ui/cenario_gerado.dart`, que e o que o app
+    desenha. Um script escreve os dois, e e isso que impede os dois de contarem
+    historias diferentes.
+
+    Mas so impede enquanto alguem lembrar de rodar o script. Editar o Dart a
+    mao funciona -- o app compila, os testes passam, e a tela muda -- e a
+    divergencia so aparece quando outra pessoa roda o gerador e ve a mudanca
+    desaparecer sem explicacao.
+
+    Esta regra fecha isso: ela roda o gerador em memoria e compara com o que
+    esta em disco. Nao grava nada; so reprova e diz o comando para corrigir.
+    """
+    raiz = find_pubspec(content_dir)
+    raiz = raiz.parent.parent if raiz is not None else content_dir.resolve().parent
+
+    gerador = raiz / "tools" / "gerar_faixas.py"
+    if not gerador.is_file():
+        return
+
+    ambiente = {"__file__": str(gerador), "__name__": "gerar_faixas"}
+    try:
+        exec(compile(gerador.read_text(encoding="utf-8"), str(gerador), "exec"), ambiente)
+    except Exception as exc:  # noqa: BLE001 - o motivo vai para o relatorio
+        report.error("tools/gerar_faixas.py", f"o gerador nao roda: {exc}")
+        return
+
+    esperados = {
+        raiz / "app" / "lib" / "ui" / "cenario_gerado.dart": ambiente["gerar_dart"](),
+    }
+    for nome, cores in ambiente["FAIXAS"].items():
+        esperados[raiz / "assets" / "cenarios" / f"faixa-{nome}.svg"] = ambiente[
+            "gerar_svg"
+        ](nome, cores)
+
+    for caminho, esperado in esperados.items():
+        onde = str(caminho.relative_to(raiz)).replace("\\", "/")
+        if not caminho.is_file():
+            report.error(onde, "arquivo gerado nao existe. Rode: python3 tools/gerar_faixas.py")
+            continue
+        if caminho.read_text(encoding="utf-8") != esperado:
+            report.error(
+                onde,
+                "arquivo gerado esta diferente do que tools/gerar_faixas.py produz. "
+                "Ou alguem editou a mao, ou o gerador mudou e nao foi rodado. "
+                "A correcao e sempre a mesma: edite o GERADOR e rode "
+                "'python3 tools/gerar_faixas.py'.",
+            )
+
+
 def check_svgs_bem_formados(content_dir, report):
     """Garante que todo SVG do repositorio seja XML bem formado.
 
@@ -531,6 +584,7 @@ def validate(paths):
             if path.name == "content":
                 check_pubspec_assets(path, report)
                 check_svgs_bem_formados(path, report)
+                check_gerados_em_dia(path, report)
         else:
             files.append(path)
 

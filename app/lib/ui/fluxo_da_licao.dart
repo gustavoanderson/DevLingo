@@ -21,6 +21,7 @@ class FluxoDaLicao extends StatefulWidget {
     this.indiceInicial = 0,
     this.aulaJaVista = false,
     this.sineta,
+    this.comCenario = false,
   });
 
   final Lesson licao;
@@ -31,6 +32,10 @@ class FluxoDaLicao extends StatefulWidget {
   final bool aulaJaVista;
 
   final Sineta? sineta;
+
+  /// Repassado direto para a tela de exercício, que é quem desenha o cenário.
+  /// O fluxo não decide nada sobre ele: só carrega a preferência da trilha.
+  final bool comCenario;
 
   @override
   State<FluxoDaLicao> createState() => _FluxoDaLicaoState();
@@ -76,6 +81,7 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
       indiceInicial: widget.indiceInicial,
       aoRelerAula: widget.licao.aula == null ? null : _reler,
       sineta: widget.sineta,
+      comCenario: widget.comCenario,
     );
   }
 }

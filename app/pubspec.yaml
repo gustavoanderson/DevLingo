@@ -39,6 +39,18 @@ dependencies:
   flutter_svg: ^2.3.0
   audioplayers: ^6.8.1
 
+  # Le a string `d` de um caminho SVG e desenha num Path do Flutter.
+  #
+  # Ja vinha junto, como dependencia transitiva do flutter_svg, e usa-la sem
+  # declarar aqui funcionaria hoje e quebraria no dia em que o flutter_svg
+  # trocasse de parser -- um build vermelho sem nenhuma mudanca no codigo.
+  # Quem usa, declara.
+  #
+  # Existe para o cenario de parallax poder desenhar exatamente as mesmas
+  # silhuetas que estao nos SVGs de assets/cenarios/, sem uma segunda copia da
+  # geometria. Ver tools/gerar_faixas.py.
+  path_parsing: ^1.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -50,6 +50,7 @@ class TelaTrilha extends StatefulWidget {
 
   static const Key chaveSombra = Key('sombra-da-trilha');
   static const Key chaveSom = Key('trilha-som');
+  static const Key chaveCenario = Key('trilha-cenario');
 
   @override
   State<TelaTrilha> createState() => _TelaTrilhaState();
@@ -63,6 +64,13 @@ class _TelaTrilhaState extends State<TelaTrilha>
   /// Ligado por padrão. Nunca é o único retorno: o verde e a explicação
   /// continuam funcionando com ele mudo.
   bool _som = true;
+
+  /// O cenário animado da tela de exercício. Ligado por padrão.
+  ///
+  /// A chave fica aqui, ao lado da do som, porque são a mesma decisão do ponto
+  /// de vista de quem joga: quanto de estímulo eu quero. Enterrá-la numa tela
+  /// de configurações que ainda não existe seria escondê-la de quem precisa.
+  bool _cenario = true;
 
   List<Lesson> get _licoes => widget.banco.trilha(widget.language, widget.level);
 
@@ -84,10 +92,12 @@ class _TelaTrilhaState extends State<TelaTrilha>
     if (progresso == null) return;
     final contagem = await progresso.respondidasPorLicao();
     final som = await progresso.somLigado();
+    final cenario = await progresso.cenarioLigado();
     if (!mounted) return;
     setState(() {
       _respondidas = contagem;
       _som = som;
+      _cenario = cenario;
     });
   }
 
@@ -95,6 +105,12 @@ class _TelaTrilhaState extends State<TelaTrilha>
     final novo = !_som;
     setState(() => _som = novo);
     await widget.progresso?.definirSom(ligado: novo);
+  }
+
+  Future<void> _alternarCenario() async {
+    final novo = !_cenario;
+    setState(() => _cenario = novo);
+    await widget.progresso?.definirCenario(ligado: novo);
   }
 
   Future<void> _abrir(Lesson licao) async {
@@ -114,6 +130,7 @@ class _TelaTrilhaState extends State<TelaTrilha>
           indiceInicial: indice,
           aulaJaVista: aulaVista,
           sineta: widget.sineta,
+          comCenario: _cenario,
         ),
       ),
     );
@@ -148,6 +165,8 @@ class _TelaTrilhaState extends State<TelaTrilha>
                   : widget.aoVoltarAoTitulo,
               somLigado: _som,
               aoAlternarSom: _alternarSom,
+              cenarioLigado: _cenario,
+              aoAlternarCenario: _alternarCenario,
             ),
             Expanded(
               child: comSombraDeRecorte(
@@ -183,6 +202,8 @@ class _Cabecalho extends StatelessWidget {
     required this.total,
     required this.somLigado,
     required this.aoAlternarSom,
+    required this.cenarioLigado,
+    required this.aoAlternarCenario,
     this.aoVoltar,
   });
 
@@ -192,6 +213,8 @@ class _Cabecalho extends StatelessWidget {
   final int total;
   final bool somLigado;
   final VoidCallback aoAlternarSom;
+  final bool cenarioLigado;
+  final VoidCallback aoAlternarCenario;
   final VoidCallback? aoVoltar;
 
   static const Key chaveVoltar = Key('trilha-voltar');
@@ -233,9 +256,22 @@ class _Cabecalho extends StatelessWidget {
                   ),
                 ),
               ),
-              // Nao ha tela de configuracoes ainda, e uma tela para um item so
-              // seria cerimonia vazia. Quando houver mais de uma coisa para
-              // configurar, este icone migra para la.
+              // Nao ha tela de configuracoes ainda. Sao duas chaves, e as duas
+              // respondem a mesma pergunta de quem joga: quanto de estimulo eu
+              // quero. Quando surgir a terceira, as tres migram para uma tela.
+              GestureDetector(
+                key: TelaTrilha.chaveCenario,
+                behavior: HitTestBehavior.opaque,
+                onTap: aoAlternarCenario,
+                child: Icon(
+                  cenarioLigado
+                      ? Icons.landscape_outlined
+                      : Icons.landscape_rounded,
+                  color: cenarioLigado ? Paleta.destaque : Paleta.suave,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
               GestureDetector(
                 key: TelaTrilha.chaveSom,
                 behavior: HitTestBehavior.opaque,

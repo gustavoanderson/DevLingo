@@ -415,6 +415,14 @@ class ProgressoFalso implements RegistroDeProgresso {
 
   @override
   Future<void> definirSom({required bool ligado}) async => som = ligado;
+
+  bool cenario = true;
+
+  @override
+  Future<bool> cenarioLigado() async => cenario;
+
+  @override
+  Future<void> definirCenario({required bool ligado}) async => cenario = ligado;
 }
 
 void progressoNaTela() {

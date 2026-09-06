@@ -8,6 +8,7 @@ import '../data/progresso.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import 'bloco_codigo.dart';
+import 'faixa_cenario.dart';
 import 'paleta.dart';
 import 'som.dart';
 import 'sombra_de_recorte.dart';
@@ -31,6 +32,7 @@ class TelaExercicio extends StatefulWidget {
     this.indiceInicial = 0,
     this.aoRelerAula,
     this.sineta,
+    this.comCenario = false,
   });
 
   final Lesson licao;
@@ -45,6 +47,15 @@ class TelaExercicio extends StatefulWidget {
 
   /// Toca a fanfarra de acerto. Nulo em teste que nao se importa com som.
   final Sineta? sineta;
+
+  /// Desenha o cenario animado colado na borda de baixo.
+  ///
+  /// Falso desliga a faixa por completo, e nao apenas a animacao: e a chave
+  /// manual prevista no CLAUDE.md, para quem prefere a tela sem movimento
+  /// nenhum ou precisa poupar bateria. Os testes tambem passam falso, porque
+  /// uma animacao em repeticao infinita faz `pumpAndSettle` estourar o limite
+  /// de tempo esperando por um repouso que nunca chega.
+  final bool comCenario;
 
   static const Key chaveSombra = Key('sombra-de-recorte');
   static const Key chaveFimDaLicao = Key('fim-da-licao');
@@ -164,6 +175,7 @@ class _TelaExercicioState extends State<TelaExercicio>
 
     final questao = _questaoAtual;
     final total = widget.licao.questions.length;
+    final tecladoAberto = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       backgroundColor: Paleta.fundo,
@@ -226,9 +238,7 @@ class _TelaExercicioState extends State<TelaExercicio>
             // A regua so aparece com o teclado virtual aberto. Ela existe para
             // poupar a troca de pagina do teclado do celular; quando se digita
             // com teclado fisico, como no emulador, ela so ocupa espaco.
-            if (_sessao.ehEscrita &&
-                !_sessao.terminou &&
-                MediaQuery.of(context).viewInsets.bottom > 0)
+            if (_sessao.ehEscrita && !_sessao.terminou && tecladoAberto)
               _ReguaDeSimbolos(aoTocar: _inserirSimbolo),
             _BarraAcoes(
               sessao: _sessao,
@@ -237,6 +247,13 @@ class _TelaExercicioState extends State<TelaExercicio>
               aoVerificar: _verificar,
               aoContinuar: _continuar,
             ),
+            // Colada na borda, abaixo da barra de acoes. Congela com o teclado
+            // aberto: nessa hora o que importa e o campo de resposta, e
+            // movimento no canto do olho atrapalha quem esta digitando.
+            // Some-la em vez de congelar faria o layout pular no meio da
+            // digitacao, que e pior que o movimento.
+            if (widget.comCenario)
+              FaixaCenario(congelada: tecladoAberto),
           ],
         ),
       ),

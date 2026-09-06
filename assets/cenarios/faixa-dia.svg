@@ -1,23 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="58" viewBox="0 0 680 58" role="img">
-<title>DevLingo - faixa de cenario (dia)</title>
-<desc>Faixa diurna: nevoa azulada, neons apagados. O Tr0nikAt caminha parado enquanto as camadas deslizam. ATENCAO: a animacao usa SMIL e nao e reproduzida pelo flutter_svg. No app, refaca o movimento com Rive, Lottie ou AnimationController.</desc>
-<defs><path id="far" d="M0 60 L0 34 L40 34 L40 20 L74 20 L74 42 L110 42 L110 12 L146 12 L146 38 L190 38 L190 26 L232 26 L232 46 L276 46 L276 18 L316 18 L316 40 L360 40 L360 28 L400 28 L400 8 L436 8 L436 36 L480 36 L480 22 L524 22 L524 44 L566 44 L566 16 L610 16 L610 38 L652 38 L652 30 L680 30 L680 60 Z"/><path id="near" d="M0 30 L0 18 L52 18 L52 8 L96 8 L96 22 L150 22 L150 14 L206 14 L206 24 L262 24 L262 10 L312 10 L312 20 L370 20 L370 12 L424 12 L424 22 L482 22 L482 6 L534 6 L534 18 L590 18 L590 26 L640 26 L640 16 L680 16 L680 30 Z"/><g id="cat">
+<title>DevLingo :: faixa de cenario (dia)</title>
+<desc>Faixa diurna: nevoa azulada, neons apagados. O Tr0nikAt caminha parado enquanto as camadas deslizam. ATENCAO: a animacao aqui usa SMIL e NAO e reproduzida pelo flutter_svg. O app nao le este arquivo; ele desenha o mesmo cenario a partir de app/lib/ui/cenario_gerado.dart, gerado por tools/gerar_faixas.py junto com este SVG.</desc>
+<defs><path id="far" d="M0 60 L0 34 L40 34 L40 20 L74 20 L74 42 L110 42 L110 12 L146 12 L146 38 L190 38 L190 26 L232 26 L232 46 L276 46 L276 18 L316 18 L316 40 L360 40 L360 28 L400 28 L400 8 L436 8 L436 36 L480 36 L480 22 L524 22 L524 44 L566 44 L566 16 L610 16 L610 38 L652 38 L652 30 L680 30 L680 60 Z"/><path id="near" d="M0 30 L0 18 L52 18 L52 8 L96 8 L96 22 L150 22 L150 14 L206 14 L206 24 L262 24 L262 10 L312 10 L312 20 L370 20 L370 12 L424 12 L424 22 L482 22 L482 6 L534 6 L534 18 L590 18 L590 26 L640 26 L640 16 L680 16 L680 30 Z"/>
+<g id="cat">
 <ellipse cx="0" cy="0" rx="13" ry="3" fill="#000000" opacity="0.4"/>
 <path d="M8 -14 Q17 -17 16 -26" stroke="#C9CBE0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 <circle cx="16" cy="-27" r="2.5" fill="#39FF14"/>
-<line x1="-3" y1="-7" x2="-5" y2="0" stroke="#F2F0FF" stroke-width="4" stroke-linecap="round"><animate attributeName="x2" values="-8;-3;2;-3;-8" dur="0.85s" repeatCount="indefinite"/></line>
-<line x1="3" y1="-7" x2="5" y2="0" stroke="#9BA0B8" stroke-width="4" stroke-linecap="round"><animate attributeName="x2" values="2;-3;-8;-3;2" dur="0.85s" repeatCount="indefinite"/></line>
-<line x1="-7" y1="-16" x2="-11" y2="-8" stroke="#F2F0FF" stroke-width="3.5" stroke-linecap="round"><animate attributeName="x2" values="-12;-10;-8;-10;-12" dur="0.85s" repeatCount="indefinite"/></line>
-<line x1="7" y1="-16" x2="11" y2="-8" stroke="#9BA0B8" stroke-width="3.5" stroke-linecap="round"><animate attributeName="x2" values="8;10;12;10;8" dur="0.85s" repeatCount="indefinite"/></line>
+<line x1="-3" y1="-7" x2="-8" y2="0" stroke="#F2F0FF" stroke-width="4" stroke-linecap="round"><animate attributeName="x2" values="-8;-3.0;2;-3.0;-8" dur="0.85s" repeatCount="indefinite"/></line>
+<line x1="3" y1="-7" x2="2" y2="0" stroke="#9BA0B8" stroke-width="4" stroke-linecap="round"><animate attributeName="x2" values="2;-3.0;-8;-3.0;2" dur="0.85s" repeatCount="indefinite"/></line>
+<line x1="-7" y1="-16" x2="-12" y2="-8" stroke="#F2F0FF" stroke-width="3.5" stroke-linecap="round"><animate attributeName="x2" values="-12;-10.0;-8;-10.0;-12" dur="0.85s" repeatCount="indefinite"/></line>
+<line x1="7" y1="-16" x2="8" y2="-8" stroke="#9BA0B8" stroke-width="3.5" stroke-linecap="round"><animate attributeName="x2" values="8;10.0;12;10.0;8" dur="0.85s" repeatCount="indefinite"/></line>
 <path d="M-8 -18 L-7 -6 L7 -6 L8 -18 Q0 -21 -8 -18 Z" fill="#2A1B4D"/>
-<path d="M-6 -18 Q0 -15 6 -18" stroke="#FF2D95" stroke-width="1.8" fill="none"/>
-<polygon points="-9,-34 -7,-46 -1,-35" fill="#F2F0FF"/>
-<polygon points="2,-35 8,-46 11,-32" fill="#C9CBE0"/>
+<path d="M-6 -18 Q0 -15 6 -18" stroke="#FF2D95" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+<path d="M-9 -34 L-7 -46 L-1 -35 Z" fill="#F2F0FF"/>
+<path d="M2 -35 L8 -46 L11 -32 Z" fill="#C9CBE0"/>
 <circle cx="0" cy="-28" r="11" fill="#F2F0FF"/>
-<path d="M0 -39 A 11 11 0 0 1 0 -17 Z" fill="#C9CBE0"/>
+<path d="M0 -39 C6.08 -39 11 -34.08 11 -28 C11 -21.92 6.08 -17 0 -17 Z" fill="#C9CBE0"/>
 <circle cx="-5" cy="-28" r="3" fill="#17092E"/>
 <circle cx="-6.2" cy="-29.2" r="1.2" fill="#FFFFFF"/>
-<polygon points="-2,-25 2,-25 0,-22.5" fill="#FF4FD8"/>
+<path d="M-2 -25 L2 -25 L0 -22.5 Z" fill="#FF4FD8"/>
 <path d="M-2.5 -21.5 Q0 -19.5 2.5 -21.5" stroke="#17092E" stroke-width="1.4" fill="none" stroke-linecap="round"/>
 <rect x="0.5" y="-33" width="13" height="8" rx="2" fill="#3A3E52"/>
 <rect x="2.5" y="-31" width="9" height="4" fill="#39FF14"/>

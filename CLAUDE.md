@@ -192,7 +192,7 @@ Paleta e tipografia detalhadas em `docs/paleta.md`. Resumo do que mais importa:
 - Logo em fonte monoespaçada com deslocamento em ciano e magenta (aberração cromática). Nada de fonte cyberpunk baixada, que quebra em dispositivos sem ela
 - Mascote em `assets/mascot/`. O arquivo animado usa SMIL e **não é reproduzido pelo `flutter_svg`**: no app, refaça o movimento com Rive, Lottie ou AnimationController
 - Existe uma **variante de tamanho pequeno** do mascote, com cabeça proporcionalmente maior e traços mais grossos. Em tamanho miúdo não se reduz o desenho, redesenha-se. Ela vive dentro de `tools/gerar_faixas.py`
-- As três faixas de cenário estão em `assets/cenarios/`, geradas por `tools/gerar_faixas.py`. Edite o gerador, nunca os SVGs à mão, senão as três divergem
+- As três faixas de cenário estão em `assets/cenarios/`, geradas por `tools/gerar_faixas.py` **junto com** `app/lib/ui/cenario_gerado.dart`. Edite o gerador, nunca os arquivos gerados: o validador reprova quando eles divergem
 - O mockup navegável da tela está em `docs/mockup-tela-exercicio.html`. Abra no navegador para consultar durante a implementação
 
 ### Escrever SVG que o `flutter_svg` desenha de verdade
@@ -445,17 +445,57 @@ Suba a `versao`, acrescente o degrau em `_migrar`, e mantenha o `CREATE TABLE` n
 
 A saída não é `tester.runAsync`, é **depender de interface**. A tela recebe `RegistroDeProgresso`, e o teste de widget passa uma implementação em memória. Assim o teste de tela prova o que deve provar — que a tela chama o repositório com os dados certos — e o SQLite continua provado à parte, em `progresso_test.dart`, com banco de verdade e um caso que fecha e reabre o arquivo.
 
-### Fundo animado: regras de performance
+### Cenário animado: implementado, e as regras que ele cumpre
 
-O cenário é parallax em camadas. O Tr∅nikAt caminha parado e o cenário desliza atrás dele, no sentido oposto ao que ele aponta. Cada camada é desenhada duas vezes e desliza exatamente a largura de um bloco, o que torna o loop invisível.
+Vive em `app/lib/ui/faixa_cenario.dart`, colado na borda de baixo da tela de exercício. O Tr∅nikAt caminha parado e o cenário desliza atrás dele, no sentido oposto ao que ele aponta. Cada camada é desenhada duas vezes e desliza exatamente a largura de um bloco, o que torna o loop invisível: o quadro em que ela volta ao início é idêntico ao anterior.
 
-1. Um único `AnimationController` para todas as camadas. Vários timers concorrentes causam engasgo e vazamento
-2. `RepaintBoundary` isolando o fundo, senão cada quadro redesenha o card da pergunta
-3. Pausar quando o app vai para segundo plano. Sem isso, anima com a tela desligada e come bateria
-4. Congelar quando o teclado abrir
-5. Respeitar a configuração de acessibilidade de reduzir animações do Android
-6. Chave manual nas configurações para desligar o fundo
-7. Véu escuro entre o fundo e o card da pergunta
+As sete regras, e o estado de cada uma:
+
+1. **Um `AnimationController` só**, e ele mede o ciclo mais longo — o da camada de trás. As outras duas velocidades, e o passo do gato, saem daquele valor por multiplicação. Com um relógio por camada, elas sairiam de sincronia ao longo dos minutos e o loop deixaria de fechar
+2. **`RepaintBoundary`** isolando a faixa
+3. **Para em segundo plano**, via `WidgetsBindingObserver`
+4. **Congela com o teclado aberto**, e continua na tela. Sumir com ela faria o layout pular no meio da digitação, que é pior que o movimento
+5. **Respeita "reduzir animações"** do Android
+6. **Chave manual**: o ícone de montanha na trilha, ao lado do de som. Desligar **tira a faixa**, não apenas para o movimento — quem desliga quer a tela sem aquilo, não um cenário parado ocupando 58 pixels
+7. O véu escuro não se aplica a uma faixa de 58px na borda; ele volta a valer se um dia o cenário ocupar a tela inteira atrás do card
+
+**A camada de trás é mais lenta que a da frente, e essa diferença é a única coisa que produz profundidade.** Um teste trava isso: se as duas velocidades ficarem iguais, o parallax vira um fundo deslizante e ninguém percebe o que se perdeu.
+
+**A preferência do cenário mora na tabela `preferencia`**, que nasceu genérica — chave e valor — justamente porque este segundo uso estava previsto. Ela chegou sem custar migração nenhuma.
+
+#### Animação infinita quebra `pumpAndSettle`
+
+`pumpAndSettle` espera a árvore ficar parada, e uma animação em `repeat()` nunca fica. Três testes da trilha estouraram o limite de tempo assim que o cenário passou a vir ligado por padrão — sem defeito nenhum no código.
+
+A saída foi o `ProgressoFalso` dos testes nascer com o cenário **desligado**, e um grupo próprio provar que a preferência ligada funciona, usando `pump` com duração explícita. É a mesma família do problema já registrado em "Testes de widget não enxergam I/O real": o relógio do teste não é o relógio do app.
+
+#### O gerador escreve SVG **e** Dart
+
+`tools/gerar_faixas.py` emite duas saídas a partir da mesma fonte:
+
+| Saída | Para quê |
+|---|---|
+| `assets/cenarios/faixa-{dia,tarde,noite}.svg` | Referência de arte: abre no navegador, entra em pull request, anima em SMIL |
+| `app/lib/ui/cenario_gerado.dart` | O que o app desenha de verdade |
+
+O app **não lê os SVGs**: a animação deles é SMIL, que o `flutter_svg` não reproduz, e cada faixa é um arquivo único com as camadas dentro — não há como deslizar uma sem a outra. Então o app desenha com `CustomPainter`.
+
+Isso criaria uma segunda cópia da geometria, e duas cópias divergem. A saída foi emitir as duas do mesmo script, com **as mesmas strings de caminho** indo para os dois lados. O `path_parsing` (declarado explicitamente no `pubspec.yaml`, e não usado de carona no `flutter_svg`) lê essas strings no Dart.
+
+**O validador reprova quando um arquivo gerado difere do que o gerador produz** (`check_gerados_em_dia`). Ele roda o gerador em memória e compara com o disco. Sem essa regra, editar o Dart à mão funcionaria — o app compila, os testes passam, a tela muda — e a divergência só apareceria quando outra pessoa rodasse o gerador e visse a mudança sumir sem explicação.
+
+**Nenhum caminho do cenário usa arco elíptico**, e há um teste que impede a reintrodução. O `A` já custou uma rodada de depuração no retrato do mascote, quando a corda entre os pontos batia com o diâmetro.
+
+#### Como verificar que anima, e não só que desenha
+
+Desenhar e animar são coisas diferentes, e o teste de widget não distingue. A verificação foi feita capturando três quadros no emulador com ~0,9 s entre eles e contando pixels diferentes por região:
+
+```
+quadro 1 -> 2:  pixels mudados na FAIXA = 71209   no CONTEUDO acima = 0
+quadro 2 -> 3:  pixels mudados na FAIXA = 65786   no CONTEUDO acima = 0
+```
+
+Setenta mil pixels mudando na faixa e **zero** acima dela. O script está no scratchpad da sessão; para repetir, use `Pillow` com `ImageChops.difference` sobre recortes das duas regiões.
 
 ---
 
@@ -525,11 +565,11 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **C5** | Som de acerto | **concluída** |
 | **C6** | Tela de título de fliperama, com a ficha | **concluída** |
 | **C7** | Coleta de dados para estatísticas (banco v4) | **concluída — falta só a tela** |
+| **C8** | Cenário animado em parallax na tela de exercício | **concluída** |
 
 **Combinado e ainda não feito:**
 
 - **O Gustavo ainda não jogou o JavaScript.** As 50 questões foram calibradas sem ele jogar nenhuma; a dificuldade é palpite meu até ele passar por elas. É a mesma razão que fez o Python intermediário esperar
-- Fundo parallax e mascote caminhando na tela de exercício (Etapa C original)
 - **A TELA de estatísticas do jogador.** A coleta já está feita e medindo desde a versão 4 do banco — ver a seção própria em Progresso, que lista o que `resumoDoJogador()` já responde e os cuidados para a tela não mentir
 - Verificar o comportamento do som no modo silencioso, num celular de verdade
 
