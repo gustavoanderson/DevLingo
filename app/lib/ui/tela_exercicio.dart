@@ -250,13 +250,22 @@ class _SombraDeRecorte extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // O degrade termina num tom mais fundo que o fundo da tela. Terminar na
+    // propria cor do fundo deixaria a sombra invisivel: ela so escurece o que
+    // estiver por baixo, e no limite do miolo costuma haver so a borda fina de
+    // um cartao. Com o tom mais escuro, o degrade se ve mesmo sobre area vazia.
     return Container(
-      height: 28,
+      height: 44,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Paleta.fundo.withValues(alpha: 0), Paleta.fundo],
+          colors: [
+            Paleta.veu.withValues(alpha: 0),
+            Paleta.veu.withValues(alpha: 0.75),
+            Paleta.veu,
+          ],
+          stops: const [0, 0.55, 1],
         ),
       ),
     );

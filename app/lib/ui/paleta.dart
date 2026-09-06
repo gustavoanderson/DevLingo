@@ -12,6 +12,14 @@ abstract final class Paleta {
   static const texto = Color(0xFFF2F0FF);
   static const suave = Color(0xFF9B8FC7);
 
+  /// Tom mais fundo que o fundo, para a sombra de recorte ter o que escurecer.
+  ///
+  /// Um degrade que termina na propria cor do fundo e invisivel: ele so
+  /// escurece o que estiver por baixo, e no limite do miolo costuma haver
+  /// apenas a borda fina de um cartao. Este tom vem do mockup, que usa
+  /// `#0C0518` como fundo da pagina.
+  static const veu = Color(0xFF0C0518);
+
   // --- acentos com funcao definida ---
   static const acerto = Color(0xFFFF2D95);
   static const destaque = Color(0xFF00E5FF);
