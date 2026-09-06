@@ -499,6 +499,56 @@ Setenta mil pixels mudando na faixa e **zero** acima dela. O script está no scr
 
 ---
 
+## Conta e login
+
+**Decisão do Gustavo: conta obrigatória.** Ninguém joga sem entrar.
+
+Eu havia recomendado outra coisa — backup automático do Android primeiro, conta depois — e a recomendação foi recusada com a informação na mesa. Fica registrado para uma sessão futura não "corrigir" isto achando que foi descuido: **é escolha, não esquecimento.**
+
+### Obrigatória a CONTA, não a rede
+
+Sem esse desenho, login obrigatório brigaria com o offline-first já decidido para o projeto. Como fica:
+
+- A **primeira** abertura precisa de internet, para entrar ou criar conta
+- Depois disso a sessão fica em cache e o app abre **offline**, com o usuário já autenticado
+- Por isso `_usuario` em `main.dart` nasce lendo `autenticacao.usuarioAtual`, e não nulo
+- A mensagem de erro de rede diz isso em voz alta: *"precisa de internet só para entrar; depois disso ele funciona offline"*. Se a pessoa achar que o app inteiro exige conexão, ela desinstala
+
+### A ordem é título → login → trilha
+
+O formulário aparece **depois** do START, não antes. A arte do fliperama é a primeira coisa que a pessoa vê; login como primeiríssima tela transforma a abertura do app num pedágio.
+
+### O que a tela de entrada garante
+
+Os três modos — entrar, criar conta, recuperar senha — são **um formulário só** com o botão trocado. Três telas separadas repetiriam campo, validação e tratamento de erro em triplicata, e é assim que uma delas acaba com mensagem pior que as outras.
+
+- **Todo erro diz o que fazer.** Numa tela que dá para pular, mensagem ruim é irritação; aqui é a pessoa trancada do lado de fora do app inteiro. Um teste percorre `FalhaDeAutenticacao.values` e reprova mensagem curta demais
+- **O que dá para checar sem rede é checado sem rede.** Formato de e-mail e tamanho de senha respondem na hora. Um teste prova que e-mail malformado **nem chega a chamar** a autenticação
+- **A validação de e-mail é frouxa de propósito.** Falso negativo aqui tranca a pessoa fora do app; a checagem só pega erro de digitação óbvio. Quem diz se o endereço existe é o e-mail que chega
+- **A recuperação NUNCA revela se a conta existe.** Responder "não achamos esse e-mail" entregaria a lista de quem tem conta. Um teste compara as duas respostas e exige que sejam idênticas
+- **O mínimo da senha aparece antes de a pessoa errar.** Regra escondida até a falha é regra mal comunicada
+
+### O que ainda falta, e o que está bloqueado
+
+| Pendência | Quem destrava |
+|---|---|
+| Projeto no Firebase e `google-services.json` | **Só o Gustavo** — depende da conta Google dele |
+| Trocar `AutenticacaoFalsa` pela implementação real | Eu, depois do arquivo acima |
+| Sincronizar o progresso com o Firestore | Eu |
+| **O progresso ainda não é por usuário** | Eu, junto com o Firestore |
+
+A última é um **defeito real e conhecido**: o `devlingo.db` é único no aparelho e não tem coluna de usuário. Hoje, duas contas no mesmo celular veriam o mesmo progresso. Não foi resolvido agora porque a solução certa vem junto com a sincronização — e resolver pela metade duas vezes custa mais que resolver uma.
+
+Combinado quando o Firebase entrar: **a primeira conta que autenticar no aparelho adota o progresso que já está lá.** O Gustavo já tem partidas gravadas, e elas não podem evaporar quando o login chegar.
+
+### Modo de demonstração
+
+Enquanto o `google-services.json` não existir, o app roda com `AutenticacaoFalsa` e a tela **avisa isso na cara**, num painel amarelo. Login de mentira que não se anuncia é pior que nenhum: a pessoa cadastra um e-mail achando que tem conta e descobre depois que nunca houve conta nenhuma.
+
+Ao ligar o Firebase, troque a linha em `main.dart` e o painel some sozinho — ele é acionado por `_autenticacao is AutenticacaoFalsa`.
+
+---
+
 ## Validação de código escrito pelo usuário
 
 Três níveis possíveis, e o app fica nos dois primeiros:
@@ -542,7 +592,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **A** | Ambiente Flutter e Android, tudo no D: | **concluída e provada com APK compilado** |
 | **B** | **App mínimo jogável** | **próxima** |
 | C | Polimento visual: fundo parallax, mascote animado | depois |
-| D | Firebase: login e progresso na nuvem | depois |
+| D | Firebase: login e progresso na nuvem | **em andamento** — telas e testes prontos; falta o `google-services.json` |
 | E | Python intermediário e avançado, depois JavaScript e Node | depois |
 
 **Etapa B, o escopo mínimo.** Nada além disto entra, porque o objetivo é chegar a algo jogável, não a algo completo:
@@ -566,6 +616,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **C6** | Tela de título de fliperama, com a ficha | **concluída** |
 | **C7** | Coleta de dados para estatísticas (banco v4) | **concluída — falta só a tela** |
 | **C8** | Cenário animado em parallax na tela de exercício | **concluída** |
+| **D1** | Telas de entrar, criar conta e recuperar senha | **concluída, em modo de demonstração** |
 
 **Combinado e ainda não feito:**
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'auth/autenticacao.dart';
+import 'auth/autenticacao_falsa.dart';
 import 'data/progresso.dart';
 import 'data/question_bank.dart';
 import 'ui/paleta.dart';
 import 'ui/som.dart';
+import 'ui/tela_entrada.dart';
 import 'ui/tela_linguagens.dart';
 import 'ui/tela_titulo.dart';
 import 'ui/tela_trilha.dart';
@@ -57,6 +60,31 @@ class _CargaState extends State<_Carga> {
   /// quando o `FutureBuilder` reconstroi.
   bool _comecou = false;
 
+  /// Quem esta usando o app, ou nulo enquanto ninguem entrou.
+  ///
+  /// O Gustavo escolheu **conta obrigatoria**: sem usuario, o app nao passa da
+  /// tela de entrada. Mas "obrigatoria" vale para a CONTA, nao para a rede --
+  /// depois do primeiro login a sessao fica em cache e o app abre offline, o
+  /// que preserva o offline-first ja decidido para o projeto.
+  ///
+  /// Nasce lendo `usuarioAtual`, que é a **sessão em cache**. Com a
+  /// implementação em memória isso é sempre nulo; com o Firebase, é o que faz o
+  /// app abrir offline em quem já entrou uma vez. Deixar para "resolver depois"
+  /// significaria trocar a autenticação e o app continuar pedindo login toda
+  /// abertura, sem ninguém entender por quê.
+  late Usuario? _usuario = _autenticacao.usuarioAtual;
+
+  /// AINDA E A IMPLEMENTACAO EM MEMORIA.
+  ///
+  /// O Firebase exige um `google-services.json` ligado a um projeto real, que
+  /// depende da conta Google do Gustavo. Ate ele existir, o app roda com a
+  /// autenticacao falsa, e a tela de entrada **avisa isso na cara** -- login de
+  /// mentira que nao se anuncia e pior que nenhum.
+  ///
+  /// Ao trocar pela de verdade, mude esta linha e apague o `demonstracao: true`
+  /// mais abaixo. O resto do app nao muda, porque depende da interface.
+  late final Autenticacao _autenticacao = AutenticacaoFalsa();
+
   /// A sineta le a preferencia do banco a cada toque, sem cache: assim o botao
   /// de desligar tem efeito imediato e nao ha duas copias do mesmo dado para
   /// manter em sincronia.
@@ -76,6 +104,7 @@ class _CargaState extends State<_Carga> {
   @override
   void dispose() {
     _sineta.dispose();
+    _autenticacao.dispose();
     super.dispose();
   }
 
@@ -108,16 +137,31 @@ class _CargaState extends State<_Carga> {
           );
         }
 
-        final partida = snapshot.requireData;
-        final trilhas = TelaLinguagens.trilhasDe(partida.banco);
-
-        // Tela de escolha com um item so e cerimonia vazia: com uma trilha
-        // apenas, o app abre direto nela.
         // Devolver para a tela de titulo e so desligar `_comecou`: a carga ja
         // terminou, entao ela reaparece com `pronto: true` e o proximo START
         // entra na hora. Nada e recarregado, e o progresso continua onde estava.
         void aoVoltarAoTitulo() => setState(() => _comecou = false);
 
+        // Conta obrigatoria: depois do START, quem nao entrou nao passa daqui.
+        //
+        // A ordem e deliberada -- titulo ANTES do login. A arte do fliperama e
+        // a primeira coisa que a pessoa ve, e o formulario so aparece depois de
+        // ela pedir para comecar. Login como primeirissima tela transforma a
+        // abertura do app num pedagio.
+        if (_usuario == null) {
+          return TelaEntrada(
+            autenticacao: _autenticacao,
+            demonstracao: _autenticacao is AutenticacaoFalsa,
+            aoVoltarAoTitulo: aoVoltarAoTitulo,
+            aoEntrar: (usuario) => setState(() => _usuario = usuario),
+          );
+        }
+
+        final partida = snapshot.requireData;
+        final trilhas = TelaLinguagens.trilhasDe(partida.banco);
+
+        // Tela de escolha com um item so e cerimonia vazia: com uma trilha
+        // apenas, o app abre direto nela.
         if (trilhas.length == 1) {
           return TelaTrilha(
             banco: partida.banco,
