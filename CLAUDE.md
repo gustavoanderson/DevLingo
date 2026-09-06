@@ -381,6 +381,56 @@ Guardado em SQLite, em `app/lib/data/progresso.dart`. Duas tabelas: `resposta`, 
 
 **`question_id` é chave primária**, então refazer a lição substitui o registro em vez de duplicar. Isso só funciona porque o `id` da questão é imutável no banco de conteúdo: aquela regra ganhou consequência real aqui.
 
+### Estatísticas do jogador
+
+Ideia do Gustavo: mostrar ao jogador o desempenho dele — quantas acertou de primeira, quantas tentativas levou, e o que mais fizer sentido. Substitui, e amplia, a "tela de revisão dirigida" que estava na lista.
+
+**A COLETA está pronta (versão 4 do banco). A TELA ainda não existe**, e essa separação foi deliberada: dado não coletado é dado perdido, e nenhuma tela futura consegue reconstruir quanto tempo alguém levou numa questão que já respondeu. A tela pode esperar o tempo que for; a medição tinha que começar antes de alguém jogar.
+
+#### O que o banco responde hoje
+
+`resumoDoJogador()` e `custoPorTopico()` existem **sem tela nenhuma que os use**, pelo mesmo motivo: provar que o formato responde às perguntas que motivaram guardar os dados. Descobrir que falta uma coluna no dia de desenhar a tela seria tarde demais.
+
+| Métrica | De onde sai |
+|---|---|
+| Questões respondidas, por lição e linguagem | `respondidasPorLicao()` |
+| Acertos de primeira, e a taxa | `deCabeca`, `taxaDeCabeca` |
+| Reveladas, e em quais tópicos | `reveladas`, `custoPorTopico()` |
+| Média de tentativas por questão | `tentativasPorQuestao` |
+| Quantas vezes pediu a dica | `comDica` |
+| Tempo médio por questão | `tempoMedioPorQuestao` |
+| Partidas totais, contando as repetidas | `partidas` |
+| Em quantos dias distintos jogou | `diasEstudados` |
+
+#### As duas tabelas, e por que são duas
+
+- **`resposta` é o ESTADO ATUAL**, uma linha por questão, com `question_id` como chave primária. É o que a trilha consulta toda vez que abre, então precisa continuar pequeno
+- **`evento_resposta` é o HISTÓRICO**, só cresce, uma linha por vez que a questão foi respondida. Só é lido quando alguém abrir estatísticas
+
+Uma tabela só obrigaria a escolher entre as duas coisas: ou a trilha passa a varrer o histórico inteiro para contar questões respondidas, ou o histórico é destruído a cada vez que alguém refaz uma lição. **Refazer sobrescreve em `resposta` e acumula em `evento_resposta`** — é isso que torna possível falar em evolução.
+
+#### Decisões que a estatística exige e que são fáceis de errar
+
+- **Nulo é "não medido", nunca zero.** Quem jogou antes da versão 4 tem registro sem tempo e sem dica. Gravar zero seria mais simples e mentiria nas médias: uma questão "respondida em 0 segundo" puxaria a média para baixo e ninguém saberia por quê. Por isso `ResumoDoJogador` carrega `questoesComTempo` ao lado de `tempoMedido` — dividir pelo total daria média errada
+- **`tetoDeDuracao` é 10 minutos, e é um chute confesso.** O app não distingue pensar de ir almoçar. Sem teto, uma questão de seis horas destrói qualquer média e a estatística passa a mentir sem avisar, o que é pior que não existir. Recalibrar quando houver dados reais
+- **Pedir a dica ≠ a dica abrir sozinha.** Ela abre sozinha no segundo erro de uma questão de escrita. Contar isso como "usou a dica" transformaria "pedi ajuda" em "errei duas vezes". Por isso `SessaoQuestao` tem `dicaPedida` separado de `dicaAberta`, e só o primeiro vai para o banco
+- **`SessaoQuestao` recebe um relógio injetável.** Sem isso, o teste teria que esperar de verdade ou aceitar qualquer número, que é o mesmo que não testar
+- **Toda saída de `respondendo` passa por `_concluir`.** Atribuir `fase` direto em cada ramo funcionava, mas bastaria um ramo novo esquecer o carimbo da hora para a duração sumir sem nada quebrar
+
+#### Quando a tela for feita
+
+- **Nada de "você está pior que ontem".** A mecânica inteira foi desenhada para não punir; estatística que cobra é a mesma punição em forma de número
+- **Tempo não vira competição.** Medir para o aluno se conhecer, não para ele correr — pressa é inimiga de entender
+- **A tela precisa tratar o nulo.** Partidas anteriores à versão 4 não têm tempo nem dica, e fingir que têm é o único jeito de a tela mentir
+
+#### Migração com duas rotas: prove que convergem
+
+Um esquema pode ser alcançado por dois caminhos — o `CREATE TABLE` de quem instala agora, e o `ALTER TABLE` de quem atualiza. Se divergirem, o defeito só aparece em quem instalou numa versão específica, que é o tipo de bug que não se reproduz na máquina de ninguém.
+
+As colunas novas vivem numa lista só (`_colunasDeMedicao`) usada pelas duas rotas, e **um teste compara o `PRAGMA table_info` das duas**. Ele foi verificado introduzindo uma divergência de propósito: uma coluna só no `CREATE`. O teste reprovou, como devia.
+
+Vale registrar como essa verificação quase falhou: o script que introduziu a divergência **não substituiu nada e mesmo assim imprimiu sucesso**, e o teste passou. Por um instante isso parecia prova de que o teste era falso negativo — quando na verdade o experimento nunca tinha acontecido. Ao sondar, confirme que a sonda entrou no arquivo antes de acreditar no resultado.
+
 ### Migração do banco: nunca recriar
 
 O app já está no celular de alguém, com progresso dentro. Ao mudar o esquema, **recriar o banco do zero é mais simples e apaga o progresso do aluno** — que é exatamente o que o `Progresso` existe para não fazer.
@@ -474,12 +524,13 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **C4** | Realce de sintaxe nos blocos de código | **concluída** |
 | **C5** | Som de acerto | **concluída** |
 | **C6** | Tela de título de fliperama, com a ficha | **concluída** |
+| **C7** | Coleta de dados para estatísticas (banco v4) | **concluída — falta só a tela** |
 
 **Combinado e ainda não feito:**
 
 - **O Gustavo ainda não jogou o JavaScript.** As 50 questões foram calibradas sem ele jogar nenhuma; a dificuldade é palpite meu até ele passar por elas. É a mesma razão que fez o Python intermediário esperar
 - Fundo parallax e mascote caminhando na tela de exercício (Etapa C original)
-- Tela de revisão dirigida, usando o `custoPorTopico()` que já existe no progresso e ninguém chama ainda
+- **A TELA de estatísticas do jogador.** A coleta já está feita e medindo desde a versão 4 do banco — ver a seção própria em Progresso, que lista o que `resumoDoJogador()` já responde e os cuidados para a tela não mentir
 - Verificar o comportamento do som no modo silencioso, num celular de verdade
 
 ### Som de acerto

@@ -28,6 +28,23 @@ class RespostaGravada {
   final Desfecho desfecho;
   final DateTime respondidaEm;
 
+  /// Quanto tempo levou. **Nulo quando nao foi medido**, e nao zero.
+  ///
+  /// Duas situacoes produzem nulo, e as duas sao reais: a partida aconteceu
+  /// antes de o app passar a medir (versao 3 do banco ou anterior), ou a
+  /// medicao estourou o teto de [Progresso.tetoDeDuracao] e foi descartada.
+  ///
+  /// Guardar zero no lugar seria mais simples e mentiria nas medias: uma
+  /// questao "respondida em 0 segundo" puxaria a media para baixo e ninguem
+  /// saberia por que. Quem for exibir isso tem que tratar o nulo.
+  final Duration? duracao;
+
+  /// Se o aluno **pediu** a dica. Nulo quando a partida e anterior a medicao.
+  ///
+  /// Pedir e diferente de a dica ter aberto sozinha no segundo erro: so o
+  /// primeiro e escolha dele. Ver `SessaoQuestao.dicaPedida`.
+  final bool? usouDica;
+
   const RespostaGravada({
     required this.questionId,
     required this.lessonId,
@@ -37,10 +54,74 @@ class RespostaGravada {
     required this.tentativas,
     required this.desfecho,
     required this.respondidaEm,
+    this.duracao,
+    this.usouDica,
   });
 
   /// Acertou de primeira, sem tropecos.
   bool get deCabeca => desfecho == Desfecho.acertou && tentativas == 1;
+}
+
+/// O retrato do desempenho do aluno, para a tela de estatisticas.
+///
+/// Nenhuma tela usa isto ainda, pelo mesmo motivo de [CustoDoTopico]: existe
+/// para **provar que o formato responde as perguntas** que motivaram guardar os
+/// dados. Descobrir que falta uma coluna no dia de desenhar a tela seria tarde
+/// demais, porque coluna que nao existia nao tem como ser preenchida no passado.
+class ResumoDoJogador {
+  /// Questoes distintas ja respondidas.
+  final int respondidas;
+
+  /// Dessas, quantas sairam de primeira.
+  final int deCabeca;
+
+  /// Dessas, quantas terminaram reveladas.
+  final int reveladas;
+
+  /// Soma de tentativas sobre [respondidas].
+  final int tentativas;
+
+  /// Em quantas o aluno pediu a dica.
+  final int comDica;
+
+  /// Tempo somado, e sobre quantas questoes ele foi medido.
+  ///
+  /// As duas andam juntas de proposito: dividir o tempo por [respondidas]
+  /// daria uma media errada enquanto houver partidas sem medicao.
+  final Duration tempoMedido;
+  final int questoesComTempo;
+
+  /// Quantas vezes uma questao foi respondida, contando as repetidas.
+  ///
+  /// Diferente de [respondidas]: refazer uma licao nao aumenta aquele numero,
+  /// mas aumenta este. E o que permite falar em evolucao.
+  final int partidas;
+
+  /// Em quantos dias distintos o aluno jogou.
+  final int diasEstudados;
+
+  const ResumoDoJogador({
+    required this.respondidas,
+    required this.deCabeca,
+    required this.reveladas,
+    required this.tentativas,
+    required this.comDica,
+    required this.tempoMedido,
+    required this.questoesComTempo,
+    required this.partidas,
+    required this.diasEstudados,
+  });
+
+  double get taxaDeCabeca => respondidas == 0 ? 0 : deCabeca / respondidas;
+  double get tentativasPorQuestao =>
+      respondidas == 0 ? 0 : tentativas / respondidas;
+
+  /// Media so sobre o que foi medido. Nula quando nada foi.
+  Duration? get tempoMedioPorQuestao => questoesComTempo == 0
+      ? null
+      : Duration(
+          milliseconds: tempoMedido.inMilliseconds ~/ questoesComTempo,
+        );
 }
 
 /// Quanto um topico custou ao aluno.
@@ -112,7 +193,28 @@ class Progresso implements RegistroDeProgresso {
   /// Versao 1: tabelas `resposta` e `posicao`.
   /// Versao 2: tabela `aula_vista`.
   /// Versao 3: tabela `preferencia`.
-  static const int versao = 3;
+  /// Versao 4: medicao de tempo e de dica, e a tabela `evento_resposta`.
+  static const int versao = 4;
+
+  /// Acima disto a medicao de tempo e descartada e gravada como nula.
+  ///
+  /// O aluno pode largar o celular no meio de uma questao, e o app nao tem como
+  /// saber a diferenca entre pensar e ir almocar. Sem teto, uma unica questao
+  /// de seis horas destroi qualquer media, e a estatistica passa a mentir sem
+  /// avisar -- pior do que nao existir.
+  ///
+  /// Dez minutos e um **chute** deliberadamente generoso: pensar seis minutos
+  /// numa questao dificil e plausivel, dez ja e ter saido. Recalibrar quando
+  /// houver dados reais de alguem jogando; ate la, e um numero escolhido sem
+  /// evidencia, e esta escrito aqui que e.
+  static const Duration tetoDeDuracao = Duration(minutes: 10);
+
+  /// A duracao que deve ser gravada: a medida, ou nulo se implausivel.
+  static int? duracaoGravavel(Duration? medida) {
+    if (medida == null) return null;
+    if (medida.isNegative || medida > tetoDeDuracao) return null;
+    return medida.inMilliseconds;
+  }
 
   /// Chave da preferencia de som. Tabela generica em vez de coluna propria
   /// porque o CLAUDE.md ja preve outra chave, a do fundo animado.
@@ -148,7 +250,27 @@ class Progresso implements RegistroDeProgresso {
     if (de < 3) {
       await _criarPreferencia(bd);
     }
+    if (de < 4) {
+      // ALTER em vez de recriar: a tabela `resposta` tem o progresso do aluno
+      // dentro. Colunas novas nascem nulas nas linhas antigas, que e exatamente
+      // o que se quer -- aquelas partidas realmente nao foram medidas.
+      for (final coluna in _colunasDeMedicao) {
+        await bd.execute('ALTER TABLE resposta ADD COLUMN $coluna');
+      }
+      await _criarEventoResposta(bd);
+    }
   }
+
+  /// As colunas de medicao, numa lista so.
+  ///
+  /// Existem em duas rotas -- o `CREATE TABLE` de quem instala agora e o `ALTER
+  /// TABLE` de quem atualiza -- e as duas precisam chegar ao mesmo esquema.
+  /// Escrever a definicao aqui e o que impede as rotas de divergirem; um teste
+  /// compara o `PRAGMA table_info` das duas para provar que nao divergiram.
+  static const List<String> _colunasDeMedicao = [
+    'duracao_ms INTEGER',
+    'usou_dica INTEGER',
+  ];
 
   static Future<void> _criar(Database bd, int _) async {
     await bd.execute('''
@@ -160,7 +282,8 @@ class Progresso implements RegistroDeProgresso {
         topic         TEXT NOT NULL,
         tentativas    INTEGER NOT NULL,
         desfecho      TEXT NOT NULL,
-        respondida_em INTEGER NOT NULL
+        respondida_em INTEGER NOT NULL,
+        ${_colunasDeMedicao.join(',\n        ')}
       )
     ''');
     // Os dois indices existem para as consultas que o app fara de verdade:
@@ -178,6 +301,49 @@ class Progresso implements RegistroDeProgresso {
 
     await _criarAulaVista(bd);
     await _criarPreferencia(bd);
+    await _criarEventoResposta(bd);
+  }
+
+  /// O historico, uma linha por vez que uma questao foi respondida.
+  ///
+  /// Existe porque `resposta` tem `question_id` como chave primaria: refazer
+  /// uma licao **sobrescreve** o registro de la. Isso e correto para o estado
+  /// atual, que e o que a trilha desenha, e destroi qualquer nocao de passado.
+  /// Sem passado nao ha evolucao, nem ofensiva, nem "voce melhorou nisto".
+  ///
+  /// Por isso sao duas tabelas com papeis distintos, e nao uma so:
+  ///
+  /// - `resposta` e o **estado atual**, consultado a cada abertura da trilha.
+  ///   Precisa continuar pequeno, com uma linha por questao existente
+  /// - `evento_resposta` e o **historico**, so cresce, e e lido apenas quando
+  ///   alguem abrir estatisticas
+  ///
+  /// Uma tabela unica obrigaria a escolher entre as duas coisas: ou a trilha
+  /// passa a varrer o historico inteiro para contar quantas questoes foram
+  /// respondidas, ou o historico e jogado fora a cada refazimento.
+  static Future<void> _criarEventoResposta(Database bd) async {
+    await bd.execute('''
+      CREATE TABLE evento_resposta (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        question_id   TEXT    NOT NULL,
+        lesson_id     TEXT    NOT NULL,
+        language      TEXT    NOT NULL,
+        level         TEXT    NOT NULL,
+        topic         TEXT    NOT NULL,
+        tentativas    INTEGER NOT NULL,
+        desfecho      TEXT    NOT NULL,
+        usou_dica     INTEGER NOT NULL,
+        duracao_ms    INTEGER,
+        respondida_em INTEGER NOT NULL
+      )
+    ''');
+    // A consulta de estatisticas percorre o historico por data e por questao.
+    await bd.execute(
+      'CREATE INDEX idx_evento_quando ON evento_resposta(respondida_em)',
+    );
+    await bd.execute(
+      'CREATE INDEX idx_evento_questao ON evento_resposta(question_id)',
+    );
   }
 
   /// Fica em funcao propria para o `onCreate` e o `onUpgrade` usarem a mesma
@@ -214,7 +380,7 @@ class Progresso implements RegistroDeProgresso {
   }) async {
     if (!sessao.terminou) return;
 
-    await _bd.insert('resposta', {
+    final dados = {
       'question_id': questao.id,
       'lesson_id': licao.lessonId,
       'language': licao.language,
@@ -224,8 +390,24 @@ class Progresso implements RegistroDeProgresso {
       'desfecho': sessao.fase == FaseResposta.acertou
           ? Desfecho.acertou.name
           : Desfecho.revelada.name,
+      'usou_dica': sessao.dicaPedida ? 1 : 0,
+      'duracao_ms': duracaoGravavel(sessao.duracao),
       'respondida_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    };
+
+    // Numa transacao so: o estado atual e o historico contam a mesma coisa, e
+    // gravar um sem o outro produziria um banco que se contradiz -- uma questao
+    // respondida sem partida nenhuma, ou o contrario.
+    await _bd.transaction((txn) async {
+      await txn.insert(
+        'resposta',
+        dados,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      // Sem `question_id` como chave: aqui cada resposta e um evento novo, e
+      // repetir a mesma questao e justamente o que se quer registrar.
+      await txn.insert('evento_resposta', dados);
+    });
   }
 
   Future<RespostaGravada?> respostaDe(String questionId) async {
@@ -369,6 +551,54 @@ class Progresso implements RegistroDeProgresso {
         .toList(growable: false);
   }
 
+  /// O retrato do desempenho do aluno.
+  ///
+  /// Lê das duas tabelas porque elas respondem perguntas diferentes: `resposta`
+  /// diz como o aluno está **agora**, `evento_resposta` diz o que ele já fez.
+  ///
+  /// Nao e usado por nenhuma tela ainda, do mesmo jeito que [custoPorTopico].
+  /// Existe para provar que o formato responde as perguntas que motivaram
+  /// guardar os dados -- e essa prova tem que vir **antes** de alguem jogar,
+  /// porque coluna que nao existia nao tem como ser preenchida no passado.
+  Future<ResumoDoJogador> resumoDoJogador() async {
+    final atual = (await _bd.rawQuery('''
+      SELECT COUNT(*)                                            AS respondidas,
+             SUM(CASE WHEN desfecho = ? AND tentativas = 1
+                      THEN 1 ELSE 0 END)                         AS de_cabeca,
+             SUM(CASE WHEN desfecho = ? THEN 1 ELSE 0 END)       AS reveladas,
+             SUM(tentativas)                                     AS tentativas,
+             SUM(CASE WHEN usou_dica = 1 THEN 1 ELSE 0 END)      AS com_dica,
+             SUM(COALESCE(duracao_ms, 0))                        AS tempo_ms,
+             SUM(CASE WHEN duracao_ms IS NOT NULL
+                      THEN 1 ELSE 0 END)                         AS com_tempo
+        FROM resposta
+    ''', [Desfecho.acertou.name, Desfecho.revelada.name])).first;
+
+    // `date(..., 'unixepoch', 'localtime')` agrupa por dia no fuso do aparelho:
+    // agrupar em UTC contaria como dois dias uma noite de estudo que virou.
+    final historico = (await _bd.rawQuery('''
+      SELECT COUNT(*)                                            AS partidas,
+             COUNT(DISTINCT date(respondida_em / 1000,
+                                 'unixepoch', 'localtime'))      AS dias
+        FROM evento_resposta
+    ''')).first;
+
+    int n(Map<String, Object?> linha, String coluna) =>
+        (linha[coluna] as int?) ?? 0;
+
+    return ResumoDoJogador(
+      respondidas: n(atual, 'respondidas'),
+      deCabeca: n(atual, 'de_cabeca'),
+      reveladas: n(atual, 'reveladas'),
+      tentativas: n(atual, 'tentativas'),
+      comDica: n(atual, 'com_dica'),
+      tempoMedido: Duration(milliseconds: n(atual, 'tempo_ms')),
+      questoesComTempo: n(atual, 'com_tempo'),
+      partidas: n(historico, 'partidas'),
+      diasEstudados: n(historico, 'dias'),
+    );
+  }
+
   static RespostaGravada _lerResposta(Map<String, Object?> l) => RespostaGravada(
     questionId: l['question_id'] as String,
     lessonId: l['lesson_id'] as String,
@@ -382,5 +612,15 @@ class Progresso implements RegistroDeProgresso {
     respondidaEm: DateTime.fromMillisecondsSinceEpoch(
       l['respondida_em'] as int,
     ),
+    // Nulo aqui significa "nao medido", e continua nulo ate a tela. Ver o
+    // comentario em RespostaGravada.duracao.
+    duracao: switch (l['duracao_ms']) {
+      final int ms => Duration(milliseconds: ms),
+      _ => null,
+    },
+    usouDica: switch (l['usou_dica']) {
+      final int v => v == 1,
+      _ => null,
+    },
   );
 }

@@ -38,10 +38,31 @@ enum FaseResposta {
 /// aluno trava sem nunca descobrir a resposta, ou recebe tudo de uma vez e nao
 /// aprende nada no caminho.
 class SessaoQuestao {
-  SessaoQuestao(this.questao, {Random? sorteio})
-    : alternativas = _embaralhar(questao.options, sorteio);
+  SessaoQuestao(this.questao, {Random? sorteio, DateTime Function()? relogio})
+    : alternativas = _embaralhar(questao.options, sorteio),
+      _relogio = relogio ?? DateTime.now {
+    iniciadaEm = _relogio();
+  }
+
+  /// Injetavel para o teste nao depender do relogio de verdade.
+  ///
+  /// Sem isto, medir tempo tornaria a sessao impossivel de testar: o teste
+  /// teria que esperar de verdade, ou aceitar qualquer numero, que e o mesmo
+  /// que nao testar.
+  final DateTime Function() _relogio;
 
   final Question questao;
+
+  /// Quando a questao apareceu, e quando terminou. Viram a duracao gravada.
+  late final DateTime iniciadaEm;
+  DateTime? terminadaEm;
+
+  /// Quanto tempo o aluno levou. Nulo enquanto a questao nao terminou.
+  ///
+  /// **Vem crua, sem teto.** Quem decide o que e uma medicao plausivel e o
+  /// [Progresso], ao gravar: a sessao mede, o repositorio julga. Assim o teto
+  /// tem um lugar so, em vez de um valor diferente em cada chamador.
+  Duration? get duracao => terminadaEm?.difference(iniciadaEm);
 
   /// As alternativas na ordem em que aparecem na tela.
   ///
@@ -67,7 +88,16 @@ class SessaoQuestao {
   /// revisao dirigida possivel.
   int tentativas = 0;
 
+  /// Se o painel da dica esta visivel, tendo sido pedido ou aberto sozinho.
   bool dicaAberta = false;
+
+  /// Se o aluno **escolheu** abrir a dica, tocando no botao.
+  ///
+  /// Separado de [dicaAberta] de proposito. A dica tambem abre sozinha no
+  /// segundo erro de uma questao de escrita, e contar isso como "usou a dica"
+  /// transformaria "pedi ajuda" em "errei duas vezes" na estatistica. Sao duas
+  /// coisas diferentes sobre o aluno, e so uma delas e escolha dele.
+  bool dicaPedida = false;
 
   /// Recado curto exibido depois de uma tentativa errada.
   ///
@@ -111,6 +141,17 @@ class SessaoQuestao {
   void abrirDica() {
     if (terminou) return;
     dicaAberta = true;
+    dicaPedida = true;
+  }
+
+  /// Encerra a questao, carimbando a hora.
+  ///
+  /// Toda saida de [FaseResposta.respondendo] passa por aqui. Atribuir `fase`
+  /// direto em cada ramo funcionaria, e era assim antes -- mas bastaria um ramo
+  /// novo esquecer o carimbo para a duracao sumir sem nada quebrar.
+  void _concluir(FaseResposta desfecho) {
+    fase = desfecho;
+    terminadaEm = _relogio();
   }
 
   /// Verifica a alternativa marcada. So vale para multipla escolha.
@@ -121,7 +162,7 @@ class SessaoQuestao {
     tentativas++;
 
     if (escolha.correct) {
-      fase = FaseResposta.acertou;
+      _concluir(FaseResposta.acertou);
       recado = null;
       return;
     }
@@ -134,7 +175,7 @@ class SessaoQuestao {
 
     // Sobrou apenas a correta: revelar em vez de pedir o toque cerimonial.
     if (eliminadas.length >= alternativas.length - 1) {
-      fase = FaseResposta.revelado;
+      _concluir(FaseResposta.revelado);
     }
   }
 
@@ -146,14 +187,14 @@ class SessaoQuestao {
     tentativas++;
 
     if (respondeuCerto(questao, texto)) {
-      fase = FaseResposta.acertou;
+      _concluir(FaseResposta.acertou);
       recado = null;
       esqueleto = null;
       return;
     }
 
     if (tentativas >= _tentativasNaEscrita) {
-      fase = FaseResposta.revelado;
+      _concluir(FaseResposta.revelado);
       recado = null;
       esqueleto = null;
       return;
