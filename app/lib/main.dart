@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'data/progresso.dart';
 import 'data/question_bank.dart';
 import 'ui/paleta.dart';
+import 'ui/som.dart';
 import 'ui/tela_linguagens.dart';
 import 'ui/tela_trilha.dart';
 
@@ -48,9 +49,24 @@ class _Carga extends StatefulWidget {
 class _CargaState extends State<_Carga> {
   late final Future<_Partida> _partida = _preparar();
 
+  /// A sineta le a preferencia do banco a cada toque, sem cache: assim o botao
+  /// de desligar tem efeito imediato e nao ha duas copias do mesmo dado para
+  /// manter em sincronia.
+  Progresso? _progresso;
+  late final Sineta _sineta = SinetaDeVerdade(
+    estaLigado: () async => await _progresso?.somLigado() ?? false,
+  );
+
+  @override
+  void dispose() {
+    _sineta.dispose();
+    super.dispose();
+  }
+
   Future<_Partida> _preparar() async {
     final banco = await QuestionBank.carregar();
     final progresso = await Progresso.abrir();
+    _progresso = progresso;
     return _Partida(banco, progresso);
   }
 
@@ -83,12 +99,14 @@ class _CargaState extends State<_Carga> {
             level: trilhas.single.level,
             progresso: partida.progresso,
             podeVoltar: false,
+            sineta: _sineta,
           );
         }
 
         return TelaLinguagens(
           banco: partida.banco,
           progresso: partida.progresso,
+          sineta: _sineta,
         );
       },
     );

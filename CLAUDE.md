@@ -367,7 +367,17 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 
 **Combinado e ainda não feito:**
 
-- **Som de acerto.** Uma fanfarra de trompete comemorando, no espírito "tã-tã-tã-tãã". Exige um arquivo de áudio, um pacote (`audioplayers`), respeito ao modo silencioso e uma chave para desligar — mesmo padrão do fundo animado. Ficou fora do B5 porque som é camada, não requisito para jogar.
+### Som de acerto
+
+`app/assets/som/acerto.wav` é uma **onda quadrada sintetizada**, não um trompete gravado — chiptune combina com um gato ciborgue de visor neon melhor que orquestra. Foi gerado por script com a biblioteca padrão do Python; para refazê-lo, sintetize de novo em vez de editar o WAV.
+
+**Só o acerto tem som.** Errar e revelar são silenciosos: som de erro é punição sonora, e revelar não é conquista. Três testes travam isso.
+
+**O som nunca é o único retorno.** O verde e a explicação funcionam com ele mudo, então desligar não tira informação de ninguém. A chave fica no ícone de som da trilha, e a preferência mora no banco.
+
+**Nada de áudio pode tocar a plataforma antes do primeiro acerto.** O `AudioPlayer` é criado dentro do primeiro `acerto()`, nunca no construtor: criá-lo no construtor punha conversa com o serviço de áudio dentro do `build` de uma tela, que é onde ela não pode estar.
+
+**Pendente de verificação:** o áudio está configurado no canal de notificação, que é o que o modo silencioso do aparelho silencia. Isso **não foi verificado** — no emulador não há como confirmar por `adb` se o som saiu. Confira num celular de verdade.
 ### Realce de sintaxe
 
 O tokenizador vive em `app/lib/ui/realce.dart` e é **Dart puro, sem importar Flutter**: classificar código é lógica, pintar é apresentação. As cores vêm do mockup.

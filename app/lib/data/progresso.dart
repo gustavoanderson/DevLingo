@@ -89,6 +89,10 @@ abstract interface class RegistroDeProgresso {
   Future<void> marcarAulaVista(String lessonId, {DateTime? quando});
 
   Future<Map<String, int>> respondidasPorLicao();
+
+  Future<bool> somLigado();
+
+  Future<void> definirSom({required bool ligado});
 }
 
 /// Guarda o progresso do aluno no aparelho.
@@ -107,7 +111,12 @@ class Progresso implements RegistroDeProgresso {
 
   /// Versao 1: tabelas `resposta` e `posicao`.
   /// Versao 2: tabela `aula_vista`.
-  static const int versao = 2;
+  /// Versao 3: tabela `preferencia`.
+  static const int versao = 3;
+
+  /// Chave da preferencia de som. Tabela generica em vez de coluna propria
+  /// porque o CLAUDE.md ja preve outra chave, a do fundo animado.
+  static const String prefSom = 'som';
 
   static Future<Progresso> abrir({String? caminho, DatabaseFactory? fabrica}) async {
     final fab = fabrica ?? databaseFactory;
@@ -135,6 +144,9 @@ class Progresso implements RegistroDeProgresso {
   static Future<void> _migrar(Database bd, int de, int para) async {
     if (de < 2) {
       await _criarAulaVista(bd);
+    }
+    if (de < 3) {
+      await _criarPreferencia(bd);
     }
   }
 
@@ -165,6 +177,7 @@ class Progresso implements RegistroDeProgresso {
     ''');
 
     await _criarAulaVista(bd);
+    await _criarPreferencia(bd);
   }
 
   /// Fica em funcao propria para o `onCreate` e o `onUpgrade` usarem a mesma
@@ -174,6 +187,13 @@ class Progresso implements RegistroDeProgresso {
     CREATE TABLE aula_vista (
       lesson_id TEXT PRIMARY KEY,
       vista_em  INTEGER NOT NULL
+    )
+  ''');
+
+  static Future<void> _criarPreferencia(Database bd) => bd.execute('''
+    CREATE TABLE preferencia (
+      chave TEXT PRIMARY KEY,
+      valor TEXT NOT NULL
     )
   ''');
 
@@ -295,6 +315,31 @@ class Progresso implements RegistroDeProgresso {
     return {
       for (final l in linhas) l['lesson_id'] as String: l['total'] as int,
     };
+  }
+
+  /// Se o som de acerto esta ligado. Ligado por padrao.
+  ///
+  /// O som nunca e o unico retorno: o verde e a explicacao continuam
+  /// funcionando com ele mudo. Por isso desligar nao tira informacao nenhuma.
+  @override
+  Future<bool> somLigado() async {
+    final linhas = await _bd.query(
+      'preferencia',
+      columns: ['valor'],
+      where: 'chave = ?',
+      whereArgs: [prefSom],
+      limit: 1,
+    );
+    if (linhas.isEmpty) return true;
+    return linhas.first['valor'] == '1';
+  }
+
+  @override
+  Future<void> definirSom({required bool ligado}) {
+    return _bd.insert('preferencia', {
+      'chave': prefSom,
+      'valor': ligado ? '1' : '0',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /// Quanto cada topico custou, do mais caro para o mais barato.

@@ -37,6 +37,7 @@ dependencies:
   sqflite: ^2.4.3
   path: ^1.9.1
   flutter_svg: ^2.3.0
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,7 @@ flutter:
     - assets/content/python/
     - assets/content/javascript/
     - assets/mascot/
+    - assets/som/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

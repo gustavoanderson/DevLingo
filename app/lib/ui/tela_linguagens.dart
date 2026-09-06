@@ -5,6 +5,7 @@ import '../data/progresso.dart';
 import '../data/question_bank.dart';
 import '../models/lesson.dart';
 import 'paleta.dart';
+import 'som.dart';
 import 'tela_trilha.dart';
 
 /// Escolha da linguagem e do nível.
@@ -13,10 +14,16 @@ import 'tela_trilha.dart';
 /// com um item só é cerimônia vazia: se o banco tiver uma trilha apenas, o app
 /// abre direto nela.
 class TelaLinguagens extends StatefulWidget {
-  const TelaLinguagens({super.key, required this.banco, this.progresso});
+  const TelaLinguagens({
+    super.key,
+    required this.banco,
+    this.progresso,
+    this.sineta,
+  });
 
   final QuestionBank banco;
   final RegistroDeProgresso? progresso;
+  final Sineta? sineta;
 
   /// As trilhas que existem de verdade, em ordem de linguagem e nível.
   ///
@@ -63,6 +70,7 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
           language: language,
           level: level,
           progresso: widget.progresso,
+          sineta: widget.sineta,
         ),
       ),
     );

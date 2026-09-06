@@ -161,10 +161,14 @@ void main() {
     testWidgets('nenhuma linha de codigo pode quebrar', (tester) async {
       await montar(tester, licaoCom(_longa), tela: const Size(390, 844));
 
+      // Com o realce de sintaxe a linha virou Text.rich, entao o conteudo mora
+      // no textSpan e nao mais em data. A propriedade protegida e a mesma; o
+      // que mudou foi onde olhar para encontra-la.
       final textos = tester.widgetList<Text>(find.byType(Text));
-      final linhasDeCodigo = textos.where(
-        (t) => (t.data ?? '').contains('print(') || (t.data ?? '').contains('elif'),
-      );
+      final linhasDeCodigo = textos.where((t) {
+        final conteudo = t.data ?? t.textSpan?.toPlainText() ?? '';
+        return conteudo.contains('print(') || conteudo.contains('elif');
+      });
 
       expect(linhasDeCodigo, isNotEmpty);
       for (final linha in linhasDeCodigo) {
@@ -173,7 +177,7 @@ void main() {
           isFalse,
           reason:
               'quebra automatica destroi a indentacao, e indentacao em Python '
-              'e sintaxe: "${linha.data}"',
+              'e sintaxe: "${linha.data ?? linha.textSpan?.toPlainText()}"',
         );
       }
     });

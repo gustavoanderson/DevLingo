@@ -5,6 +5,7 @@ import '../data/question_bank.dart';
 import '../models/lesson.dart';
 import 'fluxo_da_licao.dart';
 import 'paleta.dart';
+import 'som.dart';
 import 'sombra_de_recorte.dart';
 
 /// A trilha de uma linguagem e nível: as lições em ordem, com o progresso.
@@ -24,6 +25,7 @@ class TelaTrilha extends StatefulWidget {
     required this.level,
     this.progresso,
     this.podeVoltar = true,
+    this.sineta,
   });
 
   final QuestionBank banco;
@@ -34,7 +36,10 @@ class TelaTrilha extends StatefulWidget {
   /// Falso quando a trilha é a primeira tela, sem escolha de linguagem atrás.
   final bool podeVoltar;
 
+  final Sineta? sineta;
+
   static const Key chaveSombra = Key('sombra-da-trilha');
+  static const Key chaveSom = Key('trilha-som');
 
   @override
   State<TelaTrilha> createState() => _TelaTrilhaState();
@@ -44,6 +49,10 @@ class _TelaTrilhaState extends State<TelaTrilha>
     with AvisaConteudoCortado<TelaTrilha> {
   /// Quantas questões já foram respondidas em cada lição.
   Map<String, int> _respondidas = const {};
+
+  /// Ligado por padrão. Nunca é o único retorno: o verde e a explicação
+  /// continuam funcionando com ele mudo.
+  bool _som = true;
 
   List<Lesson> get _licoes => widget.banco.trilha(widget.language, widget.level);
 
@@ -61,9 +70,21 @@ class _TelaTrilhaState extends State<TelaTrilha>
   }
 
   Future<void> _recarregar() async {
-    final contagem = await widget.progresso?.respondidasPorLicao();
-    if (!mounted || contagem == null) return;
-    setState(() => _respondidas = contagem);
+    final progresso = widget.progresso;
+    if (progresso == null) return;
+    final contagem = await progresso.respondidasPorLicao();
+    final som = await progresso.somLigado();
+    if (!mounted) return;
+    setState(() {
+      _respondidas = contagem;
+      _som = som;
+    });
+  }
+
+  Future<void> _alternarSom() async {
+    final novo = !_som;
+    setState(() => _som = novo);
+    await widget.progresso?.definirSom(ligado: novo);
   }
 
   Future<void> _abrir(Lesson licao) async {
@@ -82,6 +103,7 @@ class _TelaTrilhaState extends State<TelaTrilha>
           progresso: progresso,
           indiceInicial: indice,
           aulaJaVista: aulaVista,
+          sineta: widget.sineta,
         ),
       ),
     );
@@ -114,6 +136,8 @@ class _TelaTrilhaState extends State<TelaTrilha>
               aoVoltar: widget.podeVoltar
                   ? () => Navigator.of(context).pop()
                   : null,
+              somLigado: _som,
+              aoAlternarSom: _alternarSom,
             ),
             Expanded(
               child: comSombraDeRecorte(
@@ -147,6 +171,8 @@ class _Cabecalho extends StatelessWidget {
     required this.level,
     required this.respondidas,
     required this.total,
+    required this.somLigado,
+    required this.aoAlternarSom,
     this.aoVoltar,
   });
 
@@ -154,6 +180,8 @@ class _Cabecalho extends StatelessWidget {
   final Level level;
   final int respondidas;
   final int total;
+  final bool somLigado;
+  final VoidCallback aoAlternarSom;
   final VoidCallback? aoVoltar;
 
   static const Key chaveVoltar = Key('trilha-voltar');
@@ -193,6 +221,19 @@ class _Cabecalho extends StatelessWidget {
                       Shadow(color: Paleta.acerto, offset: Offset(1.5, 0)),
                     ],
                   ),
+                ),
+              ),
+              // Nao ha tela de configuracoes ainda, e uma tela para um item so
+              // seria cerimonia vazia. Quando houver mais de uma coisa para
+              // configurar, este icone migra para la.
+              GestureDetector(
+                key: TelaTrilha.chaveSom,
+                behavior: HitTestBehavior.opaque,
+                onTap: aoAlternarSom,
+                child: Icon(
+                  somLigado ? Icons.volume_up_outlined : Icons.volume_off_outlined,
+                  color: somLigado ? Paleta.destaque : Paleta.suave,
+                  size: 24,
                 ),
               ),
             ],

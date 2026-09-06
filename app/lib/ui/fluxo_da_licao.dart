@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../data/progresso.dart';
 import '../models/lesson.dart';
+import 'som.dart';
 import 'tela_aula.dart';
 import 'tela_exercicio.dart';
 
@@ -19,6 +20,7 @@ class FluxoDaLicao extends StatefulWidget {
     this.progresso,
     this.indiceInicial = 0,
     this.aulaJaVista = false,
+    this.sineta,
   });
 
   final Lesson licao;
@@ -27,6 +29,8 @@ class FluxoDaLicao extends StatefulWidget {
 
   /// Se o aluno já viu a aula desta lição em alguma sessão anterior.
   final bool aulaJaVista;
+
+  final Sineta? sineta;
 
   @override
   State<FluxoDaLicao> createState() => _FluxoDaLicaoState();
@@ -71,6 +75,7 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
       progresso: widget.progresso,
       indiceInicial: widget.indiceInicial,
       aoRelerAula: widget.licao.aula == null ? null : _reler,
+      sineta: widget.sineta,
     );
   }
 }

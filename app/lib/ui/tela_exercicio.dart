@@ -9,6 +9,7 @@ import '../models/lesson.dart';
 import '../models/question.dart';
 import 'bloco_codigo.dart';
 import 'paleta.dart';
+import 'som.dart';
 import 'sombra_de_recorte.dart';
 
 /// A tela de exercicio.
@@ -29,6 +30,7 @@ class TelaExercicio extends StatefulWidget {
     this.progresso,
     this.indiceInicial = 0,
     this.aoRelerAula,
+    this.sineta,
   });
 
   final Lesson licao;
@@ -40,6 +42,9 @@ class TelaExercicio extends StatefulWidget {
 
   /// Reabre a aula da licao. Nulo quando a licao nao tem aula.
   final VoidCallback? aoRelerAula;
+
+  /// Toca a fanfarra de acerto. Nulo em teste que nao se importa com som.
+  final Sineta? sineta;
 
   static const Key chaveSombra = Key('sombra-de-recorte');
   static const Key chaveFimDaLicao = Key('fim-da-licao');
@@ -93,6 +98,13 @@ class _TelaExercicioState extends State<TelaExercicio>
     if (!_sessao.terminou) return;
 
     _foco.unfocus();
+
+    // So o acerto tem som. Errar em silencio e deliberado: som de erro seria
+    // punicao sonora, e a mecanica foi desenhada para nao punir.
+    if (_sessao.fase == FaseResposta.acertou) {
+      unawaited(widget.sineta?.acerto() ?? Future<void>.value());
+    }
+
     // Gravado no momento em que a questao termina, nao no Continuar: se o app
     // fechar entre uma coisa e outra, o que ja foi respondido nao se perde.
     unawaited(

@@ -95,6 +95,14 @@ class ProgressoFalso implements RegistroDeProgresso {
 
   @override
   Future<Map<String, int>> respondidasPorLicao() async => contagem;
+
+  bool som = true;
+
+  @override
+  Future<bool> somLigado() async => som;
+
+  @override
+  Future<void> definirSom({required bool ligado}) async => som = ligado;
 }
 
 Future<void> montar(WidgetTester tester, Widget tela) async {
