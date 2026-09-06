@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../answer/sessao_questao.dart';
+import '../data/progresso.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import 'bloco_codigo.dart';
@@ -19,9 +22,18 @@ import 'paleta.dart';
 /// A logica de tentativas, eliminacao e revelacao mora em [SessaoQuestao], fora
 /// daqui, para ser testavel sem montar tela.
 class TelaExercicio extends StatefulWidget {
-  const TelaExercicio({super.key, required this.licao, this.indiceInicial = 0});
+  const TelaExercicio({
+    super.key,
+    required this.licao,
+    this.progresso,
+    this.indiceInicial = 0,
+  });
 
   final Lesson licao;
+
+  /// Onde o progresso e gravado. Nulo nos testes que nao se importam com isso.
+  final RegistroDeProgresso? progresso;
+
   final int indiceInicial;
 
   static const Key chaveSombra = Key('sombra-de-recorte');
@@ -76,6 +88,7 @@ class _TelaExercicioState extends State<TelaExercicio> {
   }
 
   void _verificar() {
+    final questao = _questaoAtual;
     setState(() {
       if (_sessao.ehEscrita) {
         _sessao.verificarEscrita(_texto.text);
@@ -83,23 +96,46 @@ class _TelaExercicioState extends State<TelaExercicio> {
         _sessao.verificar();
       }
     });
-    if (_sessao.terminou) _foco.unfocus();
+    if (!_sessao.terminou) return;
+
+    _foco.unfocus();
+    // Gravado no momento em que a questao termina, nao no Continuar: se o app
+    // fechar entre uma coisa e outra, o que ja foi respondido nao se perde.
+    unawaited(
+      widget.progresso?.registrar(
+            licao: widget.licao,
+            questao: questao,
+            sessao: _sessao,
+          ) ??
+          Future<void>.value(),
+    );
   }
 
   void _continuar() {
     _foco.unfocus();
-    if (_indice + 1 >= widget.licao.questions.length) {
+    final proximo = _indice + 1;
+
+    if (proximo >= widget.licao.questions.length) {
+      // Licao terminada: a proxima abertura recomeca do inicio, ja que ainda
+      // nao existe tela de escolha de licao.
+      unawaited(_salvarPosicao(0));
       setState(() => _licaoConcluida = true);
       return;
     }
+
+    unawaited(_salvarPosicao(proximo));
     setState(() {
-      _indice++;
+      _indice = proximo;
       _sessao = SessaoQuestao(_questaoAtual);
       _texto.clear();
       _temMaisAbaixo = false;
     });
     if (_rolagem.hasClients) _rolagem.jumpTo(0);
     WidgetsBinding.instance.addPostFrameCallback((_) => _conferirRecorte());
+  }
+
+  Future<void> _salvarPosicao(int indice) async {
+    await widget.progresso?.salvarPosicao(widget.licao.lessonId, indice);
   }
 
   void _inserirSimbolo(String simbolo) {

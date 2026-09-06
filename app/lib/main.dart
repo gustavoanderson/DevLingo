@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'data/progresso.dart';
 import 'data/question_bank.dart';
+import 'models/lesson.dart';
 import 'ui/paleta.dart';
 import 'ui/tela_exercicio.dart';
 
@@ -28,13 +30,18 @@ class DevLingoApp extends StatelessWidget {
   }
 }
 
-/// Carrega o banco e abre a tela de exercicio.
+/// O que o app precisa ter em maos antes de abrir a tela de exercicio.
+class _Partida {
+  final Lesson licao;
+  final Progresso progresso;
+  final int indice;
+
+  const _Partida(this.licao, this.progresso, this.indice);
+}
+
+/// Abre o banco de questoes e o progresso, e retoma de onde o aluno parou.
 ///
-/// A questao exibida esta fixa de proposito. E a `python-beg-0306`, a cadeia de
-/// `elif` com nove linhas de codigo: ela transborda a tela e por isso exercita a
-/// rolagem do miolo e a sombra de recorte, que sao a parte da tela mais facil de
-/// quebrar sem ninguem perceber. A escolha de licao e a navegacao entre questoes
-/// entram nos passos seguintes.
+/// A licao esta fixa enquanto nao existe tela de escolha de linguagem e trilha.
 class _Carga extends StatefulWidget {
   const _Carga();
 
@@ -43,14 +50,27 @@ class _Carga extends StatefulWidget {
 }
 
 class _CargaState extends State<_Carga> {
-  late final Future<QuestionBank> _banco = QuestionBank.carregar();
+  late final Future<_Partida> _partida = _preparar();
 
   static const String _licaoDemo = 'python-beg-01';
 
+  Future<_Partida> _preparar() async {
+    final banco = await QuestionBank.carregar();
+    final licao = banco.lessons.firstWhere(
+      (l) => l.lessonId == _licaoDemo,
+      orElse: () => banco.lessons.first,
+    );
+    final progresso = await Progresso.abrir();
+    final salvo = await progresso.posicaoDe(licao.lessonId) ?? 0;
+    // Uma licao que encolheu entre versoes do app nao pode abrir fora do fim.
+    final indice = salvo.clamp(0, licao.questions.length - 1);
+    return _Partida(licao, progresso, indice);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<QuestionBank>(
-      future: _banco,
+    return FutureBuilder<_Partida>(
+      future: _partida,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Scaffold(
@@ -64,12 +84,12 @@ class _CargaState extends State<_Carga> {
           return _Falha(erro: '${snapshot.error}');
         }
 
-        final banco = snapshot.requireData;
-        final licao = banco.lessons.firstWhere(
-          (l) => l.lessonId == _licaoDemo,
-          orElse: () => banco.lessons.first,
+        final partida = snapshot.requireData;
+        return TelaExercicio(
+          licao: partida.licao,
+          progresso: partida.progresso,
+          indiceInicial: partida.indice,
         );
-        return TelaExercicio(licao: licao);
       },
     );
   }

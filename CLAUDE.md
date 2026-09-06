@@ -231,6 +231,22 @@ Comentários de código, mensagens de commit e nomes de variável ficam em ASCII
 
 **O número de tentativas fica gravado, mas a tela nunca o mostra.** Não existe "você errou 3 vezes". O dado existe para o progresso poder distinguir, mais tarde, o que foi fácil do que custou — que é o que torna revisão dirigida possível, o uso que o campo `topic` já antecipa.
 
+### Progresso
+
+Guardado em SQLite, em `app/lib/data/progresso.dart`. Duas tabelas: `resposta`, com uma linha por questão respondida, e `posicao`, com uma linha por lição.
+
+**SQLite e não chave-valor** por dois motivos. O dado de tentativas só vira revisão dirigida se der para consultar, e consulta dentro de um JSON guardado numa string não é consulta. E o CLAUDE.md prevê Firestore com cache local mais tarde: o formato local já nasce parecido com o que vai sincronizar. A consulta `custoPorTopico()` existe sem tela que a use, para provar que o formato responde à pergunta que motivou guardar tentativas.
+
+**A gravação acontece quando a questão termina, não no `Continuar`.** Se o app fechar entre uma coisa e outra, o que já foi respondido não se perde — e é isso que dá direito ao ✕ não perguntar "tem certeza".
+
+**`question_id` é chave primária**, então refazer a lição substitui o registro em vez de duplicar. Isso só funciona porque o `id` da questão é imutável no banco de conteúdo: aquela regra ganhou consequência real aqui.
+
+### Testes de widget não enxergam I/O real
+
+`testWidgets` roda numa zona de tempo falso. I/O de verdade — SQLite, rede, arquivo — **nunca avança** nela, e um `await` no banco dentro de um teste de widget trava o arquivo inteiro em vez de falhar. Isso já aconteceu: um teste ficou 10 minutos pendurado e derrubou os outros 16 junto.
+
+A saída não é `tester.runAsync`, é **depender de interface**. A tela recebe `RegistroDeProgresso`, e o teste de widget passa uma implementação em memória. Assim o teste de tela prova o que deve provar — que a tela chama o repositório com os dados certos — e o SQLite continua provado à parte, em `progresso_test.dart`, com banco de verdade e um caso que fecha e reabre o arquivo.
+
 ### Fundo animado: regras de performance
 
 O cenário é parallax em camadas. O Tr∅nikAt caminha parado e o cenário desliza atrás dele, no sentido oposto ao que ele aponta. Cada camada é desenhada duas vezes e desliza exatamente a largura de um bloco, o que torna o loop invisível.
@@ -298,7 +314,9 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 | **B3** | `normalize()` em Dart, presa ao contrato compartilhado | **concluído** |
 | **B4** | Tela de exercício conforme o mockup | **concluído** |
 | **B5** | As três formas de resposta, embaralhamento e correção | **concluído** |
-| B6 | Progresso salvo local a cada questão respondida | **próximo** |
+| **B6** | Progresso salvo local a cada questão respondida | **concluído** |
+
+**A Etapa B está fechada: o DevLingo é jogável de ponta a ponta.**
 
 **Combinado e ainda não feito, depois do B6:**
 
@@ -330,7 +348,7 @@ adb exec-out screencap -p > tela.png
 
 Duas coisas que parecem defeito e não são:
 
-- **A primeira tela fica branca por uns 15 segundos.** É a VM do Dart aquecendo num build de debug. Um print tirado cedo demais mostra tela em branco e faz parecer que o app quebrou. Confira `dumpsys activity activities`: se o `mResumedActivity` for o `com.devlingo.app/.MainActivity`, o app está vivo, só ainda não desenhou.
+- **A primeira tela fica branca por muito tempo.** É a VM do Dart aquecendo num build de debug. Em relançamento são uns 15 segundos; **numa instalação limpa já levou 57**, com o `ProfileInstaller` rodando junto. Um print tirado cedo demais mostra tela em branco e faz parecer que o app quebrou. Antes de investigar, confira `adb logcat | grep Displayed`: ele imprime `Displayed com.devlingo.app/.MainActivity: +56s887ms`, e `dumpsys activity activities` mostra se o `mResumedActivity` já é o app.
 - **O Impeller registra `Could not link pipeline program` no logcat.** É o motor gráfico novo falhando em compilar shaders na GPU emulada. O app renderiza normalmente mesmo assim. Ignore, a menos que a tela realmente não apareça.
 
 Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram o parser do PowerShell 5.1. Use o Bash para esses.

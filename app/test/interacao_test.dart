@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:devlingo/answer/sessao_questao.dart';
 import 'package:devlingo/models/lesson.dart';
+import 'package:devlingo/models/question.dart';
 import 'package:devlingo/ui/tela_exercicio.dart';
 import 'package:flutter/material.dart';
+import 'package:devlingo/data/progresso.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Testes da fiacao entre a tela e a maquina de estados.
@@ -95,6 +98,8 @@ Future<void> errar(WidgetTester tester) async {
 }
 
 void main() {
+  progressoNaTela();
+
   group('multipla escolha', () {
     testWidgets('Verificar comeca desabilitado e habilita ao selecionar', (
       tester,
@@ -316,6 +321,140 @@ void main() {
         tester.widget<TextField>(find.byType(TextField)).enabled,
         isFalse,
       );
+    });
+  });
+}
+
+
+/// Grava progresso em memoria, de forma sincrona.
+///
+/// O teste de tela usa isto em vez do SQLite porque `testWidgets` roda numa
+/// zona de tempo falso, onde I/O real nunca avanca e qualquer espera no banco
+/// trava o arquivo inteiro. O que se prova aqui e que a tela **chama** o
+/// registro com os dados certos; que o SQLite funciona esta em
+/// `progresso_test.dart`.
+class ProgressoFalso implements RegistroDeProgresso {
+  final Map<String, ({int tentativas, Desfecho desfecho, String topic})> gravadas = {};
+  final Map<String, int> posicoes = {};
+
+  @override
+  Future<void> registrar({
+    required Lesson licao,
+    required Question questao,
+    required SessaoQuestao sessao,
+    DateTime? quando,
+  }) async {
+    if (!sessao.terminou) return;
+    gravadas[questao.id] = (
+      tentativas: sessao.tentativas,
+      desfecho: sessao.fase == FaseResposta.acertou
+          ? Desfecho.acertou
+          : Desfecho.revelada,
+      topic: questao.topic,
+    );
+  }
+
+  @override
+  Future<void> salvarPosicao(String lessonId, int indice, {DateTime? quando}) async {
+    posicoes[lessonId] = indice;
+  }
+
+  @override
+  Future<int?> posicaoDe(String lessonId) async => posicoes[lessonId];
+}
+
+void progressoNaTela() {
+  group('a tela grava o progresso', () {
+    late ProgressoFalso progresso;
+
+    setUp(() => progresso = ProgressoFalso());
+
+    Future<void> montarCom(WidgetTester tester, Lesson licao, {int inicial = 0}) async {
+      tester.view.physicalSize = const Size(390, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TelaExercicio(
+            licao: licao,
+            progresso: progresso,
+            indiceInicial: inicial,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> acertar(WidgetTester tester, String texto) async {
+      await tester.tap(find.text(texto));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('acao-verificar')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('responder grava a questao antes mesmo do Continuar', (tester) async {
+      await montarCom(tester, licaoCom([_mc]));
+      await acertar(tester, 'print()');
+
+      final gravada = progresso.gravadas['python-beg-0101'];
+      expect(
+        gravada,
+        isNotNull,
+        reason:
+            'a gravacao acontece ao terminar a questao, nao ao avancar: se o '
+            'app fechar entre uma coisa e outra, o que ja foi respondido nao '
+            'pode se perder',
+      );
+      expect(gravada!.tentativas, 1);
+      expect(gravada.desfecho, Desfecho.acertou);
+      expect(gravada.topic, 'saida');
+    });
+
+    testWidgets('errar antes de acertar fica registrado nas tentativas', (tester) async {
+      await montarCom(tester, licaoCom([_mc]));
+      await errar(tester);
+      await acertar(tester, 'print()');
+
+      expect(progresso.gravadas['python-beg-0101']!.tentativas, 2);
+    });
+
+    testWidgets('quatro erros gravam o desfecho de resposta revelada', (tester) async {
+      await montarCom(tester, licaoCom([_mc]));
+      for (var i = 0; i < 4; i++) {
+        await errar(tester);
+      }
+
+      final gravada = progresso.gravadas['python-beg-0101']!;
+      expect(gravada.desfecho, Desfecho.revelada);
+      expect(gravada.tentativas, 4);
+    });
+
+    testWidgets('Continuar salva a posicao da proxima questao', (tester) async {
+      await montarCom(tester, licaoCom([_mc, _segunda]));
+      expect(progresso.posicoes['python-beg-01'], isNull);
+
+      await acertar(tester, 'print()');
+      await tester.tap(find.byKey(const Key('acao-continuar')));
+      await tester.pumpAndSettle();
+
+      expect(progresso.posicoes['python-beg-01'], 1);
+    });
+
+    testWidgets('indiceInicial abre na questao certa', (tester) async {
+      await montarCom(tester, licaoCom([_mc, _segunda]), inicial: 1);
+
+      expect(find.text('2/2'), findsOneWidget);
+      expect(find.text('Segunda questao da licao.'), findsOneWidget);
+    });
+
+    testWidgets('terminar a licao volta a posicao para o inicio', (tester) async {
+      await montarCom(tester, licaoCom([_mc]));
+      await acertar(tester, 'print()');
+      await tester.tap(find.byKey(const Key('acao-continuar')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(TelaExercicio.chaveFimDaLicao), findsOneWidget);
+      expect(progresso.posicoes['python-beg-01'], 0);
     });
   });
 }
