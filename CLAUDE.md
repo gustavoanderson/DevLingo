@@ -108,7 +108,7 @@ Isso foi corrigido depois de um defeito real: a versão antiga removia todos os 
 
 ```bash
 pip install jsonschema
-python3 tools/validate_questions.py content/
+python3 tools/validate_questions.py app/assets/content/
 ```
 
 Saída 0 aprova, 1 reprova. Roda também em GitHub Actions a cada push. Toda vez que um defeito de conteúdo for encontrado à mão, escreva a regra correspondente no validador e prove que ela pega, rodando contra um arquivo defeituoso de propósito.
@@ -119,6 +119,14 @@ Saída 0 aprova, 1 reprova. Roda também em GitHub Actions a cada push. Toda vez
 - A regra de impressão digital, na primeira versão, acusaria a resposta `3` em JavaScript contra a mesma resposta em Python. Hoje é escopada por linguagem.
 
 Nas duas, a saída certa foi `[AVISO]`: o `Report` distingue aviso de defeito justamente para relatar o que é suspeito sem barrar o que é válido.
+
+#### Regra dos assets do pubspec
+
+O banco vive em `app/assets/content/`, **dentro** do projeto Flutter, porque o Flutter só empacota assets que estejam na pasta do app. A alternativa — manter o conteúdo na raiz e copiar antes de cada build — foi descartada: um passo que se esquece produz um app que roda com as questões de ontem, sem nada avisar.
+
+Mas o Flutter **não inclui subpastas recursivamente**: declarar `assets/content/` não inclui `assets/content/python/`. Cada pasta de linguagem precisa estar listada uma a uma no `pubspec.yaml`, e esquecer uma recria a mesma falha silenciosa que a mudança queria eliminar.
+
+Por isso o validador **reprova** quando a lista de assets do `pubspec.yaml` não bate com as pastas que existem em `app/assets/content/` — nos dois sentidos: pasta sem declaração, e declaração sem pasta. Ao criar uma linguagem nova, o validador diz exatamente qual linha acrescentar.
 
 #### Regra de impressão digital
 
@@ -135,7 +143,7 @@ Ela já pegou um defeito real: as questões `python-beg-0203` e `python-beg-0206
 
 ### Convenções de nome
 
-- Lição: `content/<linguagem>/<linguagem>-<beg|int|adv>-<NN>.json`
+- Lição: `app/assets/content/<linguagem>/<linguagem>-<beg|int|adv>-<NN>.json`
 - Questão: `<linguagem>-<beg|int|adv>-<NNLL>`, onde NN é a lição e LL a posição
 
 ---

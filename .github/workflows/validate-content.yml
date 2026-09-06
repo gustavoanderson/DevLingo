@@ -24,4 +24,4 @@ jobs:
         run: pip install jsonschema
 
       - name: Rodar o validador
-        run: python3 tools/validate_questions.py content/
+        run: python3 tools/validate_questions.py app/assets/content/

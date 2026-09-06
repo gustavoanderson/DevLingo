@@ -29,6 +29,9 @@ SCHEMA_FILE = Path(__file__).parent / "question.schema.json"
 LEVEL_ABBREV = {"beginner": "beg", "intermediate": "int", "advanced": "adv"}
 BLANK_MARKER = "______"
 
+# Linha do pubspec que declara uma pasta de linguagem como asset do app.
+PUBSPEC_ASSET_RE = re.compile(r"^\s*-\s+assets/content/([A-Za-z0-9_]+)/\s*$")
+
 
 class Report:
     """Acumula defeitos e avisos em vez de parar no primeiro erro.
@@ -119,6 +122,59 @@ def check_lesson_rules(data, filename, report):
                     f"{repetidas} de {len(posicoes)} gabaritos caem na alternativa '{letra}'. "
                     f"Redistribua as alternativas.",
                 )
+
+
+def find_pubspec(content_dir):
+    """Sobe a partir da pasta de conteudo procurando o pubspec.yaml do app."""
+    atual = content_dir.resolve()
+    for _ in range(4):
+        candidato = atual / "pubspec.yaml"
+        if candidato.is_file():
+            return candidato
+        if atual.parent == atual:
+            break
+        atual = atual.parent
+    return None
+
+
+def check_pubspec_assets(content_dir, report):
+    """Garante que toda pasta de linguagem esteja declarada como asset do app.
+
+    O Flutter NAO empacota subpastas recursivamente: declarar 'assets/content/'
+    nao inclui 'assets/content/python/'. Cada pasta de linguagem precisa estar
+    listada uma a uma no pubspec.
+
+    Sem esta regra, acrescentar uma linguagem e esquecer o pubspec produz um app
+    que compila, roda e simplesmente nao tem as questoes dela. Nada quebra, nada
+    avisa. E o mesmo tipo de defeito silencioso que motivou mover o conteudo para
+    dentro de app/: a saida certa e tornar o erro impossivel, nao pedir disciplina.
+    """
+    pubspec = find_pubspec(content_dir)
+    if pubspec is None:
+        return
+
+    declaradas = set()
+    for linha in pubspec.read_text(encoding="utf-8").splitlines():
+        achou = PUBSPEC_ASSET_RE.match(linha)
+        if achou:
+            declaradas.add(achou.group(1))
+
+    existentes = {p.name for p in content_dir.iterdir() if p.is_dir()}
+    onde = f"{pubspec.name} -> assets"
+
+    for lang in sorted(existentes - declaradas):
+        report.error(
+            onde,
+            f"a pasta '{lang}' existe em {content_dir.name}/ mas nao esta declarada em assets. "
+            f"O app rodaria sem as questoes dela e sem aviso nenhum. "
+            f"Acrescente '- assets/content/{lang}/' ao pubspec.yaml.",
+        )
+
+    for lang in sorted(declaradas - existentes):
+        report.error(
+            onde,
+            f"assets declara 'assets/content/{lang}/' mas essa pasta nao existe em {content_dir.name}/.",
+        )
 
 
 def question_fingerprints(question, language):
@@ -286,9 +342,12 @@ def validate(paths):
     for raw in paths:
         path = Path(raw)
         if path.is_dir():
-            # rglob: o conteudo fica em subpastas por linguagem (content/python/, content/javascript/)
+            # rglob: o conteudo fica em subpastas por linguagem
+            # (app/assets/content/python/, app/assets/content/javascript/)
             # o proprio esquema mora em tools/ e nao e uma licao
             files.extend(sorted(p for p in path.rglob("*.json") if p.name != SCHEMA_FILE.name))
+            if path.name == "content":
+                check_pubspec_assets(path, report)
         else:
             files.append(path)
 
