@@ -15,6 +15,14 @@ Duas regras que ele pediu explicitamente e que valem em toda sessão:
 
 Declare erros e limitações abertamente. Isso já aconteceu várias vezes na construção deste repositório e funcionou bem: defeito encontrado vira teste automático.
 
+**Antes de qualquer commit, rode a suíte inteira, não só o arquivo que você mexeu.** Um commit já foi para a `main` com o CI vermelho porque só o arquivo novo tinha sido testado — e o que quebrou foi um teste de *outro* arquivo, que dependia de como o widget alterado renderizava. Mudança em componente compartilhado quebra quem o testa de fora. O Gustavo dispensou hook de pré-commit e confiou na disciplina; esta linha existe porque a sessão que vem não lembra desta.
+
+```bash
+python3 tools/validate_questions.py app/assets/content/   # banco
+python3 tools/test_normalize.py                            # contrato
+cd app && flutter analyze && flutter test                   # app
+```
+
 ---
 
 ## O que é o DevLingo
