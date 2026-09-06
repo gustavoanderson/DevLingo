@@ -368,7 +368,15 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 **Combinado e ainda não feito:**
 
 - **Som de acerto.** Uma fanfarra de trompete comemorando, no espírito "tã-tã-tã-tãã". Exige um arquivo de áudio, um pacote (`audioplayers`), respeito ao modo silencioso e uma chave para desligar — mesmo padrão do fundo animado. Ficou fora do B5 porque som é camada, não requisito para jogar.
-- **Realce de sintaxe no bloco de código.** É a única parte da tela que não é traduzir CSS para Flutter, e código legível sem cor não impede ninguém de responder.
+### Realce de sintaxe
+
+O tokenizador vive em `app/lib/ui/realce.dart` e é **Dart puro, sem importar Flutter**: classificar código é lógica, pintar é apresentação. As cores vêm do mockup.
+
+**A invariante que o teste prova não olha cor nenhuma:** a concatenação dos tokens tem que ser idêntica à linha original. Um realce que come um caractere — uma aspa, um espaço de indentação — é pior que nenhum, porque o código passa a mentir sobre si mesmo, e isso passa despercebido a olho nu. Essa checagem roda contra **todas as linhas de código do banco**, questões e aulas.
+
+A varredura é **linha a linha**, porque é assim que o bloco desenha. Texto ou comentário que atravesse mais de uma linha não é reconhecido; nenhuma questão usa isso, e aceitar a limitação evita carregar estado entre linhas.
+
+**Linguagem sem tokenizador não quebra o app:** o código só fica sem cor. Isso importa porque o banco prevê nove linguagens que ainda não têm nenhum.
 
 ### O app
 

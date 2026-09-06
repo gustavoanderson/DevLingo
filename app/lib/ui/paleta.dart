@@ -50,6 +50,22 @@ abstract final class Paleta {
   static const ideNumeroLinha = Color(0xFF5F4B8B);
   static const ideLinhaDestacada = Color(0xFF2E1D5C);
 
+  // --- realce de sintaxe ---
+  //
+  // As cores vem do mockup em docs/mockup-tela-exercicio.html. O verde em nome
+  // de funcao e escolha autoral de la, e nao contraria a regra do paleta.md:
+  // aquela regra proibe verde saturado em **texto longo**, e nome de funcao e
+  // um token curto dentro de codigo, nao corpo de texto.
+  static const sintaxePalavraChave = Color(0xFFFF7AD9);
+  static const sintaxeTexto = telemetria;
+  static const sintaxeNumero = Color(0xFFFF7AD9);
+  static const sintaxeFuncao = visor;
+  static const sintaxeNome = destaque;
+  static const sintaxePontuacao = texto;
+
+  /// Comentario fica mais apagado que o codigo: ele explica, nao executa.
+  static const sintaxeComentario = Color(0xFF7A68B0);
+
   /// Pastilha da lacuna: fundo ciano com texto escuro, para contraste.
   static const lacunaFundo = destaque;
   static const lacunaTexto = Color(0xFF062230);

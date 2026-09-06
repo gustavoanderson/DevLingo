@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../models/question.dart';
+import 'models_de_token.dart';
 import 'paleta.dart';
+import 'realce.dart';
 
 /// O bloco de codigo da tela de exercicio, no formato de uma IDE em miniatura.
 ///
@@ -12,9 +14,8 @@ import 'paleta.dart';
 /// - **A linha destacada sangra ate as bordas** do bloco, inclusive quando o
 ///   conteudo e mais largo que a tela.
 ///
-/// O realce de sintaxe ficou para um passo seguinte. Codigo legivel sem cor nao
-/// impede ninguem de responder, e empilhar um tokenizador aqui aumentaria a
-/// chance da tela nao ficar de pe.
+/// O realce de sintaxe vem de [tokenizar], que e funcao pura e mora fora daqui.
+/// As cores estao em [Paleta] e vieram do mockup.
 class BlocoCodigo extends StatelessWidget {
   const BlocoCodigo({super.key, required this.code});
 
@@ -73,6 +74,7 @@ class BlocoCodigo extends StatelessWidget {
                               numero: i + 1,
                               larguraNumero: larguraNumero,
                               texto: linhas[i],
+                              linguagem: code.language,
                               destacada: code.highlightLine == i + 1,
                             ),
                         ],
@@ -141,12 +143,14 @@ class _Linha extends StatelessWidget {
     required this.numero,
     required this.larguraNumero,
     required this.texto,
+    required this.linguagem,
     required this.destacada,
   });
 
   final int numero;
   final int larguraNumero;
   final String texto;
+  final String linguagem;
   final bool destacada;
 
   @override
@@ -172,35 +176,46 @@ class _Linha extends StatelessWidget {
             style: estiloBase.copyWith(color: Paleta.ideNumeroLinha),
           ),
           const SizedBox(width: 12),
-          _TextoDaLinha(texto: texto, estilo: estiloBase),
+          _TextoDaLinha(
+            texto: texto,
+            linguagem: linguagem,
+            estilo: estiloBase,
+          ),
         ],
       ),
     );
   }
 }
 
-/// Uma linha de codigo, com a lacuna virando pastilha quando o marcador aparece.
+/// Uma linha de codigo, com realce de sintaxe e a lacuna virando pastilha.
 class _TextoDaLinha extends StatelessWidget {
-  const _TextoDaLinha({required this.texto, required this.estilo});
+  const _TextoDaLinha({
+    required this.texto,
+    required this.linguagem,
+    required this.estilo,
+  });
 
   final String texto;
+  final String linguagem;
   final TextStyle estilo;
+
+  static Color corDe(TipoDeToken tipo) => switch (tipo) {
+    TipoDeToken.palavraChave => Paleta.sintaxePalavraChave,
+    TipoDeToken.texto => Paleta.sintaxeTexto,
+    TipoDeToken.numero => Paleta.sintaxeNumero,
+    TipoDeToken.funcao => Paleta.sintaxeFuncao,
+    TipoDeToken.comentario => Paleta.sintaxeComentario,
+    TipoDeToken.nome => Paleta.sintaxeNome,
+    TipoDeToken.pontuacao || TipoDeToken.espaco => Paleta.sintaxePontuacao,
+    TipoDeToken.lacuna => Paleta.lacunaTexto,
+  };
 
   @override
   Widget build(BuildContext context) {
-    if (!texto.contains(CodeBlock.marcadorLacuna)) {
-      // softWrap falso e o que garante que a linha nunca quebre.
-      return Text(texto, style: estilo, softWrap: false);
-    }
-
-    final partes = texto.split(CodeBlock.marcadorLacuna);
     final pedacos = <InlineSpan>[];
 
-    for (var i = 0; i < partes.length; i++) {
-      if (partes[i].isNotEmpty) {
-        pedacos.add(TextSpan(text: partes[i]));
-      }
-      if (i < partes.length - 1) {
+    for (final token in tokenizar(texto, linguagem)) {
+      if (token.tipo == TipoDeToken.lacuna) {
         pedacos.add(
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
@@ -221,9 +236,18 @@ class _TextoDaLinha extends StatelessWidget {
             ),
           ),
         );
+        continue;
       }
+      pedacos.add(
+        TextSpan(text: token.texto, style: TextStyle(color: corDe(token.tipo))),
+      );
     }
 
-    return Text.rich(TextSpan(style: estilo, children: pedacos), softWrap: false);
+    // softWrap falso e o que garante que a linha nunca quebre: quebra
+    // automatica destroi a indentacao, e indentacao em Python e sintaxe.
+    return Text.rich(
+      TextSpan(style: estilo, children: pedacos),
+      softWrap: false,
+    );
   }
 }
