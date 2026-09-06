@@ -167,12 +167,20 @@ Os níveis 1 e 2 são determinísticos, o que é exatamente o que se quer: sem f
 
 ## Estado e próximos passos
 
-Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e as **lições 1 a 3 de Python iniciante** (30 questões: exibir e guardar valores; números e contas; comparação e condicionais).
+Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e as **lições 1 a 4 de Python iniciante** (40 questões: exibir e guardar valores; números e contas; comparação e condicionais; strings).
 
 A regra de impressão digital, que era o pendente combinado para perto da lição 4, **está implementada** — ver "Validador". O desenho mudou no caminho: ela compara respostas, não enunciados.
 
-Próximo: lições 4 e 5 de Python iniciante (strings e seus métodos; listas e o laço `for`), fechando as 50 questões da meta. Depois Python intermediário e avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
+Próximo: **lição 5 de Python iniciante** (listas e o laço `for`), que fecha as 50 questões da meta. Depois Python intermediário e avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
 
-O banco aprova hoje com **um aviso, e ele é intencional**: a questão `python-beg-0302` usa `true` em minúsculas como distrator de `True`, de propósito. Se esse aviso sumir, alguém mexeu na questão.
+O banco aprova hoje com **três avisos, e os três são intencionais**. Todos são distratores que diferem apenas na caixa, num idioma em que a caixa é justamente o conteúdo da questão:
+
+| Questão | Distrator | Por que existe |
+|---|---|---|
+| `python-beg-0302` | `true` ao lado de `True` | Em minúsculas daria `NameError`, não o booleano |
+| `python-beg-0402` | `ada`, `Ada` ao lado de `ADA` | `Ada` é resultado de `capitalize`, não de `upper` |
+| `python-beg-0403` | `OI` ao lado de `oi` | `OI` é o que apareceria se strings fossem mutáveis |
+
+Se algum desses avisos sumir, alguém mexeu na questão. Se aparecer um quarto, é para conferir antes de aceitar.
 
 O ambiente Flutter ainda **não** foi instalado. Isso foi adiado de propósito: ambiente instalado e não usado envelhece e pede atualização justo no dia em que se precisa dele.

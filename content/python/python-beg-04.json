@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "language": "python",
+  "level": "beginner",
+  "lessonId": "python-beg-04",
+  "lessonTitle": "Strings: medir, cortar e transformar",
+  "questions": [
+    {
+      "id": "python-beg-0401",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(len(\"Python\"))",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "5",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "7",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "6",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Python",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "TypeError: len não funciona em texto",
+          "correct": false
+        }
+      ],
+      "hint": "A função conta todos os caracteres do texto, do primeiro ao último. Conte as letras da palavra com calma, sem pressa.",
+      "explanation": "A função len devolve a quantidade de caracteres do texto. A palavra tem seis letras, então o resultado é 6. A mesma função serve para listas, onde devolve a quantidade de itens."
+    },
+    {
+      "id": "python-beg-0402",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "nome = \"ada\"\nprint(nome.upper())",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "ada",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "ADA",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Ada",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "None",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Erro: strings não podem ser modificadas",
+          "correct": false
+        }
+      ],
+      "hint": "Um dos métodos de texto devolve uma versão nova da palavra, sem alterar o que está na variável. Pense no significado da palavra upper em inglês.",
+      "explanation": "O método upper devolve o texto com todas as letras maiúsculas. Ele não altera a variável original: devolve um texto novo, e é esse retorno que o print exibe. A forma com apenas a primeira letra maiúscula viria de capitalize. E métodos que alteram no lugar, como o sort das listas, é que devolvem None."
+    },
+    {
+      "id": "python-beg-0403",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "saudacao = \"oi\"\nsaudacao.upper()\nprint(saudacao)",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "oi",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "OI",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "None",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "Erro: falta atribuir o resultado",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "saudacao",
+          "correct": false
+        }
+      ],
+      "hint": "Repare que a linha do meio calcula alguma coisa e não guarda o resultado em lugar nenhum. Em Python, texto não muda no lugar.",
+      "explanation": "Strings são imutáveis. O método devolve um texto novo em maiúsculas, mas como esse retorno não foi atribuído a nada, ele é descartado e a variável continua com o valor original. Para ver o texto em maiúsculas seria preciso escrever saudacao = saudacao.upper()."
+    },
+    {
+      "id": "python-beg-0404",
+      "topic": "fatiamento",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(\"Python\"[0:3])",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pyth",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "yth",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "P",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "ython",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Pyt",
+          "correct": true
+        }
+      ],
+      "hint": "O fatiamento começa a contar em zero e vai até logo antes do segundo índice. O caractere que está exatamente no índice final fica de fora.",
+      "explanation": "O fatiamento pega as posições 0, 1 e 2, e para antes da posição 3. Por isso o resultado tem três letras. O limite da direita nunca entra no pedaço devolvido."
+    },
+    {
+      "id": "python-beg-0405",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(\"th\" in \"Python\")",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "False",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "th",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "2",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "True",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "TypeError: in só funciona em listas",
+          "correct": false
+        }
+      ],
+      "hint": "O operador in pergunta se um pedaço aparece dentro do texto. Procure as duas letras dentro da palavra e responda em forma de booleano.",
+      "explanation": "O operador in devolve um booleano dizendo se a sequência aparece dentro do texto. As duas letras aparecem no meio da palavra, então o resultado é positivo. Ele também funciona em listas, onde procura um item inteiro em vez de um pedaço."
+    },
+    {
+      "id": "python-beg-0406",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "print(\"2024-01-05\".replace(\"-\", \"/\"))",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "2024-01-05",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "2024 01 05",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "2024/01/05",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "20240105",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "None",
+          "correct": false
+        }
+      ],
+      "hint": "O método troca todas as ocorrências do primeiro texto pelo segundo e devolve um texto novo. Nenhum caractere é removido, apenas substituído.",
+      "explanation": "O método replace substitui todas as ocorrências, não apenas a primeira, e devolve um texto novo sem alterar o original. Os traços viram barras e o restante permanece igual."
+    },
+    {
+      "id": "python-beg-0407",
+      "topic": "strings",
+      "prompt": "Complete a linha para que a saída seja exatamente [ada], sem espaços dentro dos colchetes.",
+      "code": {
+        "language": "python",
+        "content": "entrada = \"  ada  \"\nprint(\"[\" + entrada.______() + \"]\")",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "strip"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "O método remove os espaços que sobram no começo e no fim do texto, sem tocar nos espaços do meio.",
+      "explanation": "O método strip devolve o texto sem os espaços das pontas. Os colchetes no print existem só para tornar visível onde o texto começa e termina, já que espaço aparado e espaço presente parecem iguais na tela. Existem variantes que limpam apenas a esquerda ou apenas a direita."
+    },
+    {
+      "id": "python-beg-0408",
+      "topic": "strings",
+      "prompt": "Complete a linha para que o programa avise quando a senha tiver menos de 8 caracteres.",
+      "code": {
+        "language": "python",
+        "content": "senha = \"12345\"\nif ______(senha) < 8:\n    print(\"Senha muito curta\")",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "len"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A função embutida que devolve a quantidade de caracteres tem três letras e não precisa de import nenhum.",
+      "explanation": "A função len devolve a quantidade de caracteres do texto. A senha tem cinco caracteres, menos que oito, então a mensagem aparece. Repare que o resultado entra numa comparação como qualquer outro número."
+    },
+    {
+      "id": "python-beg-0409",
+      "topic": "strings",
+      "prompt": "Escreva a expressão que testa se o conteúdo da variável resposta, convertido para minúsculas, é igual a sim.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "resposta.lower() == \"sim\""
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Encadeie duas coisas: primeiro o método que rebaixa todas as letras do texto, depois o operador de igualdade contra a palavra entre aspas.",
+      "explanation": "Converter para minúsculas antes de comparar faz o teste aceitar Sim, SIM e sim da mesma forma. Sem isso, apenas a grafia exata passaria, porque a comparação de texto em Python distingue maiúsculas de minúsculas."
+    },
+    {
+      "id": "python-beg-0410",
+      "topic": "fatiamento",
+      "prompt": "Escreva a linha que imprime a primeira letra da variável palavra.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "print(palavra[0])"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A contagem das posições de um texto começa em zero, não em um. Use os colchetes logo depois do nome da variável, dentro da função de exibição.",
+      "explanation": "O índice 0 corresponde à primeira letra, porque a contagem de posições em Python começa em zero. O índice 1 já seria a segunda letra. Índices negativos contam de trás para frente, e -1 é a última."
+    }
+  ]
+}
