@@ -242,12 +242,28 @@ void main() {
   });
 
   group('resposta escrita', () {
-    testWidgets('a regua de simbolos aparece e insere no campo', (
-      tester,
-    ) async {
+    testWidgets('sem teclado virtual, a regua nao ocupa espaco', (tester) async {
+      // No emulador se digita com teclado fisico, entao o teclado virtual nao
+      // sobe e a regua so atrapalharia.
       await montar(tester, licaoCom([_escrita]));
 
       expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('('), findsNothing);
+    });
+
+    testWidgets('com teclado virtual aberto, a regua aparece e insere', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(390, 900);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        MaterialApp(home: TelaExercicio(licao: licaoCom([_escrita]))),
+      );
+      await tester.pumpAndSettle();
+
       for (final simbolo in ['(', ')', '[', ']', ':', '*', '=']) {
         expect(find.text(simbolo), findsOneWidget);
       }
@@ -301,11 +317,27 @@ void main() {
       );
     });
 
-    testWidgets('o terceiro erro revela a resposta', (tester) async {
+    testWidgets('o terceiro erro mostra a forma da resposta', (tester) async {
       await montar(tester, licaoCom([_escrita]));
       final campo = find.byType(TextField);
 
       for (final tentativa in ['a', 'b', 'c']) {
+        await tester.enterText(campo, tentativa);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('acao-verificar')));
+        await tester.pumpAndSettle();
+      }
+
+      expect(find.text('·····(····)'), findsOneWidget);
+      expect(find.text('A RESPOSTA ERA'), findsNothing);
+      expect(find.byKey(const Key('acao-verificar')), findsOneWidget);
+    });
+
+    testWidgets('o quarto erro revela a resposta', (tester) async {
+      await montar(tester, licaoCom([_escrita]));
+      final campo = find.byType(TextField);
+
+      for (final tentativa in ['a', 'b', 'c', 'd']) {
         await tester.enterText(campo, tentativa);
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const Key('acao-verificar')));

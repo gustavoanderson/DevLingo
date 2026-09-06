@@ -37,6 +37,28 @@ String _semPontoEVirgulaFinal(String texto) {
   return texto.substring(0, fim);
 }
 
+/// Caractere que compoe nome ou valor: letra, digito ou sublinhado.
+///
+/// E a mesma classe usada em [_emVoltaDePontuacao], pelo mesmo motivo de
+/// Unicode: `á` precisa contar como letra.
+final RegExp _caractereDeNome = RegExp(r'[\p{L}\p{N}_]', unicode: true);
+
+/// A forma da resposta, com os nomes escondidos e a pontuacao preservada.
+///
+/// ```
+/// print(nome)        ->  ·····(····)
+/// if saldo > 0:      ->  ·· ····· > ·:
+/// notas = [7, 8, 9]  ->  ····· = [·, ·, ·]
+/// ```
+///
+/// Serve como dica de ultimo nivel nas questoes de escrita. A divisao entre o
+/// que esconder e o que mostrar nao e arbitraria: **sintaxe e o que a questao
+/// ensina**, e nomes de variavel sao o que o enunciado ja disse. Mostrar a
+/// forma revela quantas partes a resposta tem, onde vao os parenteses e se
+/// existe dois pontos no fim, sem entregar a resposta.
+String esqueletoDe(String resposta) =>
+    resposta.replaceAll(_caractereDeNome, '·');
+
 /// Aplica as mesmas regras que o validador aplica antes de comparar.
 String normalize(String texto, [NormalizeRules? regras]) {
   final r = regras ?? const NormalizeRules();

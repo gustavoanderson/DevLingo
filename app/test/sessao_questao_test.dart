@@ -234,15 +234,44 @@ void main() {
       expect(s.dicaAberta, isTrue);
     });
 
-    test('terceiro erro revela a resposta', () {
+    test('terceiro erro mostra a forma da resposta, sem revelar', () {
       final s = SessaoQuestao(questaoEscrita);
       s.verificarEscrita('a');
       s.verificarEscrita('b');
       s.verificarEscrita('c');
 
+      expect(s.fase, FaseResposta.respondendo);
+      expect(s.esqueleto, '·····(····)');
+      expect(
+        s.esqueleto,
+        isNot(contains('print')),
+        reason: 'a forma mostra a sintaxe e esconde os nomes',
+      );
+      expect(s.respostaRevelada, isNull);
+    });
+
+    test('quarto erro revela a resposta', () {
+      final s = SessaoQuestao(questaoEscrita);
+      for (final tentativa in ['a', 'b', 'c', 'd']) {
+        s.verificarEscrita(tentativa);
+      }
+
       expect(s.fase, FaseResposta.revelado);
       expect(s.respostaRevelada, 'print(nome)');
       expect(s.explicacao, isNotNull);
+      expect(s.esqueleto, isNull, reason: 'a forma sai de cena quando a resposta aparece');
+    });
+
+    test('acertar limpa a forma mostrada antes', () {
+      final s = SessaoQuestao(questaoEscrita);
+      s.verificarEscrita('a');
+      s.verificarEscrita('b');
+      s.verificarEscrita('c');
+      expect(s.esqueleto, isNotNull);
+
+      s.verificarEscrita('print(nome)');
+      expect(s.fase, FaseResposta.acertou);
+      expect(s.esqueleto, isNull);
     });
 
     test('texto vazio nao gasta tentativa', () {

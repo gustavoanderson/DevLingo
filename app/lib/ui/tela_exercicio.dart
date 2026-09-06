@@ -231,7 +231,12 @@ class _TelaExercicioState extends State<TelaExercicio> {
               ),
             ),
             _PainelRetorno(sessao: _sessao),
-            if (_sessao.ehEscrita && !_sessao.terminou)
+            // A regua so aparece com o teclado virtual aberto. Ela existe para
+            // poupar a troca de pagina do teclado do celular; quando se digita
+            // com teclado fisico, como no emulador, ela so ocupa espaco.
+            if (_sessao.ehEscrita &&
+                !_sessao.terminou &&
+                MediaQuery.of(context).viewInsets.bottom > 0)
               _ReguaDeSimbolos(aoTocar: _inserirSimbolo),
             _BarraAcoes(
               sessao: _sessao,
@@ -658,13 +663,31 @@ class _PainelRetorno extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 168),
             child: SingleChildScrollView(
-              child: Text(
-                explicacao ?? recado!,
-                style: const TextStyle(
-                  color: Paleta.texto,
-                  fontSize: Escala.alternativa,
-                  height: 1.45,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    explicacao ?? recado!,
+                    style: const TextStyle(
+                      color: Paleta.texto,
+                      fontSize: Escala.alternativa,
+                      height: 1.45,
+                    ),
+                  ),
+                  if (sessao.esqueleto != null) ...[
+                    const SizedBox(height: 10),
+                    // Monoespacada para os pontos alinharem com o que se digita.
+                    Text(
+                      sessao.esqueleto!,
+                      style: const TextStyle(
+                        color: Paleta.destaque,
+                        fontFamily: fonteMono,
+                        fontSize: Escala.alternativa,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),

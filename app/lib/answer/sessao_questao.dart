@@ -32,9 +32,11 @@ enum FaseResposta {
 ///
 /// ## Lacuna e escrita livre
 ///
-/// Nao ha o que eliminar, entao a ajuda cresce a cada erro: primeiro so avisa,
-/// depois abre a dica sozinha, e na terceira revela. Sem isso, tentativa
-/// infinita significaria que o aluno pode nunca descobrir a resposta.
+/// Nao ha o que eliminar, entao a ajuda cresce a cada erro, em quatro degraus:
+/// primeiro so avisa, depois abre a dica sozinha, depois mostra a **forma** da
+/// resposta com os nomes escondidos, e so entao revela. Sem essa escada, ou o
+/// aluno trava sem nunca descobrir a resposta, ou recebe tudo de uma vez e nao
+/// aprende nada no caminho.
 class SessaoQuestao {
   SessaoQuestao(this.questao, {Random? sorteio})
     : alternativas = _embaralhar(questao.options, sorteio);
@@ -48,7 +50,7 @@ class SessaoQuestao {
   /// posicao.
   final List<Option> alternativas;
 
-  static const int _tentativasNaEscrita = 3;
+  static const int _tentativasNaEscrita = 4;
 
   FaseResposta fase = FaseResposta.respondendo;
 
@@ -72,6 +74,11 @@ class SessaoQuestao {
   /// Nunca e a [Question.explanation]: mostra-la no primeiro erro entregaria a
   /// resposta e esvaziaria a eliminacao.
   String? recado;
+
+  /// A forma da resposta, com os nomes escondidos. Ultimo degrau antes de
+  /// revelar, so nas questoes de escrita. Fica separado do [recado] porque
+  /// precisa ser exibido em fonte monoespacada para os `·` alinharem.
+  String? esqueleto;
 
   static List<Option> _embaralhar(List<Option>? opcoes, Random? sorteio) {
     if (opcoes == null) return const [];
@@ -141,20 +148,29 @@ class SessaoQuestao {
     if (respondeuCerto(questao, texto)) {
       fase = FaseResposta.acertou;
       recado = null;
+      esqueleto = null;
       return;
     }
 
     if (tentativas >= _tentativasNaEscrita) {
       fase = FaseResposta.revelado;
       recado = null;
+      esqueleto = null;
       return;
     }
 
-    if (tentativas == 2) {
-      dicaAberta = true;
-      recado = 'Ainda não. Abri a dica para ajudar.';
-    } else {
-      recado = 'Não é isso ainda. Leia o enunciado com calma e tente de novo.';
+    switch (tentativas) {
+      case 2:
+        dicaAberta = true;
+        recado = 'Ainda não. Abri a dica para ajudar.';
+      case 3:
+        // Ultimo degrau: mostra a forma, esconde os nomes. Sintaxe e o que a
+        // questao ensina; os nomes o enunciado ja disse.
+        esqueleto = esqueletoDe(questao.accepted!.first);
+        recado =
+            'Quase lá. A resposta tem esta forma, com as letras escondidas:';
+      default:
+        recado = 'Não é isso ainda. Leia o enunciado com calma e tente de novo.';
     }
   }
 }
