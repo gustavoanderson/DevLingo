@@ -3,7 +3,7 @@
   "language": "javascript",
   "level": "beginner",
   "lessonId": "javascript-beg-01",
-  "lessonTitle": "Primeiros passos: console, tipos e comparação",
+  "lessonTitle": "Primeiros passos: console, variáveis e tipos",
   "aula": {
     "titulo": "O básico do JavaScript",
     "secoes": [
@@ -37,10 +37,10 @@
       {
         "topico": "strings",
         "titulo": "Montar frases com template string",
-        "texto": "Além das aspas simples e duplas, o JavaScript tem a crase. Texto entre crases se chama template string.\n\nDentro dela, cifrão seguido de chaves insere o valor de uma variável. É a mesma ideia da f-string do Python, com símbolos diferentes.",
+        "texto": "Além das aspas simples e duplas, o JavaScript tem a crase. Texto entre crases se chama template string.\n\nDentro dela, cifrão seguido de chaves insere o valor de uma variável. É a mesma ideia da f-string do Python, com símbolos diferentes.\n\nPara saber o tamanho de um texto, use a propriedade length. Ela vem depois do ponto e não leva parênteses, porque é propriedade e não método. O equivalente em Python é a função len, que envolve o texto em vez de vir depois dele.",
         "code": {
           "language": "javascript",
-          "content": "const nome = \"Ada\";\nconsole.log(`Oi, ${nome}!`);",
+          "content": "const nome = \"Ada\";\nconsole.log(`Oi, ${nome}!`);\nconsole.log(nome.length);",
           "highlightLine": 2
         }
       },
@@ -51,36 +51,6 @@
         "code": {
           "language": "javascript",
           "content": "console.log(typeof \"42\");\nconsole.log(\"5\" + 3);\nconsole.log(\"5\" - 3);",
-          "highlightLine": 2
-        }
-      },
-      {
-        "topico": "comparacao",
-        "titulo": "Dois iguais e três iguais",
-        "texto": "Por causa dessa conversão automática, o JavaScript tem dois operadores de igualdade.\n\nDois sinais comparam depois de converter os tipos, então o número 5 e o texto 5 entre aspas saem como iguais. Três sinais comparam valor e tipo, e aí eles saem como diferentes.\n\nA recomendação é usar sempre três sinais. Dois sinais escondem defeitos que só aparecem muito depois.",
-        "code": {
-          "language": "javascript",
-          "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a == b);\nconsole.log(a === b);",
-          "highlightLine": 4
-        }
-      },
-      {
-        "topico": "funcoes",
-        "titulo": "Criar uma função",
-        "texto": "A palavra function cria uma função. Entre parênteses vão os parâmetros, e entre chaves vai o corpo.\n\nA palavra return diz qual valor a função devolve para quem a chamou. Sem ela, a função executa e devolve undefined.",
-        "code": {
-          "language": "javascript",
-          "content": "function dobro(n) {\n  return n * 2;\n}\nconsole.log(dobro(4));",
-          "highlightLine": 2
-        }
-      },
-      {
-        "topico": "arrays",
-        "titulo": "Listas de valores",
-        "texto": "Colchetes criam um array, que é a lista do JavaScript. A contagem das posições começa em zero.\n\nO método push acrescenta um item no fim e altera o array original. Repare que isso funciona mesmo com const: o const impede trocar o array por outro, mas não impede mexer no conteúdo dele.",
-        "code": {
-          "language": "javascript",
-          "content": "const cores = [\"azul\", \"verde\"];\ncores.push(\"rosa\");\nconsole.log(cores);",
           "highlightLine": 2
         }
       }
@@ -198,28 +168,6 @@
       "explanation": "Texto entre crases é um template literal. O trecho dentro de cifrão e chaves é avaliado e substituído pelo valor da variável. As crases delimitam o texto e não aparecem na saída."
     },
     {
-      "id": "javascript-beg-0104",
-      "topic": "comparacao",
-      "prompt": "Complete a comparação para que o programa imprima false.",
-      "code": {
-        "language": "javascript",
-        "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a ______ b);",
-        "highlightLine": 3
-      },
-      "answerType": "fillBlank",
-      "accepted": [
-        "==="
-      ],
-      "normalize": {
-        "spaces": true,
-        "quotes": true,
-        "trailingSemicolon": true,
-        "caseSensitive": true
-      },
-      "hint": "Um dos operadores de igualdade compara apenas o valor e ignora o tipo. O outro exige que os dois lados sejam iguais também no tipo. Você quer o rigoroso.",
-      "explanation": "A igualdade estrita compara valor e tipo ao mesmo tempo. Como um lado é número e o outro é texto, o resultado é false. Com a igualdade solta, o JavaScript converteria o texto em número e o resultado seria true."
-    },
-    {
       "id": "javascript-beg-0105",
       "topic": "tipos",
       "prompt": "O que este código imprime?",
@@ -317,68 +265,6 @@
       "explanation": "O sinal de mais junta textos quando um dos lados é texto, então o número é convertido e o resultado vira 53. O sinal de menos não junta nada, então o JavaScript converte o texto em número e faz a subtração, resultando em 2. Essa assimetria é uma das armadilhas clássicas da linguagem."
     },
     {
-      "id": "javascript-beg-0108",
-      "topic": "funcoes",
-      "prompt": "Complete a função para que o console imprima 8.",
-      "code": {
-        "language": "javascript",
-        "content": "function dobro(n) {\n  ______ n * 2;\n}\nconsole.log(dobro(4));",
-        "highlightLine": 2
-      },
-      "answerType": "fillBlank",
-      "accepted": [
-        "return"
-      ],
-      "normalize": {
-        "spaces": true,
-        "quotes": true,
-        "trailingSemicolon": true,
-        "caseSensitive": true
-      },
-      "hint": "Sem essa palavra, a função calcula o valor e o descarta, e o console acaba mostrando undefined.",
-      "explanation": "A palavra devolve o valor calculado para quem chamou a função. Sem ela a função termina sem entregar nada, e toda função que não entrega nada resulta em undefined."
-    },
-    {
-      "id": "javascript-beg-0109",
-      "topic": "arrays",
-      "prompt": "O que este código imprime?",
-      "code": {
-        "language": "javascript",
-        "content": "const cores = [\"azul\", \"verde\"];\ncores.push(\"rosa\");\nconsole.log(cores.length);",
-        "highlightLine": 2
-      },
-      "answerType": "multipleChoice",
-      "options": [
-        {
-          "id": "a",
-          "text": "2",
-          "correct": false
-        },
-        {
-          "id": "b",
-          "text": "3",
-          "correct": true
-        },
-        {
-          "id": "c",
-          "text": "4",
-          "correct": false
-        },
-        {
-          "id": "d",
-          "text": "rosa",
-          "correct": false
-        },
-        {
-          "id": "e",
-          "text": "undefined",
-          "correct": false
-        }
-      ],
-      "hint": "O método usado na segunda linha modifica o próprio array em vez de criar outro. Conte quantos itens restam no final.",
-      "explanation": "O método push acrescenta um item ao final e altera o array original. Com três itens dentro, a propriedade length vale 3. Repare que const impede reatribuir a variável, mas não impede modificar o conteúdo do array."
-    },
-    {
       "id": "javascript-beg-0110",
       "topic": "variaveis",
       "prompt": "Escreva a linha que cria uma constante chamada total valendo 0.",
@@ -394,6 +280,90 @@
       },
       "hint": "Use a palavra que impede a reatribuição, seguida do rótulo, do sinal de igual e do valor.",
       "explanation": "A declaração cria um vínculo que não pode receber outro valor depois. O ponto e vírgula final é opcional, como em qualquer instrução da linguagem."
+    },
+    {
+      "id": "javascript-beg-0111",
+      "topic": "variaveis",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const total = 0;\ntotal = 5;\nconsole.log(total);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "5",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "0",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "TypeError: não dá para reatribuir uma constante",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "null",
+          "correct": false
+        }
+      ],
+      "hint": "A palavra usada na primeira linha cria um vínculo que não aceita outro valor depois. A segunda linha tenta exatamente isso.",
+      "explanation": "O const cria um vínculo que não pode receber outro valor, e tentar reatribuir interrompe o programa. Para uma variável que vai mudar, use let. Repare que a restrição vale para o vínculo, não para o conteúdo: um array criado com const continua aceitando push."
+    },
+    {
+      "id": "javascript-beg-0112",
+      "topic": "variaveis",
+      "prompt": "Complete a linha para que o contador possa mudar de valor.",
+      "code": {
+        "language": "javascript",
+        "content": "______ contador = 0;\ncontador = contador + 1;\nconsole.log(contador);",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "let"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A segunda linha troca o valor, então a primeira não pode usar a palavra que impede troca. São três letras.",
+      "explanation": "O let cria uma variável que aceita receber outro valor depois. Com const, a segunda linha causaria TypeError. A recomendação prática é começar sempre com const e trocar para let só quando descobrir que precisa reatribuir: assim o código diz quais valores mudam."
+    },
+    {
+      "id": "javascript-beg-0113",
+      "topic": "strings",
+      "prompt": "Complete a linha para imprimir quantos caracteres o nome tem.",
+      "code": {
+        "language": "javascript",
+        "content": "const nome = \"Ada\";\nconsole.log(nome.______);",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "length"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Em JavaScript o tamanho de um texto é uma propriedade dele, e não uma função separada como em Python. Vem depois do ponto e não leva parênteses.",
+      "explanation": "A propriedade length devolve a quantidade de caracteres. Repare que não tem parênteses: é propriedade, não método. Em Python o equivalente é a função len, que envolve o texto em vez de vir depois dele."
     }
   ]
 }

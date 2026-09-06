@@ -165,7 +165,11 @@ Ela já pegou um defeito real: as questões `python-beg-0203` e `python-beg-0206
 ### Convenções de nome
 
 - Lição: `app/assets/content/<linguagem>/<linguagem>-<beg|int|adv>-<NN>.json`
-- Questão: `<linguagem>-<beg|int|adv>-<NNLL>`, onde NN é a lição e LL a posição
+- Questão: `<linguagem>-<beg|int|adv>-<NNLL>`, onde NN é a lição e **LL é a ordem de criação dentro dela, não a posição na tela**
+
+**LL não é posição, e nunca foi.** A tela embaralha as alternativas, e um dia pode embaralhar as questões; posição na tela nunca esteve no `id`. Tratar LL como ordem de criação é o que permite **aposentar uma questão sem renumerar as outras** — e renumerar seria mudar `id`, que a regra proíbe.
+
+Por isso o banco tem buracos, e eles são corretos. A `javascript-beg-01` pula `0104`, `0108` e `0109`: essas três cobriam comparação, funções e arrays com uma questão cada, saíram na redistribuição da trilha de JavaScript, e **os identificadores delas nunca serão reaproveitados**.
 
 ---
 
