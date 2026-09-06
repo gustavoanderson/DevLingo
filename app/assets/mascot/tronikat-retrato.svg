@@ -50,16 +50,33 @@
 </defs>
 
 <!-- ============================ ORELHAS ============================ -->
-<!-- Ficam atras da cabeca, entao vem primeiro. A direita e o espelho exato da
-     esquerda: na versao anterior ela tinha outro angulo e lia como estilhaco
-     solto, e nao como orelha. -->
-<polygon points="92,22 124,132 192,92" fill="url(#pelo)"/>
-<polygon points="106,48 134,122 178,96" fill="#FF7AD9"/>
-<polygon points="106,48 134,122 178,96" fill="#FF2D95" opacity="0.35"/>
+<!-- Ficam atras da cabeca, entao vem primeiro.
 
-<polygon points="308,22 276,132 208,92" fill="#6E7597"/>
-<polygon points="294,48 266,122 222,96" fill="#3E4460"/>
-<line x1="300" y1="40" x2="272" y2="128" stroke="#B9BFD8" stroke-width="2.5" opacity="0.7"/>
+     As pontas NAO foram desenhadas a olho: sao as de `tronikat.svg` convertidas
+     pela escala entre as duas cabecas (rx 52 -> 128, ry 46 -> 118), e depois
+     encolhidas em torno do centro da propria base para caberem no viewBox sem
+     mudar de angulo.
+
+     Isso porque desenhar a olho ja falhou aqui. A versao anterior tinha as
+     orelhas a 36 graus da vertical, contra 8 graus da arte de referencia:
+     mais de QUATRO vezes mais deitadas, e o Gustavo notou na tela comparando
+     com o mascote da escolha de linguagem.
+
+     O angulo de cada orelha e medido do centro da base ate o apice:
+       esquerda  8,1 graus para fora     direita  9,9 graus para fora
+     Se mexer nestes pontos, meca de novo. Orelha de gato e quase reta; alguns
+     graus a mais ja leem como orelha caida, que e outro bicho.
+
+     A direita NAO e o espelho da esquerda, e isso e fiel a referencia: la ela e
+     um pouco maior (altura 55 contra 49) e tem a base mais inclinada. -->
+<polygon points="106,130 130,14 181,101" fill="url(#pelo)"/>
+<polygon points="118,117 134,47 165,101" fill="#FF7AD9"/>
+<polygon points="118,117 134,47 165,101" fill="#FF2D95" opacity="0.35"/>
+
+<polygon points="225,103 283,14 303,148" fill="#6E7597"/>
+<polygon points="241,103 276,46 287,132" fill="#3E4460"/>
+<!-- Emenda de chapa, na faixa clara entre o interior e a aresta esquerda -->
+<line x1="280" y1="28" x2="263" y2="60" stroke="#B9BFD8" stroke-width="2.5" opacity="0.7"/>
 
 <!-- ============================ CABECA ============================ -->
 <ellipse cx="200" cy="205" rx="128" ry="118" fill="url(#pelo)"/>

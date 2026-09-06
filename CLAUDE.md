@@ -213,8 +213,23 @@ Isso virou regra porque eu errei: o retrato saiu com **olho âmbar de pupila em 
 
 A linha entre copiar e recriar:
 
-- **Identidade — copie:** cor e forma do olho, verde do visor, costura ciano da divisa, rosa do focinho e da orelha interna, o `>_` no peito, a assimetria pelo/metal
+- **Identidade — copie:** cor e forma do olho, **ângulo das orelhas**, verde do visor, costura ciano da divisa, rosa do focinho e da orelha interna, o `>_` no peito, a assimetria pelo/metal
 - **Densidade — pode recriar:** quantas placas, quantos rebites, marcas de calibragem, reflexos. Em close cabe mais detalhe, do mesmo jeito que na variante miúda cabe menos
+
+**Converta por escala, não por olho.** As duas cabeças têm razão conhecida (`rx` 52→128, `ry` 46→118): aplique-a nos pontos da referência e depois ajuste só o que não couber no viewBox, encolhendo em torno do centro da própria base para não mudar o ângulo.
+
+Isso porque desenhar a olho já falhou duas vezes seguidas, e a segunda foi medível. As orelhas do retrato saíram a **36° da vertical**, contra **8° da referência** — mais de quatro vezes mais deitadas, e ficou parecendo outro bicho. O Gustavo pegou comparando com o mascote da escolha de linguagem, que está na mesma tela do app.
+
+Ângulos corretos, medidos do centro da base até o ápice, para conferir se alguém mexer:
+
+| Orelha | Referência | Retrato |
+|---|---|---|
+| Esquerda (pelo) | 8,1° | 7,6° |
+| Direita (metal) | 9,9° | 9,7° |
+
+Orelha de gato é quase reta. Poucos graus a mais já leem como orelha caída, que é outro animal. E a direita **não é o espelho da esquerda** em nenhuma das duas artes: ela é um pouco maior e tem a base mais inclinada.
+
+**Quando o Gustavo apontar algo estético, procure o número antes de mexer.** Nas três correções deste retrato — olho, proporção do corpo e orelhas — o que ele descreveu em palavras tinha uma causa exata e verificável no arquivo: uma cor inventada, uma margem que não deveria existir e um ângulo quatro vezes maior. Ajustar "até ficar bom" teria custado várias rodadas de build; medir resolveu em uma.
 
 Não é liberdade menor do que parece: é a mesma regra já registrada para a variante pequena, onde **em outro tamanho não se reduz o desenho, redesenha-se**. O que não muda de tamanho é quem o personagem é.
 
