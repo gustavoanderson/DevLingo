@@ -167,11 +167,27 @@ Os níveis 1 e 2 são determinísticos, o que é exatamente o que se quer: sem f
 
 ## Estado e próximos passos
 
-Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e as **lições 1 a 4 de Python iniciante** (40 questões: exibir e guardar valores; números e contas; comparação e condicionais; strings).
+Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e **Python iniciante inteiro**.
+
+**A meta de 50 questões de Python iniciante está cumprida**, nas lições 1 a 5:
+
+| Lição | Tema |
+|---|---|
+| 01 | Primeiros passos: exibir e guardar valores |
+| 02 | Números e contas: operadores aritméticos |
+| 03 | Decidir: comparação, booleanos e condicionais |
+| 04 | Strings: medir, cortar e transformar |
+| 05 | Listas e o laço `for` |
+
+A trilha foi calibrada para encadear: os operadores da 2 alimentam as condições da 3; o recuo obrigatório da 3 reaparece dentro do laço da 5; o fatiamento de texto da 4 vira indexação de lista na 5; e a imutabilidade das strings na 4 ganha seu contraponto exato no `append` mutável da 5. Ao mexer em qualquer lição, confira se essas amarras continuam de pé.
+
+As 4 questões de `python-beg-00` são a lição de referência do formato e **não contam** para a meta. Elas participam da validação como qualquer outra, inclusive da regra de impressão digital.
 
 A regra de impressão digital, que era o pendente combinado para perto da lição 4, **está implementada** — ver "Validador". O desenho mudou no caminho: ela compara respostas, não enunciados.
 
-Próximo: **lição 5 de Python iniciante** (listas e o laço `for`), que fecha as 50 questões da meta. Depois Python intermediário e avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
+Próximo: **Python intermediário**. Depois avançado, e só então JavaScript e Node de verdade. Uma linguagem por vez, porque calibrar dificuldade exige comparar as questões entre si.
+
+Antes de escrever a primeira lição intermediária, decidir **o que separa um nível do outro**. No iniciante o critério foi implícito: uma questão por conceito, sem composição. No intermediário isso precisa virar um critério escrito, senão o nível vira "iniciante com palavras difíceis".
 
 O banco aprova hoje com **três avisos, e os três são intencionais**. Todos são distratores que diferem apenas na caixa, num idioma em que a caixa é justamente o conteúdo da questão:
 

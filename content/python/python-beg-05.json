@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "language": "python",
+  "level": "beginner",
+  "lessonId": "python-beg-05",
+  "lessonTitle": "Listas e o laço for",
+  "questions": [
+    {
+      "id": "python-beg-0501",
+      "topic": "listas",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "frutas = [\"maçã\", \"uva\", \"pera\"]\nprint(frutas[1])",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "maçã",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "uva",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "pera",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "1",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "IndexError: índice fora da lista",
+          "correct": false
+        }
+      ],
+      "hint": "A contagem das posições de uma lista começa em zero, igual à das letras de um texto. O índice 1 não aponta para o primeiro item.",
+      "explanation": "O índice 0 é o primeiro item, então o índice 1 é o segundo. É a mesma contagem usada no fatiamento de textos. O índice 2 seria o último desta lista, e o 3 causaria IndexError."
+    },
+    {
+      "id": "python-beg-0502",
+      "topic": "listas",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "nums = [1, 2]\nnums.append(3)\nprint(nums)",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "[1, 2, 3]",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "[1, 2]",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "None",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "[3]",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "[1, 2, [3]]",
+          "correct": false
+        }
+      ],
+      "hint": "O método acrescenta o valor no fim da lista. Ao contrário do que acontece com texto, aqui a variável original é mesmo alterada.",
+      "explanation": "Listas são mutáveis, ao contrário de strings. O método append acrescenta o item no fim e altera a lista original, sem precisar de atribuição. Por isso o print mostra os três números."
+    },
+    {
+      "id": "python-beg-0503",
+      "topic": "listas",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "nums = [1, 2]\nresultado = nums.append(3)\nprint(resultado)",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "[1, 2, 3]",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "3",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "[3]",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "Erro: append não devolve nada",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "None",
+          "correct": true
+        }
+      ],
+      "hint": "A lista realmente muda, mas a pergunta é sobre o que a chamada entregou para a variável. Métodos que alteram no lugar não costumam devolver o objeto alterado.",
+      "explanation": "O método altera a lista no lugar e devolve None. Guardar esse retorno numa variável é um erro comum: a variável fica com None em vez da lista. É o oposto exato do que acontece com strings, onde o método devolve um texto novo e não altera nada."
+    },
+    {
+      "id": "python-beg-0504",
+      "topic": "lacos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "python",
+        "content": "total = 0\nfor n in [1, 2, 3]:\n    total = total + n\nprint(total)",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "1",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "3",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "6",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "123",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "0",
+          "correct": false
+        }
+      ],
+      "hint": "A linha recuada roda uma vez para cada item da lista, e a cada volta acrescenta o item ao que já estava guardado. Some os três valores.",
+      "explanation": "A variável total começa em zero e vai acumulando: zero mais 1, depois mais 2, depois mais 3. Repare que o print está fora do laço, então exibe apenas o resultado final, uma única vez."
+    },
+    {
+      "id": "python-beg-0505",
+      "topic": "lacos",
+      "prompt": "Quais valores este código imprime, em ordem?",
+      "code": {
+        "language": "python",
+        "content": "for i in range(3):\n    print(i)",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "1, 2, 3",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "0, 1, 2, 3",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "1, 2",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "0, 1, 2",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "3",
+          "correct": false
+        }
+      ],
+      "hint": "A contagem começa em zero e para antes do número informado, exatamente como o limite direito do fatiamento. São três valores no total.",
+      "explanation": "A função range começa em zero e para antes do número informado, então produz três valores. O próprio 3 nunca aparece, pelo mesmo princípio do fatiamento, onde o limite da direita fica de fora."
+    },
+    {
+      "id": "python-beg-0506",
+      "topic": "lacos",
+      "prompt": "Quais letras este código imprime, em ordem?",
+      "code": {
+        "language": "python",
+        "content": "for n in [1, 2, 3]:\n    print(\"a\")\nprint(\"b\")",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "a b",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "a a a b",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "a a a b b b",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "a b a b a b",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "b a a a",
+          "correct": false
+        }
+      ],
+      "hint": "A linha recuada pertence ao laço e repete a cada item. A linha sem recuo só roda depois que o laço termina, uma única vez.",
+      "explanation": "O recuo decide o que pertence ao laço. A primeira impressão está dentro e repete três vezes, uma para cada item da lista. A segunda está fora e roda uma vez só, depois que o laço acaba."
+    },
+    {
+      "id": "python-beg-0507",
+      "topic": "lacos",
+      "prompt": "Complete a linha que abre o laço percorrendo a lista.",
+      "code": {
+        "language": "python",
+        "content": "nomes = [\"Ada\", \"Alan\"]\nfor nome ______ nomes:\n    print(nome)",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "in"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Falta a palavra que liga a variável do laço à sequência percorrida. São duas letras, e é a mesma palavra usada para perguntar se algo está dentro de um texto.",
+      "explanation": "A palavra in liga a variável do laço à sequência: a cada volta, a variável recebe o item seguinte. É a mesma palavra do operador que pergunta se um valor está dentro de uma sequência, mas aqui ela faz parte da estrutura do for, e não é um operador que devolve booleano."
+    },
+    {
+      "id": "python-beg-0508",
+      "topic": "listas",
+      "prompt": "Complete a linha para imprimir o último número da lista.",
+      "code": {
+        "language": "python",
+        "content": "notas = [7, 8, 9]\nprint(notas[______])",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "-1",
+        "2"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Existem dois caminhos: contar do começo, lembrando que a primeira posição é zero, ou contar de trás para frente usando um índice negativo.",
+      "explanation": "O índice 2 é o último desta lista, porque a contagem começa em zero e a lista tem três itens. O índice -1 chega ao mesmo lugar contando de trás para frente, e é o caminho mais seguro: continua correto mesmo se a lista mudar de tamanho."
+    },
+    {
+      "id": "python-beg-0509",
+      "topic": "listas",
+      "prompt": "Escreva a linha que cria uma variável chamada notas com os números 7, 8 e 9, nessa ordem.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "notas = [7, 8, 9]"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Use o nome, o sinal de igual e os três números separados por vírgula, tudo entre colchetes.",
+      "explanation": "Os colchetes criam a lista e as vírgulas separam os itens. A ordem escrita é a ordem guardada, e é ela que define os índices: o 7 fica na posição 0."
+    },
+    {
+      "id": "python-beg-0510",
+      "topic": "listas",
+      "prompt": "Escreva a expressão que verifica se o texto uva está na lista frutas.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "\"uva\" in frutas"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "É o mesmo operador que pergunta se um pedaço aparece dentro de um texto. Aqui ele procura um item inteiro, e o valor procurado vem antes do operador.",
+      "explanation": "O operador in funciona em listas do mesmo jeito que em textos, mas procura um item inteiro em vez de um pedaço. A expressão devolve True ou False, e por isso costuma aparecer dentro de um if. Repare que é a mesma palavra que estrutura o for, cumprindo aqui um papel diferente."
+    }
+  ]
+}
