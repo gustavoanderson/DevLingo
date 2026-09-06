@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "language": "javascript",
+  "level": "beginner",
+  "lessonId": "javascript-beg-05",
+  "lessonTitle": "Arrays e repetição",
+  "aula": {
+    "titulo": "Arrays e repetição",
+    "secoes": [
+      {
+        "topico": "arrays",
+        "titulo": "Guardar vários valores",
+        "texto": "Colchetes criam um array, e vírgulas separam os itens. Para pegar um item, use colchetes com a posição, contando de zero.\n\nAo contrário do texto, **array é mutável**. O método push acrescenta no fim e altera o array original, sem precisar de atribuição. Isso funciona mesmo com const: o const impede trocar o array por outro, não impede mexer no conteúdo.\n\nE aqui vai uma diferença em relação ao Python: o push devolve o **novo tamanho** do array. O append do Python devolve None. Guardar esse retorno achando que é o array é engano comum.\n\nA propriedade length diz quantos itens existem, e o método includes pergunta se um valor está lá dentro.",
+        "code": {
+          "language": "javascript",
+          "content": "const nums = [1, 2];\nconst tamanho = nums.push(3);\nconsole.log(nums);\nconsole.log(tamanho);\nconsole.log(nums.includes(2));",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "lacos",
+        "titulo": "Repetir para cada item",
+        "texto": "O for com a palavra of percorre um array item por item. A cada volta, a variável recebe o item seguinte.\n\nExiste também a forma clássica, com três partes entre parênteses: onde começa, até quando continua, e o que muda a cada volta. Ela é mais verbosa e dá controle sobre o índice.\n\nComo em qualquer bloco do JavaScript, quem delimita o corpo do laço são as **chaves**, não o recuo. Uma linha depois das chaves roda uma vez só.",
+        "code": {
+          "language": "javascript",
+          "content": "const cores = [\"azul\", \"verde\"];\nfor (const cor of cores) {\n  console.log(cor);\n}\n\nfor (let i = 0; i < 3; i++) {\n  console.log(i);\n}",
+          "highlightLine": 2
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "javascript-beg-0501",
+      "topic": "arrays",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const frutas = [\"maçã\", \"uva\", \"pera\"];\nconsole.log(frutas[1]);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "maçã",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "uva",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "pera",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "1",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "undefined",
+          "correct": false
+        }
+      ],
+      "hint": "A contagem das posições começa em zero, igual à das letras de um texto. A posição pedida não é a primeira.",
+      "explanation": "O índice 0 é o primeiro item, então o índice 1 é o segundo. Índice além do fim não causa erro em JavaScript: devolve undefined, em silêncio. Em Python o mesmo caso levantaria IndexError."
+    },
+    {
+      "id": "javascript-beg-0502",
+      "topic": "arrays",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const nums = [1, 2];\nnums.push(3);\nconsole.log(nums);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "[ 1, 2, 3 ]",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "[ 1, 2 ]",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "[ 3 ]",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "TypeError",
+          "correct": false
+        }
+      ],
+      "hint": "O método acrescenta o valor no fim e mexe no array original. Repare que a linha do meio não guarda o resultado em lugar nenhum, e ainda assim tem efeito.",
+      "explanation": "Arrays são mutáveis: o push altera o array original, sem precisar de atribuição. Isso funciona mesmo com const, porque o const impede trocar o array por outro, não impede mexer no conteúdo dele."
+    },
+    {
+      "id": "javascript-beg-0503",
+      "topic": "arrays",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const nums = [1, 2];\nconst resultado = nums.push(3);\nconsole.log(resultado);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "[ 1, 2, 3 ]",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "null",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "3",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "2",
+          "correct": false
+        }
+      ],
+      "hint": "A pergunta é sobre o que o método devolveu para a variável, não sobre como o array ficou. Em JavaScript esse retorno é um número.",
+      "explanation": "O push devolve o novo tamanho do array, não o array. Em Python o append devolve None. Nos dois casos guardar o retorno achando que é a coleção é engano comum, mas o valor errado que você recebe é diferente em cada linguagem."
+    },
+    {
+      "id": "javascript-beg-0504",
+      "topic": "lacos",
+      "prompt": "Quais valores este código imprime, em ordem?",
+      "code": {
+        "language": "javascript",
+        "content": "const cores = [\"azul\", \"verde\"];\nfor (const cor of cores) {\n  console.log(cor);\n}",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "0, 1",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "cor, cor",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "azul, verde",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "azul",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "[ azul, verde ]",
+          "correct": false
+        }
+      ],
+      "hint": "O laço com a palavra of entrega o item em si a cada volta, e não a posição dele.",
+      "explanation": "O for com of percorre os itens. Para percorrer as posições existe o for com in, que é fonte comum de confusão: ele entrega os índices, não os valores."
+    },
+    {
+      "id": "javascript-beg-0505",
+      "topic": "lacos",
+      "prompt": "Quais valores este código imprime, em ordem?",
+      "code": {
+        "language": "javascript",
+        "content": "for (let i = 0; i < 3; i++) {\n  console.log(i);\n}",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "1, 2, 3",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "0, 1, 2, 3",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "1, 2",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "3",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "0, 1, 2",
+          "correct": true
+        }
+      ],
+      "hint": "As três partes entre parênteses dizem onde começa, até quando continua, e o que muda a cada volta. Repare que a comparação é menor, não menor ou igual.",
+      "explanation": "O laço começa em zero e continua enquanto o índice for menor que 3, então o próprio 3 nunca entra. É o mesmo efeito do range do Python, com a diferença de que aqui as três partes ficam à vista."
+    },
+    {
+      "id": "javascript-beg-0506",
+      "topic": "lacos",
+      "prompt": "Quais letras este código imprime, em ordem?",
+      "code": {
+        "language": "javascript",
+        "content": "for (const n of [1, 2, 3]) {\n  console.log(\"a\");\n}\nconsole.log(\"b\");",
+        "highlightLine": 4
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "a, b",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "a, a, a, b",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "a, a, a, b, b, b",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "a, b, a, b, a, b",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "b, a, a, a",
+          "correct": false
+        }
+      ],
+      "hint": "Quem delimita o corpo do laço são as chaves, não o recuo. Repare onde elas fecham.",
+      "explanation": "A primeira impressão está dentro das chaves e repete a cada item. A segunda está fora e roda uma vez só, depois que o laço acaba. O recuo não influencia nada: aqui ele é apenas para quem lê."
+    },
+    {
+      "id": "javascript-beg-0507",
+      "topic": "lacos",
+      "prompt": "Complete a linha do laço que percorre os itens do array.",
+      "code": {
+        "language": "javascript",
+        "content": "const nomes = [\"Ada\", \"Alan\"];\nfor (const nome ______ nomes) {\n  console.log(nome);\n}",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "of"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Falta a palavra de duas letras que liga a variável do laço à coleção. A outra opção parecida entregaria os índices, não os valores.",
+      "explanation": "A palavra of percorre os valores. A palavra in, que também existe, percorre os índices, e trocar uma pela outra é fonte comum de confusão em JavaScript."
+    },
+    {
+      "id": "javascript-beg-0508",
+      "topic": "arrays",
+      "prompt": "Complete a linha para acrescentar o livro no fim do carrinho.",
+      "code": {
+        "language": "javascript",
+        "content": "const carrinho = [];\ncarrinho.______(\"livro\");\nconsole.log(carrinho);",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "push"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "O método que acrescenta no fim tem quatro letras e altera o array original, sem precisar de atribuição.",
+      "explanation": "O método push acrescenta no fim e altera o array original. Ele devolve o novo tamanho, não o array, então guardar o retorno achando que é a coleção dá o valor errado."
+    },
+    {
+      "id": "javascript-beg-0509",
+      "topic": "arrays",
+      "prompt": "Escreva a linha que cria uma constante chamada notas com os números 7, 8 e 9, nessa ordem.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "const notas = [7, 8, 9];"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Use a palavra que cria vínculo que não muda, o nome, o sinal de igual, e os três números separados por vírgula entre colchetes.",
+      "explanation": "Os colchetes criam o array e as vírgulas separam os itens. Usar const aqui é o padrão: o vínculo não muda, e o conteúdo continua podendo receber push."
+    },
+    {
+      "id": "javascript-beg-0510",
+      "topic": "arrays",
+      "prompt": "Escreva a expressão que verifica se o texto uva está no array frutas.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "frutas.includes(\"uva\")"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "O método vem depois do nome do array, separado por ponto, com o valor procurado entre parênteses. É o mesmo nome usado para procurar um pedaço dentro de um texto.",
+      "explanation": "O método includes devolve um booleano dizendo se o valor está no array. O mesmo nome serve para texto, onde procura um pedaço em vez de um item inteiro. Em Python os dois casos usam o operador in."
+    }
+  ]
+}

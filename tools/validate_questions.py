@@ -135,6 +135,24 @@ def check_lesson_rules(data, filename, report):
                     f"Redistribua as alternativas.",
                 )
 
+        # --- letra que nunca e resposta e o mesmo vies pelo avesso ---
+        # Concentrar demais numa letra e obvio; nunca usar duas letras nao e, e
+        # produz o mesmo aprendizado errado: "a certa nunca e a ultima". Com
+        # cinco ou mais questoes de multipla escolha, todas as cinco letras
+        # cabem, entao exigir todas nao aperta ninguem.
+        #
+        # Esta regra nasceu de um defeito real: oito licoes escritas a mao
+        # cobriam as cinco letras por instinto, e as duas escritas em lote
+        # nunca usaram 'd' nem 'e'. Instinto nao escala; regra escala.
+        nunca_usadas = sorted(set("abcde") - set(posicoes))
+        if nunca_usadas:
+            report.error(
+                f"{filename} -> gabaritos",
+                f"nenhuma questao tem a resposta certa em {nunca_usadas}. "
+                f"Com {len(posicoes)} questoes de multipla escolha, as cinco "
+                f"letras cabem. Redistribua.",
+            )
+
 
 def find_pubspec(content_dir):
     """Sobe a partir da pasta de conteudo procurando o pubspec.yaml do app."""

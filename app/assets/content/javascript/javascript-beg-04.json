@@ -1,0 +1,351 @@
+{
+  "schemaVersion": 1,
+  "language": "javascript",
+  "level": "beginner",
+  "lessonId": "javascript-beg-04",
+  "lessonTitle": "Strings: transformar e recortar",
+  "aula": {
+    "titulo": "Trabalhar com texto",
+    "secoes": [
+      {
+        "topico": "strings",
+        "titulo": "Transformar sem alterar",
+        "texto": "Os métodos de texto vêm depois do ponto: toUpperCase deixa tudo maiúsculo, toLowerCase deixa minúsculo, trim apara os espaços das pontas, includes pergunta se um pedaço aparece dentro.\n\nE aqui vale o mesmo que em Python: **texto é imutável**. Nenhum desses métodos altera o original, todos devolvem um texto novo. Chamar o método sem guardar o resultado não faz nada.\n\nA imutabilidade tem um detalhe que assusta: tentar trocar uma letra pela posição não dá erro, simplesmente não acontece. O JavaScript ignora em silêncio, enquanto o Python interrompe com TypeError. Falha silenciosa é pior que erro alto.\n\nCuidado também com o replace: sem instrução extra ele troca **só a primeira** ocorrência, ao contrário do replace do Python, que troca todas.",
+        "code": {
+          "language": "javascript",
+          "content": "let nome = \"ada\";\nnome.toUpperCase();\nconsole.log(nome);\nconsole.log(nome.toUpperCase());\nconsole.log(\"2024-01-05\".replace(\"-\", \"/\"));",
+          "highlightLine": 3
+        }
+      },
+      {
+        "topico": "fatiamento",
+        "titulo": "Pegar um pedaço",
+        "texto": "A contagem das posições começa em zero, e colchetes com um número devolvem a letra daquela posição.\n\nPara um intervalo existe o slice, com o início e o fim entre parênteses. O início entra; o fim fica de fora, mesma regra do fatiamento do Python.\n\nE o slice aceita número negativo, contando de trás para frente. É mais seguro que contar do começo, porque continua certo se o texto mudar de tamanho.",
+        "code": {
+          "language": "javascript",
+          "content": "const palavra = \"Python\";\nconsole.log(palavra[0]);\nconsole.log(palavra.slice(0, 3));\nconsole.log(palavra.slice(-1));"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "javascript-beg-0401",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const nome = \"ada\";\nconsole.log(nome.toUpperCase());",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "ada",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "Ada",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "ADA",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "TypeError",
+          "correct": false
+        }
+      ],
+      "hint": "Um dos métodos de texto devolve uma versão nova da palavra com todas as letras na forma alta. Repare que ele devolve, não altera.",
+      "explanation": "O método toUpperCase devolve o texto com todas as letras maiúsculas. Ele não altera a variável original: devolve um texto novo, e é esse retorno que o console recebe. A forma com só a primeira letra alta não sai de nenhum método pronto do JavaScript."
+    },
+    {
+      "id": "javascript-beg-0402",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const palavra = \"sol\";\npalavra[0] = \"m\";\nconsole.log(palavra);",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "sol",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "mol",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "TypeError",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "m",
+          "correct": false
+        }
+      ],
+      "hint": "Texto é imutável nas duas linguagens. A diferença está no que acontece quando você tenta mudar mesmo assim.",
+      "explanation": "A atribuição por posição simplesmente não acontece, e o JavaScript não reclama. Em Python o mesmo código interromperia o programa com TypeError. Falha silenciosa é pior que erro alto: aqui o defeito segue adiante sem ninguém perceber."
+    },
+    {
+      "id": "javascript-beg-0403",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "console.log(\"Python\".includes(\"th\"));",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "th",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "2",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "false",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "true",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "TypeError",
+          "correct": false
+        }
+      ],
+      "hint": "O método pergunta se aquele pedaço aparece dentro do texto, e responde com um booleano. Procure as duas letras dentro da palavra.",
+      "explanation": "O método includes devolve um booleano dizendo se a sequência aparece dentro do texto. Em Python o equivalente é o operador in, que vem antes do texto em vez de depois."
+    },
+    {
+      "id": "javascript-beg-0404",
+      "topic": "fatiamento",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "console.log(\"Python\".slice(0, 3));",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pyth",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "Pyt",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "yth",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "P",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "ython",
+          "correct": false
+        }
+      ],
+      "hint": "O primeiro número entra no pedaço e o segundo fica de fora. A contagem começa em zero.",
+      "explanation": "O slice pega das posições 0, 1 e 2, e para antes da 3. O limite da direita nunca entra, mesma regra do fatiamento do Python."
+    },
+    {
+      "id": "javascript-beg-0405",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "console.log(\"2024-01-05\".replace(\"-\", \"/\"));",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "2024/01/05",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "2024-01-05",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "20240105",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "2024/01-05",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "null",
+          "correct": false
+        }
+      ],
+      "hint": "Sem instrução extra, esse método não mexe em todas as ocorrências. Conte quantos traços existem e quantos ele alcança.",
+      "explanation": "O replace do JavaScript troca apenas a primeira ocorrência quando recebe um texto simples. O do Python troca todas. Para trocar todas aqui existe o replaceAll, ou uma expressão regular com a marca de global."
+    },
+    {
+      "id": "javascript-beg-0406",
+      "topic": "strings",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const entrada = \"  ada  \";\nconsole.log(\"[\" + entrada.trim() + \"]\");",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "[  ada  ]",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "[ada  ]",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "[  ada]",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "ada",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "[ada]",
+          "correct": true
+        }
+      ],
+      "hint": "O método remove os espaços que sobram nas duas pontas, sem tocar nos do meio. Os colchetes existem só para você enxergar onde o texto começa e termina.",
+      "explanation": "O método trim devolve o texto sem os espaços das pontas. Os colchetes no console tornam visível o efeito, já que espaço aparado e espaço presente parecem iguais na tela. Existem variantes que limpam só um lado."
+    },
+    {
+      "id": "javascript-beg-0407",
+      "topic": "strings",
+      "prompt": "Complete a linha para imprimir o nome todo em letras minúsculas.",
+      "code": {
+        "language": "javascript",
+        "content": "const nome = \"ADA\";\nconsole.log(nome.______());",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "toLowerCase"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "É o método oposto ao que deixa tudo em letra alta, e segue a mesma forma de escrita com as palavras grudadas.",
+      "explanation": "O método toLowerCase devolve o texto todo em minúsculas. Ele é muito usado antes de comparar, para o teste aceitar qualquer grafia. Repare nos parênteses: é método, não propriedade, ao contrário de length."
+    },
+    {
+      "id": "javascript-beg-0408",
+      "topic": "fatiamento",
+      "prompt": "Complete a linha para imprimir a última letra da palavra.",
+      "code": {
+        "language": "javascript",
+        "content": "const palavra = \"Python\";\nconsole.log(palavra.______(-1));",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "slice"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "O método que recorta um pedaço aceita número negativo, contando de trás para frente. São cinco letras.",
+      "explanation": "Com número negativo, o recorte conta do fim, e -1 devolve a última letra. É mais seguro que calcular a posição pelo tamanho, porque continua certo se o texto mudar."
+    },
+    {
+      "id": "javascript-beg-0409",
+      "topic": "strings",
+      "prompt": "Escreva a expressão que testa se o conteúdo da variável resposta, convertido para minúsculas, é igual a sim.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "resposta.toLowerCase() === \"sim\""
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Encadeie duas coisas: primeiro o método que rebaixa as letras, depois o operador de igualdade que também compara o tipo, contra a palavra entre aspas.",
+      "explanation": "Converter para minúsculas antes de comparar faz o teste aceitar Sim, SIM e sim da mesma forma. O operador de três sinais é o recomendado: com dois, tipos diferentes seriam convertidos em silêncio."
+    },
+    {
+      "id": "javascript-beg-0410",
+      "topic": "fatiamento",
+      "prompt": "Escreva a linha que exibe no console a primeira letra da variável palavra.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "console.log(palavra[0]);"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A contagem das posições começa em zero. Use os colchetes logo depois do nome, dentro da chamada de exibição.",
+      "explanation": "O índice 0 corresponde à primeira letra, porque a contagem começa em zero. O índice 1 já seria a segunda. O ponto e vírgula final é opcional e a resposta vale sem ele."
+    }
+  ]
+}

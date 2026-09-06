@@ -96,7 +96,9 @@ Uma questão separa **o que ela mostra** do **como é respondida**. O campo `cod
 - **`hint` e `explanation` são obrigatórias.** A dica ajuda quem travou sem entregar a resposta. A explicação aparece depois de responder e é onde o aprendizado acontece.
 - **Múltipla escolha tem exatamente 5 alternativas e 1 correta.**
 - **Os `id` `a`–`e` das alternativas são rótulos de autoria, não posição de tela.** O app embaralha as alternativas ao renderizar (ver "Tela de exercício"). O `correct: true` fica no objeto certo e viaja junto com ele.
-- **Distribua os gabaritos mesmo assim.** Se mais da metade cair na mesma letra, o validador reprova. É defesa secundária, para o caso de o embaralhamento estar desligado ou quebrado. Isso já aconteceu: a primeira lição de Python saiu com os 6 gabaritos em "a".
+- **Distribua os gabaritos mesmo assim.** Defesa secundária, para o caso de o embaralhamento estar desligado ou quebrado. O validador reprova **dois** vieses:
+  - **Concentração:** mais da metade dos gabaritos na mesma letra. Já aconteceu — a primeira lição de Python saiu com os 6 em "a".
+  - **Letra nunca usada:** com 5 ou mais questões de múltipla escolha, as cinco letras cabem, e nenhuma pode ficar de fora. Também já aconteceu: oito lições escritas à mão cobriam as cinco por instinto, e as duas escritas em lote nunca usaram `d` nem `e`. **Instinto não escala; regra escala.**
 
 ### Normalização de respostas escritas
 
@@ -410,12 +412,13 @@ Fica **fora** da Etapa B: Firebase, fundo animado, escolha de linguagem, telas d
 
 Sem isso escrito, o intermediário vira "iniciante com palavras difíceis".
 
-O banco aprova hoje com **três avisos, e os três são intencionais**. Todos são distratores que diferem apenas na caixa, num idioma em que a caixa é justamente o conteúdo da questão:
+O banco aprova hoje com **quatro avisos, e os quatro são intencionais**. Todos são distratores que diferem apenas na caixa, num idioma em que a caixa é justamente o conteúdo da questão:
 
 | Questão | Distrator | Por que existe |
 |---|---|---|
 | `python-beg-0302` | `true` ao lado de `True` | Em minúsculas daria `NameError`, não o booleano |
 | `python-beg-0402` | `ada`, `Ada` ao lado de `ADA` | `Ada` é resultado de `capitalize`, não de `upper` |
 | `python-beg-0403` | `OI` ao lado de `oi` | `OI` é o que apareceria se strings fossem mutáveis |
+| `javascript-beg-0401` | `ada`, `Ada` ao lado de `ADA` | O distrator natural de `toUpperCase` é o texto intacto |
 
 Se algum desses avisos sumir, alguém mexeu na questão. Se aparecer um quarto, é para conferir antes de aceitar.

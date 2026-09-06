@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "language": "javascript",
+  "level": "beginner",
+  "lessonId": "javascript-beg-02",
+  "lessonTitle": "Comparar e decidir",
+  "aula": {
+    "titulo": "Comparar e decidir",
+    "secoes": [
+      {
+        "topico": "comparacao",
+        "titulo": "Dois iguais e três iguais",
+        "texto": "JavaScript converte tipos sozinho quando compara com dois sinais de igual. Por isso o número 5 e o texto 5 entre aspas saem como iguais: ele transforma um no outro antes de responder.\n\nTrês sinais comparam valor e tipo, sem converter nada. É o que quase sempre se quer, e a recomendação é usar sempre. Para diferença existe o par: dois sinais com exclamação convertem, três não.",
+        "code": {
+          "language": "javascript",
+          "content": "console.log(5 == \"5\");\nconsole.log(5 === \"5\");\nconsole.log(5 !== \"5\");",
+          "highlightLine": 2
+        }
+      },
+      {
+        "topico": "booleanos",
+        "titulo": "Verdadeiro, falso, e os quase",
+        "texto": "Comparações devolvem true ou false, em minúsculas — ao contrário do Python, onde levam maiúscula.\n\nO e comercial dobrado exige que os dois lados sejam verdadeiros; a barra vertical dobrada se contenta com um. A exclamação inverte.\n\nE há uma peculiaridade: JavaScript trata alguns valores como falsos sem que sejam false. O zero, o texto vazio, null e undefined caem nessa lista. É por isso que um if pode disparar sem você ter escrito nenhuma comparação.",
+        "code": {
+          "language": "javascript",
+          "content": "console.log(true && false);\nconsole.log(!true);\nif (\"\") {\n  console.log(\"nao chega aqui\");\n}",
+          "highlightLine": 3
+        }
+      },
+      {
+        "topico": "condicionais",
+        "titulo": "Escolher um caminho",
+        "texto": "O if avalia a condição entre parênteses. Se for verdadeira, o bloco roda.\n\nPara o caminho alternativo existe o else, e para testes encadeados o else if. A cadeia é lida de cima para baixo e para no primeiro teste que der certo, então a ordem importa.",
+        "code": {
+          "language": "javascript",
+          "content": "const nota = 7;\nif (nota >= 9) {\n  console.log(\"Excelente\");\n} else if (nota >= 7) {\n  console.log(\"Bom\");\n} else {\n  console.log(\"Melhorar\");\n}",
+          "highlightLine": 4
+        }
+      },
+      {
+        "topico": "sintaxe",
+        "titulo": "Chaves, não recuo",
+        "texto": "Aqui está a diferença mais visível em relação ao Python: o bloco é delimitado por **chaves**, e a condição fica entre parênteses.\n\nO recuo continua importante para quem lê, mas o JavaScript ignora completamente. Código todo grudado numa linha funciona igual — e é ilegível, que é motivo suficiente para não fazer.",
+        "code": {
+          "language": "javascript",
+          "content": "if (5 > 3) { console.log(\"funciona\"); }\n\nif (5 > 3) {\n  console.log(\"melhor assim\");\n}",
+          "highlightLine": 3
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "javascript-beg-0201",
+      "topic": "comparacao",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a == b);",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "true",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "false",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "TypeError",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "5",
+          "correct": false
+        }
+      ],
+      "hint": "Dois sinais de igual convertem os tipos antes de comparar. Depois da conversão, os dois lados viram a mesma coisa.",
+      "explanation": "Com dois sinais, o JavaScript converte o texto em número antes de comparar, e aí os dois valem 5. É essa conversão silenciosa que motiva a existência do operador de três sinais."
+    },
+    {
+      "id": "javascript-beg-0202",
+      "topic": "comparacao",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a === b);",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "true",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "false",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "TypeError",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "null",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "NaN",
+          "correct": false
+        }
+      ],
+      "hint": "Três sinais comparam também o tipo, sem converter nada antes. Um dos lados é número e o outro é texto.",
+      "explanation": "O operador de três sinais compara valor e tipo. Como um lado é number e o outro é string, o resultado é negativo mesmo os dois parecendo 5. Use sempre três sinais: dois escondem defeitos que só aparecem depois."
+    },
+    {
+      "id": "javascript-beg-0203",
+      "topic": "booleanos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "console.log(true && false);",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "true",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "0",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "false",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "SyntaxError",
+          "correct": false
+        }
+      ],
+      "hint": "O e comercial dobrado exige que os dois lados sejam positivos. Um lado já é negativo.",
+      "explanation": "O e comercial dobrado só entrega positivo quando os dois lados são positivos. Com a barra vertical dobrada bastaria um lado."
+    },
+    {
+      "id": "javascript-beg-0204",
+      "topic": "booleanos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "if (\"\") {\n  console.log(\"vazio\");\n}",
+        "highlightLine": 1
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "vazio",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "cheio",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "nada, o if não roda",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "TypeError",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "undefined",
+          "correct": false
+        }
+      ],
+      "hint": "O texto entre aspas não tem nenhum caractere. JavaScript trata alguns valores como negativos sem que eles sejam o booleano negativo.",
+      "explanation": "Texto vazio, zero, null e undefined são tratados como negativos numa condição, mesmo sem serem o booleano false. Por isso um if pode não disparar sem você ter escrito comparação nenhuma. Essa lista de valores é conhecida como falsy."
+    },
+    {
+      "id": "javascript-beg-0205",
+      "topic": "condicionais",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const nota = 7;\nif (nota >= 9) {\n  console.log(\"Excelente\");\n} else if (nota >= 7) {\n  console.log(\"Bom\");\n} else {\n  console.log(\"Melhorar\");\n}",
+        "highlightLine": 4
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Excelente",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "nada",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "Melhorar",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "Bom Melhorar",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "Bom",
+          "correct": true
+        }
+      ],
+      "hint": "Percorra os testes de cima para baixo e pare no primeiro que der certo. A nota falha no primeiro e passa no seguinte.",
+      "explanation": "A cadeia é avaliada de cima para baixo e para no primeiro teste verdadeiro. Os testes seguintes nem chegam a ser avaliados, e por isso a ordem importa: um teste mais frouxo colocado antes capturaria casos que deveriam cair num mais específico."
+    },
+    {
+      "id": "javascript-beg-0206",
+      "topic": "sintaxe",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "if (5 > 3) {\n  console.log(\"dentro\");\n}\n  console.log(\"fora\");",
+        "highlightLine": 4
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "dentro",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "fora",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "dentro fora",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "IndentationError",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "nada",
+          "correct": false
+        }
+      ],
+      "hint": "O recuo é enfeite para o JavaScript: quem delimita o bloco são as chaves. Repare onde elas fecham.",
+      "explanation": "As chaves fecham depois da primeira linha, então só ela pertence ao if. A segunda está fora e roda sempre, por mais que o recuo sugira o contrário. Em Python esse mesmo código faria as duas rodarem dentro, porque lá o recuo é sintaxe."
+    },
+    {
+      "id": "javascript-beg-0207",
+      "topic": "comparacao",
+      "prompt": "Complete a comparação para que o programa imprima false.",
+      "code": {
+        "language": "javascript",
+        "content": "const a = 5;\nconst b = \"5\";\nconsole.log(a ______ b);",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "==="
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Você precisa do operador que compara também o tipo, sem converter nada antes. São três caracteres iguais.",
+      "explanation": "Com três sinais a comparação leva o tipo em conta, e number com string sai como diferente. Com dois sinais o resultado seria positivo, porque o texto seria convertido em número antes."
+    },
+    {
+      "id": "javascript-beg-0208",
+      "topic": "condicionais",
+      "prompt": "Complete a linha que abre o caminho alternativo da condição.",
+      "code": {
+        "language": "javascript",
+        "content": "const idade = 15;\nif (idade >= 18) {\n  console.log(\"Pode dirigir\");\n} ______ {\n  console.log(\"Nao pode dirigir\");\n}",
+        "highlightLine": 4
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "else"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "A palavra que falta abre o bloco que roda quando a condição acima deu errado. Ela vem sozinha, sem repetir nenhum teste.",
+      "explanation": "A palavra else fecha a condição com o caminho alternativo, e não leva teste algum. Para encadear outro teste seria else if, com as duas palavras."
+    },
+    {
+      "id": "javascript-beg-0209",
+      "topic": "booleanos",
+      "prompt": "Escreva a expressão que verifica se a variável idade guarda 18 ou mais.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "idade >= 18",
+        "18 <= idade"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Use o nome da variável, o operador que aceita também o valor exato do limite, e o número. Sem parênteses e sem a palavra que abre a condição.",
+      "explanation": "O operador maior ou igual cobre acima do limite e exatamente no limite. Usar apenas maior deixaria de fora quem tem 18 anos. A forma invertida, com o número à esquerda, também é aceita."
+    },
+    {
+      "id": "javascript-beg-0210",
+      "topic": "condicionais",
+      "prompt": "Escreva a primeira linha de um if que testa se saldo é maior que zero, incluindo os parênteses e a chave que abre o bloco.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "if (saldo > 0) {"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Comece pela palavra-chave, ponha o teste entre parênteses, e termine com o símbolo que abre o bloco. Em JavaScript não são dois pontos.",
+      "explanation": "A condição fica entre parênteses e o bloco entre chaves. É a diferença estrutural em relação ao Python, que usa dois pontos e recuo. Aqui o recuo é só para quem lê."
+    }
+  ]
+}

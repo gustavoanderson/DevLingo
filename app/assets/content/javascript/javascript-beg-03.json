@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "language": "javascript",
+  "level": "beginner",
+  "lessonId": "javascript-beg-03",
+  "lessonTitle": "Funções",
+  "aula": {
+    "titulo": "Funções",
+    "secoes": [
+      {
+        "topico": "funcoes",
+        "titulo": "Dar nome a um pedaço de código",
+        "texto": "Função é um trecho que ganha nome e pode ser chamado quantas vezes você quiser. A palavra function abre a declaração, o nome vem depois, os parâmetros entre parênteses e o corpo entre chaves.\n\nParâmetro é o nome que a função dá ao valor que vai receber. Argumento é o valor que você passa na hora de chamar. São dois nomes para os dois lados da mesma ponte.\n\nExiste também a forma com seta, mais curta, muito comum em código moderno. Quando o corpo é uma expressão só, ela dispensa as chaves e devolve o resultado sozinha.",
+        "code": {
+          "language": "javascript",
+          "content": "function dobro(n) {\n  return n * 2;\n}\n\nconst triplo = (n) => n * 3;\n\nconsole.log(dobro(4));\nconsole.log(triplo(4));",
+          "highlightLine": 5
+        }
+      },
+      {
+        "topico": "retorno",
+        "titulo": "Devolver um valor",
+        "texto": "A palavra return diz qual valor a função entrega para quem a chamou. Sem ela, a função executa e devolve undefined.\n\nO return também **interrompe** a função na hora: nada depois dele roda. Isso é útil para sair cedo quando não há o que fazer, e é armadilha quando você põe código depois por engano.",
+        "code": {
+          "language": "javascript",
+          "content": "function saudar(nome) {\n  return \"Oi, \" + nome;\n  console.log(\"nunca roda\");\n}\n\nfunction nada() {}\nconsole.log(nada());",
+          "highlightLine": 3
+        }
+      },
+      {
+        "topico": "escopo",
+        "titulo": "Onde uma variável existe",
+        "texto": "Uma variável criada dentro de uma função existe só ali. Do lado de fora ela não é conhecida, e usá-la causa erro.\n\nIsso é proteção, não limitação: cada função pode usar os nomes que quiser sem atropelar as outras. Com let e const, o mesmo vale para qualquer bloco entre chaves, inclusive o de um if.",
+        "code": {
+          "language": "javascript",
+          "content": "function contar() {\n  const total = 10;\n  console.log(total);\n}\n\ncontar();\nconsole.log(total);",
+          "highlightLine": 7
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "javascript-beg-0301",
+      "topic": "funcoes",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "function dobro(n) {\n  return n * 2;\n}\nconsole.log(dobro(4));",
+        "highlightLine": 4
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "8",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "4",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "n * 2",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "NaN",
+          "correct": false
+        }
+      ],
+      "hint": "A função recebe o valor entre parênteses da chamada e devolve o resultado da conta. Faça a conta com o valor passado.",
+      "explanation": "O valor 4 entra pelo parâmetro, a conta acontece, e o return devolve o resultado para o console.log. O parâmetro é o nome que a função dá ao que recebe; o argumento é o valor que você passa."
+    },
+    {
+      "id": "javascript-beg-0302",
+      "topic": "retorno",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "function avisar() {\n  console.log(\"avisado\");\n}\nconsole.log(avisar());",
+        "highlightLine": 4
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "0",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "null",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "undefined",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "nada, dá erro",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "function",
+          "correct": false
+        }
+      ],
+      "hint": "A função executa o que está dentro dela, mas não entrega valor nenhum para quem chamou. JavaScript tem um valor específico para ausência de retorno.",
+      "explanation": "Sem return, a função devolve undefined. Repare que ela roda: o efeito dentro dela acontece. O que falta é a entrega do valor. Confundir executar com devolver é fonte comum de defeito."
+    },
+    {
+      "id": "javascript-beg-0303",
+      "topic": "retorno",
+      "prompt": "Quais valores este código imprime, em ordem?",
+      "code": {
+        "language": "javascript",
+        "content": "function testar() {\n  console.log(\"primeiro\");\n  return;\n  console.log(\"segundo\");\n}\ntestar();",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "primeiro, segundo",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "primeiro",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "segundo",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "nada",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "undefined, primeiro",
+          "correct": false
+        }
+      ],
+      "hint": "O return não só devolve: ele encerra a função naquele ponto. Repare onde ele está.",
+      "explanation": "O return interrompe a função imediatamente, então a linha seguinte nunca roda. Isso é útil para sair cedo de uma função, e é armadilha quando alguém escreve código depois dele por engano."
+    },
+    {
+      "id": "javascript-beg-0304",
+      "topic": "funcoes",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "const triplo = (n) => n * 3;\nconsole.log(triplo(4));",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "4",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "n * 3",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "12",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "SyntaxError",
+          "correct": false
+        }
+      ],
+      "hint": "A forma com seta é outra maneira de escrever função. Quando o corpo é uma expressão só, ela dispensa as chaves e a palavra de devolução.",
+      "explanation": "A função com seta, quando tem corpo de uma expressão só, devolve o resultado sem precisar escrever return. Escrita com chaves, ela voltaria a exigir o return explicitamente."
+    },
+    {
+      "id": "javascript-beg-0305",
+      "topic": "escopo",
+      "prompt": "O que acontece ao rodar este código?",
+      "code": {
+        "language": "javascript",
+        "content": "function contar() {\n  const total = 10;\n  console.log(total);\n}\ncontar();\nconsole.log(total);",
+        "highlightLine": 6
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "imprime 10 duas vezes",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "imprime 10 e depois undefined",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "imprime 10 e depois dá ReferenceError",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "imprime 10 e depois null",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "não imprime nada",
+          "correct": false
+        }
+      ],
+      "hint": "A variável nasce dentro da função. Pense em quem consegue enxergá-la depois que a função termina.",
+      "explanation": "Uma variável criada dentro da função existe só ali. Do lado de fora ela nunca foi declarada, e usá-la interrompe o programa. Isso é proteção: cada função escolhe seus nomes sem atropelar as outras."
+    },
+    {
+      "id": "javascript-beg-0306",
+      "topic": "escopo",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "javascript",
+        "content": "let lugar = \"fora\";\nif (true) {\n  const lugar = \"dentro\";\n}\nconsole.log(lugar);",
+        "highlightLine": 3
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "dentro",
+          "correct": false
+        },
+        {
+          "id": "b",
+          "text": "ReferenceError",
+          "correct": false
+        },
+        {
+          "id": "c",
+          "text": "dentro fora",
+          "correct": false
+        },
+        {
+          "id": "d",
+          "text": "undefined",
+          "correct": false
+        },
+        {
+          "id": "e",
+          "text": "fora",
+          "correct": true
+        }
+      ],
+      "hint": "Existem duas variáveis com o mesmo nome, em lugares diferentes. A de dentro do bloco não sobrevive a ele.",
+      "explanation": "O const dentro do bloco cria uma variável nova, que só existe ali e some quando o bloco acaba. A de fora nunca foi alterada. Esse comportamento vale para qualquer bloco entre chaves com let ou const."
+    },
+    {
+      "id": "javascript-beg-0307",
+      "topic": "funcoes",
+      "prompt": "Complete a linha que declara a função.",
+      "code": {
+        "language": "javascript",
+        "content": "______ dobro(n) {\n  return n * 2;\n}\nconsole.log(dobro(4));",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "function"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Falta a palavra-chave que abre a declaração de uma função com nome. São oito letras e vem antes do nome.",
+      "explanation": "A palavra function abre a declaração. O nome vem em seguida, os parâmetros entre parênteses e o corpo entre chaves. A forma com seta é uma alternativa mais curta, sem essa palavra."
+    },
+    {
+      "id": "javascript-beg-0308",
+      "topic": "retorno",
+      "prompt": "Complete a linha para que a função entregue o resultado da conta.",
+      "code": {
+        "language": "javascript",
+        "content": "function soma(a, b) {\n  ______ a + b;\n}\nconsole.log(soma(2, 3));",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "return"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Sem essa palavra a função faria a conta e não entregaria nada, devolvendo undefined para quem chamou.",
+      "explanation": "A palavra return entrega o valor para quem chamou a função, e encerra a execução dela naquele ponto. Sem ela, a função devolve undefined mesmo tendo calculado o resultado."
+    },
+    {
+      "id": "javascript-beg-0309",
+      "topic": "funcoes",
+      "prompt": "Escreva a linha que chama a função dobro passando o número 7 e exibe o resultado no console.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "console.log(dobro(7));"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Uma chamada dentro da outra: a de exibição por fora, a da função por dentro, com o número entre os parênteses dela.",
+      "explanation": "O resultado da função vira o argumento da exibição. As duas chamadas se encaixam, e a de dentro é resolvida primeiro. O ponto e vírgula no fim é opcional e a resposta vale sem ele."
+    },
+    {
+      "id": "javascript-beg-0310",
+      "topic": "escopo",
+      "prompt": "Escreva a linha que cria, dentro de um bloco, uma constante chamada total valendo 10.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "const total = 10;"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": true,
+        "caseSensitive": true
+      },
+      "hint": "Use a palavra que cria vínculo que não muda, o nome, o sinal de igual e o valor.",
+      "explanation": "A constante criada dentro de um bloco existe apenas nele, e some quando o bloco acaba. Fora dali o nome não é conhecido, e usá-lo causa ReferenceError."
+    }
+  ]
+}
