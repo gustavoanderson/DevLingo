@@ -315,6 +315,37 @@ def check_question_rules(question, filename, report):
         accepted = question.get("accepted", [])
         rules = question.get("normalize")
 
+        # --- so ASCII no que o aluno precisa DIGITAR ---
+        # Dois motivos, e os dois importam.
+        #
+        # Tecnico: com acento decomposto (letra + acento combinante) o acento
+        # nao e letra em Python nem em Dart, conta como pontuacao, e o espaco
+        # encostado nele some. As duas implementacoes concordam, entao o
+        # contrato de normalizacao continua cumprido, mas o resultado difere do
+        # mesmo texto escrito precomposto. Isso e falso negativo: a resposta
+        # certa recusada. Corrigir exigiria normalizacao Unicode nos dois lados,
+        # e no Dart isso significa dependencia nova para um risco que no Android
+        # e quase teorico.
+        #
+        # Pedagogico, e este pesa mais: digitar acento em teclado de celular e
+        # toque longo. O aluno erraria por causa do teclado, nao por causa da
+        # linguagem. Dificuldade incidental nao ensina nada.
+        #
+        # A restricao vale apenas para o que se DIGITA. Acento continua livre em
+        # prompt, hint, explanation e nas alternativas de multipla escolha, que
+        # e tudo que o aluno LE.
+        for answer in accepted:
+            fora = sorted({c for c in answer if ord(c) > 127})
+            if fora:
+                nomes = ", ".join(f"{c!r} (U+{ord(c):04X})" for c in fora)
+                report.error(
+                    where,
+                    f"a resposta {answer!r} tem caractere fora do ASCII: {nomes}. "
+                    f"O aluno digita essa resposta, e acento em teclado de celular "
+                    f"e toque longo. Reescreva sem acento; o texto acentuado pode "
+                    f"ficar no enunciado e na explicacao.",
+                )
+
         # --- respostas que colapsam na mesma coisa apos normalizar sao redundantes ---
         seen = {}
         for answer in accepted:

@@ -98,9 +98,9 @@
     {
       "id": "javascript-beg-0106",
       "topic": "saida",
-      "prompt": "Escreva a linha que exibe no console exatamente: Olá, mundo!",
+      "prompt": "Escreva a linha que exibe no console exatamente: Oi, mundo!",
       "answerType": "freeWrite",
-      "accepted": ["console.log(\"Olá, mundo!\");"],
+      "accepted": ["console.log(\"Oi, mundo!\");"],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -108,7 +108,7 @@
         "caseSensitive": true
       },
       "hint": "Chame o método de log do console e passe o texto entre aspas, sem esquecer a vírgula e a exclamação.",
-      "explanation": "O ponto e vírgula no final é opcional em JavaScript, e por isso a resposta vale com ou sem ele. Aspas simples e duplas funcionam igualmente para texto comum."
+      "explanation": "O ponto e vírgula no final é opcional em JavaScript, e por isso a resposta vale com ou sem ele. Aspas simples e duplas funcionam igualmente para texto comum. A saudação clássica do primeiro programa é \"Olá, mundo!\", com acento; aqui ela aparece sem, apenas para você não precisar de toque longo no teclado do celular."
     },
     {
       "id": "javascript-beg-0107",

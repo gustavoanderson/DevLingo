@@ -104,6 +104,27 @@ Uma questão separa **o que ela mostra** do **como é respondida**. O campo `cod
 
 Isso foi corrigido depois de um defeito real: a versão antiga removia todos os espaços, e `consttotal=0` era aceito como resposta certa para `const total = 0;`. Python nunca revelaria isso; JavaScript revelou. Se for mexer em `normalize()`, escreva testes negativos, não só positivos.
 
+#### A regra existe em duas linguagens, e há um contrato entre elas
+
+`normalize()` vive em [`tools/validate_questions.py`](tools/validate_questions.py) e em [`app/lib/answer/normalize.dart`](app/lib/answer/normalize.dart). Duas implementações da mesma regra é onde elas divergem em silêncio — e divergir aqui significa o app aceitar como certa uma resposta que o validador considera errada, ou o contrário.
+
+Por isso existe [`tools/normalize_cases.json`](tools/normalize_cases.json): um arquivo de casos que **os dois lados leem**. O CI roda os dois jobs. Se divergirem, reprova.
+
+**Ao mexer em qualquer das duas implementações, acrescente o caso ao arquivo compartilhado primeiro.**
+
+Uma armadilha já capturada ali: em Python 3 o `\w` é ciente de Unicode e `á` conta como letra; em Dart o `\w` é ASCII puro e não conta. A tradução literal faz `café com leite` virar `cafécom leite` no app e continuar correto no validador. O Dart usa `[^\p{L}\p{N}_\s]` com `unicode: true` por causa disso.
+
+#### Só ASCII no que o aluno digita
+
+O validador **reprova** caractere não-ASCII em `accepted`. Dois motivos:
+
+- **Pedagógico, e é o que pesa mais:** digitar acento em teclado de celular é toque longo. O aluno erraria por causa do teclado, não por causa da linguagem. Dificuldade incidental não ensina nada.
+- **Técnico:** com acento decomposto (letra + acento combinante), o acento não é letra em nenhuma das duas linguagens, conta como pontuação, e o espaço encostado nele some. As duas concordam, então o contrato segue cumprido, mas o resultado difere do mesmo texto escrito precomposto — falso negativo. Corrigir exigiria normalização Unicode nos dois lados, e no Dart isso significa dependência nova para um risco que no Android é quase teórico.
+
+A restrição vale **apenas para o que se digita**. Acento continua livre em `prompt`, `hint`, `explanation` e nas alternativas de múltipla escolha — tudo que o aluno **lê**.
+
+Por causa dessa regra, as questões `python-beg-0106` e `javascript-beg-0106` pedem `Oi, mundo!` em vez de `Olá, mundo!`. As explicações registram que a saudação clássica leva acento e por que ali ela aparece sem.
+
 ### Validador
 
 ```bash

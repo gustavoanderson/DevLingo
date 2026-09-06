@@ -185,10 +185,10 @@
     {
       "id": "python-beg-0106",
       "topic": "saida",
-      "prompt": "Escreva a linha que exibe na tela exatamente: Olá, mundo!",
+      "prompt": "Escreva a linha que exibe na tela exatamente: Oi, mundo!",
       "answerType": "freeWrite",
       "accepted": [
-        "print(\"Olá, mundo!\")"
+        "print(\"Oi, mundo!\")"
       ],
       "normalize": {
         "spaces": true,
@@ -197,7 +197,7 @@
         "caseSensitive": true
       },
       "hint": "Chame a função de exibição e passe o texto entre aspas, sem esquecer a vírgula e a exclamação.",
-      "explanation": "O texto precisa estar entre aspas para ser tratado como um valor de texto, e a pontuação faz parte dele. Aspas simples e duplas funcionam igualmente aqui."
+      "explanation": "O texto precisa estar entre aspas para ser tratado como um valor de texto, e a pontuação faz parte dele. Aspas simples e duplas funcionam igualmente aqui. A saudação clássica do primeiro programa é \"Olá, mundo!\", com acento; aqui ela aparece sem, apenas para você não precisar de toque longo no teclado do celular."
     },
     {
       "id": "python-beg-0107",
