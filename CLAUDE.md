@@ -66,6 +66,21 @@ Windows 11, VS Code, repositório em `D:\repositorio\DevLingo` (singular, sem "s
   - *Android license status unknown* — falso alarme. A licença **está** aceita (`<SDK>/licenses/android-sdk-license` existe); a CLI nova do Android aposentou o comando que o Flutter usa para checar.
 - **AVDs guardam caminhos absolutos.** Ao mover o SDK, o `skin.path` do `Pixel_8` apontava para o caminho velho e precisou de correção à mão. O `image.sysdir.1` é relativo e sobrevive. Se um emulador parar de abrir depois de mover algo, é aí que se olha.
 - **O harness do Claude Code bloqueia `Remove-Item` em caminhos de disco.** Remoções precisam ser feitas pelo Gustavo num terminal dele. Se um arquivo estiver travado, é quase sempre o servidor do `adb`: encerre-o antes.
+- **Para instalar pacote do SDK, use `android.exe sdk install`, não o `sdkmanager`.** O `sdkmanager` virou um atalho para a CLI nova e **crasha** quando o Gradle manda instalar algo, derrubando o build inteiro. O binário novo é `<SDK>\cmdline-tools\latest\bin\android.exe`, e a sintaxe usa barra: `android sdk install "ndk/28.2.13676358"`.
+- **A CLI do Android mente no código de saída.** Ela conclui o trabalho e **depois** sai com `-1073740791` (`0xC0000409`). Confira o sistema de arquivos, nunca o código de saída, para saber se um pacote foi instalado.
+- **NDK 28.2.13676358 instalado** em `D:\dev\android-sdk\ndk` (2,12 GB). É obrigatório: o template do Flutter declara `ndkVersion = flutter.ndkVersion` e o build falha sem ele.
+
+### `flutter doctor` não é prova de nada
+
+O `doctor` só confere se as ferramentas existem; ele não compila. Nesta máquina ele ficou verde no Android enquanto o build quebrava por falta do NDK.
+
+**A prova real é compilar um APK.** Se mexer no ambiente, rode:
+
+```powershell
+flutter build apk --debug
+```
+
+Foi assim que o NDK faltante apareceu — e teria explodido no meio da primeira tela do app, misturado a erros de código novo, se o teste não tivesse sido feito antes.
 
 ---
 
@@ -217,7 +232,7 @@ O conteúdo saiu na frente do app. Hoje existem 64 questões e nenhuma tela. **E
 
 | Etapa | Entrega | Estado |
 |---|---|---|
-| **A** | Ambiente Flutter e Android, tudo no D: | **concluída** — ver "Ambiente do Gustavo" |
+| **A** | Ambiente Flutter e Android, tudo no D: | **concluída e provada com APK compilado** |
 | **B** | **App mínimo jogável** | **próxima** |
 | C | Polimento visual: fundo parallax, mascote animado | depois |
 | D | Firebase: login e progresso na nuvem | depois |
