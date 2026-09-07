@@ -92,9 +92,29 @@ const Set<String> _termosJs = {
   'while',
 };
 
+/// Vocabulario do curso de backend.
+///
+/// Aqui os termos sao quase todos siglas e substantivos ingleses, e nenhum
+/// colide com o portugues -- ao contrario de `as` e `for` nas linguagens. Foi
+/// o receio que nao se confirmou: o jargao de engenharia ja e todo ASCII, o
+/// que tambem deixa as questoes de escrita viaveis neste curso.
+///
+/// `cache` fica de fora por um motivo especifico: virou palavra portuguesa
+/// corrente ("o cache do navegador"), e destaca-la em todo paragrafo faria o
+/// texto piscar. Ela entra por crase quando for o conceito sendo nomeado.
+const Set<String> _termosBackend = {
+  'ACID', 'API', 'APIs', 'CDN', 'CORS', 'CRUD', 'CSP', 'DELETE', 'DNS', 'GET',
+  'GraphQL', 'HTTP', 'HTTPS', 'JSON', 'JWT', 'NoSQL', 'OAuth', 'PATCH', 'POST',
+  'PUT', 'REST', 'SQL', 'SSL', 'TLS', 'URL', 'XML', 'backend', 'endpoint',
+  'endpoints', 'frontend', 'header', 'headers', 'host', 'localhost', 'payload',
+  'query', 'request', 'response', 'session', 'sharding', 'status', 'timeout',
+  'token', 'tokens', 'webhook',
+};
+
 Set<String> termosDe(String linguagem) => switch (linguagem) {
   'python' => _termosPython,
   'javascript' || 'node' => _termosJs,
+  'backend' => _termosBackend,
   _ => const {},
 };
 

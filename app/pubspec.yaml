@@ -85,6 +85,7 @@ flutter:
   assets:
     - assets/content/python/
     - assets/content/javascript/
+    - assets/content/backend/
     - assets/mascot/
     - assets/som/
 

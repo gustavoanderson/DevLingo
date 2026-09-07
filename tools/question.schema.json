@@ -43,7 +43,7 @@
     "language": {
       "description": "Linguagem de programacao ensinada nesta licao.",
       "type": "string",
-      "enum": ["python", "javascript", "node", "html", "css", "sql", "csharp", "golang", "cpp", "cobol", "ruby"]
+      "enum": ["python", "javascript", "node", "backend", "html", "css", "sql", "csharp", "golang", "cpp", "cobol", "ruby"]
     },
     "level": {
       "type": "string",

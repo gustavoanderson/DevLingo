@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 1,
+  "language": "backend",
+  "level": "beginner",
+  "lessonId": "backend-beg-01",
+  "lessonTitle": "Cliente e servidor: o caminho de uma página",
+  "aula": {
+    "titulo": "O que acontece quando você abre um site",
+    "secoes": [
+      {
+        "topico": "cliente-servidor",
+        "titulo": "Dois computadores conversando",
+        "texto": "Toda vez que você abre um site, dois programas conversam. De um lado o **cliente**, que no seu caso é o navegador. Do outro o **servidor**, um computador ligado em algum lugar do mundo esperando ser chamado.\n\nO cliente sempre começa. Ele faz um pedido, o servidor responde, e a conversa acaba ali. O servidor não guarda a mão do cliente esperando o próximo pedido, e não liga de volta por conta própria: se você quiser outra coisa, o navegador pede de novo.\n\nQuem escreve o programa do lado do servidor está fazendo backend. Quem escreve o que o navegador desenha está fazendo frontend. O mesmo pedido passa pelos dois.",
+        "code": {
+          "language": "javascript",
+          "content": "// O lado do CLIENTE pede\nconst resposta = await fetch(\"https://api.exemplo.com/livros\");\n\n// ...e o lado do SERVIDOR e quem responde"
+        }
+      },
+      {
+        "topico": "dns",
+        "titulo": "De um nome para um número",
+        "texto": "Você digita `api.exemplo.com`, mas máquinas não se encontram por nome — se encontram por número, o endereço IP. Traduzir um do outro é trabalho do DNS.\n\nPense numa lista telefônica gigante e distribuída pelo mundo. O navegador pergunta \"qual o número de api.exemplo.com?\", recebe algo como 192.0.2.10, e só então consegue bater na porta certa.\n\nDois nomes diferentes podem apontar para o mesmo número, e o mesmo nome pode apontar para números diferentes conforme onde você está. É por isso que trocar de servidor não obriga ninguém a decorar endereço novo: muda-se o que o DNS responde, e o nome continua o mesmo.\n\nA parte de hospedagem é justamente isso: alguém mantém a máquina ligada naquele endereço, para que ela esteja lá quando o pedido chegar.",
+        "code": {
+          "language": "bash",
+          "content": "api.exemplo.com  ->  192.0.2.10"
+        }
+      },
+      {
+        "topico": "requisicao",
+        "titulo": "Pedido e resposta",
+        "texto": "Achado o servidor, o navegador manda uma **requisição**: um texto dizendo o que ele quer. O servidor devolve uma **resposta**: outro texto, com o resultado e algumas informações sobre ele.\n\nEsse par tem nome — request e response — e é a unidade de tudo que acontece na web. Uma página que parece uma coisa só costuma ser dezenas desses pares: um para o texto, um para cada imagem, um para cada pedaço de dado.\n\nA resposta tem duas partes que valem separar desde já. O **corpo** é o conteúdo em si, aquilo que você queria. E existe também informação *sobre* a resposta, como o tipo do conteúdo e se ele pode ser guardado — isso viaja em cabeçalhos, que a próxima lição abre com calma.\n\nO endereço completo que o cliente usa se chama URL, e ele carrega tudo que o servidor precisa para saber o que foi pedido: o protocolo, o host, e o caminho.",
+        "code": {
+          "language": "http",
+          "content": "https://api.exemplo.com/livros/42\n\\_____/   \\____________/ \\_______/\nprotocolo      host        caminho"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "backend-beg-0101",
+      "topic": "cliente-servidor",
+      "prompt": "Numa conversa entre navegador e servidor, quem começa?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O servidor, avisando o cliente de que há conteúdo novo",
+          "correct": false,
+          "why": "O servidor não chama ninguém por conta própria nesse modelo. Ele espera."
+        },
+        {
+          "id": "b",
+          "text": "Os dois ao mesmo tempo, em acordo",
+          "correct": false,
+          "why": "Não há acordo prévio. Um pede, o outro responde."
+        },
+        {
+          "id": "c",
+          "text": "O cliente, fazendo um pedido",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O DNS, encaminhando a página",
+          "correct": false,
+          "why": "O DNS só traduz nome em número. Ele não entrega conteúdo."
+        },
+        {
+          "id": "e",
+          "text": "Depende de quem tiver a conexão mais rápida",
+          "correct": false,
+          "why": "Velocidade não muda quem inicia."
+        }
+      ],
+      "hint": "Pense no que você faz para uma página aparecer: alguém precisa querer alguma coisa primeiro.",
+      "explanation": "O cliente sempre inicia. Ele pede, o servidor responde, e a conversa termina ali — o servidor não guarda a linha aberta nem liga de volta. Isso explica por que uma página precisa ser recarregada, ou pedir de novo, para saber de novidades."
+    },
+    {
+      "id": "backend-beg-0102",
+      "topic": "cliente-servidor",
+      "prompt": "Um programa roda no servidor, recebe pedidos e devolve dados. Quem escreveu esse programa estava fazendo o quê?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Backend",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Frontend",
+          "correct": false,
+          "why": "Frontend é o que roda do lado do cliente, desenhando a tela."
+        },
+        {
+          "id": "c",
+          "text": "DNS",
+          "correct": false,
+          "why": "DNS é o serviço que traduz nomes em endereços, não um tipo de programação."
+        },
+        {
+          "id": "d",
+          "text": "Hospedagem",
+          "correct": false,
+          "why": "Hospedagem é manter a máquina ligada, não escrever o programa que roda nela."
+        },
+        {
+          "id": "e",
+          "text": "Nenhum dos dois: isso é trabalho do navegador",
+          "correct": false,
+          "why": "O navegador é o cliente. Ele não roda o programa do servidor."
+        }
+      ],
+      "hint": "A palavra vem de qual lado da conversa o código roda.",
+      "explanation": "Backend é o código que roda no servidor: recebe requisições, decide o que fazer e devolve a resposta. Frontend é o código que roda no cliente. O mesmo pedido atravessa os dois, e é por isso que vale entender os dois lados mesmo se especializando em um."
+    },
+    {
+      "id": "backend-beg-0103",
+      "topic": "dns",
+      "prompt": "Para que serve o DNS?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Guardar as páginas do site para entregar mais rápido",
+          "correct": false,
+          "why": "Guardar cópia para entregar rápido é cache, assunto de outra lição."
+        },
+        {
+          "id": "b",
+          "text": "Proteger a conexão com criptografia",
+          "correct": false,
+          "why": "Criptografia na conexão é papel do HTTPS."
+        },
+        {
+          "id": "c",
+          "text": "Decidir qual servidor está menos ocupado",
+          "correct": false,
+          "why": "Distribuir carga é trabalho de outro componente, e não a função do DNS."
+        },
+        {
+          "id": "d",
+          "text": "Traduzir um nome de domínio no endereço numérico da máquina",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Comprimir os dados para gastar menos internet",
+          "correct": false,
+          "why": "Compressão acontece na resposta, e não tem relação com nomes."
+        }
+      ],
+      "hint": "Pessoas decoram nomes; máquinas se encontram por número. Alguém precisa fazer a ponte.",
+      "explanation": "O DNS traduz `api.exemplo.com` em algo como 192.0.2.10. É o que permite trocar de servidor sem ninguém decorar endereço novo: muda a resposta do DNS, e o nome continua o mesmo. Sem essa tradução, o navegador não sabe em qual porta bater."
+    },
+    {
+      "id": "backend-beg-0104",
+      "topic": "dns",
+      "prompt": "Uma empresa trocou de servidor, e o novo tem outro endereço IP. O nome do site continuou igual e ninguém precisou mudar nada no navegador. Por quê?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O navegador descobre o novo endereço sozinho, testando",
+          "correct": false,
+          "why": "Ele não sai testando endereços. Ele pergunta ao DNS."
+        },
+        {
+          "id": "b",
+          "text": "Porque o que mudou foi a resposta do DNS para aquele nome",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque o endereço IP nunca muda de verdade",
+          "correct": false,
+          "why": "Muda com frequência: trocar de servidor ou de provedor costuma trocar o IP."
+        },
+        {
+          "id": "d",
+          "text": "Porque o navegador guarda uma cópia da página antiga",
+          "correct": false,
+          "why": "Cópia guardada mostraria conteúdo velho, e não resolveria o endereço novo."
+        },
+        {
+          "id": "e",
+          "text": "Porque o nome do site e o IP são a mesma coisa escrita de dois jeitos",
+          "correct": false,
+          "why": "São coisas independentes, e é justamente por isso que uma pode mudar sem a outra."
+        }
+      ],
+      "hint": "O nome aponta para um número, e esse apontamento é que foi atualizado.",
+      "explanation": "O nome e o endereço são independentes: o DNS guarda o vínculo entre os dois. Trocar de servidor é atualizar esse vínculo, e o navegador passa a receber o número novo na próxima vez que perguntar. É essa camada de indireção que torna a web administrável."
+    },
+    {
+      "id": "backend-beg-0105",
+      "topic": "requisicao",
+      "prompt": "Numa URL como https://api.exemplo.com/livros/42, qual parte é o host?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "https",
+          "correct": false,
+          "why": "Essa é a primeira parte, o protocolo: como falar, e não com quem."
+        },
+        {
+          "id": "b",
+          "text": "/livros/42",
+          "correct": false,
+          "why": "Esse é o caminho: o que está sendo pedido dentro do servidor."
+        },
+        {
+          "id": "c",
+          "text": "42",
+          "correct": false,
+          "why": "É um pedaço do caminho, normalmente identificando um item específico."
+        },
+        {
+          "id": "d",
+          "text": "livros",
+          "correct": false,
+          "why": "Também faz parte do caminho, e não identifica a máquina."
+        },
+        {
+          "id": "e",
+          "text": "api.exemplo.com",
+          "correct": true
+        }
+      ],
+      "hint": "É a parte que o DNS precisa traduzir para achar a máquina.",
+      "explanation": "A URL carrega três informações: o protocolo (`https`), o host (`api.exemplo.com`) e o caminho (`/livros/42`). O host é o que o DNS traduz para encontrar a máquina; o caminho é o que se pede depois de chegar nela.",
+      "code": {
+        "language": "http",
+        "content": "https://api.exemplo.com/livros/42"
+      }
+    },
+    {
+      "id": "backend-beg-0106",
+      "topic": "requisicao",
+      "prompt": "O par formado pelo pedido do cliente e pelo retorno do servidor tem dois nomes em inglês, muito usados no dia a dia. Escreva os dois, separados por espaço.",
+      "answerType": "freeWrite",
+      "accepted": ["request response"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "O primeiro é o pedido, o segundo é a resposta. São as palavras em inglês para exatamente isso.",
+      "explanation": "Requisição e resposta, ou request e response. Esse par é a unidade de tudo na web: uma página que parece uma coisa só costuma ser dezenas deles — um para o texto, um para cada imagem, um para cada pedaço de dado."
+    },
+    {
+      "id": "backend-beg-0107",
+      "topic": "requisicao",
+      "prompt": "O que é o corpo de uma resposta?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O endereço de onde a resposta veio",
+          "correct": false,
+          "why": "O endereço está na requisição, e não é o conteúdo devolvido."
+        },
+        {
+          "id": "b",
+          "text": "O tempo que o servidor levou para responder",
+          "correct": false,
+          "why": "Isso é medição de desempenho, e não faz parte do conteúdo."
+        },
+        {
+          "id": "c",
+          "text": "O conteúdo em si: aquilo que foi pedido",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "A lista de todos os pedidos já feitos àquele servidor",
+          "correct": false,
+          "why": "O servidor não devolve histórico junto de cada resposta."
+        },
+        {
+          "id": "e",
+          "text": "O nome do programa que roda no servidor",
+          "correct": false,
+          "why": "Isso pode aparecer num cabeçalho, mas não é o corpo."
+        }
+      ],
+      "hint": "A resposta tem o conteúdo e informações sobre o conteúdo. O corpo é uma das duas.",
+      "explanation": "O corpo é o conteúdo: o texto da página, os dados em JSON, os bytes da imagem. Ao lado dele viajam informações *sobre* a resposta — o tipo do conteúdo, se ele pode ser guardado —, e é isso que os cabeçalhos carregam. A próxima lição abre essa parte."
+    },
+    {
+      "id": "backend-beg-0108",
+      "topic": "cliente-servidor",
+      "prompt": "Complete o endereço para que o navegador peça ao servidor de forma segura, com a conexão criptografada.",
+      "code": {
+        "language": "javascript",
+        "content": "const resposta = await fetch(\"______://api.exemplo.com/livros\");",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": ["https"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o mesmo protocolo do outro, com uma letra a mais no fim. Essa letra é de seguro.",
+      "explanation": "O `https` é o `http` com a conexão criptografada. Sem ele, o conteúdo viaja legível por todo mundo que estiver no caminho — inclusive senhas. Hoje ele é o padrão, e navegadores marcam como inseguro quem não usa."
+    },
+    {
+      "id": "backend-beg-0109",
+      "topic": "dns",
+      "prompt": "Escreva a sigla, em três letras, do serviço que traduz nomes de domínio em endereços numéricos.",
+      "answerType": "freeWrite",
+      "accepted": ["DNS"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Aparece na aula desta lição, e a sigla vem de Domain Name System.",
+      "explanation": "DNS, de Domain Name System. É a camada que permite que pessoas usem nomes e máquinas usem números, sem que ninguém precise saber do outro lado."
+    },
+    {
+      "id": "backend-beg-0110",
+      "topic": "cliente-servidor",
+      "prompt": "Uma página de notícias mostra uma manchete que mudou há dez minutos, mas o seu navegador continua exibindo a antiga. Considerando só o que esta lição explicou, qual é a razão mais provável?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O servidor deveria ter avisado o navegador, e falhou",
+          "correct": false,
+          "why": "Ele não avisa ninguém por conta própria: o cliente é quem pede."
+        },
+        {
+          "id": "b",
+          "text": "O DNS está apontando para o servidor errado",
+          "correct": false,
+          "why": "Aí a página não abriria, ou abriria outro site — não a versão antiga do mesmo."
+        },
+        {
+          "id": "c",
+          "text": "O navegador não pediu de novo desde que a manchete mudou",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "A conexão não está usando HTTPS",
+          "correct": false,
+          "why": "HTTPS trata de segurança da conexão, e não de conteúdo atualizado."
+        },
+        {
+          "id": "e",
+          "text": "O corpo da resposta veio incompleto",
+          "correct": false,
+          "why": "Resposta incompleta apareceria como página quebrada, não como conteúdo velho e íntegro."
+        }
+      ],
+      "hint": "Volte à primeira regra: quem começa a conversa, e o que acontece depois que ela termina.",
+      "explanation": "Como o cliente é quem inicia e a conversa termina em cada resposta, o servidor não tem como empurrar novidade. O que está na tela é o que foi pedido da última vez. Existem formas de contornar isso — o servidor manter a linha aberta, ou o cliente perguntar de tempos em tempos —, e elas aparecem mais adiante no curso, justamente porque são exceções a esta regra."
+    }
+  ]
+}

@@ -9,6 +9,15 @@ const Map<String, String> nomeDaLinguagem = {
   'python': 'Python',
   'javascript': 'JavaScript',
   'node': 'Node',
+
+  /// Curso teorico de engenharia de backend. Nao e uma linguagem, e o campo
+  /// `language` do banco continua servindo: ele identifica a TRILHA.
+  ///
+  /// O nome de tela e curto de proposito. O cabecalho da trilha usa mono de
+  /// 26px e sobram cerca de 204px depois da seta e dos tres icones;
+  /// "JavaScript" ocupa ~156px e cabe justo, enquanto "Fundamentos de Backend"
+  /// passaria de 340px e quebraria em tres linhas.
+  'backend': 'Backend',
   'html': 'HTML',
   'css': 'CSS',
   'sql': 'SQL',
