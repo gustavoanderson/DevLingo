@@ -501,6 +501,52 @@ def check_aula(data, filename, report):
         )
 
 
+def check_marcadores(data, filename, report):
+    """Marcador de formatacao aberto e nunca fechado.
+
+    O app destaca `assim` como termo tecnico e **assim** como enfase, no
+    enunciado e na aula (ver app/lib/ui/texto_rico.dart). O analisador de la
+    trata marcador sem par como texto comum de proposito: mostrar uma crase
+    solta e melhor que engolir metade do paragrafo.
+
+    Mas tolerar na tela nao e aprovar no banco. Um marcador desbalanceado quase
+    sempre e erro de digitacao de quem escreveu, e o sintoma -- uma crase
+    aparecendo no meio da frase -- so seria notado por alguem jogando aquela
+    licao especifica. Aqui ele aparece antes de virar conteudo.
+
+    A contagem e por PARIDADE, e nao por casamento posicional, porque o texto e
+    corrido e nao tem estrutura: dois marcadores abrem e fecham, tres nao.
+    """
+    def conferir(texto, onde):
+        # Os asteriscos do negrito sao contados primeiro e removidos, senao
+        # cada `**` entraria tambem na conta de asterisco solto.
+        negritos = texto.count("**")
+        if negritos % 2:
+            report.error(
+                onde,
+                f"marcador de negrito ** desbalanceado ({negritos} ocorrencias). "
+                "Na tela ele apareceria cru, no meio da frase.",
+            )
+        crases = texto.replace("``", "").count("`")
+        if crases % 2:
+            report.error(
+                onde,
+                f"crase ` desbalanceada ({crases} ocorrencias). O termo nao "
+                "seria destacado, e a crase apareceria crua na tela.",
+            )
+
+    for q in data.get("questions", []):
+        qid = q.get("id", "(sem id)")
+        for campo in ("prompt", "hint", "explanation"):
+            if isinstance(q.get(campo), str):
+                conferir(q[campo], f"{filename} -> {qid} -> {campo}")
+
+    aula = data.get("aula") or {}
+    for i, secao in enumerate(aula.get("secoes", []), start=1):
+        if isinstance(secao.get("texto"), str):
+            conferir(secao["texto"], f"{filename} -> aula -> secao {i}")
+
+
 def check_question_rules(question, filename, report):
     """Regras de qualidade de uma questao isolada."""
     qid = question.get("id", "(sem id)")
@@ -710,6 +756,7 @@ def validate(paths):
         check_schema(data, filename, validator, report)
         check_lesson_rules(data, filename, report)
         check_aula(data, filename, report)
+        check_marcadores(data, filename, report)
 
         for question in data.get("questions", []):
             total_questions += 1

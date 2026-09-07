@@ -10,6 +10,7 @@ import '../models/question.dart';
 import 'bloco_codigo.dart';
 import 'faixa_cenario.dart';
 import 'paleta.dart';
+import 'texto_rico.dart';
 import 'som.dart';
 import 'sombra_de_recorte.dart';
 
@@ -240,9 +241,13 @@ class _TelaExercicioState extends State<TelaExercicio>
                       children: [
                         _Chip(licao: widget.licao, questao: questao),
                         const SizedBox(height: 12),
-                        Text(
+                        // O enunciado destaca nome de funcao e tipo, para o
+                        // aluno separar o que e da linguagem do que e
+                        // portugues. Ver texto_rico.dart.
+                        textoComTermos(
                           questao.prompt,
-                          style: const TextStyle(
+                          linguagem: widget.licao.language,
+                          estilo: const TextStyle(
                             color: Paleta.texto,
                             fontSize: Escala.enunciado,
                             height: 1.4,

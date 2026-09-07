@@ -20,7 +20,7 @@
       {
         "topico": "lacos",
         "titulo": "Repetir para cada item",
-        "texto": "O for percorre uma sequência item por item. A cada volta, a variável do laço recebe o item seguinte, e a palavra in liga uma coisa à outra.\n\nComo no if, a linha termina em dois pontos e o corpo fica recuado. É o recuo que decide o que repete: uma linha sem recuo, depois do laço, roda uma vez só.\n\nA função range produz uma sequência de números começando em zero e parando antes do número informado, pelo mesmo princípio do fatiamento.",
+        "texto": "O `for` percorre uma sequência item por item. A cada volta, a variável do laço recebe o item seguinte, e a palavra in liga uma coisa à outra.\n\nComo no if, a linha termina em dois pontos e o corpo fica recuado. É o recuo que decide o que repete: uma linha sem recuo, depois do laço, roda uma vez só.\n\nA função range produz uma sequência de números começando em zero e parando antes do número informado, pelo mesmo princípio do fatiamento.",
         "code": {
           "language": "python",
           "content": "for n in [1, 2, 3]:\n    print(n)\nprint(\"acabou\")\n\nfor i in range(3):\n    print(i)",

@@ -417,6 +417,44 @@ O princípio: **o objetivo do jogo é a pessoa aprender, não ser punida.** Toda
 
 **A cor sinaliza, o texto não pune.** O título é `AINDA NÃO`, e ao revelar é `VAMOS JUNTOS` — nunca `ERRADO`. O vermelho deixa claro que algo não deu certo; a escrita continua do lado do aluno.
 
+### Termos técnicos destacados no texto corrido
+
+Ideia do Gustavo: nome de função, tipo de dado e palavra reservada aparecem em **itálico e cor própria** dentro do enunciado e da aula, para o aluno separar o que é da linguagem do que é português. Vive em `app/lib/ui/texto_rico.dart`, Dart puro, fora de widget — mesma razão de `realce.dart`.
+
+#### O léxico NÃO pode ser a lista do realce de sintaxe
+
+Era a escolha óbvia, e está errada. `realce.dart` classifica **código**, onde toda palavra é código. Aqui o texto é português, e a medição do banco antes de escrever a regra encontrou duas colisões:
+
+| Palavra | Ocorrências | Quantas eram português |
+|---|---|---|
+| `as` | 6 | **6 — todas** ("dispensa as chaves", "atropelar as outras") |
+| `for` | 4 | **2** ("Se for verdadeira") |
+
+Destacar essas como código ensinaria errado justamente onde o aluno está aprendendo. `as`, `for` e `do` ficaram **fora** do léxico; quando forem mesmo o comando, o autor marca com crase — e as duas ocorrências técnicas de `for` já foram marcadas assim.
+
+É a mesma disciplina de "medir antes de legislar" que definiu os níveis: a regra escrita de cabeça teria destacado seis artigos.
+
+#### Duas fontes de destaque, e a marcação ganha
+
+1. **Marcação do autor:** `` `assim` `` vira termo, `**assim**` vira negrito
+2. **Léxico automático:** palavras conhecidas da linguagem, fora de marcação
+
+A marcação vem primeiro porque é a única forma de dizer "aqui é código" num caso que o léxico erraria.
+
+**Isso consertou um defeito que já existia:** o banco tinha **7 trechos com `**negrito**`** e nenhum parser — os asteriscos apareciam crus na tela do aluno. Ninguém tinha notado.
+
+#### Regras que valem para quem mexer
+
+- **A invariante é a mesma do realce:** a concatenação dos trechos tem que ser o texto original **sem os marcadores**. Um analisador que come um caractere é pior que nenhum. O teste roda contra os 344 textos do banco
+- **Marcador sem par vira texto comum na tela**, e não erro: mostrar uma crase solta é melhor que engolir metade do parágrafo. Quem reprova é o validador (`check_marcadores`), antes de virar conteúdo — tolerar na tela não é aprovar no banco
+- **Itálico e cor, nunca fonte monoespaçada.** Trocar a família no meio do parágrafo muda a altura da linha e faz o texto ondular
+- **A cor é `Paleta.termo` (#8FDCE8), e não `destaque`.** O ciano puro é cor de ação; espalhado pelo parágrafo faria o texto piscar de azul e competir com a leitura
+- **Linguagem sem léxico mantém a marcação do autor.** O banco prevê nove linguagens sem tokenizador, e elas não podem perder o negrito por isso
+
+#### Onde está aplicado, e onde ainda não
+
+Enunciado da questão e parágrafos da aula, que foi o pedido. **A explicação ficou de fora, e é onde há mais termos:** 129 ocorrências, contra 90 na aula e 9 no enunciado. Estender é passar `textoComTermos` no painel de retorno — decisão do Gustavo, não feita por conta própria.
+
 ### Texto que o usuário lê leva acento
 
 Comentários de código, mensagens de commit e nomes de variável ficam em ASCII, por convenção do repositório. **Texto de interface, não.** Já entrou defeito por isso: o painel de retorno mostrava *"Nao e essa"* para o usuário, porque a string foi escrita como se fosse comentário. Ao criar qualquer texto visível na tela, escreva português correto.

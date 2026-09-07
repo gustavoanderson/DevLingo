@@ -44,6 +44,19 @@ abstract final class Paleta {
   static const visor = Color(0xFF39FF14);
   static const telemetria = Color(0xFFFFE14D);
 
+  /// Termo tecnico dentro de texto corrido: nome de funcao, tipo, palavra
+  /// reservada. Ver `texto_rico.dart`.
+  ///
+  /// E um ciano CLARO e dessaturado, e nao o [destaque]. O destaque puro
+  /// (#00E5FF) e cor de acao -- botao, chave ligada -- e usa-lo em palavras
+  /// espalhadas pelo paragrafo faria o texto piscar de azul e competir com a
+  /// leitura. O pedido era "levemente destacada do restante": o suficiente para
+  /// a palavra saltar como sendo da linguagem, sem virar link.
+  ///
+  /// Contraste sobre o fundo #170A31 fica em torno de 11:1, bem acima do
+  /// minimo -- ao contrario do verde, que so pode ser acento.
+  static const termo = Color(0xFF8FDCE8);
+
   // --- bloco de codigo ---
   static const ideFundo = Color(0xFF1B1235);
   static const ideAba = Color(0xFF241847);

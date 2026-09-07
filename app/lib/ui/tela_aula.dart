@@ -5,6 +5,7 @@ import '../models/lesson.dart';
 import 'bloco_codigo.dart';
 import 'paleta.dart';
 import 'sombra_de_recorte.dart';
+import 'texto_rico.dart';
 
 /// A aula que o Tr0nikAt dá antes das questões.
 ///
@@ -67,7 +68,11 @@ class _TelaAulaState extends State<TelaAula>
                     _Capa(licao: widget.licao, aula: aula),
                     const SizedBox(height: 26),
                     for (final (indice, secao) in aula.secoes.indexed) ...[
-                      _Secao(numero: indice + 1, secao: secao),
+                      _Secao(
+                        numero: indice + 1,
+                        secao: secao,
+                        linguagem: widget.licao.language,
+                      ),
                       if (indice < aula.secoes.length - 1)
                         const SizedBox(height: 26),
                     ],
@@ -143,7 +148,14 @@ class _Capa extends StatelessWidget {
 }
 
 class _Secao extends StatelessWidget {
-  const _Secao({required this.numero, required this.secao});
+  const _Secao({
+    required this.numero,
+    required this.secao,
+    required this.linguagem,
+  });
+
+  /// De qual linguagem sao os termos a destacar no texto.
+  final String linguagem;
 
   final int numero;
   final SecaoDaAula secao;
@@ -183,9 +195,10 @@ class _Secao extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         for (final paragrafo in secao.paragrafos) ...[
-          Text(
+          textoComTermos(
             paragrafo,
-            style: const TextStyle(
+            linguagem: linguagem,
+            estilo: const TextStyle(
               color: Paleta.texto,
               fontSize: Escala.alternativa,
               height: 1.55,

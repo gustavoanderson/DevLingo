@@ -20,7 +20,7 @@
       {
         "topico": "lacos",
         "titulo": "Repetir para cada item",
-        "texto": "O for com a palavra of percorre um array item por item. A cada volta, a variável recebe o item seguinte.\n\nExiste também a forma clássica, com três partes entre parênteses: onde começa, até quando continua, e o que muda a cada volta. Ela é mais verbosa e dá controle sobre o índice.\n\nComo em qualquer bloco do JavaScript, quem delimita o corpo do laço são as **chaves**, não o recuo. Uma linha depois das chaves roda uma vez só.",
+        "texto": "O `for` com a palavra `of` percorre um array item por item. A cada volta, a variável recebe o item seguinte.\n\nExiste também a forma clássica, com três partes entre parênteses: onde começa, até quando continua, e o que muda a cada volta. Ela é mais verbosa e dá controle sobre o índice.\n\nComo em qualquer bloco do JavaScript, quem delimita o corpo do laço são as **chaves**, não o recuo. Uma linha depois das chaves roda uma vez só.",
         "code": {
           "language": "javascript",
           "content": "const cores = [\"azul\", \"verde\"];\nfor (const cor of cores) {\n  console.log(cor);\n}\n\nfor (let i = 0; i < 3; i++) {\n  console.log(i);\n}",
