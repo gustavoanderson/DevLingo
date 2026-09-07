@@ -289,6 +289,13 @@ class _Cabecalho extends StatelessWidget {
                   ),
                 ),
               ),
+              // Respiro entre o titulo e os icones.
+              //
+              // Nao e enfeite: com nome curto sobra espaco e ninguem nota, mas
+              // "Qualidade de Software" encheu o Expanded inteiro e o titulo
+              // ficou a QUATRO pixels do primeiro icone -- contra os 60 e 67
+              // que separam os icones entre si. Medido em print no aparelho.
+              const SizedBox(width: 14),
               // Estatisticas e NAVEGACAO, nao preferencia: ela leva a outra
               // tela em vez de mudar algo aqui. Fica separada das duas chaves
               // por isso, e vem antes delas porque e a acao, nao o ajuste.

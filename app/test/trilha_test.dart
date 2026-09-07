@@ -531,6 +531,25 @@ void main() {
       );
     });
 
+    testWidgets('o titulo nao encosta no primeiro icone', (tester) async {
+      // Visto em print no Xiaomi: com nome longo, o titulo ficou a QUATRO
+      // pixels do icone de estatisticas, contra os 60 e 67 que separam os
+      // icones entre si. O FittedBox encolhe ate ocupar todo o Expanded, e o
+      // Expanded ia ate a borda do icone.
+      await alturaDoTitulo(tester, 'qa');
+
+      final titulo = tester.getRect(find.text('Qualidade de Software'));
+      final icone = tester.getRect(
+        find.byKey(TelaTrilha.chaveEstatisticas),
+      );
+
+      expect(
+        icone.left - titulo.right,
+        greaterThanOrEqualTo(8),
+        reason: 'titulo e icone precisam de respiro entre eles',
+      );
+    });
+
     testWidgets('o nome longo continua inteiro na tela', (tester) async {
       // Encolher e aceitavel; cortar com reticencias nao seria, porque o nome
       // da trilha e o unico rotulo que diz onde a pessoa esta.
