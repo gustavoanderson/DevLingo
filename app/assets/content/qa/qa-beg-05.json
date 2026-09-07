@@ -1,0 +1,381 @@
+{
+  "schemaVersion": 1,
+  "language": "qa",
+  "level": "beginner",
+  "lessonId": "qa-beg-05",
+  "lessonTitle": "Técnicas de teste: escolher casos com método",
+  "aula": {
+    "titulo": "Como decidir o que testar, quando testar tudo é impossível",
+    "secoes": [
+      {
+        "topico": "particao",
+        "titulo": "Particionamento de equivalência",
+        "texto": "O segundo princípio disse que testar tudo é impossível. As técnicas existem para escolher **quais** casos, com método em vez de intuição.\n\nO particionamento parte de uma observação: valores que o sistema trata **do mesmo jeito** não precisam ser testados um por um. Eles formam uma partição, e testar um representante cobre todos.\n\nNum campo de idade que aceita de 18 a 65:\n\n- **abaixo de 18** — partição inválida\n- **de 18 a 65** — partição válida\n- **acima de 65** — partição inválida\n\nTrês casos em vez de infinitos. Testar 30, 31 e 32 é desperdício: os três estão na mesma partição, e o sistema não distingue um do outro.\n\nA regra completa é **cobrir cada partição, válida e inválida**. Esquecer as inválidas é o erro mais comum, e é onde os defeitos moram: quase todo código trata bem o caminho esperado."
+      },
+      {
+        "topico": "valor-limite",
+        "titulo": "Análise de valor limite",
+        "texto": "As partições têm bordas, e é **nas bordas que os defeitos se concentram**. O motivo é humano: `>` escrito no lugar de `>=`, um `-1` esquecido, o laço que para uma volta antes.\n\nA técnica testa, para cada fronteira, três valores: o limite, o imediatamente anterior e o imediatamente posterior.\n\nNo campo de 18 a 65, as bordas produzem: **17, 18, 19** e **64, 65, 66**.\n\nRepare que ela **não substitui** o particionamento — completa. O particionamento garante que nenhuma faixa de comportamento ficou sem teste; o valor limite ataca onde o erro é mais provável.\n\nJuntas, as duas transformam \"testei o campo de idade\" em uma lista curta e defensável de casos, que se explica para qualquer pessoa do time."
+      },
+      {
+        "topico": "tabela-decisao",
+        "titulo": "Tabela de decisão",
+        "texto": "Quando o comportamento depende de **várias condições combinadas**, testar um caminho de cada vez deixa buracos. A tabela de decisão organiza as combinações em linhas, e cada linha vira um caso.\n\nRegra para desconto: cliente tem cadastro? compra acima de 200?\n\n| Cadastro | Acima de 200 | Desconto |\n|---|---|---|\n| sim | sim | 15% |\n| sim | não | 5% |\n| não | sim | 10% |\n| não | não | 0% |\n\nCom duas condições booleanas são quatro combinações; com três, oito. O crescimento é rápido, e é exatamente por isso que a tabela vale: **ela torna visível o que seria esquecido**.\n\nO caso que quase sempre falta é a última linha — as duas condições falsas. Ninguém pensa nele porque não é interessante do ponto de vista de negócio, e é onde o cálculo costuma quebrar."
+      },
+      {
+        "topico": "transicao-estado",
+        "titulo": "Transição de estado",
+        "texto": "Alguns sistemas se comportam conforme **onde estão**, e não apenas conforme a entrada. Um pedido percorre criado → pago → enviado → entregue, e a mesma ação vale ou não conforme o estado atual.\n\nA técnica modela três coisas: os **estados** possíveis, os **eventos** que provocam mudança, e as **transições** resultantes.\n\nO valor não está nas transições válidas — essas todo mundo testa, porque são o fluxo feliz. Está nas **inválidas**: o que acontece se alguém tentar cancelar um pedido já entregue? Se pagar duas vezes?\n\nEsses caminhos raramente aparecem no requisito, existem no mundo real, e é onde estão os defeitos que dão prejuízo. O botão que ninguém deveria conseguir apertar é apertável se o pedido chegar naquela tela por outro caminho."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "qa-beg-0501",
+      "topic": "particao",
+      "prompt": "Um campo aceita idade de 18 a 65. Um QA testa os valores 30, 31, 32, 33 e 34. O que há de errado nessa escolha?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nada: cinco casos é uma boa cobertura",
+          "correct": false,
+          "why": "Quantidade não é cobertura. Os cinco exercitam o mesmo comportamento."
+        },
+        {
+          "id": "b",
+          "text": "Faltou testar valores decimais",
+          "correct": false,
+          "why": "Pode ser um caso extra válido, mas não é o problema central da escolha."
+        },
+        {
+          "id": "c",
+          "text": "Os cinco estão na mesma partição, então repetem o mesmo teste cinco vezes",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Deveria ter testado apenas o valor 18",
+          "correct": false,
+          "why": "Um valor só deixaria de fora as partições inválidas."
+        },
+        {
+          "id": "e",
+          "text": "Idade não deve ser testada com particionamento",
+          "correct": false,
+          "why": "É o exemplo clássico da técnica, justamente por ter faixas bem definidas."
+        }
+      ],
+      "hint": "O sistema trata 30 e 34 de forma diferente? Se não, o que os cinco casos provam a mais?",
+      "explanation": "Os cinco valores estão na mesma partição válida, e o sistema não distingue um do outro — é o mesmo teste repetido. Faltam as partições **inválidas**, abaixo de 18 e acima de 65, que é onde os defeitos costumam estar: quase todo código trata bem o caminho esperado."
+    },
+    {
+      "id": "qa-beg-0502",
+      "topic": "valor-limite",
+      "prompt": "Ainda no campo que aceita de 18 a 65, quais valores a análise de valor limite indica testar na borda inferior?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Apenas o 18",
+          "correct": false,
+          "why": "Só o limite não revela se a comparação usou o sinal errado."
+        },
+        {
+          "id": "b",
+          "text": "0, 1 e 18",
+          "correct": false,
+          "why": "0 e 1 estão longe da fronteira, e não testam o limite."
+        },
+        {
+          "id": "c",
+          "text": "Todos os valores de 1 a 20",
+          "correct": false,
+          "why": "Volta ao problema de testar por volume em vez de por método."
+        },
+        {
+          "id": "d",
+          "text": "17, 18 e 19",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "18 e 65, as duas pontas de uma vez",
+          "correct": false,
+          "why": "São duas fronteiras diferentes, e cada uma pede seus três valores."
+        }
+      ],
+      "hint": "Para cada fronteira, são três: o limite e seus dois vizinhos.",
+      "explanation": "O limite, o anterior e o posterior. O motivo é humano: `>` escrito no lugar de `>=` faz o 18 ser rejeitado, e só um teste exatamente no limite revela isso. A borda superior pede o mesmo tratamento — 64, 65 e 66."
+    },
+    {
+      "id": "qa-beg-0503",
+      "topic": "tabela-decisao",
+      "prompt": "Uma regra depende de três condições booleanas independentes. Quantas combinações uma tabela de decisão completa terá?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "3",
+          "correct": false,
+          "why": "Esse é o número de condições, e não de combinações entre elas."
+        },
+        {
+          "id": "b",
+          "text": "6",
+          "correct": false,
+          "why": "Seria a soma ou o dobro; a combinação é multiplicativa."
+        },
+        {
+          "id": "c",
+          "text": "8",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "9",
+          "correct": false,
+          "why": "Seria três ao quadrado, e cada condição tem dois valores, não três."
+        },
+        {
+          "id": "e",
+          "text": "Depende do sistema testado",
+          "correct": false,
+          "why": "Com condições booleanas independentes, o número é fixo."
+        }
+      ],
+      "hint": "Cada condição tem dois valores possíveis, e elas se combinam entre si.",
+      "explanation": "Duas possibilidades elevadas a três condições: 8. Com duas condições são 4, com quatro são 16 — o crescimento é rápido, e é justamente por isso que a tabela vale a pena: **ela torna visível o que seria esquecido** quando alguém tenta enumerar de cabeça."
+    },
+    {
+      "id": "qa-beg-0504",
+      "topic": "tabela-decisao",
+      "prompt": "Numa tabela de desconto com as condições 'tem cadastro' e 'compra acima de 200', qual linha costuma ser esquecida nos testes?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A linha com as duas condições verdadeiras",
+          "correct": false,
+          "why": "É o caso de maior desconto, e o primeiro que todo mundo testa."
+        },
+        {
+          "id": "b",
+          "text": "A linha com cadastro e compra baixa",
+          "correct": false,
+          "why": "Costuma ser lembrada, por ser o caso comum do cliente frequente."
+        },
+        {
+          "id": "c",
+          "text": "A linha sem cadastro e compra alta",
+          "correct": false,
+          "why": "Também costuma ser lembrada, por representar uma oportunidade de negócio."
+        },
+        {
+          "id": "d",
+          "text": "A linha com as duas condições falsas",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Nenhuma: tabelas de decisão garantem que nada seja esquecido",
+          "correct": false,
+          "why": "A tabela garante se for construída inteira — e é a última linha que costuma faltar nela."
+        }
+      ],
+      "hint": "Qual das quatro combinações é a menos interessante do ponto de vista de negócio?",
+      "explanation": "As duas falsas. Ninguém pensa nela porque não há desconto para conferir — e é exatamente onde o cálculo costuma quebrar, devolvendo `null` em vez de zero, ou aplicando o desconto do caso anterior. O caso sem graça é o caso que ninguém testou."
+    },
+    {
+      "id": "qa-beg-0505",
+      "topic": "transicao-estado",
+      "prompt": "Num sistema de pedidos, qual conjunto de casos a técnica de transição de estado indica priorizar?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "As transições inválidas, como cancelar um pedido já entregue",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Apenas o fluxo completo, do início ao fim",
+          "correct": false,
+          "why": "É o caminho feliz, e é o que todo mundo já testa."
+        },
+        {
+          "id": "c",
+          "text": "Somente o estado final, que é o que importa ao cliente",
+          "correct": false,
+          "why": "Os problemas aparecem no caminho, e não no destino."
+        },
+        {
+          "id": "d",
+          "text": "A quantidade de estados, para garantir que não sejam muitos",
+          "correct": false,
+          "why": "O número de estados é característica do domínio, não critério de teste."
+        },
+        {
+          "id": "e",
+          "text": "O tempo que o pedido leva em cada estado",
+          "correct": false,
+          "why": "Isso é desempenho, e não a modelagem de estados e transições."
+        }
+      ],
+      "hint": "As transições válidas já são testadas por todo mundo. Onde está o que ninguém olha?",
+      "explanation": "As inválidas. Elas raramente aparecem no requisito, existem no mundo real, e é onde estão os defeitos que dão prejuízo — pagar duas vezes, cancelar o que já foi entregue. O botão que ninguém deveria conseguir apertar costuma ser apertável se a tela for alcançada por outro caminho."
+    },
+    {
+      "id": "qa-beg-0506",
+      "topic": "particao",
+      "prompt": "Um QA testou apenas valores dentro da faixa aceita de um campo, e nenhum fora. Que parte da técnica ficou de fora?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A análise de valor limite",
+          "correct": false,
+          "why": "Também faltou, mas a pergunta é sobre o que a própria técnica de partições exige."
+        },
+        {
+          "id": "b",
+          "text": "As partições inválidas, que a técnica manda cobrir também",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "A tabela de decisão",
+          "correct": false,
+          "why": "É outra técnica, para condições combinadas."
+        },
+        {
+          "id": "d",
+          "text": "Nada: partições válidas são as que importam",
+          "correct": false,
+          "why": "As inválidas são onde o defeito costuma estar."
+        },
+        {
+          "id": "e",
+          "text": "A transição de estado",
+          "correct": false,
+          "why": "É outra técnica, para sistemas cujo comportamento depende do estado atual."
+        }
+      ],
+      "hint": "A regra completa manda cobrir cada partição. Quantos tipos de partição existem?",
+      "explanation": "A regra é cobrir **cada partição, válida e inválida**. Esquecer as inválidas é o erro mais comum e o mais caro: quase todo código trata bem o caminho esperado, porque foi para ele que o programador olhou. O defeito mora no que ele não imaginou."
+    },
+    {
+      "id": "qa-beg-0507",
+      "topic": "valor-limite",
+      "prompt": "Complete a lista de valores que a análise de valor limite indica para a borda superior de um campo que aceita até 65.",
+      "code": {
+        "language": "text",
+        "content": "borda inferior (18):  17, 18, 19\nborda superior (65):  64, 65, ______",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": ["66"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o valor imediatamente acima do limite, o primeiro que deve ser rejeitado.",
+      "explanation": "66 é o primeiro valor que deve ser recusado. Testar só até 65 não revelaria um `<=` escrito onde devia estar `<`, que aceitaria 66 silenciosamente. Cada fronteira pede os três valores, e um campo com duas fronteiras pede seis casos."
+    },
+    {
+      "id": "qa-beg-0508",
+      "topic": "transicao-estado",
+      "prompt": "Escreva a palavra em inglês, com cinco letras, que nomeia a situação em que um sistema se encontra e que determina quais ações são válidas.",
+      "answerType": "freeWrite",
+      "accepted": ["state"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Aparece no nome da técnica desta seção: transição de ______.",
+      "explanation": "State, ou estado. A técnica modela três coisas: os estados possíveis, os **eventos** que provocam mudança, e as **transições** resultantes. Um pedido criado aceita pagamento; um pedido entregue, não — e é a mesma ação nos dois casos."
+    },
+    {
+      "id": "qa-beg-0509",
+      "topic": "valor-limite",
+      "prompt": "Por que os defeitos se concentram nos valores de fronteira?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque valores extremos usam mais memória",
+          "correct": false,
+          "why": "O consumo é o mesmo, e o problema não é de recurso."
+        },
+        {
+          "id": "b",
+          "text": "Porque os compiladores tratam bordas de forma especial",
+          "correct": false,
+          "why": "Não há tratamento especial: a comparação é a mesma operação."
+        },
+        {
+          "id": "c",
+          "text": "Porque usuários raramente digitam valores de borda",
+          "correct": false,
+          "why": "Digitam com frequência, e isso explicaria o defeito passar despercebido, não existir."
+        },
+        {
+          "id": "d",
+          "text": "Porque toda linguagem tem bugs em comparações",
+          "correct": false,
+          "why": "As linguagens comparam corretamente. Quem se confunde é quem escreve."
+        },
+        {
+          "id": "e",
+          "text": "Porque é ali que erros humanos de comparação se manifestam, como usar > no lugar de >=",
+          "correct": true
+        }
+      ],
+      "hint": "O defeito vem de um erro humano. Que tipo de engano acontece ao escrever uma condição?",
+      "explanation": "A causa é humana: trocar `>` por `>=`, esquecer um `-1`, parar o laço uma volta antes. Nenhum desses enganos aparece no meio da faixa — 30 passa em qualquer versão da condição. Só o valor exatamente na borda revela qual sinal foi escrito."
+    },
+    {
+      "id": "qa-beg-0510",
+      "topic": "particao",
+      "prompt": "Qual é a relação entre o particionamento de equivalência e a análise de valor limite?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "São a mesma técnica com nomes diferentes",
+          "correct": false,
+          "why": "Uma escolhe representantes de faixas; a outra ataca as fronteiras entre elas."
+        },
+        {
+          "id": "b",
+          "text": "A segunda substituiu a primeira, que ficou obsoleta",
+          "correct": false,
+          "why": "As duas continuam válidas e são usadas juntas."
+        },
+        {
+          "id": "c",
+          "text": "São alternativas: usa-se uma ou outra, nunca as duas",
+          "correct": false,
+          "why": "O uso combinado é justamente o recomendado."
+        },
+        {
+          "id": "d",
+          "text": "Uma serve para teste manual e a outra para automatizado",
+          "correct": false,
+          "why": "As duas são independentes da forma de executar."
+        },
+        {
+          "id": "e",
+          "text": "Complementam-se: uma garante que nenhuma faixa fique sem teste, a outra ataca onde o erro é mais provável",
+          "correct": true
+        }
+      ],
+      "hint": "Uma cobre a largura do problema. A outra cobre a profundidade nos pontos críticos.",
+      "explanation": "O particionamento garante que nenhuma faixa de comportamento ficou sem teste; o valor limite ataca onde o erro é mais provável. Juntas, transformam \"testei o campo\" numa lista curta e **defensável** — que se explica para qualquer pessoa do time, e é isso que separa método de intuição."
+    }
+  ]
+}

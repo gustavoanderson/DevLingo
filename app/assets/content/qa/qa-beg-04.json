@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "language": "qa",
+  "level": "beginner",
+  "lessonId": "qa-beg-04",
+  "lessonTitle": "Erro, defeito e falha",
+  "aula": {
+    "titulo": "Três palavras que não são sinônimos",
+    "secoes": [
+      {
+        "topico": "vocabulario",
+        "titulo": "Erro, defeito e falha: a cadeia",
+        "texto": "No dia a dia essas três palavras se usam como se fossem a mesma. Na terminologia do ISTQB elas nomeiam **três coisas diferentes**, ligadas numa cadeia de causa e efeito.\n\n**Erro** é a ação humana que produz um resultado incorreto. Alguém entendeu o requisito errado, distraiu-se, calculou mal. O erro está na **pessoa**.\n\n**Defeito** é o que o erro deixou no código. Uma condição invertida, um limite errado, um campo que não é validado. O defeito está no **produto**, e fica lá dormindo mesmo que ninguém o execute.\n\n**Falha** é o desvio observado quando o software roda. A tela travou, o valor saiu errado, o pedido sumiu. A falha está na **execução**.\n\nA cadeia é: erro → defeito → falha. E ela tem uma consequência importante: **nem todo defeito vira falha.** Um defeito num trecho que ninguém executa nunca se manifesta — o que explica por que sistemas antigos escondem problemas por anos, até alguém usar um caminho novo.\n\nPor que isso importa na prática: quando se diz \"encontrei uma falha\", está se descrevendo o **sintoma**. O trabalho seguinte é achar o defeito que a causou. Confundir os dois faz gente corrigir o sintoma."
+      },
+      {
+        "topico": "ciclo",
+        "titulo": "O ciclo de vida de um bug",
+        "texto": "Um defeito registrado percorre um caminho previsível, e conhecer os estados evita conversa confusa entre time e QA:\n\n**Novo** → **Atribuído** → **Em análise** → **Corrigido** → **Em teste** → **Fechado**\n\nCom um desvio que existe de propósito: **Reaberto**. Se o reteste mostrar que o problema continua, o bug volta ao fluxo em vez de virar um registro novo — assim o histórico daquele defeito permanece num lugar só.\n\nDois estados que costumam faltar nas listas e existem na prática: **Rejeitado**, quando o comportamento relatado não é defeito, e **Adiado**, quando é defeito real mas a correção foi postergada por decisão de prioridade.\n\nRepare que \"Corrigido\" **não** é o fim. Entre corrigir e fechar há o reteste, e é ele que autoriza o fechamento — quem fecha um bug é quem testou, não quem consertou."
+      },
+      {
+        "topico": "relatorio",
+        "titulo": "Um bom relatório de defeito",
+        "texto": "Relatar mal um defeito custa dias: vai e volta entre QA e desenvolvimento, tentativa de reproduzir, discussão sobre se é bug mesmo.\n\nO que um relatório precisa ter:\n\n- **Título específico.** \"Erro no login\" não diz nada. \"Login aceita senha vazia quando o e-mail tem espaço no fim\" diz tudo\n- **Passos para reproduzir**, numerados, começando de um estado conhecido\n- **Resultado esperado** e **resultado obtido**, separados. Sem isso, quem lê precisa adivinhar qual era a expectativa\n- **Evidência**: captura de tela, vídeo, log\n- **Ambiente**: versão, navegador, aparelho, dados usados\n- **Severidade** e **prioridade** — e elas **não** são a mesma coisa\n\nA distinção entre as duas últimas é a que mais gera discussão. **Severidade** é o tamanho do estrago técnico. **Prioridade** é a urgência de corrigir, e leva em conta negócio, prazo e quantas pessoas são afetadas.\n\nO caso clássico é o logotipo escrito errado na página inicial: severidade baixíssima — nada quebra —, prioridade altíssima, porque todo mundo vê. E o inverso existe: uma falha grave num relatório que só o setor financeiro emite uma vez por ano pode esperar."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "qa-beg-0401",
+      "topic": "vocabulario",
+      "prompt": "Um programador entendeu mal o requisito e inverteu uma condição no código. Meses depois, um usuário vê o valor errado na tela. Como se nomeia cada uma das três coisas?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Falha do programador, erro no código, defeito na tela",
+          "correct": false,
+          "why": "Os três termos estão trocados de posição na cadeia."
+        },
+        {
+          "id": "b",
+          "text": "Defeito do programador, falha no código, erro na tela",
+          "correct": false,
+          "why": "Também troca a ordem: quem erra é a pessoa, não o código."
+        },
+        {
+          "id": "c",
+          "text": "Erro do programador, defeito no código, falha na tela",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Os três são o mesmo evento, com nomes diferentes",
+          "correct": false,
+          "why": "São três coisas distintas, em lugares distintos: pessoa, produto e execução."
+        },
+        {
+          "id": "e",
+          "text": "Erro do programador, falha no código, defeito na tela",
+          "correct": false,
+          "why": "As duas últimas estão invertidas: o que fica no código é estático, o que aparece é observado."
+        }
+      ],
+      "hint": "Um está na pessoa, outro está no produto parado, e o terceiro só existe quando o software roda.",
+      "explanation": "A cadeia é **erro → defeito → falha**: a ação humana produz algo incorreto no código, que se manifesta quando executado. Saber a diferença muda o trabalho — quando se diz \"encontrei uma falha\", está se descrevendo o sintoma, e ainda falta achar o defeito que o causou."
+    },
+    {
+      "id": "qa-beg-0402",
+      "topic": "vocabulario",
+      "prompt": "Todo defeito no código acaba virando uma falha visível?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sim, é só questão de tempo",
+          "correct": false,
+          "why": "Só se aquele trecho chegar a ser executado, e muitos nunca são."
+        },
+        {
+          "id": "b",
+          "text": "Sim, porque todo código é executado em algum momento",
+          "correct": false,
+          "why": "Sistemas grandes têm trechos que ficam anos sem rodar."
+        },
+        {
+          "id": "c",
+          "text": "Não, porque defeito em trecho que ninguém executa nunca se manifesta",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Não, porque defeitos desaparecem sozinhos com o tempo",
+          "correct": false,
+          "why": "Eles não desaparecem: continuam lá, apenas adormecidos."
+        },
+        {
+          "id": "e",
+          "text": "Não, porque o compilador remove os defeitos antes de rodar",
+          "correct": false,
+          "why": "O compilador pega erros de sintaxe, não erros de lógica."
+        }
+      ],
+      "hint": "O defeito é estático. A falha só existe durante a execução. O que precisa acontecer entre os dois?",
+      "explanation": "O defeito fica dormindo no código até alguém percorrer aquele caminho. É o que explica sistemas antigos escondendo problemas por anos e revelando-os quando um recurso novo passa a exercitar um trecho esquecido — e é também por que cobertura de teste importa: o que nunca foi executado nunca foi testado."
+    },
+    {
+      "id": "qa-beg-0403",
+      "topic": "ciclo",
+      "prompt": "Um bug foi corrigido pelo desenvolvedor. Quem deve fechá-lo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O próprio desenvolvedor, assim que subir a correção",
+          "correct": false,
+          "why": "Ele corrigiu; falta alguém conferir que a correção funcionou."
+        },
+        {
+          "id": "b",
+          "text": "O gestor do projeto, ao revisar o backlog",
+          "correct": false,
+          "why": "Fechamento é decisão técnica de quem verificou, não administrativa."
+        },
+        {
+          "id": "c",
+          "text": "Ninguém: o bug fecha sozinho na próxima entrega",
+          "correct": false,
+          "why": "O estado precisa ser mudado por alguém que confirmou a correção."
+        },
+        {
+          "id": "d",
+          "text": "Quem testou, depois do reteste confirmar a correção",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O cliente, no teste de aceitação",
+          "correct": false,
+          "why": "Ele pode confirmar, mas o fluxo do bug não depende de esperar a aceitação."
+        }
+      ],
+      "hint": "Entre 'Corrigido' e 'Fechado' há um estado no meio. Quem age nele?",
+      "explanation": "\"Corrigido\" não é o fim: entre corrigir e fechar existe o **reteste**, e é ele que autoriza o fechamento. Quem fecha é quem testou. Se o reteste mostrar que o problema continua, o bug é **reaberto** — volta ao fluxo em vez de virar registro novo, para o histórico ficar num lugar só."
+    },
+    {
+      "id": "qa-beg-0404",
+      "topic": "relatorio",
+      "prompt": "O logotipo da empresa está escrito errado na página inicial. Nada quebra. Como classificar severidade e prioridade?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Severidade alta e prioridade alta",
+          "correct": false,
+          "why": "A severidade mede o estrago técnico, e aqui não há nenhum."
+        },
+        {
+          "id": "b",
+          "text": "Severidade baixa e prioridade alta",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Severidade alta e prioridade baixa",
+          "correct": false,
+          "why": "É o inverso deste caso, e existe: falha grave num relatório anual pouco usado."
+        },
+        {
+          "id": "d",
+          "text": "Severidade baixa e prioridade baixa",
+          "correct": false,
+          "why": "Subestima a urgência: é a primeira coisa que todo visitante vê."
+        },
+        {
+          "id": "e",
+          "text": "As duas sempre andam juntas, então é o mesmo valor",
+          "correct": false,
+          "why": "São eixos independentes, e este caso existe justamente para mostrar isso."
+        }
+      ],
+      "hint": "Uma mede o tamanho do estrago técnico. A outra mede a urgência para o negócio.",
+      "explanation": "Severidade é o estrago técnico; prioridade é a urgência de corrigir, e leva em conta negócio, prazo e quantas pessoas são afetadas. O logotipo errado não quebra nada e mesmo assim precisa ser corrigido hoje. O caso inverso também existe, e confundir os dois é a fonte mais comum de discussão em triagem de bug."
+    },
+    {
+      "id": "qa-beg-0405",
+      "topic": "relatorio",
+      "prompt": "Qual desses títulos de bug é o mais útil para quem vai corrigir?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Erro no login",
+          "correct": false,
+          "why": "Não diz o que acontece, em que condição, nem o que era esperado."
+        },
+        {
+          "id": "b",
+          "text": "O login está quebrado, urgente!!!",
+          "correct": false,
+          "why": "Acrescenta urgência e nenhuma informação técnica."
+        },
+        {
+          "id": "c",
+          "text": "Login aceita senha vazia quando o e-mail tem espaço no fim",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Não consigo entrar no sistema",
+          "correct": false,
+          "why": "Descreve a experiência de uma pessoa, sem a condição que reproduz o problema."
+        },
+        {
+          "id": "e",
+          "text": "Bug crítico na autenticação encontrado em produção",
+          "correct": false,
+          "why": "Diz onde e o quanto é grave, mas não o que exatamente acontece."
+        }
+      ],
+      "hint": "Um bom título já responde o que acontece e em que condição, antes de alguém abrir o relatório.",
+      "explanation": "Um título específico economiza dias de vai e volta. Ele já entrega a condição que reproduz — e é a condição que permite reproduzir. Relatório mal escrito é caro: gera tentativa de reprodução frustrada, discussão sobre se é bug mesmo, e às vezes o fechamento indevido de um problema real."
+    },
+    {
+      "id": "qa-beg-0406",
+      "topic": "ciclo",
+      "prompt": "O reteste mostrou que o problema continua acontecendo. O que fazer com o registro?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Abrir um bug novo, referenciando o antigo",
+          "correct": false,
+          "why": "Espalha o histórico do mesmo defeito por dois registros."
+        },
+        {
+          "id": "b",
+          "text": "Fechar assim mesmo e acompanhar em produção",
+          "correct": false,
+          "why": "Fecharia um defeito que continua existindo."
+        },
+        {
+          "id": "c",
+          "text": "Marcar como adiado, já que houve tentativa de correção",
+          "correct": false,
+          "why": "Adiado é decisão de prioridade, e não resultado de reteste reprovado."
+        },
+        {
+          "id": "d",
+          "text": "Rejeitar, porque a correção foi entregue",
+          "correct": false,
+          "why": "Rejeitado significa que o comportamento relatado não é defeito."
+        },
+        {
+          "id": "e",
+          "text": "Reabrir o mesmo registro, devolvendo-o ao fluxo",
+          "correct": true
+        }
+      ],
+      "hint": "Existe um estado no ciclo criado exatamente para esse desvio.",
+      "explanation": "Reaberto existe para isso, e a razão é prática: o histórico daquele defeito — quando apareceu, o que já se tentou, quantas vezes voltou — fica num lugar só. Abrir registro novo perde essa memória, e um defeito que reabre três vezes é um sinal que ninguém quer perder de vista."
+    },
+    {
+      "id": "qa-beg-0407",
+      "topic": "vocabulario",
+      "prompt": "Escreva o termo em inglês, com seis letras, que a terminologia usa para o desvio observado durante a execução do software.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "failure"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o terceiro elo da cadeia, aquele que o usuário efetivamente vê acontecer.",
+      "explanation": "Failure é a falha — o sintoma observado. Os outros dois elos são **error**, a ação humana, e **defect**, o que ficou no código. Conhecer os termos em inglês importa porque ferramentas, documentação e vagas usam esse vocabulário."
+    },
+    {
+      "id": "qa-beg-0408",
+      "topic": "relatorio",
+      "prompt": "Um relatório traz título, passos e uma captura de tela, mas não diz qual era o resultado esperado. Qual o problema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Quem lê precisa adivinhar a expectativa, e pode concluir que o comportamento está certo",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Nenhum, se a captura de tela mostrar o erro",
+          "correct": false,
+          "why": "A captura mostra o que aconteceu, e não o que deveria ter acontecido."
+        },
+        {
+          "id": "c",
+          "text": "O relatório fica longo demais sem esse campo",
+          "correct": false,
+          "why": "Falta um campo; o relatório fica mais curto, e pior."
+        },
+        {
+          "id": "d",
+          "text": "Não é possível reproduzir sem esse campo",
+          "correct": false,
+          "why": "Os passos permitem reproduzir. O que falta é saber o que era certo."
+        },
+        {
+          "id": "e",
+          "text": "A severidade não pode ser calculada sem ele",
+          "correct": false,
+          "why": "Atrapalha, mas o problema imediato é outro e mais grave."
+        }
+      ],
+      "hint": "Sem os dois lados, quem lê só sabe o que aconteceu — e não que aquilo estava errado.",
+      "explanation": "Resultado esperado e resultado obtido são **dois campos separados** por um motivo: sem o primeiro, quem lê só vê o comportamento e precisa deduzir a expectativa. É assim que bug real vira \"funciona como projetado\" e é fechado sem correção."
+    },
+    {
+      "id": "qa-beg-0409",
+      "topic": "ciclo",
+      "prompt": "Um comportamento relatado como bug foi analisado e concluiu-se que é o funcionamento correto do sistema. Qual estado se aplica?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Fechado, porque não há mais o que fazer",
+          "correct": false,
+          "why": "Fechado se usa quando houve defeito e ele foi corrigido e verificado."
+        },
+        {
+          "id": "b",
+          "text": "Rejeitado",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Adiado, para reavaliar depois",
+          "correct": false,
+          "why": "Adiado é para defeito real cuja correção foi postergada."
+        },
+        {
+          "id": "d",
+          "text": "Reaberto, para nova análise",
+          "correct": false,
+          "why": "Reaberto é para defeito que voltou depois de uma correção."
+        },
+        {
+          "id": "e",
+          "text": "Corrigido, já que nada precisava mudar",
+          "correct": false,
+          "why": "Nada foi corrigido, e usar esse estado registraria uma correção que não houve."
+        }
+      ],
+      "hint": "O comportamento não é defeito. Nem foi corrigido, nem foi postergado.",
+      "explanation": "Rejeitado significa que o relatado não é defeito. Vale um cuidado: rejeição em excesso costuma ser sintoma de requisito ambíguo, e não de QA impreciso — se o comportamento correto não estava claro para quem testou, provavelmente não estava claro para quem programou."
+    },
+    {
+      "id": "qa-beg-0410",
+      "topic": "vocabulario",
+      "prompt": "Uma equipe corrige repetidamente as falhas que aparecem na tela, e os mesmos problemas voltam de outra forma. O que provavelmente está acontecendo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Os testes estão mal escritos",
+          "correct": false,
+          "why": "Os testes estão achando os sintomas; o problema é o que se faz com eles."
+        },
+        {
+          "id": "b",
+          "text": "O ambiente de teste está diferente do de produção",
+          "correct": false,
+          "why": "Explicaria falhas que não se reproduzem, e não problemas que voltam de outra forma."
+        },
+        {
+          "id": "c",
+          "text": "Estão corrigindo o sintoma na superfície, sem chegar ao defeito que o causa",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O software tem defeitos demais para ser mantido",
+          "correct": false,
+          "why": "Pode ser, mas o padrão descrito — voltar de outra forma — aponta para outra causa."
+        },
+        {
+          "id": "e",
+          "text": "Falta um teste de aceitação do cliente",
+          "correct": false,
+          "why": "Aceitação valida a necessidade do negócio, e não resolveria a repetição."
+        }
+      ],
+      "hint": "A falha é o que se vê. Corrigir o que se vê nem sempre é corrigir a causa.",
+      "explanation": "Este é o custo prático de confundir os termos: a falha é o sintoma, e corrigir o sintoma deixa o defeito intacto — ele reaparece por outro caminho. É por isso que a cadeia erro → defeito → falha não é preciosismo de vocabulário: ela diz onde procurar."
+    }
+  ]
+}

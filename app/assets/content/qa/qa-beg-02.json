@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "language": "qa",
+  "level": "beginner",
+  "lessonId": "qa-beg-02",
+  "lessonTitle": "Os sete princípios do teste",
+  "aula": {
+    "titulo": "O que todo teste obedece, e ninguém pode contornar",
+    "secoes": [
+      {
+        "topico": "principios",
+        "titulo": "Sete regras que a prática confirmou",
+        "texto": "O ISTQB consolidou sete princípios que valem para qualquer projeto, em qualquer tecnologia. Eles não são opinião: são conclusões que a área alcançou apanhando.\n\n**1. O teste mostra a presença de defeitos, não a ausência.** Encontrar um bug prova que ele existe. Não encontrar nenhum não prova que não há — prova que os testes que você fez não acharam. Este é o princípio mais importante, e o mais violado na comunicação com quem não é da área.\n\n**2. Testes exaustivos são impossíveis.** Um formulário com dez campos tem mais combinações de entrada do que se consegue executar numa vida. Por isso se testa por **risco e prioridade**, e não por volume.\n\n**3. Testar cedo economiza tempo e dinheiro.** É a curva de custo da lição anterior virando princípio.\n\n**4. Defeitos se agrupam.** Eles não se espalham por igual: uma minoria dos módulos concentra a maioria dos problemas. Onde apareceu um, procure outro.\n\n**5. Cuidado com o paradoxo do pesticida.** Repetir sempre os mesmos testes faz com que eles parem de achar defeitos — como uma praga que fica resistente ao veneno. Os testes precisam ser revisados e ampliados.\n\n**6. O teste depende do contexto.** Um app de jogo e um sistema de equipamento médico não se testam do mesmo jeito, nem com o mesmo rigor.\n\n**7. Ausência de erros é uma ilusão.** Um sistema sem defeitos conhecidos ainda pode ser inútil, se resolver o problema errado."
+      },
+      {
+        "topico": "verificacao-validacao",
+        "titulo": "Construir certo, ou construir o certo",
+        "texto": "Duas palavras que soam iguais e perguntam coisas opostas.\n\n**Verificação** pergunta: *estamos construindo o produto certo... do jeito certo?* Ela confere se o software cumpre a especificação. É comparação com o documento.\n\n**Validação** pergunta: *estamos construindo o produto certo?* Ela confere se o software atende à necessidade real de quem vai usar. É comparação com o mundo.\n\nA distinção fica clara no caso em que elas discordam: um sistema pode passar em toda a verificação — cada requisito cumprido — e falhar na validação, porque os requisitos descreviam a solução errada.\n\nQuando alguém diz \"V&V\", está falando das duas juntas: o produto foi construído corretamente **e** é o produto que resolvia o problema."
+      },
+      {
+        "topico": "modelo-v",
+        "titulo": "O modelo V: cada fase tem seu teste",
+        "texto": "O modelo V é um desenho que relaciona as fases de desenvolvimento aos níveis de teste, formando a letra V. Descendo pela esquerda, o produto é decomposto; subindo pela direita, ele é verificado.\n\nCada fase da descida tem um teste correspondente na subida, e a correspondência não é arbitrária — ela liga cada teste ao documento que o originou:\n\n| Fase | Teste que a valida |\n|---|---|\n| Requisitos | Teste de aceitação |\n| Análise | Teste de sistema |\n| Design | Teste de integração |\n| Codificação | Teste de unidade |\n\nA lição prática do desenho é que **o teste de aceitação não nasce no fim**: ele é planejado lá em cima, junto dos requisitos. Quem espera o software ficar pronto para pensar em como aceitá-lo já perdeu a chance de fazer isso barato."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "qa-beg-0201",
+      "topic": "principios",
+      "prompt": "Uma suíte completa rodou e não encontrou nenhum defeito. O que se pode concluir?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que os testes executados não encontraram defeitos — e nada além disso",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Que o software está livre de defeitos",
+          "correct": false,
+          "why": "Isso exigiria ter testado tudo, o que o segundo princípio diz ser impossível."
+        },
+        {
+          "id": "c",
+          "text": "Que a suíte está mal escrita, já que não achou nada",
+          "correct": false,
+          "why": "Pode estar boa e o código estar são naquilo que ela cobre."
+        },
+        {
+          "id": "d",
+          "text": "Que o software pode ir para produção sem risco",
+          "correct": false,
+          "why": "O risco residual continua existindo, e é justamente o que não foi testado."
+        },
+        {
+          "id": "e",
+          "text": "Que a cobertura de teste chegou a 100%",
+          "correct": false,
+          "why": "Não achar defeito não diz nada sobre quanto do sistema foi exercitado."
+        }
+      ],
+      "hint": "É o primeiro princípio, e o mais violado quando se conversa com quem não é da área.",
+      "explanation": "O teste mostra a **presença** de defeitos, nunca a ausência. Achar um bug prova que ele existe; não achar nenhum prova apenas que aqueles testes não o alcançaram. Saber comunicar isso é parte do trabalho — dizer \"está sem bugs\" promete o que nenhum teste pode entregar."
+    },
+    {
+      "id": "qa-beg-0202",
+      "topic": "principios",
+      "prompt": "Por que testes exaustivos são impossíveis na prática?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque as ferramentas de automação têm limite de casos",
+          "correct": false,
+          "why": "O limite não é da ferramenta: é combinatório."
+        },
+        {
+          "id": "b",
+          "text": "Porque a combinação de entradas possíveis cresce além do que se consegue executar",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque nenhuma equipe tem QAs suficientes",
+          "correct": false,
+          "why": "Nem uma equipe infinita daria conta: o número de combinações é grande demais."
+        },
+        {
+          "id": "d",
+          "text": "Porque os requisitos nunca estão completos",
+          "correct": false,
+          "why": "É verdade e é outro problema. Este princípio fala de volume de combinações."
+        },
+        {
+          "id": "e",
+          "text": "Porque testar tudo exigiria acesso ao código-fonte",
+          "correct": false,
+          "why": "Mesmo com o código inteiro em mãos, o número de caminhos continua impraticável."
+        }
+      ],
+      "hint": "Pense num formulário com dez campos e quantas combinações de valores ele aceita.",
+      "explanation": "A explosão é combinatória: dez campos com poucas opções cada já produzem mais combinações do que se executa numa vida. A consequência prática é o que define o ofício — **testa-se por risco e prioridade**, não por volume. E escolher onde não testar é uma decisão técnica, não um descuido."
+    },
+    {
+      "id": "qa-beg-0203",
+      "topic": "principios",
+      "prompt": "Escreva o nome do paradoxo que descreve testes que param de encontrar defeitos por serem sempre os mesmos.",
+      "answerType": "freeWrite",
+      "accepted": ["pesticida"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "A analogia é com uma praga que fica resistente ao veneno aplicado sempre igual.",
+      "explanation": "O paradoxo do pesticida: repetir os mesmos testes os torna cada vez menos eficazes, porque os defeitos que eles pegavam já foram corrigidos. A saída é revisar e ampliar a suíte — e é por isso que uma suíte de regressão que nunca muda dá uma sensação de segurança que ela já não sustenta."
+    },
+    {
+      "id": "qa-beg-0204",
+      "topic": "principios",
+      "prompt": "Numa análise, 80% dos defeitos apareceram em 20% dos módulos. Que princípio isso ilustra, e o que ele orienta a fazer?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Testes exaustivos são impossíveis; logo, testar menos",
+          "correct": false,
+          "why": "A conclusão prática não é testar menos, e sim escolher melhor onde."
+        },
+        {
+          "id": "b",
+          "text": "O paradoxo do pesticida; logo, trocar a ferramenta",
+          "correct": false,
+          "why": "O pesticida fala de testes repetidos que perdem eficácia, e trocar ferramenta não o resolve."
+        },
+        {
+          "id": "c",
+          "text": "Ausência de erros é uma ilusão; logo, ignorar a distribuição",
+          "correct": false,
+          "why": "Esse princípio trata de resolver o problema errado, não de onde os defeitos se concentram."
+        },
+        {
+          "id": "d",
+          "text": "Defeitos se agrupam; logo, concentrar esforço onde já apareceram problemas",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O teste depende do contexto; logo, mudar de metodologia",
+          "correct": false,
+          "why": "Contexto trata do tipo de sistema e do rigor exigido, não da concentração de defeitos."
+        }
+      ],
+      "hint": "Os defeitos não se espalham por igual. Onde apareceu um, o que se espera encontrar?",
+      "explanation": "Defeitos se agrupam. A orientação é direta e às vezes contraintuitiva: em vez de distribuir o esforço por igual, concentre onde o histórico mostra problema. Módulo que já deu trabalho tende a dar de novo — por complexidade, por pressa na escrita, ou por ser mexido com frequência."
+    },
+    {
+      "id": "qa-beg-0205",
+      "topic": "verificacao-validacao",
+      "prompt": "Um sistema cumpre 100% dos requisitos escritos, mas não resolve o problema que o cliente tinha. O que falhou?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A verificação, porque os requisitos não foram conferidos",
+          "correct": false,
+          "why": "Foram conferidos e cumpridos: é justamente o que o enunciado afirma."
+        },
+        {
+          "id": "b",
+          "text": "Nada falhou: o contrato foi cumprido",
+          "correct": false,
+          "why": "Do ponto de vista jurídico talvez; do ponto de vista de qualidade, não."
+        },
+        {
+          "id": "c",
+          "text": "A validação, porque o produto construído não era o produto certo",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O teste de unidade, que deveria ter pego isso",
+          "correct": false,
+          "why": "Ele confere pedaços de código, e não se o produto resolve o problema."
+        },
+        {
+          "id": "e",
+          "text": "As duas igualmente, já que sempre andam juntas",
+          "correct": false,
+          "why": "Andam juntas, mas aqui só uma falhou — e distinguir qual é o ponto da questão."
+        }
+      ],
+      "hint": "Uma das duas compara com o documento. A outra compara com o mundo real.",
+      "explanation": "A verificação passou — cada requisito foi cumprido. A **validação** falhou: os requisitos descreviam a solução errada. É o caso que torna a distinção útil, e o motivo de o QA participar da definição do requisito, e não só da conferência dele."
+    },
+    {
+      "id": "qa-beg-0206",
+      "topic": "modelo-v",
+      "prompt": "No modelo V, qual nível de teste corresponde à fase de requisitos?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Teste de unidade",
+          "correct": false,
+          "why": "Ele corresponde à codificação, na base do V."
+        },
+        {
+          "id": "b",
+          "text": "Teste de integração",
+          "correct": false,
+          "why": "Ele corresponde ao design."
+        },
+        {
+          "id": "c",
+          "text": "Teste de sistema",
+          "correct": false,
+          "why": "Ele corresponde à análise, um degrau abaixo dos requisitos."
+        },
+        {
+          "id": "d",
+          "text": "Teste de regressão",
+          "correct": false,
+          "why": "Regressão é teste relacionado a mudanças, e não um degrau do V."
+        },
+        {
+          "id": "e",
+          "text": "Teste de aceitação",
+          "correct": true
+        }
+      ],
+      "hint": "Os requisitos ficam no topo da descida. Qual teste fica no topo da subida?",
+      "explanation": "Requisitos se ligam ao teste de aceitação. A lição prática do desenho é que **ele não nasce no fim**: é planejado junto dos requisitos, lá no topo. Quem espera o software ficar pronto para pensar em como aceitá-lo perdeu a chance de fazer isso barato."
+    },
+    {
+      "id": "qa-beg-0207",
+      "topic": "principios",
+      "prompt": "Escreva por extenso, em uma palavra, quantos são os princípios do teste segundo o ISTQB.",
+      "answerType": "freeWrite",
+      "accepted": ["sete"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Estão listados na aula desta lição, numerados de 1 a N.",
+      "explanation": "São sete, e eles se apoiam uns nos outros: o segundo (exaustivo é impossível) é o que dá consequência prática ao primeiro (o teste mostra presença, não ausência). Sem o segundo, alguém poderia argumentar que basta testar tudo."
+    },
+    {
+      "id": "qa-beg-0208",
+      "topic": "modelo-v",
+      "prompt": "Complete a correspondência do modelo V para a fase de codificação.",
+      "code": {
+        "language": "text",
+        "content": "Requisitos    ->  teste de aceitacao\nAnalise       ->  teste de sistema\nDesign        ->  teste de integracao\nCodificacao   ->  teste de ______",
+        "highlightLine": 4
+      },
+      "answerType": "fillBlank",
+      "accepted": ["unidade"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o nível mais baixo, que testa a menor parte isolável do código.",
+      "explanation": "Codificação se liga ao teste de unidade — a menor parte testável, geralmente escrita por quem programou. Repare que a tabela desce em granularidade dos dois lados ao mesmo tempo: quanto mais detalhada a fase, mais estreito o teste que a valida."
+    },
+    {
+      "id": "qa-beg-0209",
+      "topic": "principios",
+      "prompt": "Uma equipe testa um jogo casual com o mesmo rigor de um software de equipamento hospitalar. Qual princípio isso ignora?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Defeitos se agrupam",
+          "correct": false,
+          "why": "Trata de onde os problemas se concentram dentro de um mesmo sistema."
+        },
+        {
+          "id": "b",
+          "text": "O teste depende do contexto",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "O teste mostra presença, não ausência",
+          "correct": false,
+          "why": "Vale igualmente para os dois sistemas, e não diz nada sobre o rigor de cada um."
+        },
+        {
+          "id": "d",
+          "text": "Testar cedo economiza tempo e dinheiro",
+          "correct": false,
+          "why": "Também vale para os dois, e trata de quando testar, não de quanto."
+        },
+        {
+          "id": "e",
+          "text": "O paradoxo do pesticida",
+          "correct": false,
+          "why": "Trata de testes repetidos perdendo eficácia com o tempo."
+        }
+      ],
+      "hint": "O que muda entre os dois sistemas não é a técnica, é o que está em jogo se falhar.",
+      "explanation": "O teste depende do contexto. O que difere não é a técnica, e sim o **risco**: uma falha no jogo custa uma partida; no equipamento hospitalar, custa uma vida. Aplicar o rigor do segundo ao primeiro desperdiça dinheiro; aplicar o do primeiro ao segundo é irresponsável."
+    },
+    {
+      "id": "qa-beg-0210",
+      "topic": "principios",
+      "prompt": "Um produto foi entregue sem nenhum defeito conhecido, e mesmo assim foi considerado um fracasso. Qual princípio explica isso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Testes exaustivos são impossíveis",
+          "correct": false,
+          "why": "Explicaria defeitos escondidos, mas o enunciado diz que o fracasso não foi por defeito."
+        },
+        {
+          "id": "b",
+          "text": "O teste depende do contexto",
+          "correct": false,
+          "why": "Trata do rigor adequado a cada tipo de sistema."
+        },
+        {
+          "id": "c",
+          "text": "Ausência de erros é uma ilusão",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Defeitos se agrupam",
+          "correct": false,
+          "why": "Trata da distribuição dos problemas, e aqui não havia problemas conhecidos."
+        },
+        {
+          "id": "e",
+          "text": "Testar cedo economiza tempo e dinheiro",
+          "correct": false,
+          "why": "Trata de quando encontrar defeitos, e não de um produto sem eles fracassar."
+        }
+      ],
+      "hint": "Um sistema pode funcionar perfeitamente e ainda assim não servir. O que faltou?",
+      "explanation": "Ausência de erros é uma ilusão: um sistema sem defeitos conhecidos ainda pode ser inútil, se resolveu o problema errado. É o mesmo caso da validação que falha com a verificação passando — e é a razão de este princípio fechar a lista, em vez de abri-la."
+    }
+  ]
+}
