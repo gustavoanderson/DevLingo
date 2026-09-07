@@ -59,6 +59,14 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
   /// o que sobrevive à troca de tela.
   late int _indice = widget.indiceInicial;
 
+  /// O que o aluno já digitou na questão atual.
+  ///
+  /// Mesmo motivo de [_indice], e o defeito era irmão: consultar a aula no
+  /// meio de uma resposta apagava o que estava escrito, porque o controlador
+  /// de texto morre junto com a tela desmontada. Quem estava terminando de
+  /// escrever uma linha voltava para um campo vazio.
+  String _texto = '';
+
   void _comecar() {
     if (!_relendo) {
       unawaited(
@@ -96,6 +104,8 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
       // reconstruir a cada virada de questão seria trabalho jogado fora. Ele
       // só é lido quando o exercício remonta, depois da aula.
       aoMudarQuestao: (indice) => _indice = indice,
+      textoInicial: _texto,
+      aoMudarTexto: (texto) => _texto = texto,
       sineta: widget.sineta,
       comCenario: widget.comCenario,
     );

@@ -39,7 +39,20 @@ const String _aula = '''
   ]
 },''';
 
-Lesson licao({bool comAula = true, int quantas = 1}) => Lesson.fromJson(
+const String _questaoEscrita = '''
+{
+  "id": "python-beg-0199",
+  "topic": "saida",
+  "prompt": "Escreva a linha que exibe o valor da variavel nome.",
+  "answerType": "freeWrite",
+  "accepted": ["print(nome)"],
+  "normalize": {"spaces": true, "quotes": true, "trailingSemicolon": true, "caseSensitive": true},
+  "hint": "Chame a funcao de exibicao passando a variavel, sem aspas ao redor.",
+  "explanation": "Sem aspas o Python busca o valor guardado na variavel."
+}''';
+
+Lesson licao({bool comAula = true, int quantas = 1, bool escrita = false}) =>
+    Lesson.fromJson(
   json.decode('''
   {
     "schemaVersion": 1,
@@ -48,7 +61,7 @@ Lesson licao({bool comAula = true, int quantas = 1}) => Lesson.fromJson(
     "lessonId": "python-beg-01",
     "lessonTitle": "Licao de teste",
     ${comAula ? _aula : ''}
-    "questions": [${List.generate(quantas, _questaoNumero).join(',')}]
+    "questions": [${escrita ? _questaoEscrita : List.generate(quantas, _questaoNumero).join(',')}]
   }''')
       as Map<String, dynamic>,
 );
@@ -247,6 +260,36 @@ void main() {
 
       expect(find.text('Questao numero 1'), findsOneWidget);
       expect(progresso.aulasVistas, isEmpty);
+    });
+
+    testWidgets('consultar a aula nao apaga o que ja foi digitado', (
+      tester,
+    ) async {
+      // Relatado pelo Gustavo jogando: ele estava escrevendo uma resposta,
+      // foi consultar o material, e voltou para um campo vazio. Mesma causa da
+      // posicao perdida -- a tela e desmontada, e o TextEditingController morre
+      // junto. Quem guarda o texto e o FluxoDaLicao, que sobrevive a troca.
+      await montar(
+        tester,
+        FluxoDaLicao(licao: licao(escrita: true), aulaJaVista: true),
+      );
+
+      // Sem esta checagem o teste passaria mesmo sem campo nenhum na tela --
+      // e um teste que sai cedo e passa nao prova coisa alguma.
+      expect(find.byType(TextField), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'print(no');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('acao-reler-aula')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(TelaAula.chaveComecar));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller?.text,
+        'print(no',
+        reason: 'o que estava escrito tem que voltar com o aluno',
+      );
     });
 
     testWidgets('consultar a aula no meio da licao nao devolve para tras', (

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../answer/normalize.dart';
 import '../answer/sessao_questao.dart';
 import '../data/progresso.dart';
 import '../models/lesson.dart';
@@ -33,6 +34,8 @@ class TelaExercicio extends StatefulWidget {
     this.indiceInicial = 0,
     this.aoRelerAula,
     this.aoMudarQuestao,
+    this.textoInicial = '',
+    this.aoMudarTexto,
     this.sineta,
     this.comCenario = false,
   });
@@ -46,6 +49,17 @@ class TelaExercicio extends StatefulWidget {
 
   /// Reabre a aula da licao. Nulo quando a licao nao tem aula.
   final VoidCallback? aoRelerAula;
+
+  /// O que ja estava digitado quando esta tela foi montada.
+  ///
+  /// Existe pelo mesmo motivo de [aoMudarQuestao], e o defeito era irmao:
+  /// abrir a aula desmonta esta tela, e o `TextEditingController` morre junto
+  /// -- quem estava no meio de uma resposta perdia o que tinha escrito. Quem
+  /// guarda o texto e o [FluxoDaLicao], que sobrevive a troca.
+  final String textoInicial;
+
+  /// Avisa o que esta escrito, a cada tecla.
+  final ValueChanged<String>? aoMudarTexto;
 
   /// Avisa em que questao o aluno esta, a cada virada.
   ///
@@ -81,7 +95,9 @@ class TelaExercicio extends StatefulWidget {
 
 class _TelaExercicioState extends State<TelaExercicio>
     with AvisaConteudoCortado<TelaExercicio> {
-  final TextEditingController _texto = TextEditingController();
+  late final TextEditingController _texto = TextEditingController(
+    text: widget.textoInicial,
+  );
   final FocusNode _foco = FocusNode();
 
   late int _indice = widget.indiceInicial;
@@ -107,12 +123,14 @@ class _TelaExercicioState extends State<TelaExercicio>
     // Sem isto o botao Verificar nao sairia do estado desabilitado ao digitar:
     // o texto muda dentro do controlador, sem passar por setState.
     _texto.addListener(_aoDigitar);
+    _texto.addListener(_avisarTexto);
   }
 
   @override
   void dispose() {
     encerrarAvisoDeRecorte();
     _texto.removeListener(_aoDigitar);
+    _texto.removeListener(_avisarTexto);
     _texto.dispose();
     _foco.dispose();
     super.dispose();
@@ -166,6 +184,9 @@ class _TelaExercicioState extends State<TelaExercicio>
 
     unawaited(_salvarPosicao(proximo));
     widget.aoMudarQuestao?.call(proximo);
+    // O texto guardado pertence a questao que acabou de sair. Sem zerar aqui,
+    // a resposta da anterior reapareceria na proxima.
+    widget.aoMudarTexto?.call('');
     setState(() {
       _indice = proximo;
       _sessao = SessaoQuestao(_questaoAtual);
@@ -179,6 +200,8 @@ class _TelaExercicioState extends State<TelaExercicio>
   Future<void> _salvarPosicao(int indice) async {
     await widget.progresso?.salvarPosicao(widget.licao.lessonId, indice);
   }
+
+  void _avisarTexto() => widget.aoMudarTexto?.call(_texto.text);
 
   Future<void> _lerSom() async {
     final ligado = await widget.progresso?.somLigado();
@@ -262,6 +285,18 @@ class _TelaExercicioState extends State<TelaExercicio>
                           _PainelDica(texto: questao.hint),
                         ],
                         const SizedBox(height: 16),
+                        // O molde da resposta, visivel ANTES do primeiro erro.
+                        //
+                        // O Gustavo escreveu a linha inteira -- `if (saldo > 0)
+                        // { console.log(...) }` -- numa questao que pedia so
+                        // ate a chave de abertura. O codigo estava certo, e foi
+                        // marcado errado. O enunciado nao tinha como comunicar
+                        // ONDE PARAR, e descobrir isso errando e frustracao sem
+                        // aprendizado -- o contrario do que este app se propoe.
+                        if (_sessao.ehEscrita && !_sessao.terminou) ...[
+                          _Molde(resposta: questao.accepted!.first),
+                          const SizedBox(height: 12),
+                        ],
                         if (_sessao.ehEscrita)
                           _CampoResposta(
                             controlador: _texto,
@@ -677,6 +712,65 @@ class _RespostaRevelada extends StatelessWidget {
 
 // ------------------------------------------------------ paineis
 
+/// O formato esperado da resposta, com as letras escondidas.
+///
+/// Usa a mesma `esqueletoDe` que a sessao ja mostrava no terceiro erro: ela
+/// troca letra e numero por `·` e preserva pontuacao, espacos e simbolos. Para
+/// `if (saldo > 0) {` sai `·· (····· > ·) {`.
+///
+/// **O que ele entrega, e o que nao entrega.** Entrega o tamanho de cada nome e
+/// a estrutura -- e portanto onde a resposta termina, que era o problema.
+/// Continua sem dizer QUAIS sao os nomes nem qual funcao chamar, que e o que a
+/// questao cobra. Um aluno que nao sabe `console.log` nao acerta olhando pontos.
+///
+/// Fonte monoespacada e obrigatoria aqui: os `·` precisam alinhar com o que a
+/// pessoa digita para a comparacao ser possivel a olho.
+class _Molde extends StatelessWidget {
+  const _Molde({required this.resposta});
+
+  final String resposta;
+
+  static const Key chave = Key('molde-da-resposta');
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: chave,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Paleta.superficie,
+        borderRadius: BorderRadius.circular(Escala.raio),
+        border: Border.all(color: Paleta.linha),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'A resposta tem este formato:',
+            style: TextStyle(color: Paleta.suave, fontSize: 12),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            // O molde nao quebra linha, pelo mesmo motivo do bloco de codigo:
+            // quebrar destroi o alinhamento, e alinhamento e a informacao.
+            scrollDirection: Axis.horizontal,
+            child: Text(
+              esqueletoDe(resposta),
+              style: const TextStyle(
+                color: Paleta.destaque,
+                fontFamily: fonteMono,
+                fontSize: Escala.codigo,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PainelDica extends StatelessWidget {
   const _PainelDica({required this.texto});
 
@@ -788,19 +882,6 @@ class _PainelRetorno extends StatelessWidget {
                       height: 1.45,
                     ),
                   ),
-                  if (sessao.esqueleto != null) ...[
-                    const SizedBox(height: 10),
-                    // Monoespacada para os pontos alinharem com o que se digita.
-                    Text(
-                      sessao.esqueleto!,
-                      style: const TextStyle(
-                        color: Paleta.destaque,
-                        fontFamily: fonteMono,
-                        fontSize: Escala.alternativa,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),

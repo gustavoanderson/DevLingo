@@ -105,9 +105,12 @@ class SessaoQuestao {
   /// resposta e esvaziaria a eliminacao.
   String? recado;
 
-  /// A forma da resposta, com os nomes escondidos. Ultimo degrau antes de
-  /// revelar, so nas questoes de escrita. Fica separado do [recado] porque
-  /// precisa ser exibido em fonte monoespacada para os `·` alinharem.
+  /// A forma da resposta, com os nomes escondidos.
+  ///
+  /// **Nao e mais preenchido**, e o campo continua aqui por compatibilidade
+  /// com quem o leia. A forma passou a ser exibida desde o inicio da questao,
+  /// e nao como ultimo degrau antes de revelar: descobrir ONDE A RESPOSTA
+  /// TERMINA errando tres vezes e frustracao sem aprendizado.
   String? esqueleto;
 
   static List<Option> _embaralhar(List<Option>? opcoes, Random? sorteio) {
@@ -205,11 +208,13 @@ class SessaoQuestao {
         dicaAberta = true;
         recado = 'Ainda não. Abri a dica para ajudar.';
       case 3:
-        // Ultimo degrau: mostra a forma, esconde os nomes. Sintaxe e o que a
-        // questao ensina; os nomes o enunciado ja disse.
-        esqueleto = esqueletoDe(questao.accepted!.first);
+        // A forma da resposta ficava AQUI, no terceiro erro. Hoje ela e o
+        // molde exibido desde o comeco -- ver `_Molde` em tela_exercicio.dart
+        // --, entao repeti-la seria mostrar a mesma coisa duas vezes na tela.
+        // O recado passa a apontar para o que ja esta la.
         recado =
-            'Quase lá. A resposta tem esta forma, com as letras escondidas:';
+            'Quase lá. Compare o que você escreveu com o formato mostrado '
+            'acima do campo.';
       default:
         recado = 'Não é isso ainda. Leia o enunciado com calma e tente de novo.';
     }

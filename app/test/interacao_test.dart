@@ -530,6 +530,48 @@ void progressoNaTela() {
     });
   });
 
+  group('o molde da resposta', () {
+    // O Gustavo escreveu `if (saldo > 0) { console.log("...") }` numa questao
+    // que pedia so ate a chave de abertura. O codigo estava certo, e o app
+    // marcou errado -- o enunciado nao tinha como dizer ONDE PARAR. Descobrir
+    // isso errando e frustracao sem aprendizado.
+    testWidgets('aparece desde a primeira tentativa, sem entregar a resposta', (
+      tester,
+    ) async {
+      await montar(tester, licaoCom([_escrita]));
+
+      expect(find.byKey(const Key('molde-da-resposta')), findsOneWidget);
+      expect(
+        find.text('·····(····)'),
+        findsOneWidget,
+        reason: 'a forma mostra a estrutura e o tamanho, nao os nomes',
+      );
+      expect(
+        find.textContaining('print', findRichText: true),
+        findsNothing,
+        reason: 'o molde nao pode conter a resposta literal',
+      );
+    });
+
+    testWidgets('some quando a questao termina', (tester) async {
+      // Depois de acertar ou revelar, a resposta certa esta na tela: o molde
+      // vira ruido, e pior, um eco desbotado do que ja foi respondido.
+      await montar(tester, licaoCom([_escrita]));
+      await tester.enterText(find.byType(TextField), 'print(nome)');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('acao-verificar')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('retorno-acerto')), findsOneWidget);
+      expect(find.byKey(const Key('molde-da-resposta')), findsNothing);
+    });
+
+    testWidgets('nao aparece em questao de multipla escolha', (tester) async {
+      await montar(tester, licaoCom([_mc]));
+      expect(find.byKey(const Key('molde-da-resposta')), findsNothing);
+    });
+  });
+
   group('mutar sem sair da licao', () {
     Future<void> montarComProgresso(
       WidgetTester tester,

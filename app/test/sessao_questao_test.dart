@@ -234,19 +234,18 @@ void main() {
       expect(s.dicaAberta, isTrue);
     });
 
-    test('terceiro erro mostra a forma da resposta, sem revelar', () {
+    test('terceiro erro aponta para a forma, em vez de repeti-la', () {
+      // A forma ficava aqui, no terceiro erro. Hoje ela e o molde exibido
+      // desde o comeco da questao -- mostra-la de novo poria a mesma coisa
+      // duas vezes na tela. O recado passou a apontar para o que ja esta la.
       final s = SessaoQuestao(questaoEscrita);
       s.verificarEscrita('a');
       s.verificarEscrita('b');
       s.verificarEscrita('c');
 
       expect(s.fase, FaseResposta.respondendo);
-      expect(s.esqueleto, '·····(····)');
-      expect(
-        s.esqueleto,
-        isNot(contains('print')),
-        reason: 'a forma mostra a sintaxe e esconde os nomes',
-      );
+      expect(s.esqueleto, isNull, reason: 'nao se mostra a forma duas vezes');
+      expect(s.recado, contains('formato'));
       expect(s.respostaRevelada, isNull);
     });
 
@@ -262,12 +261,12 @@ void main() {
       expect(s.esqueleto, isNull, reason: 'a forma sai de cena quando a resposta aparece');
     });
 
-    test('acertar limpa a forma mostrada antes', () {
+    test('acertar limpa o recado dos erros anteriores', () {
       final s = SessaoQuestao(questaoEscrita);
       s.verificarEscrita('a');
       s.verificarEscrita('b');
       s.verificarEscrita('c');
-      expect(s.esqueleto, isNotNull);
+      expect(s.recado, isNotNull);
 
       s.verificarEscrita('print(nome)');
       expect(s.fase, FaseResposta.acertou);
