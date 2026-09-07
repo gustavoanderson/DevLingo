@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="docs/imagens/tronikat.png" width="150" alt="Tr∅nikAt, o mascote do DevLingo">
-
-# DevLingo
+<img src="docs/imagens/banner.png" width="820" alt="DevLingo — aprenda a programar">
 
 **Aprenda a programar no formato Duolingo — em português, do zero.**
 
