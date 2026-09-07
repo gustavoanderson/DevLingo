@@ -1,7 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/autenticacao.dart';
 import 'auth/autenticacao_falsa.dart';
+import 'auth/autenticacao_firebase.dart';
 import 'data/progresso.dart';
 import 'data/question_bank.dart';
 import 'ui/paleta.dart';
@@ -11,10 +13,34 @@ import 'ui/tela_linguagens.dart';
 import 'ui/tela_titulo.dart';
 import 'ui/tela_trilha.dart';
 
-void main() => runApp(const DevLingoApp());
+Future<void> main() async {
+  // Obrigatorio antes de qualquer chamada de plugin: o `Firebase.initializeApp`
+  // conversa com o lado nativo, e sem isto o canal ainda nao existe.
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Se o Firebase nao subir, o app NAO morre: ele cai na autenticacao em
+  // memoria e a tela avisa que esta em demonstracao.
+  //
+  // Isso e deliberado. A alternativa -- tela preta com stack trace -- puniria o
+  // usuario por um problema de configuracao que nao e dele. E, para o Gustavo,
+  // significa que clonar o repositorio sem o google-services.json continua
+  // dando um app que abre e joga.
+  var comFirebase = false;
+  try {
+    await Firebase.initializeApp();
+    comFirebase = true;
+  } on Object catch (erro) {
+    debugPrint('Firebase nao inicializou, seguindo em demonstracao: $erro');
+  }
+
+  runApp(DevLingoApp(comFirebase: comFirebase));
+}
 
 class DevLingoApp extends StatelessWidget {
-  const DevLingoApp({super.key});
+  const DevLingoApp({super.key, this.comFirebase = false});
+
+  /// Se o Firebase subiu. Falso deixa o app em modo de demonstracao.
+  final bool comFirebase;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +56,7 @@ class DevLingoApp extends StatelessWidget {
           surface: Paleta.fundo,
         ),
       ),
-      home: const _Carga(),
+      home: _Carga(comFirebase: comFirebase),
     );
   }
 }
@@ -44,7 +70,9 @@ class _Partida {
 
 /// Abre o banco de questoes e o progresso, e entrega a primeira tela.
 class _Carga extends StatefulWidget {
-  const _Carga();
+  const _Carga({required this.comFirebase});
+
+  final bool comFirebase;
 
   @override
   State<_Carga> createState() => _CargaState();
@@ -74,16 +102,17 @@ class _CargaState extends State<_Carga> {
   /// abertura, sem ninguém entender por quê.
   late Usuario? _usuario = _autenticacao.usuarioAtual;
 
-  /// AINDA E A IMPLEMENTACAO EM MEMORIA.
+  /// A de verdade quando o Firebase subiu; a em memoria quando nao.
   ///
-  /// O Firebase exige um `google-services.json` ligado a um projeto real, que
-  /// depende da conta Google do Gustavo. Ate ele existir, o app roda com a
-  /// autenticacao falsa, e a tela de entrada **avisa isso na cara** -- login de
-  /// mentira que nao se anuncia e pior que nenhum.
+  /// O resto do app nao percebe a diferenca, porque tudo depende da interface
+  /// [Autenticacao] -- e foi assim que as telas de login ficaram inteiras e
+  /// testadas antes de o `google-services.json` existir.
   ///
-  /// Ao trocar pela de verdade, mude esta linha e apague o `demonstracao: true`
-  /// mais abaixo. O resto do app nao muda, porque depende da interface.
-  late final Autenticacao _autenticacao = AutenticacaoFalsa();
+  /// Quando cai na de memoria, a tela de entrada **avisa na cara** que esta em
+  /// demonstracao: login de mentira que nao se anuncia e pior que nenhum.
+  late final Autenticacao _autenticacao = widget.comFirebase
+      ? AutenticacaoFirebase()
+      : AutenticacaoFalsa();
 
   /// A sineta le a preferencia do banco a cada toque, sem cache: assim o botao
   /// de desligar tem efeito imediato e nao ha duas copias do mesmo dado para

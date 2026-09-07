@@ -570,14 +570,48 @@ Os três modos — entrar, criar conta, recuperar senha — são **um formulári
 - **A recuperação NUNCA revela se a conta existe.** Responder "não achamos esse e-mail" entregaria a lista de quem tem conta. Um teste compara as duas respostas e exige que sejam idênticas
 - **O mínimo da senha aparece antes de a pessoa errar.** Regra escondida até a falha é regra mal comunicada
 
+### O Firebase está ligado
+
+Projeto **`devlingo-cc399`**, plano Spark (gratuito). Provado no emulador: conta criada de verdade, UID devolvido pelo servidor, e o app reabriu **sem pedir login** — a sessão em cache funciona, que era a promessa central do desenho.
+
+O `google-services.json` fica em `app/android/app/` e **não vai para o repositório** (`.gitignore`). Quem clonar o projeto sem ele **não fica sem app**: o `main.dart` tenta `Firebase.initializeApp()` dentro de um `try`, e ao falhar cai na `AutenticacaoFalsa` com o aviso de demonstração na tela. Tela preta com stack trace puniria quem não tem culpa da configuração.
+
+#### Três coisas que custaram tempo, e valem para a próxima vez
+
+**1. Criar o projeto não liga o Authentication.** O primeiro cadastro falhou com `CONFIGURATION_NOT_FOUND`, que significa que o serviço de autenticação nunca foi iniciado no projeto. Cada serviço do Firebase nasce desligado; o botão **"Começar"** na tela do Authentication é o que cria a configuração. Sem ele, o app fala com o servidor e não encontra serviço atrás da porta.
+
+**2. O menu do console mudou.** A documentação (e eu) dizia *Criação/Build → Authentication*. No console atual não existe "Criação": os produtos foram agrupados por tema, e Authentication está em **Segurança**. O caminho que não envelhece é a URL direta:
+
+```
+https://console.firebase.google.com/project/<id-do-projeto>/authentication
+```
+
+**3. O APK de debug com Firebase derruba o emulador.** Ele passou de ~110 MB para **155 MB**, e o `adb install` falhava com `Broken pipe (32)` ao chamar o serviço `package` — o `system_server` do emulador morria processando o pacote. O sintoma engana: parece problema de espaço (havia 9 GB livres) ou de assinatura.
+
+O que resolveu foi **desinstalar antes de instalar** e, quando o emulador já estava em estado ruim, reiniciá-lo. Compilar com `--target-platform android-x64` ajuda pouco (155,9 MB contra 163 MB): o peso é do runtime de debug, não das ABIs.
+
+**Desinstalar apaga o `devlingo.db`.** O progresso local se perde — foi o que aconteceu com as 10 questões de Python já respondidas. Em desenvolvimento é aceitável; ao testar migração de banco, não é.
+
+#### O log guarda o código cru do Firebase
+
+Descobrir o `CONFIGURATION_NOT_FOUND` exigiu filtrar o logcat do Android à mão, porque a tela dizia apenas *"algo deu errado ao falar com o servidor"* — correto para quem usa, inútil para quem desenvolve.
+
+`AutenticacaoFirebase._tentar` agora registra o código cru via `debugPrint`, com os casos que **não são culpa de quem digitou** documentados ali: `CONFIGURATION_NOT_FOUND`, `operation-not-allowed` e `api-key-not-valid`. A mensagem na tela continua em português e sem jargão.
+
+#### `invalid-credential` é ambíguo de propósito
+
+Em projetos novos o Firebase liga por padrão a proteção contra enumeração de e-mails, e passa a devolver `invalid-credential` no lugar de `wrong-password` e `user-not-found`. Ele **não diz** qual dos dois foi, justamente para não entregar quem tem conta.
+
+Por isso ele é traduzido para `credenciaisErradas`, cuja mensagem manda conferir os dois campos e oferece a recuperação. Mapeá-lo para "conta não encontrada" devolveria, na mensagem, a informação que o Firebase escondeu no código.
+
 ### O que ainda falta, e o que está bloqueado
 
-| Pendência | Quem destrava |
+| Pendência | Estado |
 |---|---|
-| Projeto no Firebase e `google-services.json` | **Só o Gustavo** — depende da conta Google dele |
-| Trocar `AutenticacaoFalsa` pela implementação real | Eu, depois do arquivo acima |
-| Sincronizar o progresso com o Firestore | Eu |
-| **O progresso ainda não é por usuário** | Eu, junto com o Firestore |
+| Projeto no Firebase e `google-services.json` | **feito** (`devlingo-cc399`) |
+| Trocar `AutenticacaoFalsa` pela implementação real | **feito** |
+| Sincronizar o progresso com o Firestore | falta |
+| **O progresso ainda não é por usuário** | falta, junto com o Firestore |
 
 A última é um **defeito real e conhecido**: o `devlingo.db` é único no aparelho e não tem coluna de usuário. Hoje, duas contas no mesmo celular veriam o mesmo progresso. Não foi resolvido agora porque a solução certa vem junto com a sincronização — e resolver pela metade duas vezes custa mais que resolver uma.
 
@@ -585,9 +619,9 @@ Combinado quando o Firebase entrar: **a primeira conta que autenticar no aparelh
 
 ### Modo de demonstração
 
-Enquanto o `google-services.json` não existir, o app roda com `AutenticacaoFalsa` e a tela **avisa isso na cara**, num painel amarelo. Login de mentira que não se anuncia é pior que nenhum: a pessoa cadastra um e-mail achando que tem conta e descobre depois que nunca houve conta nenhuma.
+Quando o Firebase **não sobe** — sem `google-services.json`, ou falha na inicialização — o app cai na `AutenticacaoFalsa` e a tela **avisa isso na cara**, num painel amarelo. Login de mentira que não se anuncia é pior que nenhum: a pessoa cadastra um e-mail achando que tem conta e descobre depois que nunca houve conta nenhuma.
 
-Ao ligar o Firebase, troque a linha em `main.dart` e o painel some sozinho — ele é acionado por `_autenticacao is AutenticacaoFalsa`.
+O painel é acionado por `_autenticacao is AutenticacaoFalsa`, então ele aparece e some sozinho conforme o Firebase esteja disponível. **O desaparecimento dele foi a primeira prova visual de que o Firebase tinha subido.**
 
 ---
 
@@ -634,7 +668,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **A** | Ambiente Flutter e Android, tudo no D: | **concluída e provada com APK compilado** |
 | **B** | **App mínimo jogável** | **próxima** |
 | C | Polimento visual: fundo parallax, mascote animado | depois |
-| D | Firebase: login e progresso na nuvem | **em andamento** — telas e testes prontos; falta o `google-services.json` |
+| D | Firebase: login e progresso na nuvem | **em andamento** — login funcionando de verdade; falta sincronizar o progresso no Firestore |
 | E | Python intermediário e avançado, depois JavaScript e Node | depois |
 
 **Etapa B, o escopo mínimo.** Nada além disto entra, porque o objetivo é chegar a algo jogável, não a algo completo:
@@ -660,6 +694,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **C8** | Cenário animado em parallax na tela de exercício | **concluída** |
 | **D1** | Telas de entrar, criar conta e recuperar senha | **concluída, em modo de demonstração** |
 | **D2** | Cena animada da tela de entrada | **concluída** |
+| **D3** | Firebase Auth de verdade, com conta criada e sessão persistida | **concluída** |
 
 **Combinado e ainda não feito:**
 

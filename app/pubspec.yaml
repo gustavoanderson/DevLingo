@@ -50,6 +50,8 @@ dependencies:
   # silhuetas que estao nos SVGs de assets/cenarios/, sem uma segunda copia da
   # geometria. Ver tools/gerar_faixas.py.
   path_parsing: ^1.1.0
+  firebase_core: ^4.14.0
+  firebase_auth: ^6.6.1
 
 dev_dependencies:
   flutter_test:
