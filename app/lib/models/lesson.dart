@@ -18,6 +18,15 @@ const Map<String, String> nomeDaLinguagem = {
   /// "JavaScript" ocupa ~156px e cabe justo, enquanto "Fundamentos de Backend"
   /// passaria de 340px e quebraria em tres linhas.
   'backend': 'Backend',
+
+  /// Engenharia de qualidade de software. Segundo curso que nao ensina uma
+  /// linguagem -- ver o comentario de `backend` acima sobre o campo `language`
+  /// identificar a TRILHA, e nao um idioma de programacao.
+  ///
+  /// "Qualidade" ocupa cerca de 140px na mono de 26px do cabecalho da trilha,
+  /// dentro dos ~204px disponiveis. "Engenharia de Qualidade" passaria de 340px
+  /// e quebraria a linha, pelo mesmo motivo que "Fundamentos de Backend".
+  'qa': 'Qualidade',
   'html': 'HTML',
   'css': 'CSS',
   'sql': 'SQL',

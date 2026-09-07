@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "language": "qa",
+  "level": "beginner",
+  "lessonId": "qa-beg-01",
+  "lessonTitle": "Qualidade e o papel de quem cuida dela",
+  "aula": {
+    "titulo": "O que é qualidade, e por que alguém é pago para garanti-la",
+    "secoes": [
+      {
+        "topico": "qualidade",
+        "titulo": "Qualidade é percebida, não declarada",
+        "texto": "A palavra vem do latim *qualis*, \"de que natureza\". As definições formais convergem: a **ISO** fala em atender necessidades declaradas **e implícitas**; o **ISTQB** fala em atender requisitos especificados **e expectativas** do usuário.\n\nRepare que as duas têm o mesmo par. Metade é objetiva — o que foi pedido por escrito. A outra metade não está escrita em lugar nenhum, e mesmo assim se espera.\n\nDaí a conclusão que orienta o ofício: **qualidade percebida é satisfação do cliente**. Um sistema pode cumprir cada linha da especificação e ainda ser considerado ruim, porque ninguém escreveu \"e precisa ser rápido\", ou \"e a mensagem de erro precisa dizer o que fazer\".\n\nÉ por isso que o trabalho não se resume a conferir a lista. Conferir a lista é parte; perceber o que a lista não diz é a outra."
+      },
+      {
+        "topico": "gq-cq",
+        "titulo": "Garantia e Controle: processo e produto",
+        "texto": "Dois termos que parecem sinônimos e não são. A diferença é **quando** e **sobre o quê** cada um age.\n\n**Garantia de Qualidade** olha para o **processo**, e acontece **durante** o trabalho. É auditoria, análise, ação preventiva. Pergunta: o jeito como estamos trabalhando produz qualidade?\n\n**Controle de Qualidade** olha para o **produto**, e acontece **depois** que algo ficou pronto. É inspeção, verificação da entrega. Pergunta: isto que ficou pronto está bom?\n\nA distinção tem consequência prática: um time que só faz Controle descobre problemas quando corrigi-los já é caro. É esse raciocínio que leva ao **shift-left**, que aparece mais adiante no curso — mover a qualidade para o começo, em vez de deixá-la como etapa final."
+      },
+      {
+        "topico": "custo",
+        "titulo": "O defeito fica mais caro a cada etapa",
+        "texto": "Esta é a justificativa econômica da profissão inteira, e vale entender o mecanismo, não só o número.\n\nUm defeito encontrado na fase de **requisitos** custa reescrever um parágrafo. O mesmo defeito encontrado em **produção** custa investigar o incidente, corrigir o código, testar de novo, publicar, comunicar quem foi afetado — e às vezes reparar o dano que ele já causou.\n\nA literatura estima que essa diferença pode chegar a **1000 vezes** o custo original. O número exato depende do contexto e é discutível; o que não é discutível é a direção da curva.\n\nO que está em jogo além do dinheiro: perda de confiança, exposição negativa, e em setores regulados, responsabilização legal. É por isso que qualidade se argumenta com números para quem decide orçamento."
+      },
+      {
+        "topico": "profissional",
+        "titulo": "O que um QA faz, além de testar",
+        "texto": "Existem muitos nomes para o cargo — analista de testes, engenheiro de qualidade, SDET, analista de automação —, e nenhum deles descreve o trabalho por completo.\n\nAs atribuições típicas incluem planejar testes e escrever roteiros, estimar esforço, **prevenir** defeitos propondo melhorias, desenvolver automação, avaliar riscos e participar das decisões do time.\n\nRepare no verbo *prevenir*. É a diferença entre alguém que recebe o produto pronto e aponta o que está errado, e alguém que participa desde a definição do requisito e evita que o erro exista. O segundo custa menos e vale mais.\n\nAs habilidades se dividem em duas famílias, e as duas contam. **Hard skills** são técnicas e mensuráveis: automação, banco de dados, metodologias, entendimento do negócio. **Soft skills** são comportamentais: pensamento crítico, questionamento, comunicação, resiliência.\n\nA de mais consequência é o **questionamento** — perguntar \"e se o usuário fizer isto?\" na reunião de refinamento é onde o defeito deixa de nascer."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "qa-beg-0101",
+      "topic": "qualidade",
+      "prompt": "Um sistema cumpre todos os requisitos escritos na especificação, mas os usuários reclamam que ele é confuso e lento. Segundo as definições de qualidade da ISO e do ISTQB, ele tem qualidade?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sim, porque a especificação foi cumprida integralmente",
+          "correct": false,
+          "why": "As duas definições incluem também o que não está escrito: necessidades implícitas e expectativas."
+        },
+        {
+          "id": "b",
+          "text": "Não, porque as definições incluem expectativas e necessidades implícitas, além do que foi especificado",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Sim, porque reclamação de usuário não é critério técnico",
+          "correct": false,
+          "why": "É critério central: qualidade percebida é satisfação do cliente."
+        },
+        {
+          "id": "d",
+          "text": "Não, porque nenhum sistema tem qualidade se houver reclamação",
+          "correct": false,
+          "why": "Exagero na direção oposta. Sempre haverá alguma reclamação; o ponto é o que ela revela."
+        },
+        {
+          "id": "e",
+          "text": "A pergunta não faz sentido: qualidade só existe em software sem defeitos",
+          "correct": false,
+          "why": "Software sem defeito nenhum não existe, e mesmo assim se fala em qualidade."
+        }
+      ],
+      "hint": "As duas definições formais têm um par: o que foi pedido, e mais alguma coisa. Qual é a segunda metade?",
+      "explanation": "As definições da ISO e do ISTQB incluem o que **não** está escrito: necessidades implícitas e expectativas. Ninguém escreve \"e precisa ser rápido\" na especificação, e mesmo assim se espera. Daí a conclusão que orienta o ofício: qualidade percebida é satisfação do cliente."
+    },
+    {
+      "id": "qa-beg-0102",
+      "topic": "gq-cq",
+      "prompt": "Qual é a diferença entre Garantia de Qualidade e Controle de Qualidade?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "São sinônimos, e cada empresa escolhe um termo",
+          "correct": false,
+          "why": "São coisas distintas, com momento e alvo diferentes."
+        },
+        {
+          "id": "b",
+          "text": "Garantia é automatizada e Controle é manual",
+          "correct": false,
+          "why": "A forma de executar não define nenhum dos dois."
+        },
+        {
+          "id": "c",
+          "text": "Garantia olha o processo e acontece durante o trabalho; Controle olha o produto e acontece depois",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Garantia é responsabilidade da equipe e Controle é do cliente",
+          "correct": false,
+          "why": "O Controle é responsabilidade da equipe; o cliente não faz nenhum dos dois."
+        },
+        {
+          "id": "e",
+          "text": "Controle vem antes de Garantia no ciclo de desenvolvimento",
+          "correct": false,
+          "why": "É o inverso: a Garantia acompanha o trabalho, e o Controle inspeciona o que ficou pronto."
+        }
+      ],
+      "hint": "Um dos dois pergunta se o jeito de trabalhar produz qualidade. O outro pergunta se a entrega está boa.",
+      "explanation": "Garantia age sobre o **processo**, durante o trabalho; Controle age sobre o **produto**, depois de pronto. A consequência prática é forte: um time que só faz Controle descobre problemas quando corrigi-los já ficou caro — e é esse raciocínio que leva ao shift-left."
+    },
+    {
+      "id": "qa-beg-0103",
+      "topic": "custo",
+      "prompt": "Por que um defeito encontrado em produção custa muito mais que o mesmo defeito encontrado na fase de requisitos?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque em produção o código é mais complexo de ler",
+          "correct": false,
+          "why": "É o mesmo código. O que mudou foi quanto trabalho já se apoiou nele."
+        },
+        {
+          "id": "b",
+          "text": "Porque as ferramentas de produção são mais caras",
+          "correct": false,
+          "why": "O custo não vem da ferramenta, e sim do retrabalho e do dano."
+        },
+        {
+          "id": "c",
+          "text": "Porque em produção não é mais possível corrigir",
+          "correct": false,
+          "why": "É possível corrigir. Só é caro."
+        },
+        {
+          "id": "d",
+          "text": "Porque nos requisitos basta reescrever um texto, e em produção há investigação, correção, novo teste, publicação e o dano já causado",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Porque em produção o defeito se multiplica sozinho",
+          "correct": false,
+          "why": "Ele não se multiplica; o que cresce é o custo de desfazer o que se construiu sobre ele."
+        }
+      ],
+      "hint": "Some tudo que precisa acontecer para corrigir em cada momento, e compare as duas listas.",
+      "explanation": "Nos requisitos, corrigir é reescrever um parágrafo. Em produção, é investigar o incidente, corrigir, testar de novo, publicar, comunicar os afetados e às vezes reparar o dano. A literatura estima até **1000 vezes** o custo original — o número é discutível, a direção da curva não é. Este é o argumento econômico da profissão."
+    },
+    {
+      "id": "qa-beg-0104",
+      "topic": "profissional",
+      "prompt": "Qual dessas atividades diferencia um QA que previne defeitos de um que apenas os encontra?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Executar a suíte de regressão antes de cada entrega",
+          "correct": false,
+          "why": "É trabalho necessário, mas acontece com o produto já construído."
+        },
+        {
+          "id": "b",
+          "text": "Escrever relatórios de bug mais detalhados",
+          "correct": false,
+          "why": "Melhora a correção de um defeito que já existe."
+        },
+        {
+          "id": "c",
+          "text": "Participar do refinamento e questionar o requisito antes de alguém programar",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Aumentar a cobertura de testes automatizados",
+          "correct": false,
+          "why": "Ajuda a encontrar mais cedo, mas ainda depois de o código existir."
+        },
+        {
+          "id": "e",
+          "text": "Testar em mais navegadores e dispositivos",
+          "correct": false,
+          "why": "Amplia a detecção, e não a prevenção."
+        }
+      ],
+      "hint": "Prevenir é agir antes de o defeito existir. Em que momento do ciclo isso é possível?",
+      "explanation": "Perguntar *\"e se o usuário fizer isto?\"* na reunião de refinamento é onde o defeito deixa de nascer. Todas as outras opções são valiosas, mas agem sobre algo que já foi construído. É essa diferença que separa receber o produto pronto de participar da definição dele."
+    },
+    {
+      "id": "qa-beg-0105",
+      "topic": "profissional",
+      "prompt": "Escreva a sigla, em duas letras, usada para nomear a área de garantia da qualidade de software.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "QA"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Vem do inglês Quality Assurance, e dá nome ao cargo e à trilha deste curso.",
+      "explanation": "QA, de Quality Assurance. Vale notar que a sigla nomeia a *garantia*, ligada ao processo — mesmo que na prática o cargo acumule também o controle, ligado ao produto. Muitos nomes convivem para a mesma função: analista de testes, engenheiro de qualidade, SDET."
+    },
+    {
+      "id": "qa-beg-0106",
+      "topic": "profissional",
+      "prompt": "Pensamento crítico, comunicação e resiliência pertencem a qual família de habilidades?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hard skills",
+          "correct": false,
+          "why": "Essas são as técnicas e mensuráveis: automação, banco de dados, metodologias."
+        },
+        {
+          "id": "b",
+          "text": "Nenhuma das duas: são traços de personalidade, não habilidades",
+          "correct": false,
+          "why": "São habilidades desenvolvíveis, e é por isso que entram em avaliação de desempenho."
+        },
+        {
+          "id": "c",
+          "text": "Soft skills",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Habilidades conceituais",
+          "correct": false,
+          "why": "Conceituais são o domínio teórico e metodológico do ofício."
+        },
+        {
+          "id": "e",
+          "text": "Habilidades interpessoais, que são o oposto de soft skills",
+          "correct": false,
+          "why": "Interpessoais sao parte dessa mesma familia, e nao o oposto dela."
+        }
+      ],
+      "hint": "Uma família é técnica e mensurável; a outra é comportamental.",
+      "explanation": "Soft skills são as comportamentais. Num QA elas não são acessório: **questionar** é o que faz um requisito ambíguo virar pergunta antes de virar defeito, e **comunicar** é o que faz um risco encontrado virar decisão do time em vez de reclamação ignorada."
+    },
+    {
+      "id": "qa-beg-0107",
+      "topic": "gq-cq",
+      "prompt": "Um time revisa o processo de code review para reduzir a chance de erros chegarem à branch principal. Isso é Garantia ou Controle de Qualidade?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Controle, porque examina código",
+          "correct": false,
+          "why": "O que está sendo mexido é a regra de trabalho, e não uma entrega específica."
+        },
+        {
+          "id": "b",
+          "text": "Nenhum dos dois: revisão de processo é assunto de gestão, não de qualidade",
+          "correct": false,
+          "why": "Gestão da Qualidade é justamente o guarda-chuva que contém os dois."
+        },
+        {
+          "id": "c",
+          "text": "Controle, porque acontece antes da entrega",
+          "correct": false,
+          "why": "O momento aqui não define: o alvo é o processo."
+        },
+        {
+          "id": "d",
+          "text": "Os dois ao mesmo tempo, já que toda revisão inspeciona algo",
+          "correct": false,
+          "why": "A distinção é justamente o alvo, e neste caso ele é único: o processo."
+        },
+        {
+          "id": "e",
+          "text": "Garantia, porque age sobre o processo de trabalho",
+          "correct": true
+        }
+      ],
+      "hint": "Pergunte o que está sendo melhorado: uma entrega específica, ou o jeito de produzir todas elas?",
+      "explanation": "Mudar como se revisa código melhora **o jeito de trabalhar**, e afeta tudo que vier depois — Garantia. Inspecionar uma entrega específica seria Controle. A mesma atividade pode virar uma ou outra conforme o alvo, e é por isso que a pergunta útil é sempre *processo ou produto?*"
+    },
+    {
+      "id": "qa-beg-0108",
+      "topic": "qualidade",
+      "prompt": "Complete a sigla do organismo internacional que padroniza a terminologia de testes de software.",
+      "code": {
+        "language": "text",
+        "content": "______: qualidade e o grau ate o qual um sistema\n        atende requisitos e expectativas do usuario",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "ISTQB"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Sao cinco letras, e vem de International Software Testing Qualifications Board.",
+      "explanation": "O ISTQB padroniza o vocabulario da area, e e dele que vem a certificacao CTFL. Repare que a definicao dele tem o mesmo par da ISO: o que foi **especificado**, e mais as **expectativas** de quem usa."
+    },
+    {
+      "id": "qa-beg-0109",
+      "topic": "custo",
+      "prompt": "Um gestor questiona o investimento em qualidade dizendo que testar atrasa a entrega. Qual argumento responde melhor a isso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que o tempo gasto agora evita um custo muito maior depois, e que esse custo cresce a cada etapa",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Que sem testes o software não funciona",
+          "correct": false,
+          "why": "Ele funciona; a questão é com quantos defeitos, e descobertos quando."
+        },
+        {
+          "id": "c",
+          "text": "Que testar é obrigatório por norma internacional",
+          "correct": false,
+          "why": "Existem normas, mas quase nenhuma empresa e obrigada a segui-las por lei."
+        },
+        {
+          "id": "d",
+          "text": "Que a equipe de desenvolvimento não tem competência para avaliar o próprio código",
+          "correct": false,
+          "why": "Além de falso, é o tipo de argumento que fecha a conversa em vez de abri-la."
+        },
+        {
+          "id": "e",
+          "text": "Que qualidade é responsabilidade exclusiva do QA, e não do gestor",
+          "correct": false,
+          "why": "É o oposto: a entrega é responsabilidade do time inteiro."
+        }
+      ],
+      "hint": "A objeção é sobre tempo e dinheiro. A resposta precisa ser sobre tempo e dinheiro.",
+      "explanation": "A objeção é econômica, então a resposta precisa ser econômica — e é aí que a curva de custo do defeito serve. Argumentar com \"é a boa prática\" perde a conversa; argumentar com o custo de um incidente em produção a ganha. Saber traduzir qualidade em dinheiro é parte do trabalho."
+    },
+    {
+      "id": "qa-beg-0110",
+      "topic": "qualidade",
+      "prompt": "Duas empresas entregam o mesmo software. Numa, os usuários adoram; na outra, reclamam. Como isso é possível, se o produto é idêntico?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Não é possível: produto idêntico tem qualidade idêntica",
+          "correct": false,
+          "why": "Isso valeria se qualidade fosse só a especificação cumprida."
+        },
+        {
+          "id": "b",
+          "text": "Porque a qualidade depende da expectativa de quem usa, e ela difere entre os dois públicos",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque uma das empresas escondeu os defeitos dos usuários",
+          "correct": false,
+          "why": "A explicação não precisa supor má-fé: a diferença de expectativa já basta."
+        },
+        {
+          "id": "d",
+          "text": "Porque a segunda empresa testou menos antes de entregar",
+          "correct": false,
+          "why": "O enunciado diz que o produto entregue é o mesmo."
+        },
+        {
+          "id": "e",
+          "text": "Porque qualidade é medida só por número de defeitos encontrados",
+          "correct": false,
+          "why": "Se fosse, os dois casos teriam o mesmo resultado."
+        }
+      ],
+      "hint": "Se qualidade percebida é satisfação, o que muda de um público para o outro?",
+      "explanation": "Qualidade é **subjetiva**, ligada a percepção e expectativa. O mesmo produto gera promotores num contexto e detratores em outro — o que muda é o que cada público esperava. Por isso entender o negócio e o usuário é hard skill de QA, e não conversa de produto."
+    }
+  ]
+}

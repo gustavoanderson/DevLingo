@@ -111,10 +111,32 @@ const Set<String> _termosBackend = {
   'token', 'tokens', 'webhook',
 };
 
+/// Vocabulario de engenharia de qualidade.
+///
+/// Siglas e termos ingleses do oficio. Duas exclusoes deliberadas, pela mesma
+/// razao de `cache` no lexico de backend -- viraram palavra portuguesa
+/// corrente e destaca-las faria o texto piscar:
+///
+/// - `teste` e `testes`, que aparecem em praticamente toda frase do curso
+/// - `bug`, que qualquer pessoa usa em portugues sem pensar duas vezes
+///
+/// `Dado`, `Quando` e `Entao` do Gherkin em portugues tambem ficam de fora: as
+/// duas primeiras sao palavras comuns, e a terceira leva til. Elas entram por
+/// crase quando forem os passos do cenario.
+const Set<String> _termosQa = {
+  'ACID', 'API', 'APIs', 'BDD', 'CI', 'CD', 'CQ', 'DoD', 'DoR', 'E2E',
+  'Gherkin', 'Given', 'ISTQB', 'Kanban', 'MVP', 'POM', 'QA', 'Scrum', 'TDD',
+  'Then', 'UI', 'GUI', 'WCAG', 'When', 'WIP', 'assert', 'backlog', 'burndown',
+  'defect', 'error', 'expect', 'failure', 'fixture', 'flaky', 'mock',
+  'regression', 'retest', 'shift-left', 'smoke', 'spy', 'sprint', 'stub',
+  'timebox',
+};
+
 Set<String> termosDe(String linguagem) => switch (linguagem) {
   'python' => _termosPython,
   'javascript' || 'node' => _termosJs,
   'backend' => _termosBackend,
+  'qa' => _termosQa,
   _ => const {},
 };
 
