@@ -1,0 +1,398 @@
+{
+  "schemaVersion": 1,
+  "language": "backend",
+  "level": "beginner",
+  "lessonId": "backend-beg-03",
+  "lessonTitle": "APIs e REST: recursos, JSON e os estilos",
+  "aula": {
+    "titulo": "Como um programa conversa com outro",
+    "secoes": [
+      {
+        "topico": "api",
+        "titulo": "Uma porta feita para programas",
+        "texto": "Até aqui o cliente era um navegador buscando uma página para uma pessoa ler. Mas do outro lado do pedido pode haver outro **programa** — e aí o servidor não precisa devolver uma página bonita, precisa devolver dados.\n\nÉ isso que se chama de API: uma porta desenhada para ser usada por código, e não por olhos. O aplicativo do seu celular, o site e um parceiro externo podem falar com a mesma API e montar telas completamente diferentes com os mesmos dados.\n\nA vantagem prática aparece quando muda alguma coisa. Se as regras moram no servidor, corrigir um cálculo errado é mexer num lugar só — e todos os clientes passam a ver o valor certo sem precisar atualizar nada.",
+        "code": {
+          "language": "javascript",
+          "content": "const resposta = await fetch(\"https://api.exemplo.com/livros/42\");\nconst livro = await resposta.json();\n\nconsole.log(livro.titulo);"
+        }
+      },
+      {
+        "topico": "json",
+        "titulo": "O formato em que os dados viajam",
+        "texto": "Os dados precisam virar texto para atravessar a rede, e o formato mais comum hoje é o JSON.\n\nEle tem só o essencial: pares de nome e valor entre chaves, listas entre colchetes, e quatro tipos de valor — texto, número, booleano e nulo. Nada de código, nada de comportamento. É dado puro.\n\nDuas regras que pegam quem está começando: **nome de campo vai sempre entre aspas duplas**, e não existe vírgula depois do último item. JSON é rígido de propósito — quanto menos variação o formato permite, menos chance de dois programas o entenderem de formas diferentes.\n\nO nome vem do JavaScript, mas ele não pertence a linguagem nenhuma: Python, Java e qualquer outra leem e escrevem JSON sem dificuldade.",
+        "code": {
+          "language": "json",
+          "content": "{\n  \"id\": 42,\n  \"titulo\": \"Ada e a maquina\",\n  \"disponivel\": true,\n  \"autores\": [\"Ada\", \"Charles\"]\n}"
+        }
+      },
+      {
+        "topico": "rest",
+        "titulo": "REST: endereço é substantivo, método é verbo",
+        "texto": "REST é a forma mais comum de organizar uma API, e a ideia central cabe numa frase: **o endereço nomeia uma coisa, e o método diz o que fazer com ela**.\n\nEntão o caminho é substantivo, no plural: `/livros`. E quem diz a ação é o verbo HTTP que a lição anterior apresentou. Não se escreve `/buscarLivros` nem `/criarLivro` — o `GET` e o `POST` já dizem isso.\n\nUma coleção e um item dentro dela têm endereços diferentes, e isso é o que torna a API previsível: quem entendeu `/livros` já sabe adivinhar `/autores`.\n\nHá uma segunda regra que costuma passar despercebida: **cada pedido carrega tudo que ele precisa**. O servidor não guarda a lembrança de quem você é entre uma chamada e outra, e por isso a credencial vai junto toda vez. É o que permite ter dez servidores atrás do mesmo endereço — qualquer um deles consegue atender, porque nenhum guarda contexto do anterior.",
+        "code": {
+          "language": "http",
+          "content": "GET    /livros       lista os livros\nPOST   /livros       cria um livro\nGET    /livros/42    busca o livro 42\nPUT    /livros/42    substitui o livro 42\nDELETE /livros/42    apaga o livro 42"
+        }
+      },
+      {
+        "topico": "estilos",
+        "titulo": "Os outros estilos, e a dor de cada um",
+        "texto": "REST com JSON é o caminho comum, mas não é o único. Cada alternativa nasceu de um incômodo específico, e conhecer o incômodo vale mais que decorar o nome.\n\n**GraphQL** nasceu de pedir demais ou de menos. Numa API REST, uma tela costuma precisar de três chamadas, ou de uma que devolve muito mais campo do que a tela usa. No GraphQL o cliente descreve exatamente o que quer, num pedido só.\n\n**gRPC** nasceu da conversa entre servidores, onde ninguém precisa ler o tráfego e velocidade importa. Ele não manda texto, manda binário — compacto e rápido, ao custo de você não conseguir simplesmente abrir e ler.\n\n**SOAP** é o mais antigo dos quatro, baseado em XML e bem mais cerimonioso. Você vai encontrá-lo em sistemas corporativos e bancários que existem há muito tempo.\n\nE existe o **OpenAPI**, que não é um estilo: é um jeito de *descrever* uma API REST num arquivo, para que ferramentas gerem documentação e código a partir dele.\n\nA regra para escolher não é qual é melhor — é qual dor você tem. Sem a dor, REST com JSON resolve, e é o que mais gente sabe manter."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "backend-beg-0301",
+      "topic": "api",
+      "prompt": "O que distingue uma API de uma página comum de site?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A API é sempre mais rápida que uma página",
+          "correct": false,
+          "why": "Velocidade depende do que se faz, não de ser API."
+        },
+        {
+          "id": "b",
+          "text": "A API foi feita para ser consumida por outro programa, e devolve dados em vez de tela",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "A API não usa HTTP",
+          "correct": false,
+          "why": "A grande maioria usa HTTP, exatamente como as páginas."
+        },
+        {
+          "id": "d",
+          "text": "A API não precisa de servidor",
+          "correct": false,
+          "why": "Precisa: alguém tem que atender o pedido."
+        },
+        {
+          "id": "e",
+          "text": "A API só funciona dentro da mesma empresa",
+          "correct": false,
+          "why": "Muitas são públicas, feitas justamente para quem está de fora."
+        }
+      ],
+      "hint": "Pense em quem está do outro lado lendo a resposta: uma pessoa ou um código?",
+      "explanation": "Uma API é uma porta desenhada para código, não para olhos. É o que permite que o aplicativo, o site e um parceiro externo montem telas diferentes com os mesmos dados — e que corrigir uma regra no servidor conserte todos eles de uma vez."
+    },
+    {
+      "id": "backend-beg-0302",
+      "topic": "json",
+      "prompt": "Este JSON tem um erro. Qual é?",
+      "code": {
+        "language": "json",
+        "content": "{\n  titulo: \"Ada e a maquina\",\n  \"paginas\": 320\n}",
+        "highlightLine": 2
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Números não podem aparecer em JSON",
+          "correct": false,
+          "why": "Número é um dos quatro tipos de valor que o JSON aceita."
+        },
+        {
+          "id": "b",
+          "text": "Falta ponto e vírgula no fim das linhas",
+          "correct": false,
+          "why": "JSON não usa ponto e vírgula. Ele separa itens com vírgula."
+        },
+        {
+          "id": "c",
+          "text": "Um JSON não pode ter mais de um campo",
+          "correct": false,
+          "why": "Pode ter quantos campos precisar."
+        },
+        {
+          "id": "d",
+          "text": "O nome do primeiro campo está sem aspas",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O texto deveria estar entre aspas simples",
+          "correct": false,
+          "why": "É o contrário: JSON exige aspas duplas, e recusa as simples."
+        }
+      ],
+      "hint": "Compare os dois campos com atenção. Um está escrito diferente do outro.",
+      "explanation": "Em JSON todo nome de campo vai entre aspas duplas, sem exceção. A rigidez é proposital: quanto menos variação o formato permite, menor a chance de dois programas o interpretarem de formas diferentes. JavaScript aceitaria essa escrita num objeto seu, mas JSON não é JavaScript."
+    },
+    {
+      "id": "backend-beg-0303",
+      "topic": "rest",
+      "prompt": "Numa API REST, qual desses endereços segue a convenção?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "/criarNovoLivro",
+          "correct": false,
+          "why": "A ação está no endereço. Quem diz a ação é o método."
+        },
+        {
+          "id": "b",
+          "text": "/api?acao=buscar&tipo=livro",
+          "correct": false,
+          "why": "Isso põe a ação num parâmetro, e nomeia uma operação em vez de uma coisa."
+        },
+        {
+          "id": "c",
+          "text": "/livros/42",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "/deletarLivro/42",
+          "correct": false,
+          "why": "Mesma questão: o verbo já vive no método do pedido, e não precisa ser repetido no caminho."
+        },
+        {
+          "id": "e",
+          "text": "/executar/listagemDeLivros",
+          "correct": false,
+          "why": "Nomeia um procedimento, e não um recurso."
+        }
+      ],
+      "hint": "O endereço nomeia uma coisa. Quem diz a ação já está em outro lugar do pedido.",
+      "explanation": "Em REST o caminho é substantivo e o método é o verbo: `GET /livros/42` busca, `DELETE /livros/42` apaga. É o que torna a API previsível — quem entendeu `/livros` consegue adivinhar `/autores` sem ler documentação."
+    },
+    {
+      "id": "backend-beg-0304",
+      "topic": "estilos",
+      "prompt": "Qual problema o GraphQL se propõe a resolver?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Deixar a conexão mais segura",
+          "correct": false,
+          "why": "Segurança de conexão é papel do HTTPS, independente do estilo."
+        },
+        {
+          "id": "b",
+          "text": "Substituir o HTTP por um protocolo próprio",
+          "correct": false,
+          "why": "Ele costuma trafegar sobre HTTP como os outros."
+        },
+        {
+          "id": "c",
+          "text": "Guardar os dados no lugar do banco de dados",
+          "correct": false,
+          "why": "Ele é uma forma de pedir dados, e não de armazená-los."
+        },
+        {
+          "id": "d",
+          "text": "Eliminar a necessidade de servidor",
+          "correct": false,
+          "why": "Continua havendo um servidor atendendo os pedidos."
+        },
+        {
+          "id": "e",
+          "text": "O cliente receber demais ou de menos, precisando de várias chamadas",
+          "correct": true
+        }
+      ],
+      "hint": "Pense numa tela que precisa de três chamadas REST, ou de uma que traz vinte campos para usar três.",
+      "explanation": "No GraphQL o cliente descreve exatamente os campos que quer, num pedido só. Isso resolve a chamada que traz demais e a tela que precisa de três chamadas. O custo é um servidor mais complexo — por isso a regra não é qual estilo é melhor, e sim qual dor você tem."
+    },
+    {
+      "id": "backend-beg-0305",
+      "topic": "estilos",
+      "prompt": "Qual desses NÃO é um estilo de API, mas sim uma forma de descrever uma?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "OpenAPI",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "REST",
+          "correct": false,
+          "why": "É um estilo de organizar a API em torno de recursos."
+        },
+        {
+          "id": "c",
+          "text": "GraphQL",
+          "correct": false,
+          "why": "É um estilo, com linguagem própria de consulta."
+        },
+        {
+          "id": "d",
+          "text": "gRPC",
+          "correct": false,
+          "why": "É um estilo, voltado a chamadas rápidas entre servidores."
+        },
+        {
+          "id": "e",
+          "text": "SOAP",
+          "correct": false,
+          "why": "É um estilo mais antigo, baseado em XML."
+        }
+      ],
+      "hint": "Um deles não define como a API conversa, e sim como você documenta o que ela faz.",
+      "explanation": "O OpenAPI é um arquivo que descreve uma API REST: quais caminhos existem, o que cada um recebe e devolve. A partir dele, ferramentas geram documentação navegável e até código de cliente — o que só é possível porque a descrição é formal, e não texto solto."
+    },
+    {
+      "id": "backend-beg-0306",
+      "topic": "rest",
+      "prompt": "Complete a linha para que a chamada busque o livro de número 42, seguindo a convenção REST.",
+      "code": {
+        "language": "javascript",
+        "content": "const r = await fetch(\"https://api.exemplo.com/______/42\");",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": ["livros"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o substantivo que nomeia a coleção, e em REST ele vai no plural.",
+      "explanation": "A coleção é `/livros` e o item é `/livros/42`. O plural não é capricho: ele deixa claro que o caminho nomeia um conjunto, e que o número depois seleciona um de dentro dele."
+    },
+    {
+      "id": "backend-beg-0307",
+      "topic": "json",
+      "prompt": "Escreva o nome do formato de dados mais usado em APIs hoje. São quatro letras maiúsculas.",
+      "answerType": "freeWrite",
+      "accepted": ["JSON"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Aparece na aula desta lição, e a sigla vem de JavaScript Object Notation.",
+      "explanation": "JSON. O nome vem do JavaScript, mas ele não pertence a linguagem nenhuma — Python, Java e praticamente qualquer outra leem e escrevem JSON sem dificuldade. É o que o torna bom para dois programas diferentes conversarem."
+    },
+    {
+      "id": "backend-beg-0308",
+      "topic": "rest",
+      "prompt": "Uma API REST tem dez servidores atendendo o mesmo endereço, e cada pedido pode cair em qualquer um deles. Por que isso funciona?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque os servidores conversam entre si a cada pedido para combinar a resposta",
+          "correct": false,
+          "why": "Isso existiria em outro desenho, e seria caro. Não é o que REST propõe."
+        },
+        {
+          "id": "b",
+          "text": "Porque cada pedido carrega tudo que o servidor precisa, e nenhum deles guarda o contexto do anterior",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque o DNS garante que o mesmo cliente sempre caia no mesmo servidor",
+          "correct": false,
+          "why": "Não há essa garantia, e o desenho justamente não depende dela."
+        },
+        {
+          "id": "d",
+          "text": "Porque o JSON é pequeno o suficiente para não pesar",
+          "correct": false,
+          "why": "Tamanho de resposta não tem relação com qual servidor atende."
+        },
+        {
+          "id": "e",
+          "text": "Porque REST só permite leitura, e leitura nunca dá conflito",
+          "correct": false,
+          "why": "REST cobre criação, alteração e remoção também."
+        }
+      ],
+      "hint": "É a regra que faz a credencial viajar junto em toda chamada, em vez de o servidor lembrar de você.",
+      "explanation": "Cada pedido é autossuficiente: o servidor não guarda lembrança de quem você é entre uma chamada e outra. Parece desperdício mandar a credencial toda vez, e é justamente o que permite pôr dez máquinas atrás do mesmo endereço — qualquer uma atende, porque nenhuma precisa do que aconteceu antes."
+    },
+    {
+      "id": "backend-beg-0309",
+      "topic": "estilos",
+      "prompt": "Dois servidores internos trocam milhares de mensagens por segundo entre si, e ninguém precisa ler esse tráfego a olho nu. Qual estilo foi desenhado para esse caso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "SOAP",
+          "correct": false,
+          "why": "Ele usa XML, que é ainda mais verboso que JSON — o oposto do que o caso pede."
+        },
+        {
+          "id": "b",
+          "text": "OpenAPI",
+          "correct": false,
+          "why": "Ele descreve APIs; não é um jeito de trafegar dados."
+        },
+        {
+          "id": "c",
+          "text": "gRPC",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "GraphQL",
+          "correct": false,
+          "why": "Ele resolve o cliente pedir demais ou de menos, e não a velocidade entre servidores."
+        },
+        {
+          "id": "e",
+          "text": "REST com JSON",
+          "correct": false,
+          "why": "Funciona, mas o texto ocupa mais espaço e custa mais para processar em volume alto."
+        }
+      ],
+      "hint": "O detalhe está em 'ninguém precisa ler': isso libera o formato de ser texto.",
+      "explanation": "O gRPC troca binário em vez de texto — mais compacto e mais rápido de processar. O preço é você não conseguir simplesmente abrir e ler a mensagem, o que atrapalha depuração. Por isso ele aparece entre servidores, e raramente na porta que o navegador acessa."
+    },
+    {
+      "id": "backend-beg-0310",
+      "topic": "api",
+      "prompt": "Uma empresa tem site, aplicativo de celular e um parceiro externo, todos usando a mesma API. Descobriram que o cálculo do frete estava errado. O que precisa mudar?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Só o servidor, e os três passam a ver o valor certo",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Os três clientes, cada um por conta própria",
+          "correct": false,
+          "why": "Seria assim se cada um fizesse o cálculo — que é exatamente o que a API evita."
+        },
+        {
+          "id": "c",
+          "text": "Só o aplicativo, porque celular calcula diferente",
+          "correct": false,
+          "why": "Não há razão para o cálculo depender do aparelho."
+        },
+        {
+          "id": "d",
+          "text": "O JSON, que precisa de um campo novo",
+          "correct": false,
+          "why": "O formato não é o problema: o valor calculado é que estava errado."
+        },
+        {
+          "id": "e",
+          "text": "O DNS, para apontar para o servidor corrigido",
+          "correct": false,
+          "why": "É o mesmo servidor, com o código corrigido. O endereço não muda."
+        }
+      ],
+      "hint": "Onde a regra de negócio mora, se os três clientes só pedem e mostram?",
+      "explanation": "Com a regra no servidor, corrigir é mexer num lugar só. O aplicativo nem precisa de atualização na loja — o que importa muito, porque atualização de app depende de o usuário aceitar. É a razão prática mais forte para regra de negócio não morar no cliente."
+    }
+  ]
+}

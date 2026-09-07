@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "language": "backend",
+  "level": "beginner",
+  "lessonId": "backend-beg-05",
+  "lessonTitle": "Quem é você: autenticação e segurança",
+  "aula": {
+    "titulo": "Provar quem você é, e o que pode fazer",
+    "secoes": [
+      {
+        "topico": "autenticacao",
+        "titulo": "Duas perguntas diferentes",
+        "texto": "Existem duas perguntas que costumam ser confundidas, e separá-las resolve metade da confusão sobre o assunto.\n\n**Autenticação** pergunta *quem é você*. É o login: você prova sua identidade, normalmente com senha.\n\n**Autorização** pergunta *o que você pode fazer*. Já se sabe quem você é; falta saber se você tem direito àquilo.\n\nA lição 02 já mostrou os dois códigos correspondentes: o `401` diz que a primeira pergunta não foi respondida, e o `403` diz que a segunda foi respondida com não. Um administrador e um usuário comum passam pela mesma autenticação e recebem autorizações diferentes.",
+        "code": {
+          "language": "http",
+          "content": "401  nao sei quem voce e        -> autenticacao\n403  sei, e voce nao pode      -> autorizacao"
+        }
+      },
+      {
+        "topico": "sessao-token",
+        "titulo": "Como o servidor lembra de você",
+        "texto": "A lição 03 disse que cada pedido carrega tudo que precisa, e que o servidor não guarda lembrança entre chamadas. Isso levanta uma pergunta: se ele esquece, como sabe que você já fez login?\n\nA resposta é que **você lembra por ele**. Ao entrar, o servidor devolve algo que prova quem você é, e o cliente reenvia isso a cada pedido seguinte.\n\nHá dois jeitos comuns. Na **sessão**, o servidor guarda os dados do seu login e te dá só um identificador; a cada pedido ele consulta aquilo pelo identificador. No **token**, a informação viaja dentro do próprio token, assinada — o servidor confere a assinatura e não precisa consultar nada.\n\nO token combina melhor com muitos servidores, porque qualquer um consegue conferir a assinatura sozinho. A sessão facilita revogar acesso na hora, porque basta apagar o registro do lado do servidor. É uma troca, não uma escolha óbvia.",
+        "code": {
+          "language": "http",
+          "content": "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+        }
+      },
+      {
+        "topico": "senhas",
+        "titulo": "Senha guardada é senha vazada",
+        "texto": "A regra mais importante desta lição: **nunca se guarda a senha**. Nem no banco, nem em log, nem em lugar nenhum.\n\nO que se guarda é o resultado de passar a senha por uma função de mão única — um **hash**. Dela não se volta: sabendo o resultado, não dá para descobrir a senha. No login, o servidor aplica a mesma função ao que você digitou e compara os resultados.\n\nA consequência é que **um sistema correto não sabe a sua senha**. Se um site te manda a senha antiga por e-mail, ele a guardou de forma recuperável — e um vazamento entrega todas de uma vez.\n\nE não é qualquer hash que serve. Os feitos para senha, como `bcrypt` e `scrypt`, são **propositalmente lentos**, para que testar bilhões de tentativas seja caro. Funções rápidas como `MD5` e `SHA` foram desenhadas para outro fim, e usá-las aqui é erro conhecido.",
+        "code": {
+          "language": "javascript",
+          "content": "// NUNCA\nawait banco.inserir(\"usuarios\", { senha: \"123456\" });\n\n// Assim\nconst hash = await bcrypt.hash(senha, 12);\nawait banco.inserir(\"usuarios\", { senha: hash });"
+        }
+      },
+      {
+        "topico": "seguranca-web",
+        "titulo": "O básico que evita o pior",
+        "texto": "Três proteções que aparecem em todo sistema, e o que cada uma resolve.\n\n**HTTPS** criptografa a conexão. Sem ele, tudo viaja legível para quem estiver no caminho — inclusive a senha e o token. É por isso que ele deixou de ser opcional.\n\n**CORS** é o navegador impedindo que um site qualquer chame a API de outro em nome do usuário logado. Ele não protege o servidor de programas em geral; protege *você* de um site malicioso aberto em outra aba.\n\nE a regra que atravessa tudo: **nunca confie no que vem do cliente**. Validação no navegador existe para dar retorno rápido a quem está preenchendo, e não para garantir nada — qualquer pessoa consegue mandar um pedido direto, sem passar pela sua tela. Toda validação que importa é refeita no servidor."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "backend-beg-0501",
+      "topic": "autenticacao",
+      "prompt": "Qual é a diferença entre autenticação e autorização?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Autenticação é no cliente e autorização é no servidor",
+          "correct": false,
+          "why": "As duas são decididas no servidor. A diferença é de pergunta, não de lugar."
+        },
+        {
+          "id": "b",
+          "text": "Autenticação responde quem você é; autorização responde o que você pode fazer",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "São sinônimos, e cada empresa usa um termo",
+          "correct": false,
+          "why": "São etapas distintas, e existem códigos de status diferentes para cada uma."
+        },
+        {
+          "id": "d",
+          "text": "Autenticação usa senha e autorização usa HTTPS",
+          "correct": false,
+          "why": "HTTPS protege a conexão, e não tem relação com decidir permissões."
+        },
+        {
+          "id": "e",
+          "text": "Autorização acontece antes da autenticação",
+          "correct": false,
+          "why": "Não dá para decidir o que alguém pode antes de saber quem é."
+        }
+      ],
+      "hint": "Uma delas é o login. A outra decide se você tem direito àquilo que pediu.",
+      "explanation": "Autenticação é identidade, autorização é permissão. Os códigos da lição 02 espelham as duas: `401` para identidade que falta, `403` para permissão que não existe. Um administrador e um usuário comum se autenticam igual e são autorizados diferente."
+    },
+    {
+      "id": "backend-beg-0502",
+      "topic": "senhas",
+      "prompt": "Como uma senha deve ser guardada no banco de dados?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Do jeito que o usuário digitou, para poder ser recuperada depois",
+          "correct": false,
+          "why": "Recuperável significa que um vazamento entrega todas as senhas prontas."
+        },
+        {
+          "id": "b",
+          "text": "Invertida, para dificultar a leitura",
+          "correct": false,
+          "why": "Inverter é reversível por qualquer pessoa em um segundo. Não protege nada."
+        },
+        {
+          "id": "c",
+          "text": "Não deve ser guardada: guarda-se o resultado de uma função de mão única",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Num arquivo separado do banco, com nome discreto",
+          "correct": false,
+          "why": "O lugar não muda o problema: continua sendo a senha guardada."
+        },
+        {
+          "id": "e",
+          "text": "Dentro do token, para o servidor conferir rápido",
+          "correct": false,
+          "why": "Isso espalharia a senha por toda requisição, piorando a situação."
+        }
+      ],
+      "hint": "A pergunta certa não é como guardar a senha, e sim se ela deve ser guardada.",
+      "explanation": "Guarda-se o hash: da saída não se volta à senha. É por isso que **um sistema correto não sabe a sua senha** — e um site que te manda a senha antiga por e-mail está anunciando que a guardou de forma recuperável."
+    },
+    {
+      "id": "backend-beg-0503",
+      "topic": "sessao-token",
+      "prompt": "Se o servidor não guarda lembrança entre um pedido e outro, como ele sabe que você já fez login?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pelo endereço IP, que identifica cada pessoa",
+          "correct": false,
+          "why": "Endereço IP é compartilhado e muda. Não identifica pessoa."
+        },
+        {
+          "id": "b",
+          "text": "Pelo DNS, que registra quem acessou",
+          "correct": false,
+          "why": "O DNS só traduz nomes em números; não registra quem é ninguém."
+        },
+        {
+          "id": "c",
+          "text": "Ele não sabe: é preciso digitar a senha em cada tela",
+          "correct": false,
+          "why": "Existe solução justamente para não precisar disso."
+        },
+        {
+          "id": "d",
+          "text": "O cliente reenvia, a cada pedido, uma prova que o servidor devolveu no login",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O navegador mantém a conexão aberta desde o login",
+          "correct": false,
+          "why": "A conexão termina a cada resposta. Não é ela que carrega a identidade."
+        }
+      ],
+      "hint": "Se o servidor esquece, alguém precisa lembrar por ele. Quem sobra?",
+      "explanation": "Você lembra por ele. O servidor devolve algo que prova sua identidade — sessão ou token — e o cliente reenvia a cada pedido. Parece desperdício, e é o que permite que qualquer um dos servidores atrás do mesmo endereço atenda a chamada."
+    },
+    {
+      "id": "backend-beg-0504",
+      "topic": "senhas",
+      "prompt": "Por que funções feitas para senha, como bcrypt, são propositalmente lentas?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Para dar tempo de o servidor consultar o banco",
+          "correct": false,
+          "why": "A lentidão não serve para coordenar nada com o banco."
+        },
+        {
+          "id": "b",
+          "text": "Porque foram escritas há muito tempo, quando os computadores eram lentos",
+          "correct": false,
+          "why": "A lentidão é escolha de projeto, e é ajustável para acompanhar hardware novo."
+        },
+        {
+          "id": "c",
+          "text": "Para que testar bilhões de tentativas fique caro demais para quem ataca",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Para reduzir o tamanho do resultado guardado",
+          "correct": false,
+          "why": "Tempo de cálculo e tamanho da saída são coisas independentes."
+        },
+        {
+          "id": "e",
+          "text": "Porque só assim o resultado fica impossível de reverter",
+          "correct": false,
+          "why": "A irreversibilidade vem do desenho da função, e não da lentidão."
+        }
+      ],
+      "hint": "Pense no lado de quem roubou o banco de dados e quer descobrir as senhas testando possibilidades.",
+      "explanation": "Se um vazamento acontecer, quem tem os hashes vai tentar adivinhar senhas testando em massa. Com uma função rápida, testar bilhões é viável; com uma lenta, o custo explode. É por isso que `MD5` e `SHA`, desenhados para serem rápidos, são erro conhecido neste uso."
+    },
+    {
+      "id": "backend-beg-0505",
+      "topic": "seguranca-web",
+      "prompt": "Um formulário valida no navegador que a idade seja maior que 18. Isso basta como garantia?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sim, porque o navegador impede o envio",
+          "correct": false,
+          "why": "Impede pelo formulário. Não impede um pedido montado por fora."
+        },
+        {
+          "id": "b",
+          "text": "Sim, desde que a conexão use HTTPS",
+          "correct": false,
+          "why": "HTTPS protege o conteúdo em trânsito, e não valida o que ele diz."
+        },
+        {
+          "id": "c",
+          "text": "Sim, porque o servidor confia no que o cliente já validou",
+          "correct": false,
+          "why": "Confiar no cliente e justamente o que nao se pode fazer."
+        },
+        {
+          "id": "d",
+          "text": "Não, porque JavaScript não sabe comparar números",
+          "correct": false,
+          "why": "Sabe perfeitamente. A questão não é capacidade da linguagem."
+        },
+        {
+          "id": "e",
+          "text": "Não, porque qualquer pessoa pode mandar um pedido direto, sem passar pela tela",
+          "correct": true
+        }
+      ],
+      "hint": "A tela é uma das formas de chegar ao servidor. É a única?",
+      "explanation": "Validação no cliente serve para dar retorno rápido a quem preenche, e só isso. Qualquer pessoa consegue chamar a API direto, sem sua tela no caminho. **Toda validação que importa é refeita no servidor** — a do navegador é conveniência, não garantia."
+    },
+    {
+      "id": "backend-beg-0506",
+      "topic": "sessao-token",
+      "prompt": "Complete o cabeçalho para enviar o token de autenticação no formato mais comum.",
+      "code": {
+        "language": "http",
+        "content": "______: Bearer eyJhbGciOiJIUzI1NiJ9",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "Authorization"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o cabeçalho da lição 02 que carrega a credencial de quem faz o pedido.",
+      "explanation": "O `Authorization` carrega a credencial, e a palavra `Bearer` antes do valor indica o tipo. Ele vai em cabeçalho, e não na URL, porque endereços aparecem em histórico e em log de servidor — e credencial em log é vazamento."
+    },
+    {
+      "id": "backend-beg-0507",
+      "topic": "senhas",
+      "prompt": "Escreva o nome da funcao de hash lenta, feita para senhas, que aparece na aula desta licao.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "bcrypt"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Comeca com a letra b e tem seis letras. E uma das duas citadas como adequadas para senha, ao contrario das rapidas.",
+      "explanation": "O `bcrypt` e propositalmente lento, para tornar caro testar bilhoes de tentativas. Ele tambem tem um custo ajustavel: da para aumenta-lo conforme os computadores ficam mais rapidos, sem trocar de funcao."
+    },
+    {
+      "id": "backend-beg-0508",
+      "topic": "sessao-token",
+      "prompt": "Uma empresa precisa revogar o acesso de um funcionário demitido imediatamente, mesmo que ele já esteja logado. O que facilita isso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sessão guardada no servidor, porque basta apagar o registro",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Token assinado, porque ele expira instantaneamente ao ser revogado",
+          "correct": false,
+          "why": "Um token assinado continua válido até expirar sozinho; é justamente o custo desse modelo."
+        },
+        {
+          "id": "c",
+          "text": "HTTPS, que interrompe conexões não autorizadas",
+          "correct": false,
+          "why": "Ele criptografa o transporte, e não decide quem pode entrar."
+        },
+        {
+          "id": "d",
+          "text": "Trocar o DNS para outro servidor",
+          "correct": false,
+          "why": "Afetaria todo mundo, e não resolveria o acesso de uma pessoa."
+        },
+        {
+          "id": "e",
+          "text": "Nada: acesso concedido nunca pode ser revogado",
+          "correct": false,
+          "why": "Pode. A questão é o quanto o desenho escolhido facilita isso."
+        }
+      ],
+      "hint": "Num dos dois modelos o servidor tem um registro para apagar. No outro, a prova viaja com o cliente.",
+      "explanation": "Com sessão, apagar o registro derruba o acesso na hora. Com token assinado, ele vale até expirar, e revogar antes exige uma lista de bloqueio — que reintroduz a consulta ao servidor que o token queria evitar. É a troca do modelo: escala mais fácil, revoga com mais dificuldade."
+    },
+    {
+      "id": "backend-beg-0509",
+      "topic": "autenticacao",
+      "prompt": "Um usuário logado tenta apagar o post de outra pessoa e recebe 403. O que isso significa?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que o login dele expirou",
+          "correct": false,
+          "why": "Login expirado é o outro código, o que diz que não se sabe quem ele é."
+        },
+        {
+          "id": "b",
+          "text": "Que o post não existe",
+          "correct": false,
+          "why": "Isso seria 404. Aqui o problema é permissão, não existência."
+        },
+        {
+          "id": "c",
+          "text": "Que o servidor falhou ao processar",
+          "correct": false,
+          "why": "Falha do servidor é a família 5xx."
+        },
+        {
+          "id": "d",
+          "text": "Que o sistema sabe quem ele é, e ele não tem direito a essa ação",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Que ele precisa fazer login novamente",
+          "correct": false,
+          "why": "Fazer login de novo não daria a permissão que falta."
+        }
+      ],
+      "hint": "Duas perguntas, dois códigos. Este é o da segunda pergunta.",
+      "explanation": "A autenticação passou — o sistema sabe quem ele é. A autorização é que negou. Devolver o código errado aqui teria custo prático: um `401` faria o cliente tentar autenticar de novo, sem nunca resolver, porque o problema nunca foi identidade."
+    },
+    {
+      "id": "backend-beg-0510",
+      "topic": "seguranca-web",
+      "prompt": "Um site malicioso aberto em outra aba tenta chamar a API do seu banco usando o login que já está ativo no navegador. Qual mecanismo existe para barrar isso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O hash da senha",
+          "correct": false,
+          "why": "Ele protege senhas guardadas, e não chamadas feitas por outra aba."
+        },
+        {
+          "id": "b",
+          "text": "O status 404",
+          "correct": false,
+          "why": "É uma resposta possível, e não um mecanismo de proteção."
+        },
+        {
+          "id": "c",
+          "text": "O CORS",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O DNS",
+          "correct": false,
+          "why": "Ele traduz nomes em endereços, e não decide quem pode chamar quem."
+        },
+        {
+          "id": "e",
+          "text": "O JSON",
+          "correct": false,
+          "why": "É um formato de dados, sem papel de proteção."
+        }
+      ],
+      "hint": "É a regra que o navegador aplica quando um site tenta falar com outro domínio.",
+      "explanation": "O CORS é o navegador barrando que um site chame a API de outro em nome de quem está logado. Vale entender o limite: ele **não** protege o servidor de programas em geral — qualquer pessoa chama a API direto, sem navegador. Ele protege *o usuário* de uma aba maliciosa."
+    }
+  ]
+}

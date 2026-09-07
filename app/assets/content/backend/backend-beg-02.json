@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "language": "backend",
+  "level": "beginner",
+  "lessonId": "backend-beg-02",
+  "lessonTitle": "HTTP por dentro: métodos, status e cabeçalhos",
+  "aula": {
+    "titulo": "A língua que cliente e servidor falam",
+    "secoes": [
+      {
+        "topico": "metodos",
+        "titulo": "O verbo diz a intenção",
+        "texto": "Toda requisição carrega um **método**, que é o verbo do pedido. Ele não muda para onde você está indo — isso é o caminho — e sim o que você quer fazer lá.\n\nOs quatro do dia a dia: `GET` busca, `POST` cria, `PUT` substitui, `DELETE` apaga. Existe também o `PATCH`, que altera só um pedaço em vez de trocar o item inteiro.\n\nO mesmo endereço aceita métodos diferentes, e responde coisas diferentes para cada um. `/livros` com `GET` devolve a lista; `/livros` com `POST` cria um livro novo. É a mesma porta, com pedidos distintos.\n\nUma diferença importante: `GET` só lê. Ele não deve mudar nada no servidor, e é por isso que o navegador se sente livre para repeti-lo — ao recarregar a página, ao voltar, ao guardar uma cópia. Um `GET` que apaga alguma coisa quebra essa expectativa e produz estrago silencioso.",
+        "code": {
+          "language": "javascript",
+          "content": "await fetch(\"/livros\");                       // GET: busca a lista\nawait fetch(\"/livros\", { method: \"POST\" });   // POST: cria um livro"
+        }
+      },
+      {
+        "topico": "status",
+        "titulo": "O número que resume o que houve",
+        "texto": "Toda resposta começa com um **status**, um número de três dígitos. Ele existe para o cliente entender o resultado sem precisar ler o conteúdo.\n\nO primeiro dígito dá a família, e decorar as cinco vale mais que decorar códigos soltos:\n\n**2xx** deu certo. **3xx** mudou de lugar, procure em outro endereço. **4xx** o pedido está errado — a culpa é de quem pediu. **5xx** o servidor quebrou — a culpa é dele.\n\nEssa divisão entre 4 e 5 não é burocracia. Ela responde uma pergunta cara na hora de resolver problema: adianta tentar de novo? Num 5xx talvez sim, porque o servidor pode se recuperar. Num 4xx não, porque repetir o mesmo pedido errado dá o mesmo erro.\n\nOs mais comuns: `200` deu certo, `201` criado, `404` não existe, `401` você não se identificou, `403` você se identificou mas não pode, `500` o servidor quebrou.",
+        "code": {
+          "language": "http",
+          "content": "200  deu certo\n201  criado\n404  nao existe\n401  quem e voce?\n403  sei quem voce e, e nao pode\n500  o servidor quebrou"
+        }
+      },
+      {
+        "topico": "cabecalhos",
+        "titulo": "Informação sobre o pedido, ao lado dele",
+        "texto": "A lição anterior separou o **corpo** — o conteúdo — daquilo que se diz *sobre* o conteúdo. Essa segunda parte viaja nos **cabeçalhos**, e eles existem nos dois sentidos: o cliente manda os dele, o servidor manda os dele.\n\nSão pares de nome e valor. O cliente costuma dizer o que aceita receber e quem ele é; o servidor costuma dizer o que está mandando e por quanto tempo aquilo vale.\n\nTrês que você vai encontrar sempre: `Content-Type` diz o formato do corpo, para o cliente saber se aquilo é JSON, HTML ou imagem. `Authorization` carrega a credencial de quem está pedindo. E os cabeçalhos de cache dizem se a resposta pode ser guardada e reaproveitada.\n\nRepare que o `Content-Type` é o que impede o cliente de ter que adivinhar. Sem ele, os mesmos bytes poderiam ser lidos de várias formas — e adivinhação em protocolo é fonte de falha de segurança.",
+        "code": {
+          "language": "http",
+          "content": "Content-Type: application/json\nAuthorization: Bearer abc123\nCache-Control: max-age=60"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "backend-beg-0201",
+      "topic": "metodos",
+      "prompt": "Qual método HTTP se usa para apenas buscar uma informação, sem alterar nada?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "POST",
+          "correct": false,
+          "why": "POST é para criar algo novo, e portanto altera o servidor."
+        },
+        {
+          "id": "b",
+          "text": "GET",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "DELETE",
+          "correct": false,
+          "why": "DELETE apaga, que é a alteração mais destrutiva das quatro."
+        },
+        {
+          "id": "d",
+          "text": "PUT",
+          "correct": false,
+          "why": "PUT substitui o conteúdo do item, e portanto altera."
+        },
+        {
+          "id": "e",
+          "text": "PATCH",
+          "correct": false,
+          "why": "PATCH altera um pedaço do item. Menos que PUT, mas ainda altera."
+        }
+      ],
+      "hint": "É o método que o navegador usa toda vez que você digita um endereço e aperta enter.",
+      "explanation": "`GET` só lê. É por isso que o navegador se sente livre para repetir um `GET` — ao recarregar, ao voltar, ao guardar cópia. Um `GET` que altera o servidor quebra essa expectativa e causa estrago silencioso, porque ninguém espera que ler mude alguma coisa."
+    },
+    {
+      "id": "backend-beg-0202",
+      "topic": "status",
+      "prompt": "Uma resposta voltou com status 500. De quem é o problema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Do cliente, que montou o pedido errado",
+          "correct": false,
+          "why": "Pedido errado do cliente é a família 4xx."
+        },
+        {
+          "id": "b",
+          "text": "Do DNS, que resolveu o nome errado",
+          "correct": false,
+          "why": "Erro de DNS impede a conexão; não chega a existir status de resposta."
+        },
+        {
+          "id": "c",
+          "text": "De ninguém: 500 significa que deu tudo certo",
+          "correct": false,
+          "why": "Sucesso é a família 2xx. O 5xx é a família de falha."
+        },
+        {
+          "id": "d",
+          "text": "Do servidor, que falhou ao processar",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Da conexão, que caiu no meio",
+          "correct": false,
+          "why": "Conexão caída não produz resposta nenhuma, e status é parte da resposta."
+        }
+      ],
+      "hint": "O primeiro dígito dá a família. Existem duas famílias de erro, e elas se distinguem justamente por de quem é a culpa.",
+      "explanation": "A família 5xx diz que o servidor falhou. Essa distinção em relação ao 4xx responde uma pergunta prática: adianta tentar de novo? Num 5xx talvez sim, porque o servidor pode se recuperar. Num 4xx não, porque repetir o mesmo pedido errado dá o mesmo erro."
+    },
+    {
+      "id": "backend-beg-0203",
+      "topic": "status",
+      "prompt": "Escreva o código de status, com três dígitos, que significa que o recurso pedido não foi encontrado.",
+      "answerType": "freeWrite",
+      "accepted": ["404"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o número mais famoso da web, e aparece naquelas páginas de erro com desenho engraçado.",
+      "explanation": "O `404` é da família 4xx: o pedido está errado, e neste caso porque o caminho não corresponde a nada. Repare que é diferente de um `500` — o servidor está funcionando perfeitamente e respondendo direito, ele só não tem o que você pediu."
+    },
+    {
+      "id": "backend-beg-0204",
+      "topic": "cabecalhos",
+      "prompt": "Para que serve o cabeçalho Content-Type?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dizer o formato do corpo, como JSON ou HTML",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Dizer o tamanho do conteúdo em bytes",
+          "correct": false,
+          "why": "Tamanho existe, mas em outro cabeçalho. Este diz o formato."
+        },
+        {
+          "id": "c",
+          "text": "Identificar quem está fazendo o pedido",
+          "correct": false,
+          "why": "Identificação viaja no Authorization."
+        },
+        {
+          "id": "d",
+          "text": "Definir por quanto tempo a resposta pode ser guardada",
+          "correct": false,
+          "why": "Isso é assunto dos cabeçalhos de cache."
+        },
+        {
+          "id": "e",
+          "text": "Escolher qual método HTTP será usado",
+          "correct": false,
+          "why": "O método faz parte da requisição em si, e não de um cabeçalho."
+        }
+      ],
+      "hint": "Sem ele, o cliente receberia bytes e teria que adivinhar como interpretá-los.",
+      "explanation": "O `Content-Type` diz se aquilo é JSON, HTML, imagem ou outra coisa. Sem ele o cliente precisaria adivinhar, e adivinhação em protocolo é fonte conhecida de falha de segurança — bytes lidos como o formato errado já causaram problema sério na web."
+    },
+    {
+      "id": "backend-beg-0205",
+      "topic": "metodos",
+      "prompt": "Complete a chamada para que ela crie um livro novo, em vez de apenas buscar a lista.",
+      "code": {
+        "language": "javascript",
+        "content": "await fetch(\"/livros\", {\n  method: \"______\",\n  body: JSON.stringify({ titulo: \"Ada\" })\n});",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": ["POST"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o verbo de criar. São quatro letras, e ele manda conteúdo junto, no corpo.",
+      "explanation": "O mesmo endereço `/livros` responde coisas diferentes conforme o método: com `GET` devolve a lista, com `POST` cria um item novo. É a mesma porta, com pedidos distintos — e é por isso que o verbo importa tanto quanto o caminho."
+    },
+    {
+      "id": "backend-beg-0206",
+      "topic": "status",
+      "prompt": "Um sistema devolveu 401 para um pedido, e 403 para outro. Qual é a diferença entre os dois?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O 401 é erro do servidor e o 403 é erro do cliente",
+          "correct": false,
+          "why": "Os dois começam com 4, então os dois são erro de quem pediu."
+        },
+        {
+          "id": "b",
+          "text": "São sinônimos, e cada servidor escolhe um",
+          "correct": false,
+          "why": "Eles dizem coisas diferentes, e trocá-los confunde quem consome a API."
+        },
+        {
+          "id": "c",
+          "text": "No 401 você não se identificou; no 403 você se identificou e mesmo assim não pode",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O 401 é temporário e o 403 é permanente",
+          "correct": false,
+          "why": "Nenhum dos dois fala de duração. Os dois podem mudar conforme a permissão."
+        },
+        {
+          "id": "e",
+          "text": "O 401 vem antes do pedido e o 403 vem depois",
+          "correct": false,
+          "why": "Os dois são status de resposta, e portanto vêm depois do pedido."
+        }
+      ],
+      "hint": "Um deles é sobre quem você é. O outro é sobre o que você tem direito de fazer.",
+      "explanation": "São duas perguntas diferentes: o `401` diz *não sei quem você é*, e o `403` diz *sei quem você é, e você não pode*. Trocar um pelo outro faz o cliente tentar se autenticar de novo quando o problema era permissão, ou desistir quando bastava fazer login."
+    },
+    {
+      "id": "backend-beg-0207",
+      "topic": "cabecalhos",
+      "prompt": "Qual cabeçalho carrega a credencial de quem está fazendo o pedido?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Content-Type",
+          "correct": false,
+          "why": "Ele diz o formato do corpo, e não quem está pedindo."
+        },
+        {
+          "id": "b",
+          "text": "Cache-Control",
+          "correct": false,
+          "why": "Ele trata de guardar e reaproveitar a resposta."
+        },
+        {
+          "id": "c",
+          "text": "Host",
+          "correct": false,
+          "why": "Ele diz para qual servidor o pedido é, e não quem o faz."
+        },
+        {
+          "id": "d",
+          "text": "Accept",
+          "correct": false,
+          "why": "Ele diz que formatos o cliente aceita receber de volta."
+        },
+        {
+          "id": "e",
+          "text": "Authorization",
+          "correct": true
+        }
+      ],
+      "hint": "O nome é quase literal, e vem em inglês.",
+      "explanation": "O `Authorization` carrega a credencial — normalmente um token. Ele viaja em cabeçalho, e não no corpo ou na URL, por um motivo prático: endereços aparecem em histórico e em log de servidor, e credencial em log é vazamento."
+    },
+    {
+      "id": "backend-beg-0208",
+      "topic": "metodos",
+      "prompt": "Um site coloca o botão de excluir conta num link comum, que o navegador acessa com GET. Qual é o problema disso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nenhum: o método é só uma convenção e não muda nada",
+          "correct": false,
+          "why": "É convenção, mas navegadores e intermediários agem com base nela."
+        },
+        {
+          "id": "b",
+          "text": "O GET não consegue enviar dados suficientes",
+          "correct": false,
+          "why": "O problema não é capacidade. O pedido funcionaria."
+        },
+        {
+          "id": "c",
+          "text": "GET seria lento demais para essa operação",
+          "correct": false,
+          "why": "Desempenho não é a questão aqui."
+        },
+        {
+          "id": "d",
+          "text": "Coisas que repetem um GET, como recarregar ou pré-carregar links, poderiam apagar a conta sem ninguém pedir",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "GET não pode ser usado em links, só em formulários",
+          "correct": false,
+          "why": "É exatamente o contrário: link comum usa GET."
+        }
+      ],
+      "hint": "Volte à regra: por que o navegador se sente livre para repetir um GET?",
+      "explanation": "Tudo na web trata `GET` como seguro de repetir: recarregar, voltar, pré-carregar links, guardar cópia. Uma operação destrutiva atrás de `GET` pode acontecer sem ninguém ter clicado — e já aconteceu de verdade, com ferramentas que pré-carregavam links apagando dados de sistemas inteiros."
+    },
+    {
+      "id": "backend-beg-0209",
+      "topic": "status",
+      "prompt": "Um POST criou o recurso com sucesso. Qual status é o mais adequado para essa resposta?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "200",
+          "correct": false,
+          "why": "Funciona e é aceito, mas existe um código específico que diz mais: que algo passou a existir."
+        },
+        {
+          "id": "b",
+          "text": "404",
+          "correct": false,
+          "why": "É erro, e diz que não encontrou. Nada a ver com criar."
+        },
+        {
+          "id": "c",
+          "text": "500",
+          "correct": false,
+          "why": "É falha do servidor. Aqui deu certo."
+        },
+        {
+          "id": "d",
+          "text": "301",
+          "correct": false,
+          "why": "A família 3xx diz que mudou de lugar, e não que criou."
+        },
+        {
+          "id": "e",
+          "text": "201",
+          "correct": true
+        }
+      ],
+      "hint": "Continua sendo da família de sucesso, mas é mais específico que o número redondo.",
+      "explanation": "O `201` diz *criado*: além de ter dado certo, algo passou a existir. O `200` não estaria errado, mas o `201` carrega mais informação — e por convenção vem acompanhado do endereço do que foi criado, para o cliente saber onde encontrá-lo."
+    },
+    {
+      "id": "backend-beg-0210",
+      "topic": "cabecalhos",
+      "prompt": "Escreva o nome do cabeçalho que diz o formato do corpo da resposta. Ele tem duas palavras unidas por hífen.",
+      "answerType": "freeWrite",
+      "accepted": ["Content-Type"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "A primeira palavra é conteúdo em inglês, a segunda é tipo. Aparece na aula desta lição.",
+      "explanation": "O `Content-Type` diz se o corpo é `application/json`, `text/html`, uma imagem ou outra coisa. Nomes de cabeçalho não diferenciam maiúscula de minúscula no HTTP, mas a convenção de escrever assim, com as iniciais em maiúscula, é quase universal."
+    }
+  ]
+}

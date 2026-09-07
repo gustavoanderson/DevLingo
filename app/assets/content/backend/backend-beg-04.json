@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "language": "backend",
+  "level": "beginner",
+  "lessonId": "backend-beg-04",
+  "lessonTitle": "Onde os dados moram: bancos e consultas",
+  "aula": {
+    "titulo": "Guardar para poder responder depois",
+    "secoes": [
+      {
+        "topico": "persistencia",
+        "titulo": "Memória some, banco fica",
+        "texto": "Um servidor guarda coisas na memória enquanto está rodando. Só que reiniciar apaga tudo, e servidor reinicia — por atualização, por falha, por manutenção.\n\nPor isso os dados que precisam sobreviver moram num **banco de dados**: um programa separado, especializado em guardar e devolver informação sem perdê-la.\n\nSão dois programas diferentes, e às vezes em máquinas diferentes. Isso tem uma consequência que vale guardar: **falar com o banco custa uma ida e volta**, do mesmo jeito que falar com uma API. Boa parte do que se aprende sobre desempenho vem de reduzir o número dessas idas.",
+        "code": {
+          "language": "javascript",
+          "content": "// Some quando o servidor reinicia\nconst usuarios = [];\n\n// Sobrevive, porque mora em outro lugar\nawait banco.inserir(\"usuarios\", { nome: \"Ada\" });"
+        }
+      },
+      {
+        "topico": "modelos",
+        "titulo": "Relacional e NoSQL",
+        "texto": "Bancos **relacionais** guardam dados em tabelas, com colunas fixas — como uma planilha bem disciplinada. Toda linha tem as mesmas colunas, e o banco recusa o que não se encaixa.\n\nEssa rigidez é a vantagem: se o formato está declarado, o banco impede que entre lixo. E como as tabelas se relacionam por identificadores, dá para combinar informação de várias delas numa consulta só.\n\nBancos **NoSQL** relaxam isso. Cada registro pode ter campos diferentes, e o formato não precisa ser declarado antes. Ganha-se liberdade para mudar, perde-se a garantia de que tudo está no mesmo formato — o que era responsabilidade do banco vira responsabilidade do seu código.\n\nNão existe o melhor dos dois em abstrato. Existe qual garantia você precisa e qual liberdade você quer pagar por ela.",
+        "code": {
+          "language": "sql",
+          "content": "CREATE TABLE livros (\n  id     INTEGER PRIMARY KEY,\n  titulo TEXT NOT NULL,\n  autor  TEXT\n);"
+        }
+      },
+      {
+        "topico": "crud",
+        "titulo": "As quatro operações, e o eco do HTTP",
+        "texto": "Tudo que se faz com dado guardado cabe em quatro operações: criar, ler, atualizar e apagar. A sigla em inglês é CRUD, de create, read, update e delete.\n\nA semelhança com os métodos HTTP da lição 02 não é coincidência: `POST` cria, `GET` lê, `PUT` atualiza, `DELETE` apaga. Uma API REST costuma ser uma casca fina sobre essas quatro operações.\n\nNos bancos relacionais elas se escrevem em SQL, uma linguagem própria para pedir dados. Você descreve **o que** quer, e o banco decide **como** buscar — o que é diferente de programar o passo a passo.",
+        "code": {
+          "language": "sql",
+          "content": "SELECT titulo FROM livros WHERE autor = 'Ada';\nINSERT INTO livros (titulo) VALUES ('Notas');\nUPDATE livros SET autor = 'Ada' WHERE id = 42;\nDELETE FROM livros WHERE id = 42;"
+        }
+      },
+      {
+        "topico": "consultas",
+        "titulo": "Filtrar onde os dados estão",
+        "texto": "Existe um jeito errado de buscar dados que parece natural: trazer tudo para o servidor e filtrar no código.\n\nO problema é o custo. Se a tabela tem um milhão de linhas e você quer três, esse jeito carrega um milhão pela rede, ocupa memória com um milhão, e joga fora quase tudo. **Filtrar no banco** faz o trabalho onde os dados já estão, e traz só as três.\n\nÉ a mesma ideia por trás de pedir só os campos que você usa, em vez de todas as colunas. Quanto menos atravessa a rede, mais rápido e mais barato.\n\nE tem um caso que engana especialmente: buscar uma lista e depois, para cada item dela, fazer outra consulta. São cem itens, cento e uma idas ao banco. Isso tem nome — problema N+1 — e é uma das causas mais comuns de sistema lento sem ninguém entender por quê.",
+        "code": {
+          "language": "sql",
+          "content": "-- traz um milhao para descartar quase tudo\nSELECT * FROM livros;\n\n-- deixa o banco filtrar, e traz tres\nSELECT titulo FROM livros WHERE autor = 'Ada';"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "backend-beg-0401",
+      "topic": "persistencia",
+      "prompt": "Por que os dados de um sistema não ficam guardados apenas na memória do servidor?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque a memória é mais lenta que o disco",
+          "correct": false,
+          "why": "É o contrário: memória é bem mais rápida. O problema é outro."
+        },
+        {
+          "id": "b",
+          "text": "Porque memória não consegue guardar texto",
+          "correct": false,
+          "why": "Guarda qualquer tipo de dado sem dificuldade."
+        },
+        {
+          "id": "c",
+          "text": "Porque reiniciar o servidor apagaria tudo",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque só bancos de dados sabem trabalhar com JSON",
+          "correct": false,
+          "why": "Qualquer programa lida com JSON. Não é disso que se trata."
+        },
+        {
+          "id": "e",
+          "text": "Porque o HTTP não permite ler da memória",
+          "correct": false,
+          "why": "O protocolo não tem opinião sobre onde o servidor guarda as coisas."
+        }
+      ],
+      "hint": "Pense no que acontece quando o servidor é atualizado, ou quando cai e sobe de novo.",
+      "explanation": "Servidor reinicia — por atualização, falha ou manutenção — e a memória some junto. O banco é um programa separado, especializado em não perder o que recebeu. É por isso que ele existe como peça à parte, e não como uma variável dentro do seu código."
+    },
+    {
+      "id": "backend-beg-0402",
+      "topic": "modelos",
+      "prompt": "Qual é a diferença central entre um banco relacional e um NoSQL?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O relacional é sempre mais rápido",
+          "correct": false,
+          "why": "Velocidade depende do uso, e cada um vence em situações diferentes."
+        },
+        {
+          "id": "b",
+          "text": "O NoSQL não guarda dados no disco",
+          "correct": false,
+          "why": "Guarda. A diferença não está em onde, e sim em como o formato é tratado."
+        },
+        {
+          "id": "c",
+          "text": "O relacional só funciona com pouca informação",
+          "correct": false,
+          "why": "Sistemas enormes rodam em bancos relacionais há décadas."
+        },
+        {
+          "id": "d",
+          "text": "O relacional exige formato declarado e o recusa quando não bate; o NoSQL aceita registros com campos diferentes",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O NoSQL não permite buscar dados, só gravar",
+          "correct": false,
+          "why": "Busca do mesmo jeito, com outra forma de escrever a consulta."
+        }
+      ],
+      "hint": "Um dos dois recusa o que não se encaixa no formato declarado. O outro aceita.",
+      "explanation": "O relacional impõe formato e recusa o que não bate; o NoSQL aceita variação. O que muda é onde a garantia mora: no banco ou no seu código. Não há melhor em abstrato — há qual garantia você precisa, e qual liberdade quer pagar por ela."
+    },
+    {
+      "id": "backend-beg-0403",
+      "topic": "crud",
+      "prompt": "Escreva a sigla, em quatro letras, das operações básicas sobre dados guardados.",
+      "answerType": "freeWrite",
+      "accepted": ["CRUD"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Vem de create, read, update e delete. Aparece na aula desta lição.",
+      "explanation": "CRUD. A semelhança com os métodos HTTP não é coincidência: `POST` cria, `GET` lê, `PUT` atualiza e `DELETE` apaga. Uma API REST costuma ser uma casca fina sobre essas quatro operações."
+    },
+    {
+      "id": "backend-beg-0404",
+      "topic": "consultas",
+      "prompt": "Uma tabela tem um milhão de linhas. O código traz todas para o servidor e filtra em JavaScript as três que interessam. Qual é o problema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nenhum, desde que o servidor tenha memória suficiente",
+          "correct": false,
+          "why": "Memória é só um dos custos. A rede e o tempo continuam sendo pagos."
+        },
+        {
+          "id": "b",
+          "text": "JavaScript não sabe filtrar listas grandes",
+          "correct": false,
+          "why": "Sabe. A questão não é capacidade da linguagem."
+        },
+        {
+          "id": "c",
+          "text": "O resultado sairia errado",
+          "correct": false,
+          "why": "O resultado sai certo. É o custo de chegar nele que é absurdo."
+        },
+        {
+          "id": "d",
+          "text": "Um milhão de linhas atravessa a rede e ocupa memória para quase tudo ser jogado fora",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O banco recusaria devolver tantas linhas",
+          "correct": false,
+          "why": "Ele devolve o que for pedido, e é justamente por isso que o pedido precisa ser bom."
+        }
+      ],
+      "hint": "Some o custo de cada etapa: quanto sai do banco, quanto trafega, quanto é descartado.",
+      "explanation": "Filtrar no banco faz o trabalho onde os dados já estão e traz só o necessário. É a mesma ideia de pedir apenas os campos que se usa: quanto menos atravessa a rede, mais rápido e mais barato. O resultado é idêntico — o que muda é o custo."
+    },
+    {
+      "id": "backend-beg-0405",
+      "topic": "crud",
+      "prompt": "Complete a consulta para que ela traga apenas os livros cujo autor seja Ada.",
+      "code": {
+        "language": "sql",
+        "content": "SELECT titulo FROM livros ______ autor = 'Ada';",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": ["WHERE"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É a palavra em inglês para onde, e em SQL ela introduz a condição do filtro.",
+      "explanation": "O `WHERE` é onde a condição vive. Repare que a consulta descreve **o que** você quer, e não como buscar: quem decide o caminho até os dados é o banco. Isso é diferente de programar o passo a passo, e é o que dá a ele liberdade para otimizar."
+    },
+    {
+      "id": "backend-beg-0406",
+      "topic": "consultas",
+      "prompt": "Um código busca a lista de 100 pedidos e, para cada pedido, faz outra consulta buscando o cliente dele. Quantas idas ao banco isso custa, e como esse problema se chama?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "1 ida, porque o banco junta tudo sozinho",
+          "correct": false,
+          "why": "Ele junta se você pedir junto. Aqui foram feitas consultas separadas."
+        },
+        {
+          "id": "b",
+          "text": "101 idas, e chama-se problema N+1",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "100 idas, e chama-se paginação",
+          "correct": false,
+          "why": "São 101 contando a primeira, e paginação é outra coisa: dividir resultado em páginas."
+        },
+        {
+          "id": "d",
+          "text": "2 idas, e chama-se junção",
+          "correct": false,
+          "why": "Seriam 2 se a segunda buscasse todos os clientes de uma vez. Não é o caso."
+        },
+        {
+          "id": "e",
+          "text": "101 idas, e chama-se cache frio",
+          "correct": false,
+          "why": "O número está certo, mas cache é outro assunto."
+        }
+      ],
+      "hint": "Conte a consulta da lista e mais uma por item. O nome do problema é a própria conta.",
+      "explanation": "Uma consulta para a lista mais N para os itens: N+1. O nome é a conta. É uma das causas mais comuns de sistema lento sem ninguém entender por quê, porque cada consulta isolada parece rápida — o custo só aparece quando se soma o número delas."
+    },
+    {
+      "id": "backend-beg-0407",
+      "topic": "modelos",
+      "prompt": "Complete o comando para que o título nunca possa ficar vazio nesta tabela.",
+      "code": {
+        "language": "sql",
+        "content": "CREATE TABLE livros (\n  id     INTEGER PRIMARY KEY,\n  titulo TEXT ______\n);",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": ["NOT NULL"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "São duas palavras em inglês. A primeira nega, e a segunda é o valor que representa a ausência.",
+      "explanation": "O `NOT NULL` faz o banco recusar uma linha sem título. É a rigidez do modelo relacional trabalhando a seu favor: a garantia mora no banco, então nenhum código distraído consegue gravar dado incompleto — nem o seu, nem o de quem vier depois."
+    },
+    {
+      "id": "backend-beg-0408",
+      "topic": "persistencia",
+      "prompt": "Por que reduzir o número de consultas ao banco costuma importar tanto para o desempenho?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque bancos cobram por consulta feita",
+          "correct": false,
+          "why": "Alguns serviços cobram, mas o motivo técnico existe mesmo quando não há cobrança."
+        },
+        {
+          "id": "b",
+          "text": "Porque bancos aguentam poucas consultas por dia",
+          "correct": false,
+          "why": "Aguentam volumes enormes. A questão é o custo de cada ida."
+        },
+        {
+          "id": "c",
+          "text": "Porque cada consulta é uma ida e volta a outro programa, às vezes em outra máquina",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque o banco esquece o resultado se for consultado muitas vezes",
+          "correct": false,
+          "why": "Ele não esquece nada por excesso de uso."
+        },
+        {
+          "id": "e",
+          "text": "Porque só a primeira consulta traz dados atualizados",
+          "correct": false,
+          "why": "Todas trazem o estado atual no momento em que rodam."
+        }
+      ],
+      "hint": "Volte à primeira seção da aula: o banco é o mesmo programa que o servidor, ou outro?",
+      "explanation": "O banco é um programa separado, às vezes em outra máquina, então cada consulta custa uma ida e volta — a mesma natureza de custo de chamar uma API. Boa parte do que se aprende sobre desempenho de backend é, no fundo, reduzir o número dessas idas."
+    },
+    {
+      "id": "backend-beg-0409",
+      "topic": "crud",
+      "prompt": "Qual comando SQL corresponde ao que o método POST faz numa API REST?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "SELECT",
+          "correct": false,
+          "why": "Ele lê, e o equivalente em HTTP seria o método de busca."
+        },
+        {
+          "id": "b",
+          "text": "UPDATE",
+          "correct": false,
+          "why": "Ele altera algo que já existe."
+        },
+        {
+          "id": "c",
+          "text": "DELETE",
+          "correct": false,
+          "why": "Ele apaga, e o método HTTP de mesmo nome faz o correspondente."
+        },
+        {
+          "id": "d",
+          "text": "CREATE TABLE",
+          "correct": false,
+          "why": "Ele cria a estrutura da tabela, e não um registro dentro dela."
+        },
+        {
+          "id": "e",
+          "text": "INSERT",
+          "correct": true
+        }
+      ],
+      "hint": "POST cria um item novo. Qual dos comandos põe uma linha nova na tabela?",
+      "explanation": "`POST` cria, `INSERT` insere. O paralelo entre os métodos HTTP e as operações do banco é o que faz uma API REST parecer uma casca fina sobre o CRUD — e é também o que torna as duas coisas fáceis de aprender juntas."
+    },
+    {
+      "id": "backend-beg-0410",
+      "topic": "modelos",
+      "prompt": "Uma equipe precisa gravar eventos que chegam com campos sempre diferentes, e que mudam a cada semana conforme novos parceiros integram. Qual característica pesa a favor de um NoSQL aqui?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ele aceita registros com campos diferentes, sem formato declarado antes",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Ele garante que todos os eventos tenham os mesmos campos",
+          "correct": false,
+          "why": "Essa garantia é a do relacional, e é justamente o que atrapalharia aqui."
+        },
+        {
+          "id": "c",
+          "text": "Ele dispensa a necessidade de servidor",
+          "correct": false,
+          "why": "Continua sendo um programa que precisa rodar em algum lugar."
+        },
+        {
+          "id": "d",
+          "text": "Ele não permite apagar dados, o que protege o histórico",
+          "correct": false,
+          "why": "Permite apagar como qualquer outro banco."
+        },
+        {
+          "id": "e",
+          "text": "Ele consulta sem precisar de nenhuma linguagem de consulta",
+          "correct": false,
+          "why": "Tem formas próprias de consultar; só não são SQL."
+        }
+      ],
+      "hint": "O que era vantagem do relacional — recusar o que não se encaixa — viraria estorvo neste caso.",
+      "explanation": "Quando o formato muda toda semana, exigir declaração prévia vira trabalho constante de migração. O NoSQL aceita a variação — e transfere para o seu código a responsabilidade de lidar com ela. Repare que a escolha não foi sobre qual banco é melhor, e sim sobre qual problema se tem."
+    }
+  ]
+}
