@@ -47,6 +47,18 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
   /// Verdadeiro quando a aula foi aberta de novo, a pedido, no meio do exercício.
   bool _relendo = false;
 
+  /// Em que questão o aluno está agora.
+  ///
+  /// Precisa morar **aqui**, e não só na tela de exercício, porque abrir a aula
+  /// desmonta aquela tela: `_mostrandoAula` troca `TelaExercicio` por
+  /// `TelaAula`, o State do exercício é descartado, e ao voltar ele renasceria
+  /// em `widget.indiceInicial` — o índice de quando a lição abriu.
+  ///
+  /// Foi um defeito real relatado pelo Gustavo: consultar o material na questão
+  /// 7 devolvia para a 5, mandando refazer o que já estava feito. Este campo é
+  /// o que sobrevive à troca de tela.
+  late int _indice = widget.indiceInicial;
+
   void _comecar() {
     if (!_relendo) {
       unawaited(
@@ -78,8 +90,12 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
     return TelaExercicio(
       licao: widget.licao,
       progresso: widget.progresso,
-      indiceInicial: widget.indiceInicial,
+      indiceInicial: _indice,
       aoRelerAula: widget.licao.aula == null ? null : _reler,
+      // Sem `setState`: nada nesta tela depende do valor para desenhar, e
+      // reconstruir a cada virada de questão seria trabalho jogado fora. Ele
+      // só é lido quando o exercício remonta, depois da aula.
+      aoMudarQuestao: (indice) => _indice = indice,
       sineta: widget.sineta,
       comCenario: widget.comCenario,
     );

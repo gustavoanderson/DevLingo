@@ -391,6 +391,18 @@ Lição sem aula gera `[AVISO]`, não erro, para não travar conteúdo antigo. A
 
 A aula aparece sozinha na primeira vez que a lição abre, e depois fica acessível pelo ícone de livro no topo do exercício. Reler não remarca a data da primeira leitura.
 
+#### Abrir a aula desmonta o exercício, e a posição tem que sobreviver a isso
+
+Defeito real, encontrado pelo Gustavo jogando: ele estava na **questão 7**, foi consultar o material, e ao voltar caiu na **5** — tendo que refazer o que já tinha feito.
+
+A causa é estrutural, não um descuido pontual. `FluxoDaLicao` alterna entre `TelaAula` e `TelaExercicio` por `setState`; são widgets de **tipos diferentes**, então o `State` do exercício é descartado e, ao voltar, ele renascia em `widget.indiceInicial` — o índice de quando a **lição** abriu.
+
+**Gravar no banco não resolvia**, e é por isso que o defeito escapou: a posição *estava* salva corretamente. Quem remonta a tela é o `FluxoDaLicao`, e ele não relê o banco. O dado precisa morar em quem **sobrevive à troca de tela** — daí o `_indice` no fluxo, alimentado pelo callback `aoMudarQuestao` do exercício.
+
+Ele atualiza sem `setState`, de propósito: nada no fluxo depende do valor para desenhar, e reconstruir a cada virada de questão seria trabalho jogado fora. Ele só é lido quando o exercício remonta.
+
+O teste correspondente usa uma lição com enunciados **diferentes** por questão. Com o texto igual em todas, voltar para a questão errada passaria despercebido — que é exatamente o defeito.
+
 ### Como uma questão é respondida
 
 O princípio: **o objetivo do jogo é a pessoa aprender, não ser punida.** Toda questão termina com o aluno sabendo a resposta e o porquê. A lógica vive em `app/lib/answer/sessao_questao.dart`, fora do widget, para ser testável sem montar tela.
@@ -848,6 +860,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 
 **Combinado e ainda não feito:**
 
+- **Trocar todos os sons do app.** O Gustavo os considera genéricos e irritantes. Baixar o volume pela metade foi paliativo; o problema é o timbre da onda quadrada. Ver "Som de acerto"
 - **O Gustavo ainda não jogou o JavaScript.** As 50 questões foram calibradas sem ele jogar nenhuma; a dificuldade é palpite meu até ele passar por elas. É a mesma razão que fez o Python intermediário esperar
 - Verificar o comportamento do som no modo silencioso, num celular de verdade
 
@@ -865,7 +878,29 @@ A ficha sai mais baixa (0,30 contra 0,32) e com ataque mais seco que a fanfarra.
 
 **Nada de áudio pode tocar a plataforma antes do primeiro acerto.** O `AudioPlayer` é criado dentro do primeiro `acerto()`, nunca no construtor: criá-lo no construtor punha conversa com o serviço de áudio dentro do `build` de uma tela, que é onde ela não pode estar.
 
-**Pendente de verificação:** o áudio está configurado no canal de notificação, que é o que o modo silencioso do aparelho silencia. Isso **não foi verificado** — no emulador não há como confirmar por `adb` se o som saiu. Confira num celular de verdade.
+#### O canal de notificação foi um erro, e só o aparelho de verdade mostrou
+
+A primeira versão usava `AndroidUsageType.notification`, para o modo silencioso do aparelho calar o app sozinho. Estava registrado aqui como *pendente de verificação*, e a verificação reprovou.
+
+**Os botões de volume ajustam o canal de MÍDIA.** Com o áudio no canal de notificação, o Gustavo baixou o volume durante o jogo e o som continuou idêntico — o controle mais óbvio do aparelho simplesmente não funcionava neste app. Ele descreveu como "estridente demais, baixei o volume e não baixou nada".
+
+Hoje é `AndroidUsageType.game`, que roteia para o mesmo canal da mídia. O preço é que o modo silencioso deixa de calar o app sozinho; em troca, o volume responde e a **chave de mudo existe na trilha e na tela de exercício**.
+
+`audioFocus` continua `none`: o efeito dura menos de um segundo, e pedir foco pausaria a música de quem estuda ouvindo alguma coisa.
+
+**O volume caiu de 0,32 para 0,16**, e a ficha de 0,30 para 0,15 — metade da amplitude, cerca de 6 dB. A proporção entre os dois foi preservada; baixar só um inverteria a relação deliberada entre confirmação e recompensa. Isso não conserta o **timbre**: onda quadrada tem harmônicos ímpares fortes, e o que soava "8-bit" no emulador soa agressivo num alto-falante de verdade.
+
+**Combinado, e ainda não feito: trocar todos os sons do app.** O Gustavo os considera genéricos e irritantes. A redução de volume é paliativo até lá. Quem for fazer: mexa em `tools/gerar_sons.py` e rode o script; **nunca edite o WAV**, e considere que onda quadrada pura pode não ser o caminho — o script hoje só sabe sintetizar isso.
+
+#### Mutar funciona em qualquer lugar onde há som
+
+Antes a única chave ficava na trilha, e silenciar no meio de uma lição exigia **sair dela**. Pior: sair e voltar era justamente o caminho que caía no defeito da posição perdida — o Gustavo encontrou os dois de uma vez, e um levou ao outro.
+
+Hoje o ícone de som está também no topo do exercício. São dois botões para **uma preferência só**: a `SinetaDeVerdade` relê o banco a cada som, então alternar em qualquer tela tem efeito imediato, sem propagar estado.
+
+O ícone da tela de exercício guarda uma cópia local só para desenhar, e ela nasce ligada até a leitura do banco voltar. Um ícone errado por um quadro não engana ninguém; manter duas cópias em sincronia é que produziria defeito de ordem de toque.
+
+A tela de título fica de fora: lá o toque em qualquer lugar é o START, e um botão dentro dela disputaria com isso.
 
 **Há dois sons, e uma chave só.** `acerto.wav` é a fanfarra; `ficha.wav` é a moeda da tela de título. Os dois passam pelo mesmo `estaLigado` e pelo mesmo tocador — não há por que abrir uma segunda conversa com a plataforma de áudio para telas que nunca disputam a saída. Ambos são gerados por script Python com o módulo `wave`, onda quadrada; não há gravação no repositório.
 

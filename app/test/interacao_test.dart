@@ -529,4 +529,61 @@ void progressoNaTela() {
       expect(progresso.posicoes['python-beg-01'], 0);
     });
   });
+
+  group('mutar sem sair da licao', () {
+    Future<void> montarComProgresso(
+      WidgetTester tester,
+      ProgressoFalso progresso,
+    ) async {
+      tester.view.physicalSize = const Size(390, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TelaExercicio(licao: licaoCom([_mc]), progresso: progresso),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // Antes a unica chave de som ficava na trilha, e silenciar o app no meio
+    // de uma licao exigia sair dela. O Gustavo pediu depois de tropecar nisso
+    // jogando -- e sair e voltar era justamente o caminho que caia no defeito
+    // da posicao perdida. Um problema levava ao outro.
+    testWidgets('o botao de som aparece e alterna a preferencia', (
+      tester,
+    ) async {
+      final progresso = ProgressoFalso()..som = true;
+      await montarComProgresso(tester, progresso);
+
+      expect(find.byKey(const Key('acao-som')), findsOneWidget);
+      expect(find.byIcon(Icons.volume_up_outlined), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('acao-som')));
+      await tester.pumpAndSettle();
+
+      expect(progresso.som, isFalse, reason: 'a preferencia tem que ir ao banco');
+      expect(
+        find.byIcon(Icons.volume_off_outlined),
+        findsOneWidget,
+        reason: 'o icone tem que refletir o novo estado na hora',
+      );
+    });
+
+    testWidgets('sem repositorio, o botao de som nem aparece', (tester) async {
+      // Ele so poderia mudar de desenho sem mudar nada, ja que nao ha onde
+      // gravar a preferencia.
+      await montar(tester, licaoCom([_mc]));
+      expect(find.byKey(const Key('acao-som')), findsNothing);
+    });
+
+    testWidgets('a tela nasce com a preferencia que esta no banco', (
+      tester,
+    ) async {
+      final progresso = ProgressoFalso()..som = false;
+      await montarComProgresso(tester, progresso);
+
+      expect(find.byIcon(Icons.volume_off_outlined), findsOneWidget);
+    });
+  });
 }

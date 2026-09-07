@@ -31,6 +31,7 @@ class TelaExercicio extends StatefulWidget {
     this.progresso,
     this.indiceInicial = 0,
     this.aoRelerAula,
+    this.aoMudarQuestao,
     this.sineta,
     this.comCenario = false,
   });
@@ -44,6 +45,18 @@ class TelaExercicio extends StatefulWidget {
 
   /// Reabre a aula da licao. Nulo quando a licao nao tem aula.
   final VoidCallback? aoRelerAula;
+
+  /// Avisa em que questao o aluno esta, a cada virada.
+  ///
+  /// Existe por causa de um defeito real: abrir a aula pelo icone do livro
+  /// **desmonta esta tela**, e ao voltar ela renascia em [indiceInicial] -- o
+  /// indice de quando a licao abriu, nao o de onde a pessoa estava. Quem
+  /// consultava o material na questao 7 voltava para a 5.
+  ///
+  /// Gravar no banco nao resolvia: quem remonta a tela e o [FluxoDaLicao], que
+  /// nao le o banco de novo. A posicao precisa subir para quem sobrevive a
+  /// troca de tela.
+  final ValueChanged<int>? aoMudarQuestao;
 
   /// Toca a fanfarra de acerto. Nulo em teste que nao se importa com som.
   final Sineta? sineta;
@@ -75,12 +88,21 @@ class _TelaExercicioState extends State<TelaExercicio>
 
   bool _licaoConcluida = false;
 
+  /// Só desenha o ícone; quem decide se toca é a [Sineta], que relê o banco a
+  /// cada som. São duas leituras do mesmo dado, e é de propósito: manter uma
+  /// cópia em sincronia com a outra é onde nascem defeitos de ordem de toque.
+  ///
+  /// Nasce ligado porque é o padrão do app, e se corrige sozinho assim que a
+  /// leitura volta — um ícone errado por um quadro não engana ninguém.
+  bool _som = true;
+
   Question get _questaoAtual => widget.licao.questions[_indice];
 
   @override
   void initState() {
     super.initState();
     iniciarAvisoDeRecorte();
+    unawaited(_lerSom());
     // Sem isto o botao Verificar nao sairia do estado desabilitado ao digitar:
     // o texto muda dentro do controlador, sem passar por setState.
     _texto.addListener(_aoDigitar);
@@ -136,11 +158,13 @@ class _TelaExercicioState extends State<TelaExercicio>
       // Licao terminada: a proxima abertura recomeca do inicio, ja que ainda
       // nao existe tela de escolha de licao.
       unawaited(_salvarPosicao(0));
+      widget.aoMudarQuestao?.call(0);
       setState(() => _licaoConcluida = true);
       return;
     }
 
     unawaited(_salvarPosicao(proximo));
+    widget.aoMudarQuestao?.call(proximo);
     setState(() {
       _indice = proximo;
       _sessao = SessaoQuestao(_questaoAtual);
@@ -153,6 +177,24 @@ class _TelaExercicioState extends State<TelaExercicio>
 
   Future<void> _salvarPosicao(int indice) async {
     await widget.progresso?.salvarPosicao(widget.licao.lessonId, indice);
+  }
+
+  Future<void> _lerSom() async {
+    final ligado = await widget.progresso?.somLigado();
+    if (!mounted || ligado == null) return;
+    setState(() => _som = ligado);
+  }
+
+  /// Desliga o som sem sair da questão.
+  ///
+  /// Antes a única chave ficava na trilha, e silenciar o app no meio de uma
+  /// lição exigia sair dela. Pior: sair e voltar era justamente o caminho que
+  /// caía no defeito da posição perdida — o Gustavo encontrou os dois de uma
+  /// vez, e um levou ao outro.
+  Future<void> _alternarSom() async {
+    final novo = !_som;
+    setState(() => _som = novo);
+    await widget.progresso?.definirSom(ligado: novo);
   }
 
   void _inserirSimbolo(String simbolo) {
@@ -186,6 +228,8 @@ class _TelaExercicioState extends State<TelaExercicio>
               atual: _indice + 1,
               total: total,
               aoRelerAula: widget.aoRelerAula,
+              somLigado: _som,
+              aoAlternarSom: widget.progresso == null ? null : _alternarSom,
             ),
             Expanded(
               child: comSombraDeRecorte(
@@ -268,14 +312,23 @@ class _Topo extends StatelessWidget {
     required this.atual,
     required this.total,
     this.aoRelerAula,
+    this.somLigado = true,
+    this.aoAlternarSom,
   });
 
   final int atual;
   final int total;
   final VoidCallback? aoRelerAula;
 
+  final bool somLigado;
+
+  /// Nulo quando não há repositório onde gravar a preferência: aí o ícone some,
+  /// em vez de virar um botão que muda de desenho e não muda nada.
+  final VoidCallback? aoAlternarSom;
+
   static const Key chaveReler = Key('acao-reler-aula');
   static const Key chaveSair = Key('acao-sair');
+  static const Key chaveSom = Key('acao-som');
 
   @override
   Widget build(BuildContext context) {
@@ -330,6 +383,23 @@ class _Topo extends StatelessWidget {
               child: const Icon(
                 Icons.menu_book_outlined,
                 color: Paleta.suave,
+                size: 22,
+              ),
+            ),
+          ],
+          // O som se desliga aqui, sem sair da licao. A mesma chave da trilha,
+          // e a mesma preferencia: sao dois botoes para um dado so.
+          if (aoAlternarSom != null) ...[
+            const SizedBox(width: 12),
+            GestureDetector(
+              key: chaveSom,
+              behavior: HitTestBehavior.opaque,
+              onTap: aoAlternarSom,
+              child: Icon(
+                somLigado
+                    ? Icons.volume_up_outlined
+                    : Icons.volume_off_outlined,
+                color: somLigado ? Paleta.destaque : Paleta.suave,
                 size: 22,
               ),
             ),

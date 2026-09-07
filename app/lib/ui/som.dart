@@ -55,16 +55,28 @@ class SinetaDeVerdade implements Sineta {
 
     final tocador = AudioPlayer();
     _tocador = tocador;
-    // O contexto de notificação faz o áudio seguir o canal que o modo
-    // silencioso do aparelho silencia, em vez do canal de mídia, que não é
-    // silenciado. É o comportamento certo para um efeito curto de retorno.
+    // Canal de JOGO, e nao o de notificacao.
+    //
+    // A primeira versao usava `notification`, para o modo silencioso do
+    // aparelho calar o app sozinho. Parecia certo, e a experiencia real
+    // reprovou: os botoes de volume ajustam o canal de MIDIA, entao apertar
+    // volume durante o jogo nao mudava nada. O Gustavo baixou o volume no
+    // celular e o som continuou estridente igual -- o controle mais obvio do
+    // aparelho simplesmente nao funcionava neste app.
+    //
+    // `game` roteia para o mesmo canal da midia, entao o volume passa a
+    // responder. O preco e que o modo silencioso deixa de calar o app
+    // sozinho; em troca, a chave de mudo agora existe na trilha E na tela de
+    // exercicio, que e um controle explicito em vez de um efeito colateral.
     await tocador.setAudioContext(
       AudioContext(
         android: const AudioContextAndroid(
           isSpeakerphoneOn: false,
           stayAwake: false,
           contentType: AndroidContentType.sonification,
-          usageType: AndroidUsageType.notification,
+          usageType: AndroidUsageType.game,
+          // Nao pede foco: o efeito dura menos de um segundo, e roubar o foco
+          // pausaria a musica de quem estuda ouvindo alguma coisa.
           audioFocus: AndroidAudioFocus.none,
         ),
         iOS: AudioContextIOS(

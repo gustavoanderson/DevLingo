@@ -39,7 +39,7 @@ const String _aula = '''
   ]
 },''';
 
-Lesson licao({bool comAula = true}) => Lesson.fromJson(
+Lesson licao({bool comAula = true, int quantas = 1}) => Lesson.fromJson(
   json.decode('''
   {
     "schemaVersion": 1,
@@ -48,10 +48,22 @@ Lesson licao({bool comAula = true}) => Lesson.fromJson(
     "lessonId": "python-beg-01",
     "lessonTitle": "Licao de teste",
     ${comAula ? _aula : ''}
-    "questions": [$_questao]
+    "questions": [${List.generate(quantas, _questaoNumero).join(',')}]
   }''')
       as Map<String, dynamic>,
 );
+
+/// A mesma questao repetida, com id e enunciado proprios.
+///
+/// O enunciado precisa diferir para o teste conseguir dizer **em qual** delas
+/// a tela esta; com o texto igual, voltar para a questao errada passaria
+/// despercebido, que e exatamente o defeito sob teste.
+String _questaoNumero(int i) => _questao
+    .replaceFirst('python-beg-0101', 'python-beg-010${i + 1}')
+    .replaceFirst(
+      'Qual funcao exibe algo na tela?',
+      'Questao numero ${i + 1}',
+    );
 
 /// Registro em memoria, para o teste de tela nao precisar de banco.
 class ProgressoFalso implements RegistroDeProgresso {
@@ -162,14 +174,14 @@ void main() {
 
       expect(find.byKey(TelaAula.chaveComecar), findsOneWidget);
       expect(find.text('Começar as questões'), findsOneWidget);
-      expect(find.text('Qual funcao exibe algo na tela?'), findsNothing);
+      expect(find.text('Questao numero 1'), findsNothing);
     });
 
     testWidgets('quem ja viu a aula cai direto nas questoes', (tester) async {
       await montar(tester, FluxoDaLicao(licao: licao(), aulaJaVista: true));
 
       expect(find.byKey(TelaAula.chaveComecar), findsNothing);
-      expect(find.text('Qual funcao exibe algo na tela?'), findsOneWidget);
+      expect(find.text('Questao numero 1'), findsOneWidget);
     });
 
     testWidgets('licao sem aula nao mostra aula nem o icone de reler', (
@@ -179,7 +191,7 @@ void main() {
 
       expect(find.byKey(TelaAula.chaveComecar), findsNothing);
       expect(find.byKey(const Key('acao-reler-aula')), findsNothing);
-      expect(find.text('Qual funcao exibe algo na tela?'), findsOneWidget);
+      expect(find.text('Questao numero 1'), findsOneWidget);
     });
 
     testWidgets('comecar leva as questoes e marca a aula como vista', (
@@ -191,7 +203,7 @@ void main() {
       await tester.tap(find.byKey(TelaAula.chaveComecar));
       await tester.pumpAndSettle();
 
-      expect(find.text('Qual funcao exibe algo na tela?'), findsOneWidget);
+      expect(find.text('Questao numero 1'), findsOneWidget);
       expect(
         progresso.aulasVistas,
         contains('python-beg-01'),
@@ -233,8 +245,52 @@ void main() {
       await tester.tap(find.byKey(TelaAula.chaveComecar));
       await tester.pumpAndSettle();
 
-      expect(find.text('Qual funcao exibe algo na tela?'), findsOneWidget);
+      expect(find.text('Questao numero 1'), findsOneWidget);
       expect(progresso.aulasVistas, isEmpty);
+    });
+
+    testWidgets('consultar a aula no meio da licao nao devolve para tras', (
+      tester,
+    ) async {
+      // Defeito relatado pelo Gustavo jogando: ele estava na questao 7, foi
+      // consultar o material didatico, e ao voltar caiu na 5 -- tendo que
+      // refazer o que ja tinha feito.
+      //
+      // A causa: abrir a aula desmonta a tela de exercicio, e ela renascia em
+      // `indiceInicial`, o indice de quando a licao ABRIU. Gravar no banco nao
+      // resolvia, porque quem remonta a tela e o FluxoDaLicao, que nao rele o
+      // banco. A posicao precisa morar em quem sobrevive a troca de tela.
+      await montar(
+        tester,
+        FluxoDaLicao(licao: licao(quantas: 3), aulaJaVista: true),
+      );
+
+      // Responde a primeira e avanca para a segunda.
+      await tester.tap(find.text('print()'));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('acao-verificar')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('acao-continuar')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Questao numero 2'), findsOneWidget);
+
+      // Vai consultar a aula e volta.
+      await tester.tap(find.byKey(const Key('acao-reler-aula')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(TelaAula.chaveComecar));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Questao numero 2'),
+        findsOneWidget,
+        reason: 'voltar da aula tem que devolver para onde o aluno estava',
+      );
+      expect(
+        find.text('Questao numero 1'),
+        findsNothing,
+        reason: 'mandar refazer o que ja foi feito e o defeito em si',
+      );
     });
   });
 }

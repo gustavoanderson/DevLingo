@@ -29,7 +29,13 @@ import wave
 from pathlib import Path
 
 TAXA = 44100
-VOLUME = 0.32  # deixa folga para o aparelho sem estourar
+# Baixado de 0,32 para 0,16 depois de o Gustavo jogar num celular de verdade e
+# achar estridente. Onda quadrada tem harmonicos impares fortes, e o que no
+# alto-falante do emulador soava "8-bit" no aparelho dele soava agressivo.
+#
+# Metade da amplitude e cerca de 6 dB a menos. Nao resolve o timbre -- isso e
+# a troca de sons ja combinada -- mas tira o incomodo enquanto ela nao vem.
+VOLUME = 0.16
 
 DESTINO = Path(__file__).resolve().parent.parent / "app" / "assets" / "som"
 
@@ -58,7 +64,11 @@ FICHA = [
 #
 # O envelope tambem difere. A moeda tem ataque mais seco e cauda mais longa:
 # e o que faz soar como metal batendo e ressoando, em vez de nota tocada.
-VOLUME_FICHA = 0.30
+#
+# A proporcao entre os dois foi preservada na reducao: 0,30/0,32 virou
+# 0,15/0,16. Baixar so um deles inverteria a relacao que este comentario
+# acabou de explicar.
+VOLUME_FICHA = 0.15
 ENVELOPE_FANFARRA = (0.006, 0.10)  # (ataque, decaimento), em segundos
 ENVELOPE_FICHA = (0.004, 0.13)
 
