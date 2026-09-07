@@ -37,6 +37,9 @@ Future<void> montar(
   await tester.pumpAndSettle();
 }
 
+/// Altura da barra de desfechos. Espelha `_Desfechos.altura`, que e privada.
+const double alturaDaBarra = 12;
+
 void main() {
   group('quem ainda nao jogou', () {
     testWidgets('ve um convite, e nenhum numero', (tester) async {
@@ -133,6 +136,41 @@ void main() {
       expect(find.text('6 de primeira'), findsOneWidget);
       expect(find.text('3 insistindo'), findsOneWidget); // 10 - 6 - 1
       expect(find.text('1 vimos juntos'), findsOneWidget);
+    });
+
+    testWidgets('as fatias tem altura de verdade, e nao zero', (tester) async {
+      // Defeito visto num Xiaomi 15T Pro: a barra estava INVISIVEL. Onde
+      // deviam estar tres faixas coloridas havia 105 mil pixels da cor do
+      // fundo, e a legenda logo abaixo desenhava normalmente.
+      //
+      // A causa e sutil: `ColoredBox` sem filho resolve para
+      // `constraints.smallest`. O `Expanded` torna a largura obrigatoria, mas
+      // o alinhamento padrao do `Row` passa a ALTURA frouxa -- e `smallest`
+      // escolhe zero. A barra existia, ocupava espaco no layout, e nao tinha
+      // altura nenhuma.
+      //
+      // Nenhum teste de texto pegaria isso: os rotulos continuavam certos.
+      await montar(
+        tester,
+        resumo(respondidas: 10, deCabeca: 7, reveladas: 1, tentativas: 14),
+      );
+
+      final caixas = find.descendant(
+        of: find.byKey(TelaEstatisticas.chaveBarra),
+        matching: find.byType(ColoredBox),
+      );
+      expect(caixas, findsNWidgets(3));
+
+      for (var i = 0; i < 3; i++) {
+        final tamanho = tester.getSize(caixas.at(i));
+        expect(
+          tamanho.height,
+          alturaDaBarra,
+          reason: 'a fatia $i tem altura ${tamanho.height}; zero a torna '
+              'invisivel sem quebrar teste de texto nenhum',
+        );
+        expect(tamanho.width, greaterThan(0), reason: 'fatia $i sem largura');
+      }
     });
 
     testWidgets('a fatia vazia nao aparece', (tester) async {

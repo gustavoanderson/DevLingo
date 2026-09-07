@@ -42,6 +42,7 @@ class TelaEstatisticas extends StatelessWidget {
   static const Key chaveVazio = Key('estatisticas-vazio');
   static const Key chaveVoltar = Key('estatisticas-voltar');
   static const Key chaveTopicos = Key('estatisticas-topicos');
+  static const Key chaveBarra = Key('estatisticas-barra');
   static const Key chaveRodape = Key('estatisticas-rodape');
 
   /// Consulta e abre. Existe para quem chama não precisar saber que são duas
@@ -365,6 +366,8 @@ class _Desfechos extends StatelessWidget {
   final int comInsistencia;
   final int reveladas;
 
+  static const double altura = 12;
+
   @override
   Widget build(BuildContext context) {
     final fatias = <(int, Color, String)>[
@@ -382,8 +385,20 @@ class _Desfechos extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(5),
           child: SizedBox(
-            height: 12,
+            key: TelaEstatisticas.chaveBarra,
+            height: altura,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              // `stretch` é obrigatório, e a falta dele deixou a barra
+              // **invisível** num aparelho de verdade — 105 mil pixels da cor
+              // do fundo onde deviam estar três faixas coloridas.
+              //
+              // O motivo é sutil: `ColoredBox` sem filho é um `RenderProxyBox`
+              // sem filho, e esse caso resolve para `constraints.smallest`. O
+              // `Expanded` torna a largura obrigatória, mas o alinhamento
+              // padrão do `Row` (`center`) passa a **altura** frouxa, de 0 a
+              // 12 — e `smallest` escolhe zero. A barra existia, ocupava o
+              // espaço, e tinha altura nenhuma.
               children: [
                 for (final (quantas, cor, _) in fatias)
                   if (quantas > 0)

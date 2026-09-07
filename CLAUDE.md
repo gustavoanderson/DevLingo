@@ -501,7 +501,13 @@ A correção é encostar no topo com respiro fixo. Centralizar no espaço restan
 
 O defeito virou teste: numa tela de 1000 dp o recado tem que ficar no terço de cima. Ele foi verificado empurrando o conteúdo de propósito, e reprovou com `Actual: 575.0` contra o teto de 333.
 
-**Continua aberto, e só jogando se resolve:** se as três cores da barra de desfechos se distinguem no fundo escuro, e se ela fica legível com fatias muito desiguais. Nenhuma das duas existe sem progresso real.
+**A barra de desfechos estava INVISÍVEL**, e esse é o sétimo defeito que a suíte verde escondeu. Onde deviam estar três faixas coloridas havia **105.300 pixels da cor do fundo**; a legenda logo abaixo desenhava normalmente, o que tornava a falta quase natural de ler como "espaçamento".
+
+A causa é sutil e vale decorar: **`ColoredBox` sem filho resolve para `constraints.smallest`.** Dentro de um `Row`, o `Expanded` torna a **largura** obrigatória, mas o alinhamento padrão (`center`) passa a **altura** frouxa — de 0 a 12 — e `smallest` escolhe zero. A barra existia, ocupava espaço no layout, e não tinha altura nenhuma. A correção é `crossAxisAlignment: CrossAxisAlignment.stretch`.
+
+Nenhum teste de texto pegaria isso: os rótulos continuavam corretos. O teste novo mede a **altura renderizada** de cada fatia, e foi verificado removendo o `stretch` — reprovou com `Actual: <0.0>`.
+
+Fica a regra: **quando um widget existe só para pintar uma cor, teste o tamanho dele, não o texto ao lado.**
 
 #### Print tirado logo após um toque captura a transição, não a tela
 
