@@ -6,6 +6,7 @@ import '../models/lesson.dart';
 import 'fluxo_da_licao.dart';
 import 'paleta.dart';
 import 'som.dart';
+import 'tela_estatisticas.dart';
 import 'sombra_de_recorte.dart';
 
 /// A trilha de uma linguagem e nível: as lições em ordem, com o progresso.
@@ -51,6 +52,7 @@ class TelaTrilha extends StatefulWidget {
   static const Key chaveSombra = Key('sombra-da-trilha');
   static const Key chaveSom = Key('trilha-som');
   static const Key chaveCenario = Key('trilha-cenario');
+  static const Key chaveEstatisticas = Key('trilha-estatisticas');
 
   @override
   State<TelaTrilha> createState() => _TelaTrilhaState();
@@ -138,6 +140,16 @@ class _TelaTrilhaState extends State<TelaTrilha>
     await _recarregar();
   }
 
+  /// Abre as estatísticas.
+  ///
+  /// Sem repositório não há o que medir, e por isso o ícone nem aparece: ele
+  /// abriria uma tela que só saberia dizer "ainda não há o que mostrar", o que
+  /// é pior que não oferecê-la. É o caso dos testes que montam a trilha sem
+  /// progresso — ver [_Cabecalho.aoVerEstatisticas].
+  Future<void> _verEstatisticas() async {
+    await TelaEstatisticas.abrir(context, widget.progresso!);
+  }
+
   @override
   Widget build(BuildContext context) {
     final licoes = _licoes;
@@ -167,6 +179,8 @@ class _TelaTrilhaState extends State<TelaTrilha>
               aoAlternarSom: _alternarSom,
               cenarioLigado: _cenario,
               aoAlternarCenario: _alternarCenario,
+              aoVerEstatisticas:
+                  widget.progresso == null ? null : _verEstatisticas,
             ),
             Expanded(
               child: comSombraDeRecorte(
@@ -204,6 +218,7 @@ class _Cabecalho extends StatelessWidget {
     required this.aoAlternarSom,
     required this.cenarioLigado,
     required this.aoAlternarCenario,
+    this.aoVerEstatisticas,
     this.aoVoltar,
   });
 
@@ -215,6 +230,8 @@ class _Cabecalho extends StatelessWidget {
   final VoidCallback aoAlternarSom;
   final bool cenarioLigado;
   final VoidCallback aoAlternarCenario;
+  /// Nulo quando não há repositório de progresso: aí o ícone some.
+  final VoidCallback? aoVerEstatisticas;
   final VoidCallback? aoVoltar;
 
   static const Key chaveVoltar = Key('trilha-voltar');
@@ -256,6 +273,22 @@ class _Cabecalho extends StatelessWidget {
                   ),
                 ),
               ),
+              // Estatisticas e NAVEGACAO, nao preferencia: ela leva a outra
+              // tela em vez de mudar algo aqui. Fica separada das duas chaves
+              // por isso, e vem antes delas porque e a acao, nao o ajuste.
+              if (aoVerEstatisticas != null) ...[
+                GestureDetector(
+                  key: TelaTrilha.chaveEstatisticas,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: aoVerEstatisticas,
+                  child: const Icon(
+                    Icons.insights_outlined,
+                    color: Paleta.suave,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
               // Nao ha tela de configuracoes ainda. Sao duas chaves, e as duas
               // respondem a mesma pergunta de quem joga: quanto de estimulo eu
               // quero. Quando surgir a terceira, as tres migram para uma tela.

@@ -106,6 +106,16 @@ class ProgressoFalso implements RegistroDeProgresso {
   @override
   Future<Map<String, int>> respondidasPorLicao() async => contagem;
 
+  /// O que a tela de estatisticas vai ler. Configuravel por teste.
+  ResumoDoJogador resumo = ResumoDoJogador.vazio;
+  List<CustoDoTopico> topicos = const [];
+
+  @override
+  Future<ResumoDoJogador> resumoDoJogador() async => resumo;
+
+  @override
+  Future<List<CustoDoTopico>> custoPorTopico() async => topicos;
+
   bool som = true;
 
   @override
@@ -486,6 +496,62 @@ void main() {
         reason: 'podeVoltar continua sendo o padrao',
       );
       expect(voltou, 0, reason: 'o callback do titulo nao foi chamado ainda');
+    });
+  });
+
+  group('estatisticas', () {
+    testWidgets('o icone abre a tela com o que o banco respondeu', (
+      tester,
+    ) async {
+      // Prova a ligacao inteira: o icone existe, ele consulta o repositorio, e
+      // o que voltou de la aparece na tela. Sem isto, a tela de estatisticas
+      // estaria testada sozinha e ninguem saberia se ela e alcancavel.
+      final progresso = ProgressoFalso()
+        ..resumo = ResumoDoJogador(
+          respondidas: 4,
+          deCabeca: 3,
+          reveladas: 0,
+          tentativas: 5,
+          comDica: 0,
+          tempoMedido: const Duration(seconds: 4 * 30),
+          questoesComTempo: 4,
+          partidas: 4,
+          diasEstudados: 2,
+        );
+
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          podeVoltar: false,
+          progresso: progresso,
+        ),
+      );
+
+      await tester.tap(find.byKey(TelaTrilha.chaveEstatisticas));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Seu desempenho'), findsOneWidget);
+      expect(find.text('75%'), findsOneWidget);
+      expect(find.text('30s'), findsOneWidget);
+    });
+
+    testWidgets('sem repositorio, o icone nem aparece', (tester) async {
+      // Ele so poderia abrir uma tela que sempre diria "ainda nao ha o que
+      // mostrar", e oferecer isso e pior que nao oferecer.
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          podeVoltar: false,
+        ),
+      );
+
+      expect(find.byKey(TelaTrilha.chaveEstatisticas), findsNothing);
     });
   });
 }

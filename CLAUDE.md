@@ -427,7 +427,7 @@ Guardado em SQLite, em `app/lib/data/progresso.dart`. Duas tabelas: `resposta`, 
 
 Ideia do Gustavo: mostrar ao jogador o desempenho dele — quantas acertou de primeira, quantas tentativas levou, e o que mais fizer sentido. Substitui, e amplia, a "tela de revisão dirigida" que estava na lista.
 
-**A COLETA está pronta (versão 4 do banco). A TELA ainda não existe**, e essa separação foi deliberada: dado não coletado é dado perdido, e nenhuma tela futura consegue reconstruir quanto tempo alguém levou numa questão que já respondeu. A tela pode esperar o tempo que for; a medição tinha que começar antes de alguém jogar.
+**A coleta veio na versão 4 do banco; a tela veio meses depois**, e essa separação foi deliberada: dado não coletado é dado perdido, e nenhuma tela futura consegue reconstruir quanto tempo alguém levou numa questão que já respondeu. A tela pode esperar o tempo que for; a medição tinha que começar antes de alguém jogar.
 
 #### O que o banco responde hoje
 
@@ -459,11 +459,25 @@ Uma tabela só obrigaria a escolher entre as duas coisas: ou a trilha passa a va
 - **`SessaoQuestao` recebe um relógio injetável.** Sem isso, o teste teria que esperar de verdade ou aceitar qualquer número, que é o mesmo que não testar
 - **Toda saída de `respondendo` passa por `_concluir`.** Atribuir `fase` direto em cada ramo funcionava, mas bastaria um ramo novo esquecer o carimbo da hora para a duração sumir sem nada quebrar
 
-#### Quando a tela for feita
+#### A tela: `app/lib/ui/tela_estatisticas.dart`
 
-- **Nada de "você está pior que ontem".** A mecânica inteira foi desenhada para não punir; estatística que cobra é a mesma punição em forma de número
-- **Tempo não vira competição.** Medir para o aluno se conhecer, não para ele correr — pressa é inimiga de entender
-- **A tela precisa tratar o nulo.** Partidas anteriores à versão 4 não têm tempo nem dica, e fingir que têm é o único jeito de a tela mentir
+Ela abre pelo ícone de gráfico na trilha, ao lado das chaves de som e cenário — mas **separada delas**, e antes delas na linha: aquelas duas mudam algo ali mesmo, esta leva a outra tela. Sem repositório de progresso o ícone **nem aparece**, porque só poderia abrir uma tela que diria "ainda não há o que mostrar", e oferecer isso é pior que não oferecer.
+
+**Ela recebe `ResumoDoJogador` e `List<CustoDoTopico>` já carregados, e não o banco.** Isso a torna um widget puro, testável sem SQLite — a mesma regra de "Testes de widget não enxergam I/O real". Quem consulta é `TelaEstatisticas.abrir`, e por isso as duas consultas subiram para a interface `RegistroDeProgresso`: a trilha, que é quem chama, nunca enxergou a classe `Progresso`.
+
+As três regras de tom viraram código, e cada uma tem teste:
+
+- **Nada de "você está pior que ontem".** A mecânica inteira foi desenhada para não punir; estatística que cobra é a mesma punição em forma de número. Um teste varre a tela cheia atrás de `errou`, `errado`, `falhou` e `pior`, e reprova se alguma aparecer. As três fatias da barra de desfechos são verde, ciano e **amarelo** — nenhuma é vermelha, porque revelar não é falhar: é o `VAMOS JUNTOS` da tela de exercício, e o amarelo é o mesmo já usado na Dica
+- **Tempo não vira competição.** Ele é o **único cartão sem cor de acento**, e o rótulo diz "em média por questão", nunca "seu tempo" — destacá-lo seria convidar a corrida
+- **O nulo é dito em voz alta.** Sem tempo medido o cartão mostra `—` e "tempo ainda não medido", jamais `0s`; e o rodapé escreve quantas questões ficam fora da média por serem anteriores à medição. Um teste exige que `0s` não apareça
+
+Mais três decisões que não são óbvias:
+
+- **Quem ainda não jogou vê um convite, não zeros.** "0%" e "0 de 0" parecem um resultado ruim quando não há resultado nenhum — seria a tela cobrando de quem ainda não teve chance
+- **A categoria "insistindo" sai por subtração**, porque o banco não a guarda: é o que sobra entre o total, as de primeira e as reveladas. As três somam o total exato, e é isso que deixa a barra ser lida como um inteiro repartido
+- **A lista de tópicos esconde quem teve média 1,0.** Ela responde uma pergunta só — o que revisar — e linha dizendo "aqui você foi bem" não ajuda a responder. As barras são proporcionais **ao tópico mais caro**, não a um teto fixo, porque a comparação que importa é entre eles
+
+**Dívida aberta: esta tela nunca foi vista renderizada.** A suíte está verde e o `analyze` limpo, mas *verde quer dizer "passou nas checagens que existem"* — e o print é exatamente a checagem que falta. Cinco vezes neste repositório a suíte escondeu um defeito que só apareceu na tela. O que ainda não foi conferido a olho: se o terceiro ícone cabe na barra da trilha sem espremer o nome da linguagem, se a barra de desfechos fica legível com fatias muito desiguais, e se as três cores das fatias se distinguem no fundo escuro. Combinado com o Gustavo em 7 de setembro de 2026: ele mesmo faz o print quando for jogar.
 
 #### Migração com duas rotas: prove que convergem
 
@@ -685,6 +699,20 @@ https://console.firebase.google.com/project/<id-do-projeto>/authentication
 
 O que resolveu foi **desinstalar antes de instalar** e, quando o emulador já estava em estado ruim, reiniciá-lo. Compilar com `--target-platform android-x64` ajuda pouco (155,9 MB contra 163 MB): o peso é do runtime de debug, não das ABIs.
 
+**O APK cresceu de novo, e agora o `adb uninstall` também derruba o emulador.** Em 7 de setembro de 2026 ele estava em **203 MB**, e um `adb uninstall` falhou com o mesmo `Broken pipe (32)` — a desinstalação, que era a receita, virou a causa. O resultado foi pior que o de antes:
+
+- O pacote **não** foi removido, e os dados sobreviveram — mas o `pm` ficou morto (`Can't find service: package`)
+- Reiniciar o emulador **não curou**. O `system_server` voltou incompleto, e o `adb install` passou a falhar com `StorageManager.getVolumes()` nulo e depois `PackageManagerInternal ... freeStorage` nulo
+- `adb shell "stop && start"`, que reinicia só o framework sem apagar dados, também não curou
+
+Duas lições que valem mais que a receita: **antes de desinstalar, puxe o banco**, porque a desinstalação apaga o progresso e pode falhar no meio deixando o aparelho pior —
+
+```bash
+adb exec-out run-as com.devlingo.app cat databases/devlingo.db > backup.db
+```
+
+E **`emulator -wipe-data` não é decisão de quem está programando**: os três AVDs são compartilhados com o projeto Appium do Gustavo, e apagar os dados de um levaria junto o que aquele projeto tem instalado. Pergunte.
+
 **Desinstalar apaga o `devlingo.db`.** O progresso local se perde — foi o que aconteceu com as 10 questões de Python já respondidas. Em desenvolvimento é aceitável; ao testar migração de banco, não é.
 
 #### O log guarda o código cru do Firebase
@@ -785,18 +813,18 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **C4** | Realce de sintaxe nos blocos de código | **concluída** |
 | **C5** | Som de acerto | **concluída** |
 | **C6** | Tela de título de fliperama, com a ficha | **concluída** |
-| **C7** | Coleta de dados para estatísticas (banco v4) | **concluída — falta só a tela** |
+| **C7** | Coleta de dados para estatísticas (banco v4) | **concluída** |
 | **C8** | Cenário animado em parallax na tela de exercício | **concluída** |
 | **D1** | Telas de entrar, criar conta e recuperar senha | **concluída, em modo de demonstração** |
 | **D2** | Cena animada da tela de entrada | **concluída** |
 | **D3** | Firebase Auth de verdade, com conta criada e sessão persistida | **concluída** |
 | **D4** | Progresso por usuário, e estado derivado do histórico | **concluída** |
 | **D5** | Sincronização com o Firestore | **concluída** |
+| **D6** | Tela de estatísticas do jogador | **concluída** |
 
 **Combinado e ainda não feito:**
 
 - **O Gustavo ainda não jogou o JavaScript.** As 50 questões foram calibradas sem ele jogar nenhuma; a dificuldade é palpite meu até ele passar por elas. É a mesma razão que fez o Python intermediário esperar
-- **A TELA de estatísticas do jogador.** A coleta já está feita e medindo desde a versão 4 do banco — ver a seção própria em Progresso, que lista o que `resumoDoJogador()` já responde e os cuidados para a tela não mentir
 - Verificar o comportamento do som no modo silencioso, num celular de verdade
 
 ### Som de acerto

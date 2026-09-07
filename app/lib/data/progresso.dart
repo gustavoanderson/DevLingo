@@ -112,6 +112,22 @@ class ResumoDoJogador {
     required this.diasEstudados,
   });
 
+  /// Quem ainda nao jogou nada.
+  ///
+  /// Existe para a tela de estatisticas ter um estado inicial sem inventar
+  /// zeros espalhados, e para os falsos de teste nao repetirem nove campos.
+  static const ResumoDoJogador vazio = ResumoDoJogador(
+    respondidas: 0,
+    deCabeca: 0,
+    reveladas: 0,
+    tentativas: 0,
+    comDica: 0,
+    tempoMedido: Duration.zero,
+    questoesComTempo: 0,
+    partidas: 0,
+    diasEstudados: 0,
+  );
+
   double get taxaDeCabeca => respondidas == 0 ? 0 : deCabeca / respondidas;
   double get tentativasPorQuestao =>
       respondidas == 0 ? 0 : tentativas / respondidas;
@@ -170,6 +186,15 @@ abstract interface class RegistroDeProgresso {
   Future<void> marcarAulaVista(String lessonId, {DateTime? quando});
 
   Future<Map<String, int>> respondidasPorLicao();
+
+  /// O retrato do desempenho, para a tela de estatisticas.
+  ///
+  /// Esta aqui, e nao so em [Progresso], porque a trilha -- que e quem abre a
+  /// tela -- so enxerga esta interface. Ver [RegistroDeProgresso].
+  Future<ResumoDoJogador> resumoDoJogador();
+
+  /// Quanto cada topico custou, do mais caro para o mais barato.
+  Future<List<CustoDoTopico>> custoPorTopico();
 
   Future<bool> somLigado();
 
@@ -944,6 +969,7 @@ class Progresso implements RegistroDeProgresso {
   /// `_uid` tambem tem que ir para o fim da lista -- posto no comeco, ele
   /// alimentava o `desfecho = ?` e a consulta virava `WHERE uid = 'revelada'`,
   /// devolvendo zero linhas em silencio. Um teste pegou; o analisador nao pega.
+  @override
   Future<List<CustoDoTopico>> custoPorTopico() async {
     final linhas = await _bd.rawQuery('''
       SELECT topic,
@@ -977,6 +1003,7 @@ class Progresso implements RegistroDeProgresso {
   /// Existe para provar que o formato responde as perguntas que motivaram
   /// guardar os dados -- e essa prova tem que vir **antes** de alguem jogar,
   /// porque coluna que nao existia nao tem como ser preenchida no passado.
+  @override
   Future<ResumoDoJogador> resumoDoJogador() async {
     final atual = (await _bd.rawQuery('''
       SELECT COUNT(*)                                            AS respondidas,

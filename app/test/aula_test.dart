@@ -83,6 +83,16 @@ class ProgressoFalso implements RegistroDeProgresso {
   @override
   Future<Map<String, int>> respondidasPorLicao() async => const {};
 
+  /// O que a tela de estatisticas vai ler. Configuravel por teste.
+  ResumoDoJogador resumo = ResumoDoJogador.vazio;
+  List<CustoDoTopico> topicos = const [];
+
+  @override
+  Future<ResumoDoJogador> resumoDoJogador() async => resumo;
+
+  @override
+  Future<List<CustoDoTopico>> custoPorTopico() async => topicos;
+
   bool som = true;
 
   @override
