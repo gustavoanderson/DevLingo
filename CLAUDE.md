@@ -905,8 +905,10 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 **Combinado e ainda não feito:**
 
 - **Trocar todos os sons do app.** O Gustavo os considera genéricos e irritantes. Baixar o volume pela metade foi paliativo; o problema é o timbre da onda quadrada. Ver "Som de acerto"
-- **O Gustavo ainda não jogou o JavaScript.** As 50 questões foram calibradas sem ele jogar nenhuma; a dificuldade é palpite meu até ele passar por elas. É a mesma razão que fez o Python intermediário esperar
-- Verificar o comportamento do som no modo silencioso, num celular de verdade
+- **O Gustavo começou o JavaScript, e parou na lição 01.** Em 7 de setembro de 2026 ele tinha 10 de 50 questões, com 70% saindo de primeira e 29 s de média. As outras quatro lições continuam calibradas por palpite meu até ele passar por elas — mesma razão que fez o Python intermediário esperar
+- **Destacar termos técnicos também na explicação.** Ela tem **129 ocorrências**, mais que a aula (90) e o enunciado (9) somados, e é onde o CLAUDE.md diz que o aprendizado acontece. Não foi feito porque o pedido delimitava enunciado e aula; estender é passar `textoComTermos` no painel de retorno
+
+**A verificação do som no modo silencioso saiu da lista, e não por ter sido feita.** Ela deixou de existir: com o canal de mídia, o modo silencioso **não cala mais o app por desenho**, e o controle é a chave de mudo. Não há o que medir.
 
 ### Som de acerto
 
