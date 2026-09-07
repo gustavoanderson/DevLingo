@@ -23,10 +23,11 @@ const Map<String, String> nomeDaLinguagem = {
   /// linguagem -- ver o comentario de `backend` acima sobre o campo `language`
   /// identificar a TRILHA, e nao um idioma de programacao.
   ///
-  /// "Qualidade" ocupa cerca de 140px na mono de 26px do cabecalho da trilha,
-  /// dentro dos ~204px disponiveis. "Engenharia de Qualidade" passaria de 340px
-  /// e quebraria a linha, pelo mesmo motivo que "Fundamentos de Backend".
-  'qa': 'Qualidade',
+  /// O nome e longo -- cerca de 328px na mono de 26px, contra os ~204px que
+  /// sobram no cabecalho da trilha ao lado dos tres icones. Ele so cabe porque
+  /// aquele titulo passou a encolher a fonte quando precisa; ver `_Cabecalho`
+  /// em `tela_trilha.dart`.
+  'qa': 'Qualidade de Software',
   'html': 'HTML',
   'css': 'CSS',
   'sql': 'SQL',

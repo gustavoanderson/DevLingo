@@ -259,17 +259,33 @@ class _Cabecalho extends StatelessWidget {
                 const SizedBox(width: 12),
               ],
               Expanded(
-                child: Text(
-                  nomeBonito(language),
-                  style: const TextStyle(
-                    color: Paleta.texto,
-                    fontFamily: fonteMono,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    shadows: [
-                      Shadow(color: Paleta.destaque, offset: Offset(-1.5, 0)),
-                      Shadow(color: Paleta.acerto, offset: Offset(1.5, 0)),
-                    ],
+                // Encolhe a fonte em vez de quebrar a linha.
+                //
+                // O titulo divide a faixa com a seta e tres icones, e sobram
+                // cerca de 204px. "JavaScript" ocupa ~156px e cabe justo;
+                // "Qualidade de Software" passa de 320px e quebraria em duas
+                // ou tres linhas, empurrando a barra de progresso e os cartoes
+                // para baixo -- e este cabecalho supoe uma linha so.
+                //
+                // `scaleDown` nao aumenta nada: nome que cabe continua nos
+                // 26px de sempre, e so o que nao cabe encolhe. Sem isto, cada
+                // nome novo vira aposta, e o banco preve nove linguagens que
+                // ainda nao existem.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    nomeBonito(language),
+                    style: const TextStyle(
+                      color: Paleta.texto,
+                      fontFamily: fonteMono,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      shadows: [
+                        Shadow(color: Paleta.destaque, offset: Offset(-1.5, 0)),
+                        Shadow(color: Paleta.acerto, offset: Offset(1.5, 0)),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -499,6 +499,46 @@ void main() {
     });
   });
 
+  group('nome longo no cabecalho', () {
+    // "Qualidade de Software" ocupa cerca de 328px na mono de 26px, e sobram
+    // ~204px ao lado da seta e dos tres icones. Sem tratamento ele quebraria em
+    // duas ou tres linhas e empurraria a barra de progresso e os cartoes para
+    // baixo -- e este cabecalho supoe uma linha so.
+    Future<double> alturaDoTitulo(WidgetTester tester, String language) async {
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: QuestionBank([
+            licao(lessonId: '\$language-beg-01', language: language),
+          ]),
+          language: language,
+          level: Level.beginner,
+          podeVoltar: false,
+          progresso: ProgressoFalso(),
+        ),
+      );
+      return tester.getSize(find.text(nomeBonito(language))).height;
+    }
+
+    testWidgets('nome longo nao fica mais alto que nome curto', (tester) async {
+      final curto = await alturaDoTitulo(tester, 'python');
+      final longo = await alturaDoTitulo(tester, 'qa');
+
+      expect(
+        longo,
+        lessThanOrEqualTo(curto),
+        reason: 'o titulo quebrou em mais de uma linha e empurrou o layout',
+      );
+    });
+
+    testWidgets('o nome longo continua inteiro na tela', (tester) async {
+      // Encolher e aceitavel; cortar com reticencias nao seria, porque o nome
+      // da trilha e o unico rotulo que diz onde a pessoa esta.
+      await alturaDoTitulo(tester, 'qa');
+      expect(find.text('Qualidade de Software'), findsOneWidget);
+    });
+  });
+
   group('estatisticas', () {
     testWidgets('o icone abre a tela com o que o banco respondeu', (
       tester,
