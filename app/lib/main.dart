@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/autenticacao.dart';
 import 'auth/autenticacao_falsa.dart';
 import 'auth/autenticacao_firebase.dart';
+import 'data/nuvem.dart';
+import 'data/nuvem_firestore.dart';
 import 'data/progresso.dart';
 import 'data/question_bank.dart';
+import 'data/sincronizador.dart';
 import 'ui/paleta.dart';
 import 'ui/som.dart';
 import 'ui/tela_entrada.dart';
@@ -78,7 +83,7 @@ class _Carga extends StatefulWidget {
   State<_Carga> createState() => _CargaState();
 }
 
-class _CargaState extends State<_Carga> {
+class _CargaState extends State<_Carga> with WidgetsBindingObserver {
   late final Future<_Partida> _partida = _preparar();
 
   /// O usuario ja apertou START e a tela de titulo saiu de cena.
@@ -114,6 +119,16 @@ class _CargaState extends State<_Carga> {
       ? AutenticacaoFirebase()
       : AutenticacaoFalsa();
 
+  /// Leva o historico para a nuvem e traz o que estiver la.
+  ///
+  /// Sem Firebase, usa a nuvem em memoria: o app funciona igual, so nao
+  /// sincroniza de verdade. **Sincronizacao e conveniencia, nao requisito** --
+  /// a mesma regra que ja vale para o som. O banco local e a fonte de verdade
+  /// do dia a dia, e nada do que o aluno fez depende de a rede existir.
+  late final Sincronizador _sincronizador = Sincronizador(
+    widget.comFirebase ? NuvemFirestore() : NuvemFalsa(),
+  );
+
   /// A sineta le a preferencia do banco a cada toque, sem cache: assim o botao
   /// de desligar tem efeito imediato e nao ha duas copias do mesmo dado para
   /// manter em sincronia.
@@ -131,7 +146,32 @@ class _CargaState extends State<_Carga> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Sobe o que foi jogado ao sair, e traz o que houver ao voltar.
+  ///
+  /// Sem isto, o progresso de uma sessao inteira so subiria na PROXIMA abertura
+  /// do app -- e se o aparelho fosse perdido antes disso, subiria nunca.
+  ///
+  /// `paused` e o momento em que o Android avisa que o app esta saindo de cena.
+  /// Nao ha garantia de tempo para terminar a chamada, e tudo bem: o que nao
+  /// subir continua pendente e vai na proxima rodada.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState estado) {
+    if (estado != AppLifecycleState.paused &&
+        estado != AppLifecycleState.resumed) {
+      return;
+    }
+    if (_usuario == null) return;
+    unawaited(_partida.then((p) => _sincronizar(p.progresso)));
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _sineta.dispose();
     _autenticacao.dispose();
     super.dispose();
@@ -144,7 +184,13 @@ class _CargaState extends State<_Carga> {
     // Sessao em cache: quem ja entrou uma vez volta autenticado, e o progresso
     // dele precisa estar disponivel ANTES da primeira tela aparecer.
     final emCache = _autenticacao.usuarioAtual;
-    if (emCache != null) await progresso.entrarComo(emCache.id);
+    if (emCache != null) {
+      await progresso.entrarComo(emCache.id);
+      // Quem ja estava logado nao passa por `_aoEntrar`, entao a primeira
+      // sincronizacao da abertura precisa acontecer aqui. Sem `await`: a tela
+      // nao espera a rede para aparecer.
+      unawaited(_sincronizar(progresso));
+    }
 
     return _Partida(banco, progresso);
   }
@@ -162,6 +208,20 @@ class _CargaState extends State<_Carga> {
     final partida = await _partida;
     await partida.progresso.entrarComo(usuario.id);
     if (mounted) setState(() => _usuario = usuario);
+
+    // Depois de mostrar a tela, e nao antes. Quem acabou de entrar quer ver a
+    // trilha, e nao uma espera pela rede -- ainda mais porque o que vier da
+    // nuvem so muda a tela se houver progresso de outro aparelho.
+    await _sincronizar(partida.progresso);
+  }
+
+  /// Roda a sincronizacao e atualiza a tela se algo mudou.
+  ///
+  /// Falha de rede nao vira erro visivel: o `Sincronizador` ja engole e relata,
+  /// e os eventos continuam pendentes para a proxima rodada.
+  Future<void> _sincronizar(Progresso progresso) async {
+    final resultado = await _sincronizador.sincronizar(progresso);
+    if (resultado.recebidos > 0 && mounted) setState(() {});
   }
 
   @override

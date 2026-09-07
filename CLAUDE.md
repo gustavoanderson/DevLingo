@@ -515,6 +515,59 @@ A adoção usa `INSERT OR IGNORE` seguido de `DELETE`, e não um `UPDATE` direto
 
 **2. Parâmetros `?` são posicionais pela ordem no TEXTO da consulta.** Ao acrescentar `WHERE uid = ?` no fim de uma consulta que já tinha `desfecho = ?` no meio, o `_uid` posto no começo da lista foi alimentar o `desfecho`, e a consulta virou `WHERE uid = 'revelada'` — devolvendo zero linhas **em silêncio**. O analisador não pega; um teste pegou.
 
+### Sincronização com o Firestore
+
+O histórico local sobe, o remoto desce, e o estado é recalculado. Provado no emulador: um evento respondido no app apareceu marcado como enviado no banco, e a marca d'água avançou — ou seja, o ciclo inteiro fechou.
+
+#### Sincroniza o HISTÓRICO, não o estado
+
+Esta é a decisão que faz o resto ser simples. O que viaja é `evento_resposta`, que **só cresce**; `resposta` nunca sai do aparelho, porque é derivado.
+
+Dois aparelhos jamais discordam sobre uma lista que só recebe itens: juntar é a união dos conjuntos. Não há "qual das duas versões vale?" para responder, e por isso não há código resolvendo isso.
+
+**A ordem é subir antes de descer.** Ao contrário, um evento local ainda não enviado poderia ser recalculado para fora do estado e só voltar na rodada seguinte — o aluno veria o progresso piscar para trás.
+
+#### Dois carimbos de tempo, e nenhum é decorativo
+
+| Campo | Quem mede | Para quê |
+|---|---|---|
+| `respondida_em` | o aparelho | dado pedagógico; vai no documento |
+| `sincronizado_em` | o **servidor** do Google | paginar o download |
+
+Paginar pelo primeiro seria defeito silencioso: um celular que ficou uma semana offline sobe hoje partidas de terça, e o outro aparelho — cuja marca já passou de terça — nunca as veria. Relógio de aparelho também erra, basta o dono mexer na data.
+
+#### Falhar é o caso comum, não o excepcional
+
+Elevador, metrô, avião. Quando a rede cai:
+
+- O `Sincronizador` engole, registra no log e devolve `falhou: true`
+- **Os eventos continuam pendentes** e sobem na próxima rodada
+- O app segue inteiro com o banco local
+
+**Marcar como enviado só acontece DEPOIS que o envio retorna.** Marcar antes perderia a partida para sempre se a rede caísse no meio — ela ficaria como sincronizada sem nunca ter chegado. Um teste cobre exatamente isso.
+
+**Sincronização é conveniência, não requisito** — a mesma regra que já vale para o som.
+
+#### Quando roda
+
+Ao entrar, na abertura de quem já estava logado, e no `paused`/`resumed` do ciclo de vida. O `paused` importa: sem ele, o progresso de uma sessão inteira só subiria na próxima abertura do app — e se o aparelho fosse perdido antes, subiria nunca.
+
+Há uma trava contra rodadas concorrentes. Não corromperia nada, já que o envio é idempotente, mas gastaria cota à toa.
+
+#### O caminho no Firestore casa com as regras
+
+`usuarios/{uid}/eventos/{eventoId}`. As regras publicadas liberam `usuarios/{uid}/**` só para o dono. **Mudar este caminho sem mudar as regras faz o app parar de gravar com "permissão negada"** — e o erro aparece só em quem sincroniza.
+
+#### Conversão de tipos na volta
+
+O Firestore devolve booleano como `bool`, e o SQLite não tem tipo booleano. Sem converter, `usou_dica` chegaria como `true` e a inserção falharia — num erro que só apareceria no aparelho de quem sincroniza, nunca em teste local.
+
+#### O que NÃO sincroniza, e por quê
+
+**As preferências (som, cenário) ficam no aparelho.** Não têm histórico, então precisariam de uma regra própria de conflito. E há um argumento de produto: são configurações *daquele* aparelho — faz sentido querer som no tablet e silêncio no celular do trabalho.
+
+Se um dia sincronizarem, a regra natural é "mais recente vence", e aí a tabela `preferencia` precisa de uma coluna de data.
+
 ### Migração do banco: nunca recriar
 
 O app já está no celular de alguém, com progresso dentro. Ao mudar o esquema, **recriar o banco do zero é mais simples e apaga o progresso do aluno** — que é exatamente o que o `Progresso` existe para não fazer.
@@ -652,7 +705,7 @@ Por isso ele é traduzido para `credenciaisErradas`, cuja mensagem manda conferi
 |---|---|
 | Projeto no Firebase e `google-services.json` | **feito** (`devlingo-cc399`) |
 | Trocar `AutenticacaoFalsa` pela implementação real | **feito** |
-| Sincronizar o progresso com o Firestore | falta |
+| Sincronizar o progresso com o Firestore | **feito** |
 | ~~O progresso não é por usuário~~ | **resolvido** na versão 5 do banco |
 
 A última é um **defeito real e conhecido**: o `devlingo.db` é único no aparelho e não tem coluna de usuário. Hoje, duas contas no mesmo celular veriam o mesmo progresso. Não foi resolvido agora porque a solução certa vem junto com a sincronização — e resolver pela metade duas vezes custa mais que resolver uma.
@@ -710,7 +763,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **A** | Ambiente Flutter e Android, tudo no D: | **concluída e provada com APK compilado** |
 | **B** | **App mínimo jogável** | **próxima** |
 | C | Polimento visual: fundo parallax, mascote animado | depois |
-| D | Firebase: login e progresso na nuvem | **em andamento** — login funcionando de verdade; falta sincronizar o progresso no Firestore |
+| D | Firebase: login e progresso na nuvem | **concluída** — login e sincronização funcionando, provados no emulador |
 | E | Python intermediário e avançado, depois JavaScript e Node | depois |
 
 **Etapa B, o escopo mínimo.** Nada além disto entra, porque o objetivo é chegar a algo jogável, não a algo completo:
@@ -738,6 +791,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **D2** | Cena animada da tela de entrada | **concluída** |
 | **D3** | Firebase Auth de verdade, com conta criada e sessão persistida | **concluída** |
 | **D4** | Progresso por usuário, e estado derivado do histórico | **concluída** |
+| **D5** | Sincronização com o Firestore | **concluída** |
 
 **Combinado e ainda não feito:**
 

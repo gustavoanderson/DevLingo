@@ -646,6 +646,104 @@ class Progresso implements RegistroDeProgresso {
     });
   }
 
+  // ------------------------------------------------------------ sincronizacao
+  //
+  // O Progresso nao conhece o Firestore, e nao deve conhecer. Ele expoe o que
+  // a sincronizacao precisa -- o que falta subir, o que chegou, ate onde ja
+  // fomos -- e quem fala com a nuvem e o `Sincronizador`.
+
+  /// Chave da marca d'agua: ate quando ja baixamos da nuvem.
+  static const String _marcaDeSincronizacao = 'sync_ate';
+
+  /// Os eventos que ainda nao subiram.
+  ///
+  /// O limite existe para uma primeira sincronizacao nao tentar subir mil
+  /// documentos numa tacada e estourar tempo ou cota. O que sobrar vai na
+  /// proxima rodada -- e como o envio e idempotente, repetir nao custa nada.
+  Future<List<Map<String, Object?>>> eventosPendentes({int limite = 400}) {
+    return _bd.query(
+      'evento_resposta',
+      where: 'uid = ? AND sincronizado = 0',
+      whereArgs: [_uid],
+      orderBy: 'respondida_em',
+      limit: limite,
+    );
+  }
+
+  /// Marca eventos como ja enviados.
+  Future<void> marcarSincronizados(Iterable<String> ids) async {
+    if (ids.isEmpty) return;
+    final lista = ids.toList();
+    final vagas = List.filled(lista.length, '?').join(', ');
+    await _bd.rawUpdate(
+      'UPDATE evento_resposta SET sincronizado = 1 WHERE evento_id IN ($vagas)',
+      lista,
+    );
+  }
+
+  /// Guarda eventos que vieram da nuvem, e recalcula o estado.
+  ///
+  /// `INSERT OR IGNORE`: o que ja existe localmente fica como esta. Isso e o
+  /// que torna a operacao segura para repetir -- e sincronizacao repete o tempo
+  /// todo, por queda de conexao e por reenvio.
+  ///
+  /// Os eventos chegam marcados como **ja sincronizados**, porque vieram de la:
+  /// devolve-los seria trafego a toa.
+  ///
+  /// Devolve quantos eram novos de verdade.
+  Future<int> receberEventos(List<Map<String, Object?>> remotos) async {
+    if (remotos.isEmpty) return 0;
+
+    var novos = 0;
+    await _bd.transaction((txn) async {
+      for (final evento in remotos) {
+        final inseriu = await txn.insert(
+          'evento_resposta',
+          {...evento, 'sincronizado': 1},
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+        if (inseriu != 0) novos++;
+      }
+    });
+
+    // So recalcula se algo mudou. Recalcular a toa nao quebra nada -- a
+    // operacao e idempotente -- mas varre o historico inteiro sem motivo.
+    if (novos > 0) await recalcularEstado();
+    return novos;
+  }
+
+  /// Ate quando ja baixamos da nuvem, em milissegundos do relogio do SERVIDOR.
+  ///
+  /// A marca e sobre quando o evento **chegou ao servidor**, e nao sobre quando
+  /// a questao foi respondida. A diferenca importa: um aparelho que ficou uma
+  /// semana offline sobe partidas antigas hoje, e uma marca baseada em
+  /// `respondida_em` as consideraria ja vistas e nunca as baixaria no outro
+  /// aparelho.
+  Future<int> marcaDeSincronizacao() async {
+    final linhas = await _bd.query(
+      'preferencia',
+      columns: ['valor'],
+      where: 'uid = ? AND chave = ?',
+      whereArgs: [_uid, _marcaDeSincronizacao],
+      limit: 1,
+    );
+    if (linhas.isEmpty) return 0;
+    return int.tryParse(linhas.first['valor'] as String) ?? 0;
+  }
+
+  Future<void> definirMarcaDeSincronizacao(int quando) {
+    return _bd.insert('preferencia', {
+      'uid': _uid,
+      'chave': _marcaDeSincronizacao,
+      'valor': '$quando',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  /// Apaga o estado atual sem tocar no historico. Existe para o teste provar
+  /// que `resposta` e mesmo um cache reconstruivel.
+  Future<void> apagarEstadoParaTeste() =>
+      _bd.delete('resposta', where: 'uid = ?', whereArgs: [_uid]);
+
   Future<void> fechar() => _bd.close();
 
   /// Grava o resultado de uma questao respondida.
