@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../auth/autenticacao.dart';
+import 'cena_do_login.dart';
 import 'paleta.dart';
 
 /// Em que modo o formulário está.
@@ -34,6 +34,7 @@ class TelaEntrada extends StatefulWidget {
     this.aoEntrar,
     this.aoVoltarAoTitulo,
     this.demonstracao = false,
+    this.comCena = false,
   });
 
   final Autenticacao autenticacao;
@@ -45,6 +46,17 @@ class TelaEntrada extends StatefulWidget {
   /// que nenhum: a pessoa cadastra um e-mail achando que tem conta, fecha o
   /// app, e descobre depois que nunca houve conta nenhuma.
   final bool demonstracao;
+
+  /// Desenha a cena animada no topo.
+  ///
+  /// **Padrão falso, e o app passa verdadeiro** -- o contrário do que a leitura
+  /// inicial sugere. O motivo é que animação em `repeat()` faz `pumpAndSettle`
+  /// esperar para sempre por uma árvore que nunca fica parada, e isso já
+  /// derrubou doze testes desta tela de uma vez. Com o padrão falso, quem
+  /// escrever um teste novo não tropeça; quem quiser a cena pede por ela.
+  ///
+  /// Mesmo desenho de `TelaExercicio.comCenario`, pela mesma razão.
+  final bool comCena;
 
   /// Chamado quando alguém entra ou cria conta com sucesso.
   final ValueChanged<Usuario>? aoEntrar;
@@ -176,6 +188,10 @@ class _TelaEntradaState extends State<TelaEntrada> {
 
   @override
   Widget build(BuildContext context) {
+    // Com o teclado aberto, a cena congela: movimento no canto do olho
+    // atrapalha quem esta digitando uma senha, e esta e a porta do app.
+    final tecladoAberto = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: Paleta.fundo,
       body: SafeArea(
@@ -205,14 +221,15 @@ class _TelaEntradaState extends State<TelaEntrada> {
                 ),
               ),
             const SizedBox(height: 8),
-            Center(
-              child: SvgPicture.asset(
-                'assets/mascot/tronikat.svg',
-                width: 72,
-                semanticsLabel: 'Tr∅nikAt, o mascote do DevLingo',
+            if (widget.comCena) ...[
+              Semantics(
+                label:
+                    'Tr∅nikAt programando, com outro Tr∅nikAt voando ao fundo '
+                    'deixando um rastro de arco-íris',
+                child: CenaDoLogin(atenuada: tecladoAberto),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 14),
+            ],
             Text(
               _titulo,
               style: const TextStyle(

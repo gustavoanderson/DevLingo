@@ -152,6 +152,7 @@ class _CargaState extends State<_Carga> {
           return TelaEntrada(
             autenticacao: _autenticacao,
             demonstracao: _autenticacao is AutenticacaoFalsa,
+            comCena: true,
             aoVoltarAoTitulo: aoVoltarAoTitulo,
             aoEntrar: (usuario) => setState(() => _usuario = usuario),
           );

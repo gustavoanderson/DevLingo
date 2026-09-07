@@ -270,6 +270,48 @@ Detalhes de implementação com motivo:
 
 A tela recebe `pronto` e `aoIniciar` de fora justamente para ser testável sem I/O: ela não sabe o que é um banco de questões. Ver "Testes de widget não enxergam I/O real".
 
+### A cena animada da tela de entrada
+
+`app/lib/ui/cena_do_login.dart`. O Tr∅nikAt programando em primeiro plano; ao fundo, **o mesmo** Tr∅nikAt rodopiando em meio a um rastro de arco-íris.
+
+#### Nyan Cat não, mascote nosso
+
+A ideia do Gustavo era o Nyan Cat. Ele **não é meme de domínio público**: é obra de 2011 de Christopher Torres, registrada e licenciada comercialmente. Reproduzi-lo num app que é portfólio público, e candidato à loja, é risco real, não teórico.
+
+O que produz o efeito não é protegido — gato voando, rastro de arco-íris, estrelas. Protegido é aquele desenho. Então a cena usa o Tr∅nikAt, o que além de seguro reforça a identidade do projeto em vez de emprestar a de outro.
+
+#### Uma função só desenha o personagem
+
+`_tronikat` desenha o Tr∅nikAt inteiro, e os **dois** gatos da cena chamam ela. Isso não é economia de código: é o que garante que sejam o mesmo personagem.
+
+A primeira versão tinha dois desenhos separados, e o Gustavo listou o que faltava no voador: sem olho, sem boca, sem bigode, sem a divisa entre a metade viva e a metálica. Com uma função só, esquecer um traço num dos gatos deixou de ser possível.
+
+**A pose é parâmetro, o personagem não.** `_Pose.digitando` põe os braços no teclado; `_Pose.girando` abre braços e pernas para a pirueta. Na primeira versão o voador não tinha membro nenhum — o desenho só sabia fazer braços indo ao teclado, e o gato do arco-íris saiu como um tronco girando.
+
+#### Proporção se mede, não se estima
+
+O Gustavo disse que o corpo estava "muito gordo em relação à cabeça". Medindo `tronikat.svg`, o diagnóstico era outro:
+
+| | Canônico | Estava | Erro |
+|---|---|---|---|
+| corpo topo ÷ cabeça | 0,73 | 0,73 | certo |
+| corpo base ÷ cabeça | 0,85 | 0,87 | certo |
+| **corpo altura ÷ cabeça** | **0,88** | **1,43** | **+63%** |
+
+A largura estava certa; a **altura** é que estava 63% maior, e o corpo lia como um tubo. Terceira vez neste projeto em que uma queixa estética tinha um número exato por trás — ver "Traço de identidade se copia, não se inventa".
+
+#### O que mais faltava, e estava nas duas artes canônicas
+
+- **A cauda termina numa luz verde.** Está em `tronikat.svg` (`circle r=6 fill=#39FF14`) e em `gerar_faixas.py` (`("disco", 16, -27, 2.5, "#39FF14")`). Faltava aqui
+- **Orelhas a 6 graus da vertical**, coladas na cabeça. Orelha inclinada já custou uma correção no retrato
+
+#### Decisões de tela
+
+- **O psicodélico fica dentro do painel**, não na tela inteira. Fundo mudando de cor atrás de campo de senha prejudica a leitura de quem está digitando — e esta é a porta do app
+- **O voador fica DENTRO do arco-íris**, não na frente: o rastro é pintado atrás dele e depois repintado por cima com transparência. Sem essa terceira passada ele parecia um adesivo colado na fita
+- **Congela com o teclado aberto**, e não some. Sumir faria o formulário saltar no meio da digitação
+- **`comCena` é falso por padrão, e o app passa verdadeiro.** Animação em `repeat()` faz `pumpAndSettle` esperar para sempre, e isso derrubou doze testes desta tela de uma vez. Com o padrão falso, quem escreve um teste novo não tropeça
+
 ### Dá para voltar à tela de título
 
 Sem isso, **rever a abertura exigia fechar e reabrir o app** — que é um jeito ruim de dizer "esta tela não é para ser vista de novo". Ela é a porta do fliperama, não um vídeo de introdução que se pula uma vez.
@@ -617,6 +659,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **C7** | Coleta de dados para estatísticas (banco v4) | **concluída — falta só a tela** |
 | **C8** | Cenário animado em parallax na tela de exercício | **concluída** |
 | **D1** | Telas de entrar, criar conta e recuperar senha | **concluída, em modo de demonstração** |
+| **D2** | Cena animada da tela de entrada | **concluída** |
 
 **Combinado e ainda não feito:**
 
