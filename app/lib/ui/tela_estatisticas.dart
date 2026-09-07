@@ -137,42 +137,58 @@ class _Cabecalho extends StatelessWidget {
 /// resultado ruim** quando na verdade não há resultado nenhum. Seria a tela
 /// cobrando de alguém que ainda não teve chance, que é justamente o que ela
 /// não pode fazer.
+///
+/// ## Encosta no topo, e não no centro
+///
+/// A primeira versão usava `Center`, e no emulador ficou bem. Num Xiaomi 15T
+/// Pro de 2772 pixels de altura ficou **quase mil pixels de nada** entre o
+/// título e a mensagem, e o resultado lê como tela travada carregando, não
+/// como recado.
+///
+/// Centralizar no espaço restante é uma decisão que só se enxerga em tela
+/// alta: quanto mais espaço sobra, mais o conteúdo afunda. Encostado no topo o
+/// vão sobra **embaixo**, que é onde toda lista curta deixa sobrar e ninguém
+/// estranha — a própria trilha faz isso com cinco lições.
 class _Vazio extends StatelessWidget {
   const _Vazio();
 
+  /// Respiro abaixo do cabeçalho. Fixo de propósito: proporcional à altura
+  /// recriaria o problema que esta classe existe para resolver.
+  static const double respiro = 56;
+
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return SingleChildScrollView(
       key: TelaEstatisticas.chaveVazio,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.insights_outlined, color: Paleta.linha, size: 56),
-            SizedBox(height: 18),
-            Text(
-              'Ainda não há o que mostrar',
-              style: TextStyle(
-                color: Paleta.texto,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
+      // Rola porque em tela baixa com fonte ampliada pelo sistema o bloco
+      // passa da altura disponível, e aí ele precisa caber de algum jeito.
+      padding: const EdgeInsets.fromLTRB(32, respiro, 32, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: const [
+          Icon(Icons.insights_outlined, color: Paleta.linha, size: 56),
+          SizedBox(height: 18),
+          Text(
+            'Ainda não há o que mostrar',
+            style: TextStyle(
+              color: Paleta.texto,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
-            SizedBox(height: 10),
-            Text(
-              'Responda algumas questões e volte aqui. Estes números existem '
-              'para você se conhecer, não para cobrar nada.',
-              style: TextStyle(
-                color: Paleta.suave,
-                fontSize: 14,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Responda algumas questões e volte aqui. Estes números existem '
+            'para você se conhecer, não para cobrar nada.',
+            style: TextStyle(
+              color: Paleta.suave,
+              fontSize: 14,
+              height: 1.5,
             ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

@@ -50,6 +50,30 @@ void main() {
       expect(find.textContaining('0%'), findsNothing);
       expect(find.textContaining('0 de 0'), findsNothing);
     });
+
+    testWidgets('numa tela alta, o recado nao afunda para o meio', (
+      tester,
+    ) async {
+      // Defeito visto num Xiaomi 15T Pro, de 2772 pixels de altura: com
+      // `Center`, sobravam quase mil pixels de nada entre o titulo e a
+      // mensagem, e a tela lia como travada carregando. No emulador, de tela
+      // curta, o mesmo codigo ficava bem -- por isso a suite nao pegou.
+      //
+      // A proporcao abaixo imita aquele aparelho em dp.
+      tester.view.physicalSize = const Size(440, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await montar(tester, resumo());
+
+      final meio = tester.getCenter(find.text('Ainda não há o que mostrar')).dy;
+      expect(
+        meio,
+        lessThan(1000 / 3),
+        reason: 'o recado tem que ficar no terco de cima, perto do titulo; '
+            'centralizado ele afunda quanto mais alta for a tela',
+      );
+    });
   });
 
   group('os numeros de topo', () {

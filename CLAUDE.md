@@ -477,7 +477,31 @@ Mais três decisões que não são óbvias:
 - **A categoria "insistindo" sai por subtração**, porque o banco não a guarda: é o que sobra entre o total, as de primeira e as reveladas. As três somam o total exato, e é isso que deixa a barra ser lida como um inteiro repartido
 - **A lista de tópicos esconde quem teve média 1,0.** Ela responde uma pergunta só — o que revisar — e linha dizendo "aqui você foi bem" não ajuda a responder. As barras são proporcionais **ao tópico mais caro**, não a um teto fixo, porque a comparação que importa é entre eles
 
-**Dívida aberta: esta tela nunca foi vista renderizada.** A suíte está verde e o `analyze` limpo, mas *verde quer dizer "passou nas checagens que existem"* — e o print é exatamente a checagem que falta. Cinco vezes neste repositório a suíte escondeu um defeito que só apareceu na tela. O que ainda não foi conferido a olho: se o terceiro ícone cabe na barra da trilha sem espremer o nome da linguagem, se a barra de desfechos fica legível com fatias muito desiguais, e se as três cores das fatias se distinguem no fundo escuro. Combinado com o Gustavo em 7 de setembro de 2026: ele mesmo faz o print quando for jogar.
+#### O que o aparelho de verdade mostrou, e a suíte não
+
+A tela foi vista renderizada num **Xiaomi 15T Pro** em 7 de setembro de 2026, e o print pagou por si na primeira olhada.
+
+**Provado:** o terceiro ícone cabe na barra da trilha sem espremer o nome da linguagem, e o código de cores funciona — estatísticas em roxo suave por ser navegação, as duas chaves em ciano por estarem ligadas.
+
+**Defeito encontrado, e é o sexto que a suíte verde escondeu:** o estado vazio usava `Center`, e num aparelho de **2772 pixels de altura** isso abriu quase mil pixels de nada entre o título e a mensagem. A tela lia como travada carregando, não como recado. No emulador, de tela curta, o mesmo código ficava bem.
+
+A correção é encostar no topo com respiro fixo. Centralizar no espaço restante é uma decisão que **só se enxerga em tela alta**: quanto mais espaço sobra, mais o conteúdo afunda. Encostado no topo o vão sobra embaixo, que é onde toda lista curta deixa sobrar e ninguém estranha — a própria trilha faz isso com cinco lições.
+
+O defeito virou teste: numa tela de 1000 dp o recado tem que ficar no terço de cima. Ele foi verificado empurrando o conteúdo de propósito, e reprovou com `Actual: 575.0` contra o teto de 333.
+
+**Continua aberto, e só jogando se resolve:** se as três cores da barra de desfechos se distinguem no fundo escuro, e se ela fica legível com fatias muito desiguais. Nenhuma das duas existe sem progresso real.
+
+#### Print tirado logo após um toque captura a transição, não a tela
+
+Custou um alarme falso: o primeiro print das estatísticas pegou o `MaterialPageRoute` no meio do fade, e eu **afirmei que o título estava ilegível**. A medição derrubou minha própria acusação — com a tela assentada, o pixel mais claro do título é `#F2F0FF`, exatamente `Paleta.texto`.
+
+A correção de método é fazer o toque e a espera acontecerem **dentro do aparelho**, e não encadeando comandos do PC:
+
+```bash
+adb shell "input tap X Y; sleep 3; screencap -p /sdcard/t.png"
+```
+
+E antes de acusar uma cor, meça: recorte a região com `Pillow` e pegue o pixel mais claro. Isso já evitou duas conclusões erradas em um dia — a outra foi medir a tela errada, porque o Gustavo tinha tocado em voltar entre uma captura e outra. **Confirme em que tela você está antes de comparar pixels.**
 
 #### Migração com duas rotas: prove que convergem
 
@@ -884,7 +908,9 @@ adb shell screencap -p /sdcard/tela.png
 adb pull /sdcard/tela.png tela.png
 ```
 
-O print é a única ferramenta que enxerga defeito visual. Cinco vezes neste repositório a suíte ficou verde escondendo algo que só apareceu na tela: a sombra de recorte invisível, os textos sem acento, o aço claro demais no retrato do mascote, o gradiente que não era aplicado e as fatias do sol vazando para fora do disco. **Verde quer dizer "passou nas checagens que existem".**
+O print é a única ferramenta que enxerga defeito visual. Seis vezes neste repositório a suíte ficou verde escondendo algo que só apareceu na tela: a sombra de recorte invisível, os textos sem acento, o aço claro demais no retrato do mascote, o gradiente que não era aplicado, as fatias do sol vazando para fora do disco e o vão de mil pixels no estado vazio das estatísticas. **Verde quer dizer "passou nas checagens que existem".**
+
+E das seis, a última só apareceu em **aparelho de verdade** — o emulador tem tela curta e escondia o problema. Ver "Rodar no celular do Gustavo".
 
 Três coisas que parecem defeito e não são:
 
@@ -893,6 +919,63 @@ Três coisas que parecem defeito e não são:
 - **O Impeller também repete `Attempted to add an invalid command to the render pass`** a cada quadro na tela de título. A tela desenha corretamente, inclusive as sombras do texto e os degradês do fundo. É ruído de validação da GPU emulada. **Ainda não foi confirmado num aparelho de verdade** — se aparecer lá, ou se algo sumir da tela, o primeiro suspeito é `Shadow(blurRadius:)` no texto piscante.
 
 Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram o parser do PowerShell 5.1. Use o Bash para esses.
+
+**No Git Bash, caminhos do Android viram caminhos do Windows.** `adb push x /sdcard/Download/` tenta gravar em `C:/Program Files/Git/sdcard/...` e falha. Prefixe com `MSYS_NO_PATHCONV=1`.
+
+### Rodar no celular do Gustavo
+
+O aparelho de teste real é um **Xiaomi 15T Pro** (`klimt`, modelo 2506BPN68G), **Android 16 / SDK 36 / HyperOS 3.0**, `arm64-v8a`. Bem acima do piso de Android 11 do emulador.
+
+**Use release, não debug.** O APK de debug carrega o compilador do Dart junto, para permitir hot reload, e a diferença não é sutil:
+
+| Versão | Tamanho |
+|---|---|
+| debug | 194,1 MB |
+| **release arm64-v8a** | **18,9 MB** |
+| release armeabi-v7a | 16,5 MB |
+
+Dez vezes menor, e abre sem a espera de aquecimento da VM. **Não é preciso criar keystore:** o `build.gradle.kts` gerado pelo Flutter assina o release com a chave de debug (há um `TODO` ali). Serve para jogar; não serve para publicar na loja.
+
+```bash
+cd app && flutter build apk --release --split-per-abi
+```
+
+Isso também explica o `Broken pipe` do emulador: era o Android engasgando com 194 MB. **Com 18,9 MB o problema não existe** — o defeito era do build de desenvolvimento, não do app.
+
+#### A Xiaomi separa "ver" de "instalar", e isso confunde
+
+Com a Depuração USB ligada, o `adb` lê o aparelho inteiro — mas `adb install` volta com:
+
+```
+INSTALL_FAILED_USER_RESTRICTED: Install canceled by user
+```
+
+**Ninguém cancelou nada.** A mensagem é herdada do Android genérico e mente sobre a causa: falta a opção **"Instalar via USB"**, que a MIUI/HyperOS mantém separada e costuma exigir login numa conta Mi, às vezes com dados móveis em vez de Wi-Fi.
+
+O contorno não precisa dessa opção, e é o caminho a usar por padrão:
+
+```bash
+MSYS_NO_PATHCONV=1 adb push app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk   /sdcard/Download/DevLingo.apk
+```
+
+O Gustavo instala tocando no arquivo pelo gerenciador de arquivos, autorizando aquele app a instalar de fonte desconhecida.
+
+**Atualizar por cima preserva o progresso**, porque a assinatura é a mesma nos dois builds. E, mesmo em desastre, o histórico está no Firestore e desce de volta ao entrar com a mesma conta.
+
+#### As duas contas que se confundem
+
+O Gustavo perguntou se a senha do app era a do Gmail. **Não é**, e a distinção vale registrar porque vai se repetir:
+
+| Conta | Para quê |
+|---|---|
+| Google (`gustavoanderson.me@gmail.com`) | entrar no **console** do Firebase; é a conta do dono |
+| Usuário do DevLingo | entrar no **jogo**; e-mail e senha digitados na tela de cadastro do app |
+
+O e-mail pode ser o mesmo; a senha não. Quem esqueceu usa a recuperação de senha na própria tela de entrada. Para ver quais contas existem:
+
+```
+https://console.firebase.google.com/project/devlingo-cc399/authentication/users
+```
 
 Fica **fora** da Etapa B: Firebase, fundo animado, escolha de linguagem, telas de trilha. Uma linguagem, uma trilha, direto ao exercício.
 
