@@ -1,0 +1,54 @@
+// Regras de seguranca do Firestore do DevLingo.
+//
+// ESTE ARQUIVO NAO E APLICADO SOZINHO. Ele vive aqui para ficar versionado e
+// revisavel em pull request, como qualquer outro codigo -- regra de seguranca
+// que so existe dentro do console e uma regra que ninguem consegue revisar, e
+// cuja ultima alteracao ninguem sabe quem fez.
+//
+// Para aplicar, cole o conteudo em:
+//   console.firebase.google.com -> Firestore Database -> aba Regras -> Publicar
+//
+// ---------------------------------------------------------------------------
+//
+// O que estas regras dizem, em portugues:
+//
+//   "Cada pessoa so enxerga e so altera os proprios dados. Mais ninguem."
+//
+// Sem elas, o Firestore em modo de producao bloqueia tudo, e o app nao grava
+// nada. Em modo de teste, ele libera tudo para qualquer um -- que e por isso
+// que o modo de teste nao foi usado aqui.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Tudo do DevLingo mora sob o identificador do usuario.
+    //
+    // `{uid}` casa com o identificador que o Firebase Auth criou ao criar a
+    // conta. `{documento=**}` faz a regra valer para TUDO que estiver abaixo,
+    // em qualquer profundidade: respostas, posicao na licao, preferencias,
+    // historico de partidas.
+    match /usuarios/{uid}/{documento=**} {
+
+      // Tres condicoes, e as tres precisam ser verdadeiras:
+      //
+      //   request.auth != null          quem pede esta autenticado
+      //   request.auth.uid == uid       e esta pedindo a PROPRIA pasta
+      //
+      // A segunda e a que importa de verdade. Sem ela, qualquer pessoa com
+      // conta no app poderia ler o progresso de qualquer outra, bastando
+      // saber o identificador dela.
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Qualquer outro caminho fica fechado.
+    //
+    // Esta regra e redundante -- o Firestore ja nega o que nao foi permitido --
+    // mas escrever a negacao explicita deixa claro para quem le que o silencio
+    // acima e intencional, e nao um caminho que alguem esqueceu de cobrir.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

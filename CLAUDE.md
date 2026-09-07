@@ -473,6 +473,48 @@ As colunas novas vivem numa lista só (`_colunasDeMedicao`) usada pelas duas rot
 
 Vale registrar como essa verificação quase falhou: o script que introduziu a divergência **não substituiu nada e mesmo assim imprimiu sucesso**, e o teste passou. Por um instante isso parecia prova de que o teste era falso negativo — quando na verdade o experimento nunca tinha acontecido. Ao sondar, confirme que a sonda entrou no arquivo antes de acreditar no resultado.
 
+### Progresso por usuário, e estado derivado (versão 5)
+
+A conta chegou, e com ela o defeito que estava registrado: o `devlingo.db` era único no aparelho, sem coluna de dono. Duas contas no mesmo celular veriam o mesmo progresso.
+
+#### A decisão: eliminar o conflito, não resolvê-lo
+
+O Gustavo escolheu entre três estratégias de sincronização, e a escolhida foi **derivar o estado do histórico**.
+
+O problema: você joga no avião, sem internet, e erra a questão 5. Depois joga no tablet e acerta. Os dois aparelhos gravaram versões diferentes da mesma questão. Qual fica?
+
+As outras duas opções — "melhor resultado vence" e "mais recente vence" — **resolvem** o conflito. Esta o **elimina**:
+
+- `evento_resposta` é o **histórico**, e só cresce. Juntar o de dois aparelhos é juntar duas listas: nenhuma partida se perde, e não existe conflito possível
+- `resposta` deixa de ser um dado disputado e vira um **cache calculado** a partir do histórico, por `recalcularEstado()`
+
+Apagar a tabela `resposta` inteira não perde nada — um teste prova isso. A verdade mora no histórico.
+
+**`recalcularEstado` é idempotente**, e isso não é detalhe: sincronização repete o tempo todo, por queda de conexão e por reenvio. Se rodar duas vezes desse resultados diferentes, o progresso mudaria sozinho. A agregação é "a partida mais recente de cada questão", com desempate pelo id do evento — sem o desempate, duas partidas no mesmo milissegundo dariam resultados diferentes conforme a ordem de chegada.
+
+#### O id do evento é derivado do conteúdo
+
+`idDoEvento(uid, questionId, quando)` produz `uid|questao|instante`. Era `INTEGER AUTOINCREMENT`, e isso quebraria a sincronização de duas formas:
+
+- **Colisão entre aparelhos:** celular e tablet gerariam o id 1 para partidas diferentes, e ao juntar os históricos uma sobrescreveria a outra
+- **Reenvio duplicaria:** a primeira queda de conexão infla o histórico, e as estatísticas passam a contar partidas que não houve
+
+Com id derivado do conteúdo, a mesma partida produz o mesmo id em qualquer lugar, e reenviar é inofensivo. Um teste grava a mesma partida duas vezes e exige que o histórico continue com uma.
+
+#### O progresso órfão é adotado
+
+O app rodou um tempo sem login, e aquele progresso é real. As linhas antigas ficam com `Progresso.semDono` (string vazia), e **a primeira conta que autenticar no aparelho as adota** — combinado com o Gustavo, e coberto por teste.
+
+A **segunda** conta no mesmo aparelho não encontra nada órfão e começa do zero, que é o comportamento certo.
+
+A adoção usa `INSERT OR IGNORE` seguido de `DELETE`, e não um `UPDATE` direto: se a conta já tiver respondido a mesma questão, o `UPDATE` violaria a chave primária e derrubaria a migração inteira.
+
+#### Duas armadilhas do SQLite que custaram tempo
+
+**1. Renomear tabela não renomeia os índices.** Ao recriar as tabelas (necessário porque o SQLite não deixa trocar a chave primária), os índices continuam existindo com o nome antigo e o `CREATE INDEX` da tabela nova falha com *"index already exists"*, derrubando a migração no meio. A correção é `DROP INDEX IF EXISTS` antes de recriar.
+
+**2. Parâmetros `?` são posicionais pela ordem no TEXTO da consulta.** Ao acrescentar `WHERE uid = ?` no fim de uma consulta que já tinha `desfecho = ?` no meio, o `_uid` posto no começo da lista foi alimentar o `desfecho`, e a consulta virou `WHERE uid = 'revelada'` — devolvendo zero linhas **em silêncio**. O analisador não pega; um teste pegou.
+
 ### Migração do banco: nunca recriar
 
 O app já está no celular de alguém, com progresso dentro. Ao mudar o esquema, **recriar o banco do zero é mais simples e apaga o progresso do aluno** — que é exatamente o que o `Progresso` existe para não fazer.
@@ -611,7 +653,7 @@ Por isso ele é traduzido para `credenciaisErradas`, cuja mensagem manda conferi
 | Projeto no Firebase e `google-services.json` | **feito** (`devlingo-cc399`) |
 | Trocar `AutenticacaoFalsa` pela implementação real | **feito** |
 | Sincronizar o progresso com o Firestore | falta |
-| **O progresso ainda não é por usuário** | falta, junto com o Firestore |
+| ~~O progresso não é por usuário~~ | **resolvido** na versão 5 do banco |
 
 A última é um **defeito real e conhecido**: o `devlingo.db` é único no aparelho e não tem coluna de usuário. Hoje, duas contas no mesmo celular veriam o mesmo progresso. Não foi resolvido agora porque a solução certa vem junto com a sincronização — e resolver pela metade duas vezes custa mais que resolver uma.
 
@@ -695,6 +737,7 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **D1** | Telas de entrar, criar conta e recuperar senha | **concluída, em modo de demonstração** |
 | **D2** | Cena animada da tela de entrada | **concluída** |
 | **D3** | Firebase Auth de verdade, com conta criada e sessão persistida | **concluída** |
+| **D4** | Progresso por usuário, e estado derivado do histórico | **concluída** |
 
 **Combinado e ainda não feito:**
 

@@ -140,7 +140,28 @@ class _CargaState extends State<_Carga> {
   Future<_Partida> _preparar() async {
     final banco = await QuestionBank.carregar();
     final progresso = await Progresso.abrir();
+
+    // Sessao em cache: quem ja entrou uma vez volta autenticado, e o progresso
+    // dele precisa estar disponivel ANTES da primeira tela aparecer.
+    final emCache = _autenticacao.usuarioAtual;
+    if (emCache != null) await progresso.entrarComo(emCache.id);
+
     return _Partida(banco, progresso);
+  }
+
+  /// Liga a conta ao progresso local.
+  ///
+  /// `entrarComo` faz duas coisas: passa a escopar tudo por este usuario e,
+  /// **na primeira vez**, adota o progresso que existia no aparelho antes de
+  /// haver login. Foi o combinado -- o app rodou um tempo sem conta, e aquele
+  /// progresso e real.
+  ///
+  /// Precisa acontecer antes de qualquer tela ler o banco, senao a trilha
+  /// desenharia zero questoes respondidas e so consertaria no proximo `build`.
+  Future<void> _aoEntrar(Usuario usuario) async {
+    final partida = await _partida;
+    await partida.progresso.entrarComo(usuario.id);
+    if (mounted) setState(() => _usuario = usuario);
   }
 
   @override
@@ -183,7 +204,7 @@ class _CargaState extends State<_Carga> {
             demonstracao: _autenticacao is AutenticacaoFalsa,
             comCena: true,
             aoVoltarAoTitulo: aoVoltarAoTitulo,
-            aoEntrar: (usuario) => setState(() => _usuario = usuario),
+            aoEntrar: _aoEntrar,
           );
         }
 

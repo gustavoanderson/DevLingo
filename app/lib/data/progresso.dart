@@ -198,7 +198,18 @@ class Progresso implements RegistroDeProgresso {
   /// Versao 2: tabela `aula_vista`.
   /// Versao 3: tabela `preferencia`.
   /// Versao 4: medicao de tempo e de dica, e a tabela `evento_resposta`.
-  static const int versao = 4;
+  /// Versao 5: progresso por usuario, e estado derivado do historico.
+  static const int versao = 5;
+
+  /// Dono das linhas gravadas ANTES de existir conta.
+  ///
+  /// O app rodou um tempo sem login, e o progresso daquela epoca nao tem dono.
+  /// Apagar seria a saida facil e destruiria o que a pessoa ja jogou, que e
+  /// exatamente o que este arquivo existe para nao fazer.
+  ///
+  /// Combinado com o Gustavo: **a primeira conta que autenticar no aparelho
+  /// adota esse progresso**. Ver [adotarProgressoOrfao].
+  static const String semDono = '';
 
   /// Acima disto a medicao de tempo e descartada e gravada como nula.
   ///
@@ -267,6 +278,105 @@ class Progresso implements RegistroDeProgresso {
       }
       await _criarEventoResposta(bd);
     }
+    if (de < 5) {
+      await _migrarParaPorUsuario(bd);
+    }
+  }
+
+  /// Degrau 5: cada linha passa a ter dono, e o historico ganha id estavel.
+  ///
+  /// **Por que recriar as tabelas em vez de usar ALTER.** O SQLite nao permite
+  /// alterar a chave primaria de uma tabela existente, e a chave precisa mudar:
+  /// de `question_id` para `(uid, question_id)`. Sem isso, duas contas no mesmo
+  /// aparelho sobrescreveriam o progresso uma da outra.
+  ///
+  /// O caminho e o padrao do proprio SQLite: cria a tabela nova ao lado, COPIA
+  /// os dados, derruba a antiga e renomeia. Em nenhum momento os dados deixam
+  /// de existir -- e um teste prova que o progresso sobrevive.
+  ///
+  /// As linhas antigas ficam com [semDono], e nao com um uid inventado. Elas
+  /// realmente nao tinham dono, e fingir o contrario impediria [adotarProgressoOrfao]
+  /// de encontra-las depois.
+  static Future<void> _migrarParaPorUsuario(Database bd) async {
+    await bd.transaction((txn) async {
+      // Os indices vem PRIMEIRO, e por um motivo que custou uma rodada de
+      // testes: no SQLite, renomear uma tabela **nao renomeia os indices dela**.
+      // Eles continuam existindo com o nome antigo, apontando para a tabela
+      // renomeada -- e ai o `CREATE INDEX` da tabela nova falha com "index
+      // already exists", derrubando a migracao inteira no meio.
+      for (final indice in [
+        'idx_resposta_licao',
+        'idx_resposta_topico',
+        'idx_evento_quando',
+        'idx_evento_questao',
+        'idx_evento_pendente',
+      ]) {
+        await txn.execute('DROP INDEX IF EXISTS $indice');
+      }
+
+      // --- resposta ---
+      await txn.execute('ALTER TABLE resposta RENAME TO resposta_antiga');
+      await _criarResposta(txn);
+      await txn.execute('''
+        INSERT INTO resposta (uid, question_id, lesson_id, language, level,
+                              topic, tentativas, desfecho, usou_dica,
+                              duracao_ms, respondida_em)
+        SELECT '$semDono', question_id, lesson_id, language, level, topic,
+               tentativas, desfecho, usou_dica, duracao_ms, respondida_em
+          FROM resposta_antiga
+      ''');
+      await txn.execute('DROP TABLE resposta_antiga');
+
+      // --- posicao ---
+      await txn.execute('ALTER TABLE posicao RENAME TO posicao_antiga');
+      await _criarPosicao(txn);
+      await txn.execute('''
+        INSERT INTO posicao (uid, lesson_id, indice, atualizada_em)
+        SELECT '$semDono', lesson_id, indice, atualizada_em FROM posicao_antiga
+      ''');
+      await txn.execute('DROP TABLE posicao_antiga');
+
+      // --- aula_vista ---
+      await txn.execute('ALTER TABLE aula_vista RENAME TO aula_vista_antiga');
+      await _criarAulaVista(txn);
+      await txn.execute('''
+        INSERT INTO aula_vista (uid, lesson_id, vista_em)
+        SELECT '$semDono', lesson_id, vista_em FROM aula_vista_antiga
+      ''');
+      await txn.execute('DROP TABLE aula_vista_antiga');
+
+      // --- preferencia ---
+      await txn.execute('ALTER TABLE preferencia RENAME TO preferencia_antiga');
+      await _criarPreferencia(txn);
+      await txn.execute('''
+        INSERT INTO preferencia (uid, chave, valor)
+        SELECT '$semDono', chave, valor FROM preferencia_antiga
+      ''');
+      await txn.execute('DROP TABLE preferencia_antiga');
+
+      // --- evento_resposta ---
+      //
+      // O id passa de INTEGER AUTOINCREMENT para um TEXTO deterministico.
+      // O motivo e a sincronizacao: dois aparelhos gerariam o id 1 para
+      // partidas diferentes, e ao juntar os historicos um sobrescreveria o
+      // outro. O id novo e derivado do proprio conteudo, entao a mesma partida
+      // produz o mesmo id em qualquer aparelho -- e reenviar nao duplica.
+      await txn.execute(
+        'ALTER TABLE evento_resposta RENAME TO evento_resposta_antiga',
+      );
+      await _criarEventoResposta(txn);
+      await txn.execute('''
+        INSERT OR IGNORE INTO evento_resposta
+              (evento_id, uid, question_id, lesson_id, language, level, topic,
+               tentativas, desfecho, usou_dica, duracao_ms, respondida_em,
+               sincronizado)
+        SELECT '$semDono' || '|' || question_id || '|' || respondida_em,
+               '$semDono', question_id, lesson_id, language, level, topic,
+               tentativas, desfecho, usou_dica, duracao_ms, respondida_em, 0
+          FROM evento_resposta_antiga
+      ''');
+      await txn.execute('DROP TABLE evento_resposta_antiga');
+    });
   }
 
   /// As colunas de medicao, numa lista so.
@@ -281,36 +391,58 @@ class Progresso implements RegistroDeProgresso {
   ];
 
   static Future<void> _criar(Database bd, int _) async {
+    await _criarResposta(bd);
+    await _criarPosicao(bd);
+    await _criarAulaVista(bd);
+    await _criarPreferencia(bd);
+    await _criarEventoResposta(bd);
+  }
+
+  /// O ESTADO ATUAL, derivado do historico.
+  ///
+  /// Uma linha por questao **por usuario**: a chave e `(uid, question_id)`, e
+  /// nao mais so `question_id`. Sem o `uid` na chave, duas contas no mesmo
+  /// aparelho sobrescreveriam o progresso uma da outra -- o defeito que a
+  /// versao 5 existe para corrigir.
+  ///
+  /// **Esta tabela e um cache.** A verdade mora em `evento_resposta`, e daqui
+  /// ela pode ser reconstruida a qualquer momento por [recalcularEstado]. Ela
+  /// existe porque a trilha precisa contar questoes respondidas toda vez que
+  /// abre, e varrer o historico inteiro para isso ficaria lento conforme o
+  /// aluno joga.
+  static Future<void> _criarResposta(DatabaseExecutor bd) async {
     await bd.execute('''
       CREATE TABLE resposta (
-        question_id   TEXT PRIMARY KEY,
+        uid           TEXT NOT NULL,
+        question_id   TEXT NOT NULL,
         lesson_id     TEXT NOT NULL,
         language      TEXT NOT NULL,
         level         TEXT NOT NULL,
         topic         TEXT NOT NULL,
         tentativas    INTEGER NOT NULL,
         desfecho      TEXT NOT NULL,
+        ${_colunasDeMedicao.join(',\n        ')},
         respondida_em INTEGER NOT NULL,
-        ${_colunasDeMedicao.join(',\n        ')}
+        PRIMARY KEY (uid, question_id)
       )
     ''');
-    // Os dois indices existem para as consultas que o app fara de verdade:
-    // retomar uma licao, e um dia apontar em que topico o aluno mais tropeca.
-    await bd.execute('CREATE INDEX idx_resposta_licao ON resposta(lesson_id)');
-    await bd.execute('CREATE INDEX idx_resposta_topico ON resposta(topic)');
-
-    await bd.execute('''
-      CREATE TABLE posicao (
-        lesson_id     TEXT PRIMARY KEY,
-        indice        INTEGER NOT NULL,
-        atualizada_em INTEGER NOT NULL
-      )
-    ''');
-
-    await _criarAulaVista(bd);
-    await _criarPreferencia(bd);
-    await _criarEventoResposta(bd);
+    await bd.execute(
+      'CREATE INDEX idx_resposta_licao ON resposta(uid, lesson_id)',
+    );
+    await bd.execute(
+      'CREATE INDEX idx_resposta_topico ON resposta(uid, topic)',
+    );
   }
+
+  static Future<void> _criarPosicao(DatabaseExecutor bd) => bd.execute('''
+    CREATE TABLE posicao (
+      uid           TEXT NOT NULL,
+      lesson_id     TEXT NOT NULL,
+      indice        INTEGER NOT NULL,
+      atualizada_em INTEGER NOT NULL,
+      PRIMARY KEY (uid, lesson_id)
+    )
+  ''');
 
   /// O historico, uma linha por vez que uma questao foi respondida.
   ///
@@ -329,10 +461,11 @@ class Progresso implements RegistroDeProgresso {
   /// Uma tabela unica obrigaria a escolher entre as duas coisas: ou a trilha
   /// passa a varrer o historico inteiro para contar quantas questoes foram
   /// respondidas, ou o historico e jogado fora a cada refazimento.
-  static Future<void> _criarEventoResposta(Database bd) async {
+  static Future<void> _criarEventoResposta(DatabaseExecutor bd) async {
     await bd.execute('''
       CREATE TABLE evento_resposta (
-        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        evento_id     TEXT    PRIMARY KEY,
+        uid           TEXT    NOT NULL,
         question_id   TEXT    NOT NULL,
         lesson_id     TEXT    NOT NULL,
         language      TEXT    NOT NULL,
@@ -342,34 +475,176 @@ class Progresso implements RegistroDeProgresso {
         desfecho      TEXT    NOT NULL,
         usou_dica     INTEGER NOT NULL,
         duracao_ms    INTEGER,
-        respondida_em INTEGER NOT NULL
+        respondida_em INTEGER NOT NULL,
+        sincronizado  INTEGER NOT NULL DEFAULT 0
       )
     ''');
-    // A consulta de estatisticas percorre o historico por data e por questao.
     await bd.execute(
-      'CREATE INDEX idx_evento_quando ON evento_resposta(respondida_em)',
+      'CREATE INDEX idx_evento_quando ON evento_resposta(uid, respondida_em)',
     );
     await bd.execute(
-      'CREATE INDEX idx_evento_questao ON evento_resposta(question_id)',
+      'CREATE INDEX idx_evento_questao ON evento_resposta(uid, question_id)',
+    );
+    // A sincronizacao pergunta "o que ainda nao subiu?" a cada gravacao.
+    await bd.execute(
+      'CREATE INDEX idx_evento_pendente ON evento_resposta(uid, sincronizado)',
     );
   }
+
+  /// O identificador de uma partida, igual em qualquer aparelho.
+  ///
+  /// Derivado do proprio conteudo -- dono, questao e instante -- em vez de um
+  /// contador local. Isso resolve dois problemas de uma vez:
+  ///
+  /// - **Nao colide entre aparelhos.** Com `AUTOINCREMENT`, o celular e o
+  ///   tablet gerariam o id 1 para partidas diferentes, e ao juntar os
+  ///   historicos uma sobrescreveria a outra
+  /// - **Reenviar nao duplica.** A mesma partida produz sempre o mesmo id,
+  ///   entao mandar de novo para a nuvem e inofensivo. Sincronizacao que nao e
+  ///   idempotente vira historico inflado na primeira queda de conexao
+  static String idDoEvento(String uid, String questionId, int quando) =>
+      '$uid|$questionId|$quando';
 
   /// Fica em funcao propria para o `onCreate` e o `onUpgrade` usarem a mesma
   /// definicao. Duas copias do mesmo CREATE TABLE divergem com o tempo, e a
   /// diferenca so aparece em quem instalou o app numa versao especifica.
-  static Future<void> _criarAulaVista(Database bd) => bd.execute('''
+  static Future<void> _criarAulaVista(DatabaseExecutor bd) => bd.execute('''
     CREATE TABLE aula_vista (
-      lesson_id TEXT PRIMARY KEY,
-      vista_em  INTEGER NOT NULL
+      uid       TEXT NOT NULL,
+      lesson_id TEXT NOT NULL,
+      vista_em  INTEGER NOT NULL,
+      PRIMARY KEY (uid, lesson_id)
     )
   ''');
 
-  static Future<void> _criarPreferencia(Database bd) => bd.execute('''
+  static Future<void> _criarPreferencia(DatabaseExecutor bd) => bd.execute('''
     CREATE TABLE preferencia (
-      chave TEXT PRIMARY KEY,
-      valor TEXT NOT NULL
+      uid   TEXT NOT NULL,
+      chave TEXT NOT NULL,
+      valor TEXT NOT NULL,
+      PRIMARY KEY (uid, chave)
     )
   ''');
+
+  /// De quem e o progresso que este objeto le e grava.
+  ///
+  /// Comeca em [semDono], que e o estado de quem ainda nao entrou. Com login
+  /// obrigatorio isso dura pouco: o `main.dart` chama [entrarComo] assim que a
+  /// autenticacao devolve um usuario.
+  ///
+  /// Guardado aqui, e nao passado em cada chamada, porque as telas dependem de
+  /// [RegistroDeProgresso] e nao tem -- nem deveriam ter -- nocao de uid. A
+  /// tela de exercicio pergunta "grave esta resposta"; de quem ela e, e assunto
+  /// desta camada.
+  String _uid = semDono;
+
+  String get usuarioAtual => _uid;
+
+  /// Passa a ler e gravar o progresso desta conta.
+  ///
+  /// **Adota o progresso orfao na primeira vez**, e so na primeira: se houver
+  /// linhas sem dono no aparelho, elas passam a pertencer a esta conta. Foi o
+  /// combinado com o Gustavo, e existe porque o app rodou um tempo sem login e
+  /// aquele progresso e real.
+  ///
+  /// A segunda conta a entrar no mesmo aparelho **nao** encontra nada orfao,
+  /// entao comeca do zero -- que e o comportamento certo.
+  Future<void> entrarComo(String uid) async {
+    _uid = uid;
+    await adotarProgressoOrfao(uid);
+  }
+
+  /// Da dono ao progresso gravado antes de existir conta.
+  ///
+  /// Usa `INSERT OR IGNORE` seguido de `DELETE` em vez de um `UPDATE` direto:
+  /// se a conta ja tiver respondido a mesma questao, o `UPDATE` violaria a
+  /// chave primaria e a migracao inteira falharia. Assim, o que ja e da conta
+  /// prevalece, e o orfao que sobra e descartado.
+  Future<int> adotarProgressoOrfao(String uid) async {
+    if (uid == semDono) return 0;
+    var adotadas = 0;
+    await _bd.transaction((txn) async {
+      for (final tabela in ['resposta', 'posicao', 'aula_vista',
+                            'preferencia', 'evento_resposta']) {
+        final antes = Sqflite.firstIntValue(
+              await txn.rawQuery(
+                'SELECT COUNT(*) FROM $tabela WHERE uid = ?',
+                [semDono],
+              ),
+            ) ??
+            0;
+        if (antes == 0) continue;
+
+        final colunas = (await txn.rawQuery('PRAGMA table_info($tabela)'))
+            .map((c) => c['name'] as String)
+            .toList();
+        final lista = colunas.join(', ');
+        final selecao = colunas
+            .map((c) => c == 'uid' ? '?' : c)
+            .join(', ');
+
+        // O evento tem id derivado do uid, entao ele PRECISA ser recalculado:
+        // manter o id antigo deixaria o historico com identificadores que nao
+        // batem com o dono, e a sincronizacao os trataria como de outra pessoa.
+        if (tabela == 'evento_resposta') {
+          await txn.rawInsert(
+            'INSERT OR IGNORE INTO evento_resposta ($lista) '
+            "SELECT ? || '|' || question_id || '|' || respondida_em, ?, "
+            '${colunas.where((c) => c != 'evento_id' && c != 'uid').join(', ')} '
+            'FROM evento_resposta WHERE uid = ?',
+            [uid, uid, semDono],
+          );
+        } else {
+          await txn.rawInsert(
+            'INSERT OR IGNORE INTO $tabela ($lista) '
+            'SELECT $selecao FROM $tabela WHERE uid = ?',
+            [uid, semDono],
+          );
+        }
+        await txn.delete(tabela, where: 'uid = ?', whereArgs: [semDono]);
+        adotadas += antes;
+      }
+    });
+    return adotadas;
+  }
+
+  /// Reconstroi o ESTADO ATUAL a partir do historico.
+  ///
+  /// Esta e a decisao central da sincronizacao, e o Gustavo escolheu ela: em
+  /// vez de resolver conflito entre duas versoes do mesmo progresso, o app
+  /// **elimina a possibilidade dele**. O historico so cresce e nunca conflita
+  /// -- juntar o de dois aparelhos e juntar duas listas -- e o estado atual
+  /// deixa de ser um dado disputado para virar um resumo calculado.
+  ///
+  /// A regra de agregacao e "a partida mais recente de cada questao", com
+  /// desempate pelo id do evento. O desempate importa: sem ele, duas partidas
+  /// no mesmo milissegundo dariam resultados diferentes conforme a ordem em que
+  /// os eventos chegassem, e a promessa de determinismo cairia por terra.
+  ///
+  /// Rodar isto duas vezes produz o mesmo resultado. Rodar depois de receber
+  /// eventos novos produz o estado certo. E o que torna a sincronizacao segura
+  /// para repetir.
+  Future<void> recalcularEstado([String? deQuem]) async {
+    final uid = deQuem ?? _uid;
+    await _bd.transaction((txn) async {
+      await txn.delete('resposta', where: 'uid = ?', whereArgs: [uid]);
+      await txn.rawInsert('''
+        INSERT INTO resposta (uid, question_id, lesson_id, language, level,
+                              topic, tentativas, desfecho, usou_dica,
+                              duracao_ms, respondida_em)
+        SELECT uid, question_id, lesson_id, language, level, topic,
+               tentativas, desfecho, usou_dica, duracao_ms, respondida_em
+          FROM evento_resposta e
+         WHERE uid = ?
+           AND evento_id = (
+             SELECT evento_id FROM evento_resposta
+              WHERE uid = e.uid AND question_id = e.question_id
+              ORDER BY respondida_em DESC, evento_id DESC
+              LIMIT 1
+           )
+      ''', [uid]);
+    });
+  }
 
   Future<void> fechar() => _bd.close();
 
@@ -388,7 +663,9 @@ class Progresso implements RegistroDeProgresso {
   }) async {
     if (!sessao.terminou) return;
 
+    final instante = (quando ?? DateTime.now()).millisecondsSinceEpoch;
     final dados = {
+      'uid': _uid,
       'question_id': questao.id,
       'lesson_id': licao.lessonId,
       'language': licao.language,
@@ -400,7 +677,7 @@ class Progresso implements RegistroDeProgresso {
           : Desfecho.revelada.name,
       'usou_dica': sessao.dicaPedida ? 1 : 0,
       'duracao_ms': duracaoGravavel(sessao.duracao),
-      'respondida_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
+      'respondida_em': instante,
     };
 
     // Numa transacao so: o estado atual e o historico contam a mesma coisa, e
@@ -414,15 +691,19 @@ class Progresso implements RegistroDeProgresso {
       );
       // Sem `question_id` como chave: aqui cada resposta e um evento novo, e
       // repetir a mesma questao e justamente o que se quer registrar.
-      await txn.insert('evento_resposta', dados);
+      await txn.insert('evento_resposta', {
+        ...dados,
+        'evento_id': idDoEvento(_uid, questao.id, instante),
+        'sincronizado': 0,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
     });
   }
 
   Future<RespostaGravada?> respostaDe(String questionId) async {
     final linhas = await _bd.query(
       'resposta',
-      where: 'question_id = ?',
-      whereArgs: [questionId],
+      where: 'uid = ? AND question_id = ?',
+      whereArgs: [_uid, questionId],
       limit: 1,
     );
     return linhas.isEmpty ? null : _lerResposta(linhas.first);
@@ -431,8 +712,8 @@ class Progresso implements RegistroDeProgresso {
   Future<List<RespostaGravada>> respostasDa(String lessonId) async {
     final linhas = await _bd.query(
       'resposta',
-      where: 'lesson_id = ?',
-      whereArgs: [lessonId],
+      where: 'uid = ? AND lesson_id = ?',
+      whereArgs: [_uid, lessonId],
       orderBy: 'respondida_em',
     );
     return linhas.map(_lerResposta).toList(growable: false);
@@ -444,8 +725,8 @@ class Progresso implements RegistroDeProgresso {
     final linhas = await _bd.query(
       'posicao',
       columns: ['indice'],
-      where: 'lesson_id = ?',
-      whereArgs: [lessonId],
+      where: 'uid = ? AND lesson_id = ?',
+      whereArgs: [_uid, lessonId],
       limit: 1,
     );
     return linhas.isEmpty ? null : linhas.first['indice'] as int;
@@ -458,6 +739,7 @@ class Progresso implements RegistroDeProgresso {
   @override
   Future<void> salvarPosicao(String lessonId, int indice, {DateTime? quando}) {
     return _bd.insert('posicao', {
+      'uid': _uid,
       'lesson_id': lessonId,
       'indice': indice,
       'atualizada_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
@@ -474,8 +756,8 @@ class Progresso implements RegistroDeProgresso {
     final linhas = await _bd.query(
       'aula_vista',
       columns: ['lesson_id'],
-      where: 'lesson_id = ?',
-      whereArgs: [lessonId],
+      where: 'uid = ? AND lesson_id = ?',
+      whereArgs: [_uid, lessonId],
       limit: 1,
     );
     return linhas.isNotEmpty;
@@ -484,6 +766,7 @@ class Progresso implements RegistroDeProgresso {
   @override
   Future<void> marcarAulaVista(String lessonId, {DateTime? quando}) {
     return _bd.insert('aula_vista', {
+      'uid': _uid,
       'lesson_id': lessonId,
       'vista_em': (quando ?? DateTime.now()).millisecondsSinceEpoch,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -500,7 +783,9 @@ class Progresso implements RegistroDeProgresso {
   @override
   Future<Map<String, int>> respondidasPorLicao() async {
     final linhas = await _bd.rawQuery(
-      'SELECT lesson_id, COUNT(*) AS total FROM resposta GROUP BY lesson_id',
+      'SELECT lesson_id, COUNT(*) AS total FROM resposta '
+      'WHERE uid = ? GROUP BY lesson_id',
+      [_uid],
     );
     return {
       for (final l in linhas) l['lesson_id'] as String: l['total'] as int,
@@ -536,8 +821,8 @@ class Progresso implements RegistroDeProgresso {
     final linhas = await _bd.query(
       'preferencia',
       columns: ['valor'],
-      where: 'chave = ?',
-      whereArgs: [chave],
+      where: 'uid = ? AND chave = ?',
+      whereArgs: [_uid, chave],
       limit: 1,
     );
     if (linhas.isEmpty) return true;
@@ -546,6 +831,7 @@ class Progresso implements RegistroDeProgresso {
 
   Future<void> _definirPreferencia(String chave, bool ligado) {
     return _bd.insert('preferencia', {
+      'uid': _uid,
       'chave': chave,
       'valor': ligado ? '1' : '0',
     }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -555,6 +841,11 @@ class Progresso implements RegistroDeProgresso {
   ///
   /// Nao e usado por nenhuma tela ainda. Existe para provar que o formato
   /// escolhido responde a pergunta que motivou guardar tentativas.
+  /// ATENCAO a ordem dos `?`: ela segue a posicao no TEXTO da consulta, nao a
+  /// ordem logica dos argumentos. Ao acrescentar `WHERE uid = ?` no fim, o
+  /// `_uid` tambem tem que ir para o fim da lista -- posto no comeco, ele
+  /// alimentava o `desfecho = ?` e a consulta virava `WHERE uid = 'revelada'`,
+  /// devolvendo zero linhas em silencio. Um teste pegou; o analisador nao pega.
   Future<List<CustoDoTopico>> custoPorTopico() async {
     final linhas = await _bd.rawQuery('''
       SELECT topic,
@@ -562,9 +853,10 @@ class Progresso implements RegistroDeProgresso {
              SUM(tentativas)   AS tentativas,
              SUM(CASE WHEN desfecho = ? THEN 1 ELSE 0 END) AS reveladas
         FROM resposta
+       WHERE uid = ?
        GROUP BY topic
        ORDER BY (CAST(SUM(tentativas) AS REAL) / COUNT(*)) DESC, topic
-    ''', [Desfecho.revelada.name]);
+    ''', [Desfecho.revelada.name, _uid]);
 
     return linhas
         .map(
@@ -599,7 +891,8 @@ class Progresso implements RegistroDeProgresso {
              SUM(CASE WHEN duracao_ms IS NOT NULL
                       THEN 1 ELSE 0 END)                         AS com_tempo
         FROM resposta
-    ''', [Desfecho.acertou.name, Desfecho.revelada.name])).first;
+       WHERE uid = ?
+    ''', [Desfecho.acertou.name, Desfecho.revelada.name, _uid])).first;
 
     // `date(..., 'unixepoch', 'localtime')` agrupa por dia no fuso do aparelho:
     // agrupar em UTC contaria como dois dias uma noite de estudo que virou.
@@ -608,7 +901,8 @@ class Progresso implements RegistroDeProgresso {
              COUNT(DISTINCT date(respondida_em / 1000,
                                  'unixepoch', 'localtime'))      AS dias
         FROM evento_resposta
-    ''')).first;
+       WHERE uid = ?
+    ''', [_uid])).first;
 
     int n(Map<String, Object?> linha, String coluna) =>
         (linha[coluna] as int?) ?? 0;
