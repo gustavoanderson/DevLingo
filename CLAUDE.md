@@ -901,10 +901,12 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **D4** | Progresso por usuário, e estado derivado do histórico | **concluída** |
 | **D5** | Sincronização com o Firestore | **concluída** |
 | **D6** | Tela de estatísticas do jogador | **concluída** |
+| **E1** | Fundamentos de Backend, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
 
 **Combinado e ainda não feito:**
 
 - **Trocar todos os sons do app.** O Gustavo os considera genéricos e irritantes. Baixar o volume pela metade foi paliativo; o problema é o timbre da onda quadrada. Ver "Som de acerto"
+- **O Gustavo ainda não jogou Fundamentos de Backend.** As 5 lições estão escritas e o intermediário espera ele passar por elas — mesma razão de sempre
 - **O Gustavo começou o JavaScript, e parou na lição 01.** Em 7 de setembro de 2026 ele tinha 10 de 50 questões, com 70% saindo de primeira e 29 s de média. As outras quatro lições continuam calibradas por palpite meu até ele passar por elas — mesma razão que fez o Python intermediário esperar
 - **Destacar termos técnicos também na explicação.** Ela tem **129 ocorrências**, mais que a aula (90) e o enunciado (9) somados, e é onde o CLAUDE.md diz que o aprendizado acontece. Não foi feito porque o pedido delimitava enunciado e aula; estender é passar `textoComTermos` no painel de retorno
 
@@ -1059,6 +1061,96 @@ https://console.firebase.google.com/project/devlingo-cc399/authentication/users
 ```
 
 Fica **fora** da Etapa B: Firebase, fundo animado, escolha de linguagem, telas de trilha. Uma linguagem, uma trilha, direto ao exercício.
+
+## Fundamentos de Backend: o curso teórico
+
+Chave `backend` no banco, nome de tela **"Backend"**. É o primeiro curso que não ensina uma linguagem — e o campo `language` continua servindo, porque o que ele identifica é a **trilha**.
+
+**O nome de tela é curto por medição, não por gosto.** O cabeçalho da trilha usa mono de 26px, e sobram cerca de 204px depois da seta e dos três ícones. "JavaScript" ocupa ~156px e cabe justo; "Fundamentos de Backend" passaria de 340px e quebraria em três linhas.
+
+### A curadoria: 389 tópicos viraram 5 lições
+
+O Gustavo trouxe `roadmap.sh/backend`, `/nodejs` e `/javascript`. Os três somam **389 tópicos**, e o roadmap.sh é uma aplicação de página única — o conteúdo não vem no HTML. A fonte que funciona é o repositório aberto:
+
+```
+https://api.github.com/repos/kamranahmedse/developer-roadmap/git/trees/master?recursive=1
+```
+
+Os arquivos ficam em `roadmaps/{slug}/content/`, e o nome de cada um **é** o tópico.
+
+Classificando os 153 do backend um a um, sem sobra:
+
+| | Tópicos |
+|---|---|
+| **Núcleo do curso** | **85** |
+| Produto específico | 34 |
+| **Tópicos de IA** | **18** |
+| Escolha de stack | 9 |
+| Front-end | 3 |
+| Meta do roadmap | 4 |
+
+**O critério de corte é o que o app consegue cobrar de forma inequívoca, e que não envelhece.** *"O que significa HTTP 404"* é fato; *"PostgreSQL ou MongoDB"* é escolha. O app é determinístico por desenho, e cobrar escolha como se fosse fato transforma ensino em dogma — o aluno que sabe mais é justamente quem erraria.
+
+Dois achados que valem para quem retomar isto:
+
+- **Um terço do roadmap é catálogo de tecnologia**, não conhecimento. Trinta e quatro tópicos são "qual banco", "qual servidor", "qual fila"
+- **O roadmap virou 12% conteúdo de IA** — LLMs, RAG, embeddings, MCP, Copilot. Adição recente, cortada com aprovação do Gustavo. Se um dia entrar, é curso próprio
+
+### As três camadas, e por que não cabem no mesmo curso
+
+O material se separou em três coisas com progressões diferentes:
+
+| Camada | Tamanho | Onde mora |
+|---|---|---|
+| JavaScript a fundo | **79 tópicos** que sobram do iniciante atual | trilha `javascript`, níveis 2 e 3 |
+| Node como plataforma | **74 conceitos** (e 37 pacotes específicos, fora) | trilha `node`, já prevista |
+| Engenharia, sem linguagem | 85 | **este curso** |
+
+Juntar as três daria uma trilha incoerente: o aluno saltaria de "o que é uma closure" para "o que é um 404" e voltaria para streams. **A separação não joga nada fora** — distribui.
+
+### O código aqui é evidência, não objeto de estudo
+
+Nas trilhas de linguagem o código é o que se estuda. Aqui ele existe para o conceito deixar de ser abstrato: um cabeçalho real, uma resposta JSON, uma rota de Express, uma consulta SQL.
+
+A pergunta nunca é *"qual a sintaxe disso"* — é *"o que este servidor respondeu"*, *"por que esta consulta é cara"*. **Se a questão precisasse ensinar sintaxe para funcionar, ela está no curso errado.**
+
+Os blocos usam `javascript`, `json`, `sql` e `http`. O `code.language` é independente da linguagem da lição, então o realce funciona onde há tokenizador e degrada sem cor onde não há — que é o comportamento já previsto.
+
+### O léxico próprio, e o atrito que não apareceu
+
+`texto_rico.dart` ganhou `_termosBackend`. A boa notícia é que **o jargão de engenharia já é todo ASCII** — `HTTP`, `REST`, `GET`, `token`, `endpoint` —, então a regra "só ASCII no que o aluno digita" não estorva, e as questões de escrita continuam viáveis.
+
+`cache` fica **fora** do léxico de propósito: virou palavra portuguesa corrente ("o cache do navegador"), e destacá-la em todo parágrafo faria o texto piscar. Entra por crase quando for o conceito sendo nomeado.
+
+### A trilha iniciante, e as amarras entre as lições
+
+| Lição | Tema |
+|---|---|
+| 01 | Cliente e servidor, DNS, requisição e resposta |
+| 02 | HTTP por dentro: métodos, status e cabeçalhos |
+| 03 | APIs e REST: recursos, JSON e os estilos |
+| 04 | Onde os dados moram: bancos, CRUD e consultas |
+| 05 | Quem é você: autenticação, senhas e segurança |
+
+Encadeadas de propósito, como Python e JavaScript: os métodos HTTP da 02 viram os verbos REST da 03; o JSON da 03 vira o formato de resposta da 04; o `Authorization` da 02 só faz sentido de verdade na 05; e o par 401/403 da 02 volta como a diferença entre autenticação e autorização. **Ao mexer em qualquer lição, confira se essas amarras continuam de pé.**
+
+### Os níveis seguintes, planejados e não escritos
+
+**Intermediário** — *por que a coisa fica lenta ou quebra*: índices e transações; cache; GraphQL a sério; OWASP e segurança aplicada; testes.
+
+**Avançado** — *as decisões que têm trade-off*: arquitetura; escala e CAP; falhar bem; observabilidade; entrega.
+
+O princípio da progressão, traduzido do critério das linguagens: onde código media *estado que muda*, aqui a medida é **quantos fatos a resposta precisa combinar**. Iniciante ensina *o que as coisas são*; intermediário, *por que existem*, partindo de uma dor; avançado, *o que se ganha e o que se perde*.
+
+**Eles esperam o Gustavo jogar o iniciante**, pela mesma razão que fez o Python intermediário esperar: calibrar dificuldade sem ninguém ter jogado é chute.
+
+### O que o validador pegou ao escrever este curso
+
+Três defeitos meus, e vale registrar porque as regras provaram valor num tipo de conteúdo para o qual não foram escritas:
+
+- Um `why` de alternativa **citava a resposta correta literalmente**, e entregaria o jogo na primeira tentativa errada
+- A **impressão digital** detectou que eu tinha escrito a mesma questão duas vezes: `https` cobrado na lição 01 e de novo na 05, com outra roupagem. Era exatamente o caso que a regra existe para pegar
+- A distribuição de gabaritos reprovou a lição 05 por **nenhuma resposta cair na letra `e`**
 
 ## O que separa um nível do outro
 
