@@ -1,3 +1,18 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+// Chave de assinatura do release, quando ela existir.
+//
+// O arquivo NAO vai para o repositorio (ver .gitignore), e a keystore mora
+// fora dele. Quem clonar o projeto sem a chave continua conseguindo compilar:
+// o release cai na chave de debug, exatamente como era antes -- serve para
+// instalar no proprio aparelho, e nao para distribuir.
+val chaveDoRelease = Properties()
+val arquivoDaChave = rootProject.file("key.properties")
+if (arquivoDaChave.exists()) {
+    chaveDoRelease.load(FileInputStream(arquivoDaChave))
+}
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -34,11 +49,32 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            // Sem key.properties estes campos ficam nulos, e o bloco abaixo
+            // nao usa esta configuracao. E o caso de quem clonou o projeto.
+            keyAlias = chaveDoRelease.getProperty("keyAlias")
+            keyPassword = chaveDoRelease.getProperty("keyPassword")
+            storeFile = chaveDoRelease.getProperty("storeFile")?.let { file(it) }
+            storePassword = chaveDoRelease.getProperty("storePassword")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Assina com a chave de verdade quando ela esta disponivel, e cai
+            // na de debug quando nao esta.
+            //
+            // Cair na de debug e deliberado, e nao descuido: sem isso, quem
+            // clonasse o repositorio nao conseguiria nem compilar um release
+            // para o proprio celular. O preco e que um APK assim NAO serve
+            // para distribuir -- e a diferenca aparece em `apksigner verify`,
+            // que mostra o dono do certificado.
+            signingConfig = if (arquivoDaChave.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

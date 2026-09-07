@@ -1005,6 +1005,60 @@ Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram
 
 **No Git Bash, caminhos do Android viram caminhos do Windows.** `adb push x /sdcard/Download/` tenta gravar em `C:/Program Files/Git/sdcard/...` e falha. Prefixe com `MSYS_NO_PATHCONV=1`.
 
+### Assinatura de release, e a chave que não pode ser perdida
+
+Até 7 de setembro de 2026 o release era assinado com a **chave de debug** — o `TODO` que o template do Flutter deixa no `build.gradle.kts`. Servia para instalar no celular do Gustavo e não serve para distribuir.
+
+Hoje existe uma keystore de verdade:
+
+| | |
+|---|---|
+| Arquivo | `D:\dev\devlingo-release\devlingo-upload.jks` |
+| Alias | `devlingo` |
+| Validade | 10.000 dias |
+| SHA1 | `1A:74:4B:64:89:C1:3E:36:82:CD:28:FD:D0:5C:46:75:6D:BA:7C:04` |
+
+**Ela mora FORA do repositório de propósito.** O `.gitignore` cobre `*.jks`, `*.keystore` e `key.properties`, mas isso é a segunda barreira — a primeira é o arquivo simplesmente não estar numa pasta que o git enxerga.
+
+**Perder essa chave é irreversível.** Sem ela não há como publicar atualização do app: nem a Google recupera, e a única saída seria publicar como se fosse outro aplicativo, perdendo instalações e histórico. É mais definitivo que o `applicationId`, que ao menos só quebra quem já instalou.
+
+#### O build funciona sem a chave, e isso é deliberado
+
+`build.gradle.kts` procura `android/key.properties`; se não achar, o release cai na chave de debug. Sem esse cuidado, **quem clonasse o repositório não conseguiria nem compilar um release para o próprio celular** — a mesma preocupação que fez o `main.dart` cair na `AutenticacaoFalsa` quando o Firebase não sobe.
+
+O preço é que um APK assim não serve para distribuir, e a diferença não aparece no nome do arquivo. Para saber com qual chave um pacote foi assinado:
+
+```bash
+keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab
+```
+
+O SHA1 tem que bater com o da tabela acima.
+
+#### Trocar a chave impede a atualização
+
+Android recusa instalar por cima de um app assinado com **outra** chave — o erro é `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Como o aparelho do Gustavo tem uma versão assinada com a chave de debug, o primeiro APK de release exige **desinstalar antes**.
+
+Isso apaga o `devlingo.db`. O progresso volta pelo Firestore ao entrar com a mesma conta — é a primeira vez que a sincronização é a rede de segurança de verdade, e não uma conveniência.
+
+#### Dois formatos, para dois destinos
+
+| Formato | Comando | Para quê |
+|---|---|---|
+| `.aab` | `flutter build appbundle --release` | Play Store, que só aceita bundle |
+| `.apk` | `flutter build apk --release --split-per-abi` | GitHub Releases, instalação direta |
+
+O bundle é maior no disco (52 MB contra 19 MB) porque carrega todas as arquiteturas; a Google gera o APK final por aparelho.
+
+#### Publicar de graça: o que dá e o que não dá
+
+A Play Store cobra **US$ 25**, taxa única. E a barreira maior costuma ser outra: contas pessoais precisam de um **teste fechado com 12 pessoas por 14 dias** antes de publicar. Políticas mudam — confira no console antes de contar com prazo.
+
+Alternativas sem custo:
+
+- **GitHub Releases** — o repositório já é público; anexar o APK resolve. Exige que o visitante autorize fonte desconhecida
+- **F-Droid** — recusaria o DevLingo, e não por qualidade: ele **exige app 100% livre**, e o Firebase é proprietário. Aceitar significaria remover login e sincronização, que são decisão registrada do Gustavo
+- **Amazon Appstore** — publicação gratuita, alcance menor
+
 ### Rodar no celular do Gustavo
 
 O aparelho de teste real é um **Xiaomi 15T Pro** (`klimt`, modelo 2506BPN68G), **Android 16 / SDK 36 / HyperOS 3.0**, `arm64-v8a`. Bem acima do piso de Android 11 do emulador.
