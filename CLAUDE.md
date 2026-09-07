@@ -371,6 +371,19 @@ passa a levar direto ao título. Ver "Dá para voltar à tela de título".
 
 **A escolha de linguagem só aparece quando há mais de uma trilha.** Com uma só, o app abre direto nela: tela de escolha com um item é cerimônia vazia.
 
+#### O cabeçalho da trilha aceita nome longo
+
+O título divide a faixa com a seta de voltar e **três** ícones — estatísticas, cenário e som —, e sobram cerca de 204px na mono de 26px. "JavaScript" ocupa ~156px e cabe justo; **"Qualidade de Software" passa de 320px.**
+
+Duas correções, e as duas nasceram do mesmo nome:
+
+- **`FittedBox` com `BoxFit.scaleDown`.** Nome que cabe continua nos 26px de sempre; só o que não cabe encolhe. Medido: sem ele, o título ia de 37px para **111px** de altura — três linhas, empurrando a barra de progresso e os cartões para baixo
+- **14px de respiro antes do primeiro ícone.** Com o `FittedBox`, o título passou a ocupar todo o `Expanded`, e ficou a **4px** do ícone de estatísticas — contra os 60 e 67 que separam os ícones entre si. O defeito existia desde que o ícone de estatísticas entrou; nome curto o escondia
+
+Um teste compara a altura do título de um nome curto com a de um longo, outro compara os retângulos do texto e do ícone. E há um terceiro exigindo que o nome apareça **inteiro**: cortar com reticências seria trocar um defeito por outro, porque o nome da trilha é o único rótulo que diz onde a pessoa está.
+
+**A lição geral:** encurtar o nome resolveria o sintoma; o cabeçalho é que nunca tratou o caso. O banco prevê nove linguagens que ainda não existem, e sem isso cada nome novo seria uma aposta.
+
 **Nada tranca.** Qualquer lição abre a qualquer momento. Trancar puniria — a mesma razão pela qual errar não termina a questão — e atrapalharia quem quer revisar uma lição antiga ou espiar a seguinte.
 
 **Lição concluída = todas as questões respondidas**, independente de quantas tentativas cada uma custou. Coerente com "o objetivo é aprender, não acertar de primeira".
@@ -840,6 +853,40 @@ Os níveis 1 e 2 são determinísticos, o que é exatamente o que se quer: sem f
 
 ---
 
+## O que o dia 7 de setembro de 2026 ensinou sobre método
+
+Foi o dia em que o app saiu do emulador e foi parar num celular de verdade, e depois num link público. Nove defeitos apareceram, e o padrão entre eles vale mais que cada um.
+
+### Print no aparelho encontra o que a suíte não alcança
+
+Três dos nove só existiam em tela alta ou em pixel: o vão de mil pixels no estado vazio, a barra de desfechos que **não desenhava**, e o título colado no ícone. Nenhum quebrava teste, e dois deles pareciam espaçamento.
+
+O que os pegou foi **medir o print**, não olhá-lo. Recortar a região com `Pillow` e contar pixels por cor transforma "acho que está estranho" em `105.300 pixels da cor do fundo onde deviam estar três faixas`.
+
+### Mas medir também derruba acusação falsa
+
+No mesmo dia eu afirmei que um título estava ilegível. A medição provou que ele estava em `#F2F0FF`, exatamente a cor certa — o print tinha pego a **animação de transição**, não a tela.
+
+Duas correções de método vieram daí, e as duas estão na seção "Receita para ver o app rodando": fazer o toque e a espera **dentro do aparelho**, e confirmar em que tela você está antes de comparar pixels. Numa das medições eu comparei a tela errada, porque o Gustavo tinha tocado em voltar entre uma captura e outra.
+
+### Toda correção virou sonda, e a sonda tem que entrar
+
+Nove correções, nove testes, e em cada uma eu **removi a correção de propósito** para ver o teste falhar. Os números ficaram nas mensagens de commit: `Actual: 575.0`, `Actual: <0.0>`, `Actual: 111.0`, `Found 0 widgets`.
+
+Duas vezes a sonda quebrou a sintaxe do arquivo em vez de testar o que devia — e um teste que não compila não prova nada. **Confirme que a sonda entrou e que o código ainda compila** antes de acreditar no resultado.
+
+### O validador pega o que a releitura não pega
+
+Escrevendo 100 questões de dois cursos novos, ele reprovou **seis erros meus**: resposta com acento, `why` entregando o gabarito, letra de gabarito sem uso, título de seção longo demais, e — o mais revelador — a **impressão digital detectando que eu tinha escrito a mesma questão duas vezes**, com outra roupagem.
+
+Nenhum dos seis eu teria notado relendo. É o argumento mais concreto do projeto a favor de escrever a regra em vez de confiar na revisão.
+
+### Um problema costuma esconder outro
+
+O Gustavo caiu no defeito da posição perdida **justamente ao voltar ao menu para mutar o app** — e a chave de mudo só existia na trilha porque ninguém tinha percebido a falta. O nome longo revelou que nunca houve separação entre título e ícones. E o `FittedBox` que consertou a quebra de linha criou o encosto de 4px.
+
+Corrigir uma coisa costuma expor a seguinte. Vale terminar a investigação em vez de parar no primeiro achado.
+
 ## Estado e próximos passos
 
 Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e **Python iniciante inteiro**.
@@ -902,6 +949,8 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **D5** | Sincronização com o Firestore | **concluída** |
 | **D6** | Tela de estatísticas do jogador | **concluída** |
 | **E1** | Fundamentos de Backend, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
+| **E2** | Qualidade de Software, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
+| **F** | Assinatura de release e publicação pública | **concluída** — v1.0.0 no GitHub Releases |
 
 **Combinado e ainda não feito:**
 
@@ -991,7 +1040,7 @@ adb shell screencap -p /sdcard/tela.png
 adb pull /sdcard/tela.png tela.png
 ```
 
-O print é a única ferramenta que enxerga defeito visual. Seis vezes neste repositório a suíte ficou verde escondendo algo que só apareceu na tela: a sombra de recorte invisível, os textos sem acento, o aço claro demais no retrato do mascote, o gradiente que não era aplicado, as fatias do sol vazando para fora do disco e o vão de mil pixels no estado vazio das estatísticas. **Verde quer dizer "passou nas checagens que existem".**
+O print é a única ferramenta que enxerga defeito visual. **Oito vezes** neste repositório a suíte ficou verde escondendo algo que só apareceu na tela: a sombra de recorte invisível, os textos sem acento, o aço claro demais no retrato do mascote, o gradiente que não era aplicado, as fatias do sol vazando para fora do disco, o vão de mil pixels no estado vazio das estatísticas, a barra de desfechos que não desenhava, e o título da trilha colado no primeiro ícone. **Verde quer dizer "passou nas checagens que existem".**
 
 E das seis, a última só apareceu em **aparelho de verdade** — o emulador tem tela curta e escondia o problema. Ver "Rodar no celular do Gustavo".
 
@@ -1048,6 +1097,22 @@ Isso apaga o `devlingo.db`. O progresso volta pelo Firestore ao entrar com a mes
 | `.apk` | `flutter build apk --release --split-per-abi` | GitHub Releases, instalação direta |
 
 O bundle é maior no disco (52 MB contra 19 MB) porque carrega todas as arquiteturas; a Google gera o APK final por aparelho.
+
+#### O app está publicado
+
+**https://github.com/gustavoanderson/DevLingo/releases/tag/v1.0.0**, desde 7 de setembro de 2026. Dois APKs assinados com a chave de release: `arm64-v8a` (19,0 MB) e `armeabi-v7a` (16,6 MB).
+
+O `x86_64` ficou **de fora de propósito** — só serve para emulador, e na página de download seria uma terceira opção que confunde quem só quer instalar.
+
+Para publicar a próxima:
+
+```bash
+gh release create vX.Y.Z --title "DevLingo vX.Y.Z"   --notes-file notas.md  DevLingo-vX.Y.Z-arm64-v8a.apk
+```
+
+**A v1.0.0 fecha um caminho de mão única:** a próxima precisa ser 1.0.1 ou 1.1.0. Não há volta para 0.x.
+
+As notas da release trazem uma seção **"O que ainda não existe"**, dizendo com todas as letras que só há nível iniciante e que as trilhas de Backend e Qualidade nunca foram jogadas. Foi decisão deliberada: num portfólio de QA, admitir a lacuna vale mais que escondê-la — quem avalia reconhece a diferença entre saber o que não se testou e achar que se testou tudo.
 
 #### Publicar de graça: o que dá e o que não dá
 
@@ -1205,6 +1270,63 @@ Três defeitos meus, e vale registrar porque as regras provaram valor num tipo d
 - Um `why` de alternativa **citava a resposta correta literalmente**, e entregaria o jogo na primeira tentativa errada
 - A **impressão digital** detectou que eu tinha escrito a mesma questão duas vezes: `https` cobrado na lição 01 e de novo na 05, com outra roupagem. Era exatamente o caso que a regra existe para pegar
 - A distribuição de gabaritos reprovou a lição 05 por **nenhuma resposta cair na letra `e`**
+
+## Qualidade de Software: o curso de QA
+
+Chave `qa`. É o curso da carreira do Gustavo, e o segundo que não ensina linguagem.
+
+### A ementa, e o que ele já tinha
+
+A ementa veio de `ebaconline.com.br/engenheiro-de-qualidade`: **34 módulos em 10 partes**, num curso de 10 meses. O Gustavo trouxe junto seis arquivos `.md` de skills que já havia consolidado noutro momento, e cruzar os dois mostrou a cobertura real:
+
+| Parte da ementa | Material que ele já tinha |
+|---|---|
+| 1 e 2 — fundamentos, ágil, BDD, UI | `qa-fundamentos.md`, completo |
+| 3 — automação de UI | `cypress.md`, detalhado |
+| 4 — API | `cypress.md`, **parcial**: falta Postman, Newman, Joi, Swagger |
+| 8 — mobile | `appium.md`, bom; falta WebdriverIO e nuvem |
+| 9 — fundamentos de programação | `javascript.md` + `typescript.md`, **parcial**: falta Jest, TDD, mocks |
+| **5, 6, 7 e 10** | **nada** — DevOps, performance, banco e gestão/IA |
+
+**Quatro das dez partes não têm material dele.** Ali a curadoria é minha, com pesquisa própria, e vale dizer isso a ele quando essas lições forem escritas.
+
+O `persona.md` **não entra na ementa**: descreve comportamento de agente, não conteúdo. Vale registrar que os valores dele batem quase palavra por palavra com este CLAUDE.md — didático, confirma antes de agir, honesto sobre o que não testou.
+
+### O critério de corte é DIFERENTE do curso de backend
+
+Lá, "produto específico" excluiu 34 tópicos: PostgreSQL, nginx, Redis. Aplicar o mesmo aqui destruiria o curso, porque **metade da ementa é ferramenta** — Cypress, Appium, JMeter, Postman, Docker, SonarQube.
+
+A diferença é real e o Gustavo decidiu: no backend, "qual banco" é acidental; **aqui a ferramenta é o ofício.** Um QA que não sabe Cypress não tem uma lacuna teórica, não faz o trabalho.
+
+Critério adotado: **entra a ferramenta quando o que se cobra é o modelo mental dela.** *"O que `cy.intercept` resolve, e quando usar stub em vez da resposta real"* vale por anos; *"a opção nova da versão 13"* não.
+
+### O atrito do acento se materializou aqui
+
+Na análise do curso de backend eu levantei o risco de conteúdo teórico em português empurrar as respostas escritas para palavras acentuadas. Lá não aconteceu — o jargão de engenharia é todo ASCII. **Aqui aconteceu na primeira lição:** uma lacuna pedia `satisfação`, com til e cedilha, e o validador reprovou.
+
+A regra para as outras catorze lições: **resposta escrita neste curso é sigla, termo inglês ou palavra sem acento.** `QA`, `ISTQB`, `failure`, `state`, `pesticida`, `sete`, `unidade` funcionam; `validação`, `verificação`, `regressão` não.
+
+Cuidado extra no intermediário: o Gherkin em português tem `Então`, com til. Os passos em inglês — `Given`, `When`, `Then` — são ASCII e servem.
+
+### A trilha iniciante, e as amarras
+
+| Lição | Tema |
+|---|---|
+| 01 | Qualidade percebida, Garantia × Controle, custo do defeito, o papel do QA |
+| 02 | Os sete princípios, verificação × validação, modelo V |
+| 03 | Níveis e tipos, reteste e regressão |
+| 04 | Erro, defeito e falha; ciclo do bug; relatório |
+| 05 | Partição, valor limite, tabela de decisão, transição de estado |
+
+Encadeadas: a curva de custo da 01 vira o terceiro princípio da 02; o modelo V da 02 apresenta os níveis que a 03 detalha; a cadeia erro→defeito→falha da 04 explica por que cobertura importa, pergunta que a 03 deixou no ar; e as técnicas da 05 são a resposta prática ao segundo princípio — testar tudo é impossível, então escolha com método.
+
+### O mapa dos quinze, e o que falta
+
+**Intermediário:** ágil para QA; histórias, critérios e BDD/Gherkin; pirâmide e shift-left; UI, usabilidade e acessibilidade; o modelo mental do Cypress.
+
+**Avançado:** API e contratos; banco de dados para QA; performance; mobile; DevOps, métricas e gestão.
+
+Os dez esperam o Gustavo jogar o iniciante. Aqui o risco de calibrar no escuro é **maior** que nos outros cursos: nas linguagens havia 100 questões medidas para comparar; aqui as 50 primeiras são a régua sendo criada.
 
 ## O que separa um nível do outro
 
