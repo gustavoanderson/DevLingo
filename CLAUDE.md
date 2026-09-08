@@ -688,6 +688,18 @@ Elevador, metrô, avião. Quando a rede cai:
 
 **Sincronização é conveniência, não requisito** — a mesma regra que já vale para o som.
 
+#### A tela precisa ser avisada, e um `setState` no topo nao basta
+
+O defeito mais assustador que este projeto produziu: o Gustavo reinstalou o app, entrou com a mesma conta, e viu **todas as trilhas zeradas**. Os dados tinham descido do Firestore — o progresso só apareceu quando ele entrou numa lição e voltou.
+
+O `main.dart` já chamava `setState` ao receber eventos, e isso não resolvia. `TelaLinguagens` e `TelaTrilha` consultam o banco **uma vez**, no `initState`, e guardam o resultado; reconstruir o widget raiz não as faz perguntar de novo. Só remontar faz, e remontar é o que acontece ao navegar.
+
+Hoje existe um `ValueNotifier<int> _chegouDaNuvem` que sobe a cada rodada com dados novos, e as duas telas o escutam.
+
+**A lição que vale além deste caso:** progresso que não aparece é indistinguível de progresso perdido para quem está olhando. O dado estava salvo, a sincronização funcionou, e mesmo assim a experiência foi de ter perdido tudo — o que levou a uma investigação inteira, e ao Gustavo cogitando refazer lições que já tinha feito.
+
+Um teste trava os dois lados: a tela recarrega quando o aviso chega, e **não** recarrega sozinha sem ele — nada de consultar o banco a cada quadro.
+
 #### Quando roda
 
 Ao entrar, na abertura de quem já estava logado, e no `paused`/`resumed` do ciclo de vida. O `paused` importa: sem ele, o progresso de uma sessão inteira só subiria na próxima abertura do app — e se o aparelho fosse perdido antes, subiria nunca.

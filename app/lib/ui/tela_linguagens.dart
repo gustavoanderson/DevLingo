@@ -20,6 +20,7 @@ class TelaLinguagens extends StatefulWidget {
     this.progresso,
     this.aoVoltarAoTitulo,
     this.sineta,
+    this.chegouDaNuvem,
   });
 
   final QuestionBank banco;
@@ -34,6 +35,13 @@ class TelaLinguagens extends StatefulWidget {
   final VoidCallback? aoVoltarAoTitulo;
 
   final Sineta? sineta;
+
+  /// Sobe quando a sincronizacao traz progresso novo da nuvem.
+  ///
+  /// Esta tela consulta o banco uma vez, no `initState`. Sem escutar isto, o
+  /// que chega depois so aparece ao navegar -- e progresso que nao aparece e
+  /// indistinguivel de progresso perdido para quem esta olhando.
+  final ValueNotifier<int>? chegouDaNuvem;
 
   static const Key chaveVoltarAoTitulo = Key('voltar-ao-titulo');
 
@@ -66,6 +74,13 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
   void initState() {
     super.initState();
     _recarregar();
+    widget.chegouDaNuvem?.addListener(_recarregar);
+  }
+
+  @override
+  void dispose() {
+    widget.chegouDaNuvem?.removeListener(_recarregar);
+    super.dispose();
   }
 
   Future<void> _recarregar() async {

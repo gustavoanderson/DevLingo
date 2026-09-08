@@ -78,7 +78,10 @@ class ProgressoFalso implements RegistroDeProgresso {
   /// grupo 'cenario animado', com `pump` em vez de `pumpAndSettle`.
   ProgressoFalso([this.contagem = const {}, this.cenario = false]);
 
-  final Map<String, int> contagem;
+  /// Mutavel de proposito: o teste da sincronizacao precisa mudar a resposta
+  /// DEPOIS que a tela ja consultou uma vez, que e o caso real -- a nuvem
+  /// responde segundos depois da tela aparecer.
+  Map<String, int> contagem;
   final Map<String, int> posicoes = {};
 
   @override
@@ -496,6 +499,72 @@ void main() {
         reason: 'podeVoltar continua sendo o padrao',
       );
       expect(voltou, 0, reason: 'o callback do titulo nao foi chamado ainda');
+    });
+  });
+
+  group('progresso que chega da nuvem', () {
+    // O Gustavo reinstalou o app, entrou com a mesma conta, e viu TODAS as
+    // trilhas zeradas. Os dados tinham descido do Firestore -- o progresso so
+    // apareceu depois que ele entrou numa licao e voltou.
+    //
+    // A causa: esta tela consulta o banco uma vez, no initState, e guarda o
+    // resultado. Reconstruir o widget raiz nao a faz perguntar de novo; so
+    // remontar faz, e remontar e o que acontece ao navegar.
+    //
+    // Do lado de quem usa, progresso que nao aparece e indistinguivel de
+    // progresso perdido -- e foi exatamente esse o susto.
+    testWidgets('a tela recarrega sozinha quando a sincronizacao avisa', (
+      tester,
+    ) async {
+      final progresso = ProgressoFalso();
+      final chegou = ValueNotifier(0);
+      addTearDown(chegou.dispose);
+
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          podeVoltar: false,
+          progresso: progresso,
+          chegouDaNuvem: chegou,
+        ),
+      );
+
+      expect(find.textContaining('0 de 4 questões'), findsOneWidget);
+
+      // A nuvem responde depois que a tela ja foi montada, que e o caso real.
+      progresso.contagem = {'python-beg-01': 2};
+      chegou.value++;
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('2 de 4 questões'),
+        findsOneWidget,
+        reason: 'sem isto, o progresso so apareceria ao navegar',
+      );
+    });
+
+    testWidgets('sem o aviso, a tela nao recarrega sozinha', (tester) async {
+      // O outro lado da regra: nada de consultar o banco a cada quadro. A
+      // tela so pergunta de novo quando ha motivo.
+      final progresso = ProgressoFalso();
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoPython,
+          language: 'python',
+          level: Level.beginner,
+          podeVoltar: false,
+          progresso: progresso,
+        ),
+      );
+
+      progresso.contagem = {'python-beg-01': 2};
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.textContaining('0 de 4 questões'), findsOneWidget);
     });
   });
 

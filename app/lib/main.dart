@@ -172,6 +172,7 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _chegouDaNuvem.dispose();
     _sineta.dispose();
     _autenticacao.dispose();
     super.dispose();
@@ -215,13 +216,31 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
     await _sincronizar(partida.progresso);
   }
 
-  /// Roda a sincronizacao e atualiza a tela se algo mudou.
+  /// Avisa as telas quando a nuvem trouxe progresso novo.
+  ///
+  /// **Um `setState` aqui nao basta**, e isso custou um susto real: o Gustavo
+  /// reinstalou o app, entrou, e viu todas as trilhas zeradas. Os dados tinham
+  /// descido do Firestore -- o progresso so apareceu quando ele entrou numa
+  /// licao e voltou.
+  ///
+  /// A causa e que `TelaLinguagens` e `TelaTrilha` consultam o banco uma vez,
+  /// no `initState`, e guardam o resultado. Reconstruir o widget raiz nao as
+  /// faz perguntar de novo; so remontar faz, e remontar e o que acontece ao
+  /// navegar. Do lado de quem usa, progresso que nao aparece e indistinguivel
+  /// de progresso perdido.
+  ///
+  /// Este contador sobe a cada rodada que trouxe algo, e as telas o escutam.
+  final ValueNotifier<int> _chegouDaNuvem = ValueNotifier(0);
+
+  /// Roda a sincronizacao e avisa quem estiver na tela.
   ///
   /// Falha de rede nao vira erro visivel: o `Sincronizador` ja engole e relata,
   /// e os eventos continuam pendentes para a proxima rodada.
   Future<void> _sincronizar(Progresso progresso) async {
     final resultado = await _sincronizador.sincronizar(progresso);
-    if (resultado.recebidos > 0 && mounted) setState(() {});
+    if (resultado.recebidos > 0 && mounted) {
+      _chegouDaNuvem.value++;
+    }
   }
 
   @override
@@ -282,6 +301,7 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
             podeVoltar: false,
             aoVoltarAoTitulo: aoVoltarAoTitulo,
             sineta: _sineta,
+            chegouDaNuvem: _chegouDaNuvem,
           );
         }
 
@@ -290,6 +310,7 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
           progresso: partida.progresso,
           aoVoltarAoTitulo: aoVoltarAoTitulo,
           sineta: _sineta,
+          chegouDaNuvem: _chegouDaNuvem,
         );
       },
     );

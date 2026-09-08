@@ -28,6 +28,7 @@ class TelaTrilha extends StatefulWidget {
     this.podeVoltar = true,
     this.aoVoltarAoTitulo,
     this.sineta,
+    this.chegouDaNuvem,
   });
 
   final QuestionBank banco;
@@ -48,6 +49,13 @@ class TelaTrilha extends StatefulWidget {
   final VoidCallback? aoVoltarAoTitulo;
 
   final Sineta? sineta;
+
+  /// Sobe quando a sincronizacao traz progresso novo da nuvem.
+  ///
+  /// Esta tela consulta o banco uma vez, no `initState`. Sem escutar isto, o
+  /// que chega depois so aparece ao navegar -- e progresso que nao aparece e
+  /// indistinguivel de progresso perdido para quem esta olhando.
+  final ValueNotifier<int>? chegouDaNuvem;
 
   static const Key chaveSombra = Key('sombra-da-trilha');
   static const Key chaveSom = Key('trilha-som');
@@ -81,10 +89,12 @@ class _TelaTrilhaState extends State<TelaTrilha>
     super.initState();
     iniciarAvisoDeRecorte();
     _recarregar();
+    widget.chegouDaNuvem?.addListener(_recarregar);
   }
 
   @override
   void dispose() {
+    widget.chegouDaNuvem?.removeListener(_recarregar);
     encerrarAvisoDeRecorte();
     super.dispose();
   }
