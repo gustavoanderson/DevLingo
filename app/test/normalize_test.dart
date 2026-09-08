@@ -103,4 +103,45 @@ void main() {
       expect(conferidas, greaterThan(0), reason: 'nenhuma resposta conferida');
     });
   });
+
+  group('quando vale mostrar o molde da resposta', () {
+    // O molde resolve UM problema: nao saber onde a resposta termina. Ele so
+    // faz sentido quando ha estrutura em volta -- e o banco mostrou que a
+    // maioria das respostas de escrita nao tem.
+    test('mostra em resposta com estrutura de codigo', () {
+      expect(valeMostrarMolde('if (saldo > 0) {'), isTrue);
+      expect(valeMostrarMolde('console.log("Oi");'), isTrue);
+      expect(valeMostrarMolde('const total = 0;'), isTrue);
+      expect(valeMostrarMolde('idade >= 18'), isTrue);
+    });
+
+    test('nao mostra em palavra ou sigla solta', () {
+      // Aqui o molde vira contador de letras: entrega o tamanho de graca e
+      // nao esclarece nada, porque nao ha ambiguidade de escopo.
+      for (final r in ['WHERE', 'DNS', 'POST', 'https', 'JSON', 'livros']) {
+        expect(
+          valeMostrarMolde(r),
+          isFalse,
+          reason: '$r nao tem estrutura: o molde seria so pontos',
+        );
+      }
+    });
+
+    test('nao mostra quando o molde seria a propria resposta', () {
+      // `===` e `!=` nao tem letra nenhuma para esconder. Exibir o molde
+      // deles seria entregar o gabarito com nome de ajuda.
+      for (final r in ['===', '!=']) {
+        expect(esqueletoDe(r), r, reason: 'nao ha o que esconder em $r');
+        expect(valeMostrarMolde(r), isFalse);
+      }
+    });
+
+    test('hifen e espaco sozinhos nao contam como estrutura', () {
+      // O enunciado dessas ja diz o formato -- "duas palavras unidas por
+      // hifen" --, entao o molde so repetiria o que ja foi dito.
+      expect(valeMostrarMolde('Content-Type'), isFalse);
+      expect(valeMostrarMolde('request response'), isFalse);
+      expect(valeMostrarMolde('NOT NULL'), isFalse);
+    });
+  });
 }

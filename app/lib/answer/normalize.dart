@@ -59,6 +59,30 @@ final RegExp _caractereDeNome = RegExp(r'[\p{L}\p{N}_]', unicode: true);
 String esqueletoDe(String resposta) =>
     resposta.replaceAll(_caractereDeNome, '·');
 
+/// Simbolos que denunciam estrutura de codigo numa resposta.
+///
+/// Hifen e espaco ficam de fora: `Content-Type` e `request response` os tem, e
+/// neles o enunciado ja explica o formato -- "duas palavras unidas por hifen".
+const String _simbolosDeEstrutura = "()[]{}=<>+*/;:.,'\"";
+
+/// Se vale mostrar o formato da resposta antes da primeira tentativa.
+///
+/// Duas condicoes, e as duas nasceram de medir o banco:
+///
+/// **Precisa ter estrutura.** O problema que o molde resolve e nao saber ONDE
+/// A RESPOSTA TERMINA, e isso so existe quando ha sintaxe em volta. Para
+/// `WHERE` ou `DNS` o molde vira `·····` -- um contador de letras, que entrega
+/// o tamanho de graca sem esclarecer nada. Das 65 questoes de escrita do
+/// banco, 41 sao assim.
+///
+/// **Precisa esconder alguma coisa.** As respostas `===` e `!=` nao tem letra
+/// nenhuma, entao o molde delas seria identico a resposta. Mostrar seria
+/// entregar o gabarito com nome de ajuda.
+bool valeMostrarMolde(String resposta) {
+  final temEstrutura = resposta.split('').any(_simbolosDeEstrutura.contains);
+  return temEstrutura && esqueletoDe(resposta) != resposta;
+}
+
 /// Aplica as mesmas regras que o validador aplica antes de comparar.
 String normalize(String texto, [NormalizeRules? regras]) {
   final r = regras ?? const NormalizeRules();

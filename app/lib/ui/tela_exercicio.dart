@@ -293,7 +293,9 @@ class _TelaExercicioState extends State<TelaExercicio>
                         // marcado errado. O enunciado nao tinha como comunicar
                         // ONDE PARAR, e descobrir isso errando e frustracao sem
                         // aprendizado -- o contrario do que este app se propoe.
-                        if (_sessao.ehEscrita && !_sessao.terminou) ...[
+                        if (_sessao.ehEscrita &&
+                            !_sessao.terminou &&
+                            valeMostrarMolde(questao.accepted!.first)) ...[
                           _Molde(resposta: questao.accepted!.first),
                           const SizedBox(height: 12),
                         ],
