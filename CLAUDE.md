@@ -995,14 +995,28 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **D6** | Tela de estatísticas do jogador | **concluída** |
 | **E1** | Fundamentos de Backend, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
 | **E2** | Qualidade de Software, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
-| **F** | Assinatura de release e publicação pública | **concluída** — v1.0.0 no GitHub Releases |
+| **F** | Assinatura de release e publicação pública | **concluída** — v1.1.1 no GitHub Releases |
+| **G** | iOS: projeto preparado, build bloqueado por falta de Mac | **preparado, não compilável** |
 
 **Combinado e ainda não feito:**
 
 - **Trocar todos os sons do app.** O Gustavo os considera genéricos e irritantes. Baixar o volume pela metade foi paliativo; o problema é o timbre da onda quadrada. Ver "Som de acerto"
 - **O Gustavo ainda não jogou Fundamentos de Backend.** As 5 lições estão escritas e o intermediário espera ele passar por elas — mesma razão de sempre
-- **O Gustavo começou o JavaScript, e parou na lição 01.** Em 7 de setembro de 2026 ele tinha 10 de 50 questões, com 70% saindo de primeira e 29 s de média. As outras quatro lições continuam calibradas por palpite meu até ele passar por elas — mesma razão que fez o Python intermediário esperar
+- **O Gustavo está em 20 de 50 no JavaScript**, medido em 8 de setembro de 2026. As outras lições continuam calibradas por palpite meu até ele passar por elas — mesma razão que fez o Python intermediário esperar
+- **Ele ainda não jogou Qualidade de Software.** As 5 lições estão escritas, e o risco de calibrar no escuro é maior aqui que nos outros cursos: nas linguagens havia 100 questões medidas para comparar, e aqui as 50 primeiras são a régua sendo criada
+- **O progresso de Python se perdeu**, e refazer é o caminho. As 10 questões originais foram embora numa desinstalação do emulador anterior à sincronização; a única sobrevivente ficou na conta criada no emulador, que é diferente da conta do celular. Ver "Progresso por usuário"
 - **Destacar termos técnicos também na explicação.** Ela tem **129 ocorrências**, mais que a aula (90) e o enunciado (9) somados, e é onde o CLAUDE.md diz que o aprendizado acontece. Não foi feito porque o pedido delimitava enunciado e aula; estender é passar `textoComTermos` no painel de retorno
+
+### iOS: o que fazer quando o assunto voltar
+
+**Combinado em 8 de setembro de 2026: preparar, não publicar.** A pasta `app/ios/` existe e o bundle id já está certo; nada foi compilado, porque compilar exige Mac. Ver a seção "iOS: preparado, e não compilável nesta máquina" para o quadro completo.
+
+Duas coisas ficaram explicitamente para depois:
+
+- **Montar o build de iOS no GitHub Actions.** O runner macOS é **gratuito para repositório público**, e o do DevLingo é. Um fluxo rodando `flutter build ios --no-codesign` a cada push provaria a portabilidade de forma verificável na aba Actions — sem Mac, sem os US$ 99, sem publicar nada. É meia hora de trabalho e custo zero, e é o passo com melhor relação entre esforço e valor de portfólio
+- **Publicar de verdade na App Store** só faz sentido se o Gustavo tiver acesso a um iPhone. Hoje ele não tem, e sem isso seriam US$ 99 por ano por um app que ele não conseguiria abrir para conferir. **Isso é decisão registrada, não pendência esquecida** — se ele adquirir um aparelho, a conversa muda
+
+O que falta tecnicamente, para o dia em que houver Mac, está listado na seção do iOS: o `GoogleService-Info.plist`, os ícones no formato da Apple, e as permissões do `Info.plist`.
 
 **A verificação do som no modo silencioso saiu da lista, e não por ter sido feita.** Ela deixou de existir: com o canal de mídia, o modo silencioso **não cala mais o app por desenho**, e o controle é a chave de mudo. Não há o que medir.
 
