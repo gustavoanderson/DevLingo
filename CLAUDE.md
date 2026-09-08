@@ -1007,6 +1007,47 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 - **O progresso de Python se perdeu**, e refazer é o caminho. As 10 questões originais foram embora numa desinstalação do emulador anterior à sincronização; a única sobrevivente ficou na conta criada no emulador, que é diferente da conta do celular. Ver "Progresso por usuário"
 - **Destacar termos técnicos também na explicação.** Ela tem **129 ocorrências**, mais que a aula (90) e o enunciado (9) somados, e é onde o CLAUDE.md diz que o aprendizado acontece. Não foi feito porque o pedido delimitava enunciado e aula; estender é passar `textoComTermos` no painel de retorno
 
+### O plano combinado para as próximas semanas
+
+Definido com o Gustavo em 8 de setembro de 2026, depois de duas perguntas que mudaram a rota:
+
+- **O DevLingo é portfólio para vaga de QA**, e monetizar é sonho distante
+- Ele tem **algumas horas por semana**, com regularidade
+
+Isso reordena tudo. Badges, cronômetro e monetização — que ele levantou — valem pouco para quem avalia um candidato a QA: **o recrutador não joga o app, ele abre o repositório.**
+
+| Ordem | O quê | Por quê |
+|---|---|---|
+| **1** | Os 334 testes rodando no CI, com cobertura e badges no README | Hoje o CI **só valida o JSON do conteúdo**. Os testes existem e ninguém fora daqui sabe. Duas horas de trabalho para tornar visível o maior ativo do projeto |
+| **2** | Suíte E2E do próprio app com **Appium** | O ativo de portfólio mais forte, e a razão está abaixo |
+| **3** | Badges de percurso e sequência de dias | Funcionalidade real, e **superfície nova para a automação testar** |
+| contínuo | O intermediário das trilhas, calibrado pelo que ele jogar | O conteúdo é o que menos impressiona recrutador e o que mais serve ao app |
+
+#### Por que o Appium contra o próprio app é a ideia mais forte
+
+Quem monta portfólio de QA esbarra sempre no mesmo problema: **não ter um sistema real para testar**. A saída comum é automatizar o site de demonstração de alguém.
+
+O Gustavo tem um app Android próprio, estável, publicado, com quatro telas complexas — e ele já estuda Appium, com skill consolidada em `appium.md`. Automatizar o DevLingo significa testar um sistema que ele **construiu, conhece por dentro e sabe onde tem risco**.
+
+E há um detalhe que vale numa entrevista: ele encontrou **nove defeitos jogando**, todos documentados aqui com a causa. Ele consegue dizer quais a automação pegaria e quais não — que é a pergunta que separa quem decorou a ferramenta de quem entende teste.
+
+#### A decisão sobre monetização, registrada para não custar caro depois
+
+Fica adiada, **mas o modelo já está escolhido: freemium** — trilhas iniciantes livres, níveis avançados pagos. Não muda nada hoje; muda como o conteúdo é organizado daqui em diante.
+
+O contrário — construir tudo aberto e tentar fechar depois — custa caro e irrita quem já usava.
+
+Duas ressalvas que apareceram na conversa e valem guardar:
+
+- **O app inteiro dura 1,6 hora**, medido com a média real dele de 29 s por questão. Mesmo com os três níveis completos seriam ~5 horas, ainda pouco para assinatura
+- **O Firestore gratuito tem teto de leituras por dia.** Com usuários reais, vira conta mensal — e o custo aparece antes da receita
+
+#### Se as badges forem feitas, o critério importa mais que o desenho
+
+Badge por **concluir lição ou manter sequência de dias** celebra persistência e combina com o app. Badge por **acertar de primeira, terminar rápido ou zerar sem erro** pune quem erra por via indireta — e transformaria "errar não termina a questão" em mentira: a mecânica não pune, mas a medalha que você não ganhou pune.
+
+O mesmo vale para o cronômetro que ele quer: **opt-in de verdade**. O que quebraria a regra registrada seria o app sugerir o modo desafio, comparar seu tempo com o de outros, ou exibir o cronômetro por padrão.
+
 ### iOS: o que fazer quando o assunto voltar
 
 **Combinado em 8 de setembro de 2026: preparar, não publicar.** A pasta `app/ios/` existe e o bundle id já está certo; nada foi compilado, porque compilar exige Mac. Ver a seção "iOS: preparado, e não compilável nesta máquina" para o quadro completo.
