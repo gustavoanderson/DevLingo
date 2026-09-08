@@ -4,7 +4,7 @@
 
 **Aprenda a programar no formato Duolingo — em português, do zero.**
 
-[![Baixar APK](https://img.shields.io/badge/baixar-APK%20v1.1.0-FF2D95?style=for-the-badge&logo=android&logoColor=white)](https://github.com/gustavoanderson/DevLingo/releases/latest)
+[![Baixar APK](https://img.shields.io/badge/baixar-APK%20v1.1.1-FF2D95?style=for-the-badge&logo=android&logoColor=white)](https://github.com/gustavoanderson/DevLingo/releases/latest)
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.13-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
@@ -12,7 +12,7 @@
 [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
 [![SQLite](https://img.shields.io/badge/SQLite-offline--first-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 
-[![Testes](https://img.shields.io/badge/testes-332%20passando-39FF14?style=flat-square)](#qualidade-não-é-seção-do-fim)
+[![Testes](https://img.shields.io/badge/testes-334%20passando-39FF14?style=flat-square)](#qualidade-não-é-seção-do-fim)
 [![Questões](https://img.shields.io/badge/questões-204-FFE14D?style=flat-square)](#as-trilhas)
 [![Trilhas](https://img.shields.io/badge/trilhas-4-FF2D95?style=flat-square)](#as-trilhas)
 
@@ -102,7 +102,7 @@ E os achados mais valiosos vieram de alguém **jogando**: uma questão que marca
 
 O projeto é também portfólio de alguém em transição de carreira para engenharia de qualidade de software. Então a qualidade não é um capítulo à parte — é o método.
 
-**332 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
+**334 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
 
 **Um validador de conteúdo com regras que só existem porque algo passou.** Ele reprova gabarito concentrado numa letra, alternativa que repete texto, dica que entrega a resposta, aula fora de sincronia com as questões, marcador de formatação desbalanceado, e duas questões que cobram a mesma resposta com outra roupagem.
 
