@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/question.dart';
 import 'models_de_token.dart';
@@ -51,7 +54,7 @@ class BlocoCodigo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Aba(nomeArquivo: _nomeArquivo),
+          _Aba(nomeArquivo: _nomeArquivo, conteudo: code.content),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: LayoutBuilder(
@@ -92,9 +95,14 @@ class BlocoCodigo extends StatelessWidget {
 }
 
 class _Aba extends StatelessWidget {
-  const _Aba({required this.nomeArquivo});
+  const _Aba({required this.nomeArquivo, required this.conteudo});
 
   final String nomeArquivo;
+
+  /// O que o botao de copiar coloca na area de transferencia.
+  final String conteudo;
+
+  static const Key chaveCopiar = Key('codigo-copiar');
 
   @override
   Widget build(BuildContext context) {
@@ -109,15 +117,82 @@ class _Aba extends StatelessWidget {
           const SizedBox(width: 6),
           const _Ponto(Paleta.pontoVerde),
           const SizedBox(width: 10),
-          Text(
-            nomeArquivo,
-            style: const TextStyle(
-              color: Paleta.suave,
-              fontFamily: fonteMono,
-              fontSize: Escala.nomeArquivo,
+          Expanded(
+            child: Text(
+              nomeArquivo,
+              style: const TextStyle(
+                color: Paleta.suave,
+                fontFamily: fonteMono,
+                fontSize: Escala.nomeArquivo,
+              ),
             ),
           ),
+          // Copiar o bloco inteiro de uma vez.
+          //
+          // O Gustavo pediu depois de tentar selecionar codigo com o dedo: a
+          // selecao arrastada da direita para a esquerda se comporta mal, e
+          // arrastar dentro de um bloco que ROLA na horizontal e pior ainda --
+          // o gesto de selecionar disputa com o gesto de rolar.
+          //
+          // Copiar o ENUNCIADO nao entrega a resposta: o que se pede e sempre
+          // o que falta no bloco. E serve para quem quer rodar o exemplo no
+          // proprio computador, que e estudo e nao cola.
+          _BotaoCopiar(conteudo: conteudo),
         ],
+      ),
+    );
+  }
+}
+
+/// Copia o bloco e confirma que copiou.
+///
+/// A confirmacao nao e enfeite: area de transferencia nao tem retorno visivel
+/// nenhum, e sem aviso a pessoa toca de novo achando que falhou. O icone troca
+/// por um visto e volta sozinho.
+class _BotaoCopiar extends StatefulWidget {
+  const _BotaoCopiar({required this.conteudo});
+
+  final String conteudo;
+
+  @override
+  State<_BotaoCopiar> createState() => _BotaoCopiarState();
+}
+
+class _BotaoCopiarState extends State<_BotaoCopiar> {
+  bool _copiado = false;
+  Timer? _volta;
+
+  @override
+  void dispose() {
+    _volta?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _copiar() async {
+    await Clipboard.setData(ClipboardData(text: widget.conteudo));
+    if (!mounted) return;
+    setState(() => _copiado = true);
+    _volta?.cancel();
+    _volta = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _copiado = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      key: _Aba.chaveCopiar,
+      behavior: HitTestBehavior.opaque,
+      onTap: _copiar,
+      child: Padding(
+        // Area de toque maior que o icone: 18px de icone daria um alvo menor
+        // que o minimo confortavel para o dedo.
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Icon(
+          _copiado ? Icons.check : Icons.copy_all_outlined,
+          size: 18,
+          color: _copiado ? Paleta.certo : Paleta.suave,
+        ),
       ),
     );
   }

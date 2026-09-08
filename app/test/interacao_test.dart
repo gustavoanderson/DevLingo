@@ -5,6 +5,7 @@ import 'package:devlingo/models/lesson.dart';
 import 'package:devlingo/models/question.dart';
 import 'package:devlingo/ui/tela_exercicio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:devlingo/data/progresso.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -527,6 +528,86 @@ void progressoNaTela() {
 
       expect(find.byKey(TelaExercicio.chaveFimDaLicao), findsOneWidget);
       expect(progresso.posicoes['python-beg-01'], 0);
+    });
+  });
+
+  group('copiar o bloco de codigo', () {
+    // O Gustavo pediu depois de tentar selecionar codigo com o dedo: dentro de
+    // um bloco que rola na horizontal, o gesto de selecionar disputa com o de
+    // rolar, e arrastar da direita para a esquerda se comporta mal.
+    //
+    // O codigo desta fixture nao tem aspas nem quebra de linha DE PROPOSITO:
+    // ele atravessa Python, heredoc, Dart e JSON antes de chegar no teste, e
+    // cada camada quer o proprio escape. Duas linhas ja custaram tres
+    // tentativas aqui.
+    const comCodigo = '''
+{
+  "id": "python-beg-0111",
+  "topic": "saida",
+  "prompt": "O que este codigo imprime?",
+  "code": {"language": "python", "content": "print(nome_da_variavel_longa)"},
+  "answerType": "multipleChoice",
+  "options": [
+    {"id": "a", "text": "Ada",  "correct": true},
+    {"id": "b", "text": "nome", "correct": false},
+    {"id": "c", "text": "erro", "correct": false},
+    {"id": "d", "text": "vazio","correct": false},
+    {"id": "e", "text": "None", "correct": false}
+  ],
+  "hint": "Sem aspas ao redor, a variavel entrega o valor guardado.",
+  "explanation": "A variavel guarda o texto, e imprimi-la mostra o conteudo."
+}''';
+
+    testWidgets('poe o codigo do bloco na area de transferencia', (
+      tester,
+    ) async {
+      final copiado = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (chamada) async {
+          if (chamada.method == 'Clipboard.setData') {
+            copiado.add(chamada.arguments['text'] as String);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+
+      await montar(tester, licaoCom([comCodigo]));
+      await tester.tap(find.byKey(const Key('codigo-copiar')));
+      await tester.pumpAndSettle();
+
+      expect(copiado, ['print(nome_da_variavel_longa)']);
+    });
+
+    testWidgets('confirma que copiou, e a confirmacao passa', (tester) async {
+      // Area de transferencia nao tem retorno visivel nenhum: sem aviso, a
+      // pessoa toca de novo achando que falhou.
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (_) async => null,
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+
+      await montar(tester, licaoCom([comCodigo]));
+      expect(find.byIcon(Icons.check), findsNothing);
+
+      await tester.tap(find.byKey(const Key('codigo-copiar')));
+      await tester.pump();
+      expect(find.byIcon(Icons.check), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(
+        find.byIcon(Icons.check),
+        findsNothing,
+        reason: 'o visto volta ao icone de copiar sozinho',
+      );
     });
   });
 
