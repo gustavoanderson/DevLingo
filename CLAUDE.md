@@ -1099,6 +1099,43 @@ Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram
 
 **No Git Bash, caminhos do Android viram caminhos do Windows.** `adb push x /sdcard/Download/` tenta gravar em `C:/Program Files/Git/sdcard/...` e falha. Prefixe com `MSYS_NO_PATHCONV=1`.
 
+### iOS: preparado, e não compilável nesta máquina
+
+A pasta `app/ios/` existe desde 8 de setembro de 2026. **Nenhum build de iOS jamais foi feito**, e não pode ser feito aqui.
+
+#### O bloqueio é de hardware, não de configuração
+
+Compilar para iOS exige **macOS com Xcode**: o compilador e as bibliotecas do sistema só existem para Mac, e o licenciamento da Apple proíbe rodar macOS em hardware que não seja dela. O Gustavo está no Windows.
+
+E o custo é de outra natureza que o do Android: **US$ 99 por ano**, contra os US$ 25 únicos da Google. Sem a conta paga, um app instalado num iPhone **expira em 7 dias**.
+
+**O Gustavo não tem acesso a nenhum iPhone**, o que torna publicar hoje uma má ideia: seria pagar por ano por um app que ele não conseguiria nem abrir para conferir. Decisão registrada em 8 de setembro; se ele adquirir um aparelho, a conversa muda.
+
+#### O que já está pronto
+
+Todas as sete dependências suportam iOS — `sqflite`, `flutter_svg`, `audioplayers`, os três do Firebase e `path_parsing`. E o `som.dart` já trazia um bloco `AudioContextIOS` configurado, escrito meses antes de existir projeto iOS, porque a decisão de usar Flutter previa isso desde o início.
+
+#### Três coisas que o `flutter create --platforms=ios` fez errado
+
+Vale saber, porque as três passariam despercebidas:
+
+1. **Substituiu `android` por `ios` no `.metadata`**, em vez de somar. Isso deixaria o Android de fora de futuras migrações do `flutter migrate`. As duas plataformas foram devolvidas à mão
+2. **Gerou o bundle id `com.devlingo.devlingo`**, exatamente o mesmo erro que já tinha cometido no `applicationId` do Android. Corrigido para `com.devlingo.app` nas 6 ocorrências do `project.pbxproj` — e vale lembrar que o bundle id é **imutável na prática**, como o do Android
+3. **Escreveu o nome de exibição como `Devlingo` e `devlingo`.** É o mesmo defeito do `android:label` corrigido no mesmo dia; os dois agora dizem `DevLingo`
+
+#### O que ainda falta, para quando houver Mac
+
+- `GoogleService-Info.plist`, o equivalente iOS do `google-services.json`, gerado no console do Firebase e **fora do repositório** como o irmão dele
+- Ícones no formato da Apple, que usa um conjunto de tamanhos próprio
+- Permissões declaradas no `Info.plist`
+- Um teste real: **nada disso foi verificado**, porque verificar exige compilar
+
+#### Como provar que compila sem ter Mac
+
+O **GitHub Actions oferece runners macOS gratuitos para repositórios públicos**, e o do DevLingo é público. Um fluxo que rode `flutter build ios --no-codesign` a cada push provaria a portabilidade de forma verificável por qualquer pessoa, sem custo e sem publicar nada.
+
+Não foi montado ainda. É o próximo passo natural se o assunto voltar.
+
 ### O ícone do app, e o nome que estava minúsculo
 
 Até 7 de setembro de 2026 o ícone era o do Flutter, e o `android:label` do manifesto estava **`devlingo`**, em minúsculas — o nome na tela inicial do celular estava errado desde o começo do projeto.
