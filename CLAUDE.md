@@ -1023,6 +1023,22 @@ Isso reordena tudo. Badges, cronômetro e monetização — que ele levantou —
 | **3** | Badges de percurso e sequência de dias | Funcionalidade real, e **superfície nova para a automação testar** |
 | contínuo | O intermediário das trilhas, calibrado pelo que ele jogar | O conteúdo é o que menos impressiona recrutador e o que mais serve ao app |
 
+#### Na automação com Appium, o nível de didatismo é OUTRO
+
+Pedido explícito do Gustavo em 8 de setembro de 2026: *"quero muito que ao fazermos os testes de android você seja ainda mais didático do que foi hoje"*.
+
+E a razão importa mais que o pedido. **No app, ele é o manager: a análise técnica é minha, a decisão é dele.** Na automação de testes, isso se inverte — Appium é a carreira dele, e o que ele precisa é **saber fazer**, não receber pronto. Numa entrevista de QA ninguém pergunta se o teste passou; perguntam por que o seletor é aquele, o que acontece quando o elemento demora, como se lida com o teste instável.
+
+Na prática, isso significa:
+
+- **Explicar cada seletor antes de escrevê-lo**, e por que aquele e não XPath
+- **Mostrar o comando rodando**, com a saída, em vez de só relatar que passou
+- **Nomear o que é decisão de projeto** — esperar explícita contra implícita, Page Object contra teste direto — e dizer o custo de cada lado
+- **Quando algo falhar, percorrer o diagnóstico junto**, e não voltar com a correção pronta. O erro é onde se aprende
+- Assumir que ele vai **defender esse código numa entrevista**, e escrever de forma que ele consiga
+
+O sinal de que estou fazendo errado é o mesmo de sempre neste projeto, e ele já apareceu duas vezes: *"Claude, você está esquecendo a característica didática que pedi"*.
+
 #### Por que o Appium contra o próprio app é a ideia mais forte
 
 Quem monta portfólio de QA esbarra sempre no mesmo problema: **não ter um sistema real para testar**. A saída comum é automatizar o site de demonstração de alguém.
