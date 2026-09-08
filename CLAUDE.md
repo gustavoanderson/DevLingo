@@ -424,6 +424,23 @@ O princípio: **o objetivo do jogo é a pessoa aprender, não ser punida.** Toda
 
 **Lacuna e escrita livre.** Não há o que eliminar, então a ajuda cresce: o primeiro erro só avisa, o segundo **abre a dica sozinho**, o terceiro revela a resposta. Sem isso, tentativa infinita significaria que o aluno pode nunca descobrir a resposta.
 
+#### O formato da resposta aparece ANTES da primeira tentativa
+
+Defeito de desenho encontrado pelo Gustavo jogando: numa questão que pedia só a primeira linha de um `if`, ele escreveu o bloco inteiro — `if (saldo > 0) { console.log("...") }`. **O código estava certo**, e o app marcou errado. O enunciado não tinha como comunicar *onde parar*, e descobrir isso errando é frustração sem aprendizado.
+
+O molde usa a `esqueletoDe` que já existia: troca letra e número por `·` e preserva o resto. Para `if (saldo > 0) {` sai `·· (····· > ·) {` — entrega o tamanho e a estrutura, e portanto onde a resposta termina; continua sem dizer quais são os nomes nem que função chamar.
+
+**Ele não aparece em toda questão de escrita, e a restrição é o ponto.** O Gustavo perguntou se valia para todas, e medir mostrou que na maioria o molde não ajudava e ainda entregava o tamanho de graça: `WHERE` virava `·····`, que só diz "cinco letras". Numa palavra única não há ambiguidade de escopo — a lacuna ou o enunciado já delimitam.
+
+Duas condições, em `valeMostrarMolde`:
+
+1. **Tem símbolo de estrutura** — parênteses, chaves, operadores, aspas, ponto. Hífen e espaço ficam de fora, porque `Content-Type` e `request response` os têm e o enunciado já explica o formato
+2. **O molde esconde alguma coisa.** `===` e `!=` não têm letra nenhuma: o molde seria idêntico à resposta, e exibi-lo seria entregar o gabarito com nome de ajuda. Este caso só apareceu porque a primeira regra o deixou passar
+
+Das 65 questões de escrita do banco, **22 mostram o molde e 43 não**.
+
+Isso tornou redundante o esqueleto que aparecia no terceiro erro — seria a mesma coisa duas vezes na tela. Aquele painel saiu, e o recado do terceiro erro passou a apontar para o formato que já está acima do campo.
+
 **A explicação só aparece no fim.** Mostrá-la no primeiro erro entregaria a resposta e esvaziaria a eliminação. Durante as tentativas aparece apenas o `why` da alternativa escolhida, ou uma linha neutra.
 
 **Verde para certo, vermelho para errado — mas só em rótulo, borda e preenchimento.** O corpo da explicação continua em `#F2F0FF`. Verde saturado em texto longo sobre fundo escuro reprova em contraste, e a explicação é o texto mais longo da tela: pintá-la de verde a tornaria difícil de ler justo quando mais importa ser lida. O vermelho é `#FF5F57`, o mesmo já usado no pontinho da aba da IDE — não foi inventada cor nova.
@@ -481,6 +498,22 @@ Comentários de código, mensagens de commit e nomes de variável ficam em ASCII
 Guardado em SQLite, em `app/lib/data/progresso.dart`. Duas tabelas: `resposta`, com uma linha por questão respondida, e `posicao`, com uma linha por lição.
 
 **SQLite e não chave-valor** por dois motivos. O dado de tentativas só vira revisão dirigida se der para consultar, e consulta dentro de um JSON guardado numa string não é consulta. E o CLAUDE.md prevê Firestore com cache local mais tarde: o formato local já nasce parecido com o que vai sincronizar. A consulta `custoPorTopico()` existe sem tela que a use, para provar que o formato responde à pergunta que motivou guardar tentativas.
+
+#### O que se digita sobrevive à consulta da aula
+
+Irmão do defeito da posição perdida, e com a mesma causa: abrir a aula desmonta a tela de exercício, e o `TextEditingController` morre junto. Quem estava no meio de uma resposta voltava para um campo vazio.
+
+A correção repete o padrão: quem guarda é o `FluxoDaLicao`, que sobrevive à troca de tela. **Virar de questão zera o texto guardado**, senão a resposta da anterior reapareceria na seguinte.
+
+Vale registrar que eu corrigi o índice de manhã e não pensei no texto — os dois morriam pelo mesmo motivo, e só o segundo relato do Gustavo revelou o par.
+
+#### O bloco de código tem botão de copiar
+
+Na aba da IDE simulada, junto dos três pontinhos. Nasceu de uma tentativa frustrada de selecionar código com o dedo: dentro de um bloco que **rola na horizontal**, o gesto de selecionar disputa com o de rolar.
+
+Copiar o enunciado **não entrega a resposta** — o que se pede é sempre o que falta no bloco — e serve para quem quer rodar o exemplo no próprio computador.
+
+O ícone troca por um visto e volta sozinho em 2 segundos: área de transferência não tem retorno visível nenhum, e sem aviso a pessoa toca de novo achando que falhou.
 
 **A gravação acontece quando a questão termina, não no `Continuar`.** Se o app fechar entre uma coisa e outra, o que já foi respondido não se perde — e é isso que dá direito ao ✕ não perguntar "tem certeza".
 
@@ -1054,6 +1087,16 @@ Comandos do PowerShell com aspas aninhadas (`adb shell 'while [ ... ]'`) quebram
 
 **No Git Bash, caminhos do Android viram caminhos do Windows.** `adb push x /sdcard/Download/` tenta gravar em `C:/Program Files/Git/sdcard/...` e falha. Prefixe com `MSYS_NO_PATHCONV=1`.
 
+### O ícone do app, e o nome que estava minúsculo
+
+Até 7 de setembro de 2026 o ícone era o do Flutter, e o `android:label` do manifesto estava **`devlingo`**, em minúsculas — o nome na tela inicial do celular estava errado desde o começo do projeto.
+
+Hoje o ícone é o rosto do Tr∅nikAt sobre o fundo synthwave, nas cinco densidades. Ele é gerado por script a partir de `docs/imagens/tronikat.png`, pelo mesmo princípio dos cenários e dos sons: **arte que nasce de código não diverge da fonte**.
+
+**Sem texto, e isso foi decisão contra o pedido literal do Gustavo.** Num ícone de 48px "DevLingo" escrito vira mancha, e o Android já mostra o nome embaixo do ícone — escrevê-lo dentro repetiria o sistema com metade da legibilidade. Julgado numa folha de prova com os cinco tamanhos: em 48px o texto do visor some, mas a silhueta e as cores ainda identificam.
+
+Onde a cabeça termina foi **medido**, varrendo a largura de pixels opacos por linha: o desenho estreita em `y=112`, o pescoço. Os picos de 146 antes disso são o visor e os bigodes se estendendo, não a cabeça.
+
 ### Assinatura de release, e a chave que não pode ser perdida
 
 Até 7 de setembro de 2026 o release era assinado com a **chave de debug** — o `TODO` que o template do Flutter deixa no `build.gradle.kts`. Servia para instalar no celular do Gustavo e não serve para distribuir.
@@ -1097,6 +1140,12 @@ Isso apaga o `devlingo.db`. O progresso volta pelo Firestore ao entrar com a mes
 | `.apk` | `flutter build apk --release --split-per-abi` | GitHub Releases, instalação direta |
 
 O bundle é maior no disco (52 MB contra 19 MB) porque carrega todas as arquiteturas; a Google gera o APK final por aparelho.
+
+#### Versão: subir o `versionCode` não é opcional
+
+O `pubspec.yaml` traz `version: 1.1.0+2`. O número depois do `+` é o **`versionCode`**, e ele precisa subir a cada publicação — sem isso o Android trata o pacote como a mesma versão e recusa a atualização.
+
+`1.0.0` foi a primeira release; `1.1.0` porque houve funcionalidade nova (o molde, o botão de copiar, o ícone), e não apenas correção.
 
 #### O app está publicado
 
