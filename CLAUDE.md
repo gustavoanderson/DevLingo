@@ -995,7 +995,8 @@ O princípio que ordenou tudo isto continua valendo: **escrever mais conteúdo n
 | **D6** | Tela de estatísticas do jogador | **concluída** |
 | **E1** | Fundamentos de Backend, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
 | **E2** | Qualidade de Software, trilha iniciante (50 questões) | **concluída, e ainda não jogada** |
-| **F** | Assinatura de release e publicação pública | **concluída** — v1.1.1 no GitHub Releases |
+| **E3** | Frameworks, trilha iniciante (50 questões) | **concluída**; instalada e visível no aparelho em 9 set 2026, **ainda não jogada** |
+| **F** | Assinatura de release e publicação pública | **concluída** — v1.2.0 no GitHub Releases |
 | **G** | iOS: projeto preparado, build bloqueado por falta de Mac | **preparado, não compilável** |
 
 **Combinado e ainda não feito:**
@@ -1238,13 +1239,22 @@ Hoje existe uma keystore de verdade:
 
 `build.gradle.kts` procura `android/key.properties`; se não achar, o release cai na chave de debug. Sem esse cuidado, **quem clonasse o repositório não conseguiria nem compilar um release para o próprio celular** — a mesma preocupação que fez o `main.dart` cair na `AutenticacaoFalsa` quando o Firebase não sobe.
 
-O preço é que um APK assim não serve para distribuir, e a diferença não aparece no nome do arquivo. Para saber com qual chave um pacote foi assinado:
+O preço é que um APK assim não serve para distribuir, e a diferença não aparece no nome do arquivo. Para saber com qual chave um pacote foi assinado, **a ferramenta depende do formato**:
 
 ```bash
+# .aab -- e um arquivo JAR, entao o keytool le
 keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab
+
+# .apk -- precisa do apksigner
+"$ANDROID_HOME/build-tools/36.0.0/apksigner.bat" verify --print-certs \
+  build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
 ```
 
 O SHA1 tem que bater com o da tabela acima.
+
+**Usar o `keytool` num APK dá um falso alarme, e ele engana.** A resposta é *"não é um arquivo jar assinado"*, que se lê como "este pacote não está assinado" — quando o pacote está perfeitamente assinado. A causa é que o `keytool` só entende a assinatura **v1**, herdada do formato JAR, e o APK moderno é assinado pelos esquemas **v2/v3**, que ficam fora da estrutura do zip.
+
+Isso aconteceu de verdade ao publicar a v1.2.0, e a receita antiga desta seção foi o que induziu ao erro: ela documentava só o `.aab` e era aplicada ao APK por analogia. O `apksigner` mora em `<SDK>/build-tools/<versao>/`, e vale usar a versão mais alta instalada.
 
 #### Trocar a chave impede a atualização
 
@@ -1269,9 +1279,18 @@ O `pubspec.yaml` traz `version: 1.1.0+2`. O número depois do `+` é o **`versio
 
 #### O app está publicado
 
-**https://github.com/gustavoanderson/DevLingo/releases/tag/v1.0.0**, desde 7 de setembro de 2026. Dois APKs assinados com a chave de release: `arm64-v8a` (19,0 MB) e `armeabi-v7a` (16,6 MB).
+Em **https://github.com/gustavoanderson/DevLingo/releases**, desde 7 de setembro de 2026. Cada release traz dois APKs assinados com a chave de release:
+
+| Versão | Quando | O que trouxe |
+|---|---|---|
+| `v1.0.0` | 7 set 2026 | primeira publicação: 4 trilhas iniciantes, 204 questões |
+| `v1.1.0` | 8 set 2026 | o molde da resposta, o botão de copiar, o texto que não se perde, o ícone próprio |
+| `v1.1.1` | 8 set 2026 | correção do progresso que aparecia zerado depois de reinstalar |
+| **`v1.2.0`** | **9 set 2026** | **a trilha Frameworks: 50 questões, 254 no total, 340 testes** |
 
 O `x86_64` ficou **de fora de propósito** — só serve para emulador, e na página de download seria uma terceira opção que confunde quem só quer instalar.
+
+**A instalação no aparelho do Gustavo não sai da página de download.** O APK vai por `adb push` para `/sdcard/Download/`, e ele toca no arquivo — ver "A Xiaomi separa 'ver' de 'instalar'". Confirme o tamanho em bytes depois do push: ele tem que bater com o do arquivo local.
 
 Para publicar a próxima:
 
