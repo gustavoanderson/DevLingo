@@ -28,6 +28,17 @@ const Map<String, String> nomeDaLinguagem = {
   /// aquele titulo passou a encolher a fonte quando precisa; ver `_Cabecalho`
   /// em `tela_trilha.dart`.
   'qa': 'Qualidade de Software',
+
+  /// Frameworks de JavaScript e TypeScript: React, Vue, Svelte, Next, Nuxt e
+  /// Astro. Terceiro curso que nao ensina uma linguagem -- ver o comentario de
+  /// `backend` acima sobre o campo `language` identificar a TRILHA.
+  ///
+  /// O nome de tela e "Frameworks", e nao "Front-end", porque HTML e CSS ja
+  /// estao reservados como trilhas proprias e este curso nao cobre nenhum dos
+  /// dois. Sao 10 caracteres, cerca de 156px na mono de 26px -- exatamente o
+  /// mesmo que "JavaScript", contra os ~204px que sobram no cabecalho. Cabe
+  /// sem acionar o FittedBox de `_Cabecalho`.
+  'frameworks': 'Frameworks',
   'html': 'HTML',
   'css': 'CSS',
   'sql': 'SQL',

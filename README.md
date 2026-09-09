@@ -12,9 +12,9 @@
 [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
 [![SQLite](https://img.shields.io/badge/SQLite-offline--first-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 
-[![Testes](https://img.shields.io/badge/testes-334%20passando-39FF14?style=flat-square)](#qualidade-não-é-seção-do-fim)
-[![Questões](https://img.shields.io/badge/questões-204-FFE14D?style=flat-square)](#as-trilhas)
-[![Trilhas](https://img.shields.io/badge/trilhas-4-FF2D95?style=flat-square)](#as-trilhas)
+[![Testes](https://img.shields.io/badge/testes-340%20passando-39FF14?style=flat-square)](#qualidade-não-é-seção-do-fim)
+[![Questões](https://img.shields.io/badge/questões-254-FFE14D?style=flat-square)](#as-trilhas)
+[![Trilhas](https://img.shields.io/badge/trilhas-5-FF2D95?style=flat-square)](#as-trilhas)
 
 </div>
 
@@ -50,7 +50,7 @@ As estatísticas seguem a mesma regra: nada de *"você está pior que ontem"*. O
 
 ## As trilhas
 
-Quatro trilhas de nível iniciante, **50 questões cada**:
+Cinco trilhas de nível iniciante, **50 questões cada**:
 
 | Trilha | O que cobre |
 |---|---|
@@ -58,6 +58,7 @@ Quatro trilhas de nível iniciante, **50 questões cada**:
 | **JavaScript** | console e variáveis, comparação, funções, strings, arrays |
 | **Fundamentos de Backend** | cliente e servidor, HTTP, APIs e REST, bancos de dados, autenticação |
 | **Qualidade de Software** | o papel do QA, os sete princípios, níveis de teste, técnicas de teste |
+| **Frameworks** | React, Vue, Svelte, Next, Nuxt e Astro: as diferenças, e qual é mais fácil |
 
 Cada lição começa com uma **aula do Tr∅nikAt** que prepara exatamente os tópicos que as questões vão cobrar. Isso não é convenção: o validador do projeto **reprova** quando os dois deixam de bater, nos dois sentidos — tópico cobrado sem aula que o prepare, e aula que prepara algo que nenhuma questão cobra.
 
@@ -102,7 +103,7 @@ E os achados mais valiosos vieram de alguém **jogando**: uma questão que marca
 
 O projeto é também portfólio de alguém em transição de carreira para engenharia de qualidade de software. Então a qualidade não é um capítulo à parte — é o método.
 
-**334 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
+**340 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
 
 **Um validador de conteúdo com regras que só existem porque algo passou.** Ele reprova gabarito concentrado numa letra, alternativa que repete texto, dica que entrega a resposta, aula fora de sincronia com as questões, marcador de formatação desbalanceado, e duas questões que cobram a mesma resposta com outra roupagem.
 
@@ -132,11 +133,11 @@ O `google-services.json` **não** vai para o repositório. Quem clonar sem ele n
 
 ## Estado atual
 
-**O que existe:** as quatro trilhas iniciantes, login com conta, sincronização entre aparelhos, estatísticas do jogador, tela de título em formato de fliperama, cenário animado, realce de sintaxe e som opcional.
+**O que existe:** as cinco trilhas iniciantes, login com conta, sincronização entre aparelhos, estatísticas do jogador, tela de título em formato de fliperama, cenário animado, realce de sintaxe e som opcional.
 
 **O que não existe:** níveis intermediário e avançado, e as demais linguagens previstas — Node, HTML, CSS, SQL, C#, Go, C++, COBOL e Ruby.
 
-E uma limitação assumida: **as trilhas de Backend e Qualidade de Software ainda não foram jogadas por ninguém.** A dificuldade delas é estimativa, não medição — e o projeto tem por princípio não escrever o próximo nível antes de alguém jogar o anterior.
+E uma limitação assumida: **as trilhas de Backend, Qualidade de Software e Frameworks ainda não foram jogadas por ninguém.** A dificuldade delas é estimativa, não medição — e o projeto tem por princípio não escrever o próximo nível antes de alguém jogar o anterior.
 
 ---
 

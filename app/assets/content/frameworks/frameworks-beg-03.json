@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "language": "frameworks",
+  "level": "beginner",
+  "lessonId": "frameworks-beg-03",
+  "lessonTitle": "Vue e Svelte: as mesmas ideias, escritas de outro jeito",
+  "aula": {
+    "titulo": "Os outros dois, e onde eles discordam do React",
+    "secoes": [
+      {
+        "topico": "sfc",
+        "titulo": "Um arquivo, três partes",
+        "texto": "Vue e Svelte guardam cada componente num arquivo próprio, terminado em `.vue` ou `.svelte`, dividido em três blocos: `<template>` para o que aparece, `<script>` para o que ele faz, e `<style>` para a aparência.\n\nA diferença com o React é de **direção**. React põe a marcação dentro do JavaScript. Vue e Svelte põem o JavaScript dentro de um arquivo que já é marcação.\n\nA consequência prática é imediata: ali dentro é HTML de verdade. `class` é `class`, e não `className`; `for` é `for`. Nada foi renomeado, porque nada precisou ser.\n\nE o `<style>` vale **só naquele componente** — em Svelte por padrão, em Vue com um atributo. Escrever uma regra ali não vaza para o resto da página. Em React isso não vem na caixa e depende de uma biblioteca à parte.",
+        "code": {
+          "language": "html",
+          "content": "<script>\n  let nome = \"Ada\";\n</script>\n\n<h1 class=\"destaque\">Ola, {nome}</h1>\n\n<style>\n  .destaque { color: hotpink; }\n</style>"
+        }
+      },
+      {
+        "topico": "diretiva",
+        "titulo": "Vue: a lógica mora em atributos",
+        "texto": "No Vue, a lógica da tela vive em atributos especiais chamados **diretivas**, que começam com `v-`:\n\n- `v-if` mostra ou não mostra\n- `v-for` repete um pedaço para cada item\n- `:titulo` passa um valor para dentro de um componente\n- `@click` escuta um evento\n\nReact não tem nada disso: lá você usa o JavaScript que já sabe dentro das chaves — `&&` para condição, `.map()` para lista.\n\nE aqui está o primeiro *trade-off* de verdade do curso. Em React você aprende **menos vocabulário novo**, e em troca escreve lógica de programação no meio da tela. Em Vue você aprende `v-if` e `v-for`, e em troca a marcação continua parecendo uma página.\n\nSvelte fica no meio: tem blocos próprios como `{#if}` e `{#each}`, mas eles não são atributos.",
+        "code": {
+          "language": "html",
+          "content": "<!-- Vue -->\n<li v-for=\"livro in livros\" :key=\"livro.id\">\n  <span v-if=\"livro.lido\">lido</span>\n  <button @click=\"marcar(livro)\">Marcar</button>\n</li>"
+        }
+      },
+      {
+        "topico": "ref-vue",
+        "titulo": "Vue: o estado é observado, e você atribui nele",
+        "texto": "Para criar estado, o Vue oferece o `ref`. Ele embrulha o valor, e no script você lê e escreve através de `.value` — no template não precisa, porque lá o Vue desembrulha sozinho.\n\nA diferença que importa em relação ao React é esta: **você atribui normalmente.** `itens.value++` funciona. Não existe função de troca, e não existe a regra de nunca atribuir.\n\nE a função do componente **não roda de novo**. O Vue sabe, desde o começo, quem depende daquele valor — porque o `ref` observa quem o leu — e vai direto atualizar só aquilo.\n\nÉ o mesmo objetivo do React alcançado pelo caminho oposto: em vez de executar tudo de novo e comparar o resultado, o Vue mantém a lista de dependências e não precisa comparar nada.",
+        "code": {
+          "language": "html",
+          "content": "<script setup>\n  import { ref } from \"vue\";\n  const itens = ref(0);\n</script>\n\n<button @click=\"itens++\">{{ itens }}</button>"
+        }
+      },
+      {
+        "topico": "svelte-compilador",
+        "titulo": "Svelte: quem trabalha é o compilador",
+        "texto": "Svelte vai mais longe que os dois: **não existe função nem objeto especial**. Estado é uma variável comum, declarada com `let`, e mudá-la é mudá-la.\n\nComo isso pode funcionar? Porque **Svelte não é uma biblioteca que roda no navegador — é um compilador.** Ele lê o seu arquivo antes de o site ser publicado e escreve, sozinho, o código que atualiza o DOM. O seu `itens++` vira, no arquivo final, o `itens++` seguido da linha que troca o texto do botão.\n\nDaí sai a vantagem mais citada: quase nada do Svelte viaja junto para o navegador. React e Vue precisam ir junto, porque é no navegador que eles fazem o trabalho; boa parte do Svelte ficou para trás, na compilação.\n\nE daí sai também o custo, que é justo mencionar: **a mágica é invisível.** Quando algo não atualiza, entender por quê exige saber o que o compilador enxerga. Ele reage a **atribuição** — então `lista.push(x)` não atualiza nada, porque não há sinal de igual ali, e `lista = [...lista, x]` atualiza.",
+        "code": {
+          "language": "html",
+          "content": "<script>\n  let itens = 0;\n</script>\n\n<button on:click={() => itens++}>{itens}</button>"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "frameworks-beg-0301",
+      "topic": "sfc",
+      "prompt": "Qual é a diferença de **direção** entre React e os arquivos de componente de Vue e Svelte?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "React roda no navegador e os outros dois rodam no servidor",
+          "correct": false,
+          "why": "Os três desenham no navegador. Onde mais o código pode rodar é assunto da lição 04, e vale para todos."
+        },
+        {
+          "id": "b",
+          "text": "React põe a marcação dentro do JavaScript; os outros põem o JavaScript dentro de um arquivo de marcação",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "React separa cada componente em três arquivos, e os outros dois juntam tudo em um",
+          "correct": false,
+          "why": "Um componente React costuma caber num arquivo só. A contagem de arquivos não é o que difere aqui."
+        },
+        {
+          "id": "d",
+          "text": "React usa CSS e os outros dois usam apenas estilos embutidos",
+          "correct": false,
+          "why": "Os três usam CSS. O que muda é o CSS valer só dentro do componente vir pronto ou não."
+        },
+        {
+          "id": "e",
+          "text": "Vue e Svelte não permitem JavaScript dentro do componente",
+          "correct": false,
+          "why": "Os dois têm um bloco de script justamente para isso, e ele é onde o componente pensa."
+        }
+      ],
+      "hint": "Nos dois lados existe marcação e existe JavaScript. A pergunta é qual dos dois está por fora, contendo o outro.",
+      "explanation": "É a mesma matéria-prima montada ao contrário, e daí sai quase tudo que os distingue no dia a dia. Como o arquivo de Vue e Svelte já é marcação, ali dentro `class` continua sendo `class` — não houve motivo para renomear nada, ao contrário do que aconteceu com o JSX."
+    },
+    {
+      "id": "frameworks-beg-0302",
+      "topic": "diretiva",
+      "prompt": "Complete a diretiva do Vue que repete este item para cada livro da lista.",
+      "code": {
+        "language": "html",
+        "content": "<li ______=\"livro in livros\">\n  {{ livro.titulo }}\n</li>",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": ["v-for"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Toda diretiva do Vue começa com a mesma letra e um hífen. O resto é a palavra em inglês para o laço de repetição.",
+      "explanation": "O `v-for` repete o elemento em que foi escrito, uma vez para cada item. Repare que ele fica **no próprio elemento** que se quer repetir, e não em volta dele — é a diferença mais comum de quem chega do React, onde a lista sai de um `.map()` que devolve elementos."
+    },
+    {
+      "id": "frameworks-beg-0303",
+      "topic": "diretiva",
+      "prompt": "Qual é o **trade-off** entre a lógica em diretivas do Vue e a lógica em JavaScript puro do React?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "As diretivas são mais rápidas, porque não passam pelo JavaScript",
+          "correct": false,
+          "why": "Elas viram JavaScript também. Velocidade não é o eixo dessa comparação."
+        },
+        {
+          "id": "b",
+          "text": "As diretivas permitem operações que o JavaScript não consegue expressar",
+          "correct": false,
+          "why": "Tudo que uma diretiva faz é possível em JavaScript. Ela é uma forma de escrever, não um poder novo."
+        },
+        {
+          "id": "c",
+          "text": "O React exige TypeScript para condições e listas, e o Vue não",
+          "correct": false,
+          "why": "Nenhum dos dois exige TypeScript para nada. Isso é escolha de quem escreve."
+        },
+        {
+          "id": "d",
+          "text": "As diretivas só funcionam em listas; condições precisam ser feitas no script",
+          "correct": false,
+          "why": "Há diretiva para condição também, e ela fica no próprio elemento."
+        },
+        {
+          "id": "e",
+          "text": "Com diretivas você decora vocabulário novo e a marcação continua legível; sem elas você usa o que já sabe e mistura lógica na tela",
+          "correct": true
+        }
+      ],
+      "hint": "Não existe lado gratuito aqui. Procure a alternativa que cobra um preço dos **dois** lados.",
+      "explanation": "É uma troca real, e é por isso que a discussão nunca termina. Quem vem do HTML costuma achar o Vue mais natural, porque a página continua parecendo uma página. Quem já programa costuma preferir o React, porque não precisa aprender um segundo idioma para dizer \"se\" e \"para cada\". Nenhum dos dois lados está errado — eles otimizam para pessoas diferentes."
+    },
+    {
+      "id": "frameworks-beg-0304",
+      "topic": "sfc",
+      "prompt": "Dentro do `<template>` de um componente Vue, como se escreve o atributo de classe CSS?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`class`, exatamente como em HTML",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`className`, como no React",
+          "correct": false,
+          "why": "Esse nome existe no JSX por causa de uma palavra reservada do JavaScript. Num template não há esse conflito."
+        },
+        {
+          "id": "c",
+          "text": "`v-class`, porque atributos de estilo também são diretivas",
+          "correct": false,
+          "why": "As diretivas trazem lógica — condição, repetição, evento. Um atributo comum de HTML continua comum."
+        },
+        {
+          "id": "d",
+          "text": "`css`, que o Vue traduz na hora de desenhar",
+          "correct": false,
+          "why": "Esse atributo não existe em lugar nenhum."
+        },
+        {
+          "id": "e",
+          "text": "`:style`, que é a única forma de aplicar aparência no Vue",
+          "correct": false,
+          "why": "Esse serve para calcular estilo a partir de um valor, e não substitui o atributo de classe."
+        }
+      ],
+      "hint": "Pergunte-se se existe, ali dentro, o conflito de palavra reservada que obrigou o JSX a renomear.",
+      "explanation": "O template do Vue é HTML de verdade, e não JavaScript disfarçado — então não há palavra reservada com que colidir, e o atributo continua com o nome de sempre. É um bom lembrete de que o `className` do React nunca foi capricho: era consequência direta de o JSX ser JavaScript."
+    },
+    {
+      "id": "frameworks-beg-0305",
+      "topic": "ref-vue",
+      "prompt": "Complete a função do Vue que cria um valor reativo, aquele que ao mudar atualiza a tela.",
+      "code": {
+        "language": "html",
+        "content": "<script setup>\n  import { ______ } from \"vue\";\n  const itens = ______(0);\n</script>",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": ["ref"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "São três letras, abreviação de *referência*: uma caixinha em volta do valor, que o Vue consegue observar.",
+      "explanation": "O `ref` embrulha o valor numa caixa que o Vue observa. No script você mexe no conteúdo através de `.value`; no template não precisa, porque lá ele desembrulha sozinho — e essa assimetria é a pegadinha mais comum de quem começa em Vue."
+    },
+    {
+      "id": "frameworks-beg-0306",
+      "topic": "ref-vue",
+      "prompt": "Em Vue, `itens.value++` funciona e atualiza a tela. Em React, o equivalente não funciona. Por quê?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o Vue recarrega a página a cada alteração de valor",
+          "correct": false,
+          "why": "Nenhum recarregamento acontece. Recarregar é justamente o que os dois evitam."
+        },
+        {
+          "id": "b",
+          "text": "Porque em Vue o estado fica no servidor, e lá a alteração é registrada",
+          "correct": false,
+          "why": "O estado dos dois vive na memória do navegador."
+        },
+        {
+          "id": "c",
+          "text": "Porque o valor do Vue está dentro de uma caixa que ele observa, e a alteração é percebida na hora",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque o Vue confere todas as variáveis do programa a cada segundo",
+          "correct": false,
+          "why": "Não existe varredura periódica. Isso seria caro e ninguém faz assim."
+        },
+        {
+          "id": "e",
+          "text": "Porque em Vue não existe estado: tudo vem por prop",
+          "correct": false,
+          "why": "Vue tem estado próprio, e é justamente o que essa função cria."
+        }
+      ],
+      "hint": "A resposta está no que envolve o valor em cada caso. Em um deles, mexer no valor passa por algo que fica sabendo.",
+      "explanation": "São dois caminhos opostos para o mesmo destino. O React **executa tudo de novo e compara** o resultado, então precisa ser avisado por uma chamada de função. O Vue **mantém a lista de quem depende de cada valor**, então percebe a alteração no ato e vai direto ao ponto da tela que precisa mudar, sem executar nem comparar nada."
+    },
+    {
+      "id": "frameworks-beg-0307",
+      "topic": "svelte-compilador",
+      "prompt": "Svelte não é uma biblioteca que roda no navegador: ele é um programa que traduz o seu arquivo em código de atualização de tela antes de o site ser publicado. Escreva o nome desse tipo de programa.",
+      "answerType": "freeWrite",
+      "accepted": ["compilador", "compiler"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o mesmo tipo de programa que transforma código em algo executável antes de rodar, e não durante.",
+      "explanation": "Essa é a aposta que separa Svelte dos outros dois. React e Vue precisam viajar junto para o navegador, porque é lá que eles fazem o trabalho. O Svelte faz o trabalho antes, na sua máquina, e manda ao navegador quase só o resultado — por isso o pacote final costuma ser bem menor."
+    },
+    {
+      "id": "frameworks-beg-0308",
+      "topic": "svelte-compilador",
+      "prompt": "Qual é a consequência mais direta de o Svelte trabalhar antes da publicação, e não no navegador?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O site passa a funcionar sem JavaScript nenhum no navegador",
+          "correct": false,
+          "why": "Continua havendo JavaScript: é ele quem atualiza a tela. O que muda é quem o escreveu."
+        },
+        {
+          "id": "b",
+          "text": "O componente só pode ser alterado por quem tem o código original",
+          "correct": false,
+          "why": "Isso vale para qualquer projeto, nos três frameworks."
+        },
+        {
+          "id": "c",
+          "text": "O estado deixa de existir, e tudo precisa vir do servidor",
+          "correct": false,
+          "why": "O estado existe e é uma variável comum, que é justamente a marca do Svelte."
+        },
+        {
+          "id": "d",
+          "text": "Quase nada do próprio Svelte precisa ser baixado junto com a página",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "A página fica mais lenta, porque a compilação acontece a cada visita",
+          "correct": false,
+          "why": "A compilação acontece uma vez, antes de publicar, e não a cada visita."
+        }
+      ],
+      "hint": "Pense no que precisa ser enviado ao navegador em cada caso, e no que já pôde ficar para trás.",
+      "explanation": "React e Vue vão junto porque o trabalho deles acontece durante o uso; o Svelte já fez o trabalho e manda quase só o resultado. Isso costuma render pacotes bem menores, o que importa em conexão ruim e celular modesto — e é a razão mais citada para escolhê-lo."
+    },
+    {
+      "id": "frameworks-beg-0309",
+      "topic": "svelte-compilador",
+      "prompt": "Em Svelte, `lista.push(item)` não atualiza a tela, mas `lista = [...lista, item]` atualiza. O que explica a diferença?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O Svelte proíbe listas: só valores simples podem ser reativos",
+          "correct": false,
+          "why": "Listas funcionam normalmente, e são de uso comum. O que decide é como você as altera."
+        },
+        {
+          "id": "b",
+          "text": "O compilador reage a **atribuição**, e a primeira linha não tem nenhuma",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "A segunda linha é mais rápida, e por isso o Svelte prefere reagir a ela",
+          "correct": false,
+          "why": "Copiar a lista inteira costuma ser até mais caro. Velocidade não decide quem dispara a atualização."
+        },
+        {
+          "id": "d",
+          "text": "A primeira linha só funciona dentro de um evento de clique",
+          "correct": false,
+          "why": "Onde a linha está não muda nada: ela continua sem o sinal que o compilador procura."
+        },
+        {
+          "id": "e",
+          "text": "O Svelte exige que toda lista seja criada com a função de estado",
+          "correct": false,
+          "why": "Não existe função de estado no Svelte — é justamente essa a marca dele."
+        }
+      ],
+      "hint": "Procure, nas duas linhas, o sinal de igual. Uma tem, a outra não.",
+      "explanation": "O compilador procura o sinal de igual para saber onde inserir a atualização da tela. Um método que altera a lista por dentro não deixa esse rastro, então nada é inserido — e nada acontece.\n\nEsse é o **custo do jeito Svelte**: quando funciona, é a escrita mais simples dos três; quando não funciona, entender exige saber o que o compilador enxerga. É honesto guardar isso ao lado da fama de fácil."
+    },
+    {
+      "id": "frameworks-beg-0310",
+      "topic": "diretiva",
+      "prompt": "No Vue, os atributos especiais que começam com `v-` e trazem condição, repetição e eventos para dentro da marcação têm um nome. Escreva-o no plural.",
+      "answerType": "freeWrite",
+      "accepted": ["diretivas", "diretiva", "directives"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "A palavra é a mesma que se usa para uma instrução ou uma ordem dada a alguém, e aparece na aula desta lição.",
+      "explanation": "As `diretivas` são o vocabulário próprio do Vue, e é por elas que se paga o preço de aprender algo novo — em troca de a marcação continuar legível como HTML. O Svelte resolve o mesmo problema com blocos, como `{#if}` e `{#each}`, que não são atributos; o React não resolve, porque usa o JavaScript que você já conhece."
+    }
+  ]
+}

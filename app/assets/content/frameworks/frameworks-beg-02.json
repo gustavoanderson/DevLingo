@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "language": "frameworks",
+  "level": "beginner",
+  "lessonId": "frameworks-beg-02",
+  "lessonTitle": "React: JSX, estado e o redesenho",
+  "aula": {
+    "titulo": "O primeiro dos três, e o vocabulário dos outros dois",
+    "secoes": [
+      {
+        "topico": "jsx",
+        "titulo": "JSX parece HTML, e não é",
+        "texto": "React escreve a marcação **dentro** do JavaScript, numa sintaxe chamada `JSX`. A semelhança com HTML é intencional, e é a maior fonte de confusão de quem começa.\n\nNão é HTML: é JavaScript disfarçado. Antes de chegar ao navegador, cada tag vira uma chamada de função. Por isso valem as regras do JavaScript, e não as do HTML:\n\n- `class` já é palavra reservada da linguagem, então o atributo virou `className`\n- `for` também é, então virou `htmlFor`\n- toda tag precisa fechar, inclusive as que em HTML ficavam soltas\n- as chaves `{ }` abrem uma janela para o JavaScript no meio da marcação\n- o componente devolve **um** elemento só, com todo o resto dentro dele\n\nEsse detalhe do `className` parece implicância, e não é: ele revela o que o JSX realmente é. Se fosse HTML, `class` funcionaria.",
+        "code": {
+          "language": "javascript",
+          "content": "function Preco({ valor }) {\n  return (\n    <p className=\"destaque\">\n      Custa {valor * 2} reais\n    </p>\n  );\n}"
+        }
+      },
+      {
+        "topico": "use-state",
+        "titulo": "O estado vem em par, e você não atribui nele",
+        "texto": "Uma variável comum não serve de estado em React. Você pode mudá-la à vontade que a tela não olha para ela — e, pior, ela volta ao valor inicial no próximo desenho.\n\nPara ter estado você chama `useState`, que devolve **duas coisas**: o valor atual, e a função que troca esse valor.\n\nA regra que mais pega gente é esta: **você nunca atribui direto na variável.** Chamar a função é o que avisa o React de que algo mudou. Sem essa chamada, o valor até muda na memória e ninguém fica sabendo.\n\n`useState` é um *hook* — nome que o React dá às funções que dão poderes a um componente, e que começam todas com o mesmo prefixo. É o vocabulário que a lição 03 vai contrariar: Vue e Svelte resolvem isso sem pedir função nenhuma.",
+        "code": {
+          "language": "javascript",
+          "content": "import { useState } from \"react\";\n\nfunction Contador() {\n  const [itens, setItens] = useState(0);\n\n  // itens = itens + 1;  <- nao funciona: ninguem fica sabendo\n  return <button onClick={() => setItens(itens + 1)}>{itens}</button>;\n}"
+        }
+      },
+      {
+        "topico": "re-render",
+        "titulo": "Mudou o estado? A função inteira roda de novo",
+        "texto": "Esta é a ideia que mais custa para entrar, e é o que separa React dos outros dois.\n\nQuando o estado muda, o React **chama a função do componente outra vez, do começo**. Todo o corpo executa de novo. O `useState` é chamado de novo — e devolve o valor **novo**, não o inicial, porque quem guarda o valor é o React, e não a sua variável.\n\nO resultado dessa nova execução é comparado com o anterior, e só a diferença chega à árvore de verdade. É por isso que redesenhar não faz a tela piscar.\n\nE daqui sai a consequência prática que gera defeito de verdade: **o corpo do componente roda muitas vezes, e em momentos que você não escolheu.** Então ele não é lugar para coisa que deixa marca — disparar um pedido ao servidor, gravar algo, mexer no relógio. Isso vai para outro lugar.",
+        "code": {
+          "language": "javascript",
+          "content": "function Contador() {\n  const [itens, setItens] = useState(0);\n  console.log(\"rodei\");  // aparece a CADA clique\n\n  return <button onClick={() => setItens(itens + 1)}>{itens}</button>;\n}"
+        }
+      },
+      {
+        "topico": "evento",
+        "titulo": "Evento recebe uma função, não um texto",
+        "texto": "No HTML puro, `onclick` recebe um texto que o navegador interpreta. No JSX, `onClick` recebe uma **função de verdade**.\n\nDuas diferenças que produzem erro na primeira semana:\n\n- o nome vai em camelCase — `onClick`, `onChange`, `onSubmit` — e não todo em minúsculas\n- passa-se a função, **não o resultado dela**\n\nA segunda é a traiçoeira. Escrever `onClick={salvar()}` com parênteses chama a função na hora de desenhar, e entrega ao React o que ela devolveu. O sintoma é estranho de propósito: a ação acontece sozinha ao abrir a tela, e depois o botão não faz nada.",
+        "code": {
+          "language": "javascript",
+          "content": "// certo: passa a funcao\n<button onClick={salvar}>Salvar</button>\n\n// errado: CHAMA na hora de desenhar, e passa o resultado\n<button onClick={salvar()}>Salvar</button>"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "frameworks-beg-0201",
+      "topic": "jsx",
+      "prompt": "No JSX se escreve `className` em vez de `class`. Por quê?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o React usa um sistema de estilos próprio, incompatível com o do HTML",
+          "correct": false,
+          "why": "O estilo continua sendo CSS comum. Só o nome do atributo mudou."
+        },
+        {
+          "id": "b",
+          "text": "Porque `class` só pode ser usado em arquivos TypeScript",
+          "correct": false,
+          "why": "A restrição não tem nada a ver com TypeScript: ela vale igual em JavaScript puro."
+        },
+        {
+          "id": "c",
+          "text": "Porque nomes de atributo em JSX precisam ter mais de cinco letras",
+          "correct": false,
+          "why": "Não existe regra de tamanho. `id`, `src` e `alt` continuam com o nome de sempre."
+        },
+        {
+          "id": "d",
+          "text": "Porque `class` já é palavra reservada do JavaScript, e o JSX é JavaScript, não HTML",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Porque o navegador não aceita o atributo `class` em páginas modernas",
+          "correct": false,
+          "why": "O navegador aceita normalmente. O que chega nele, no fim, é justamente um `class`."
+        }
+      ],
+      "hint": "A resposta não está no HTML nem no CSS. Pergunte-se em que linguagem essa palavra já significa outra coisa.",
+      "explanation": "Esse detalhe parece implicância, e é a melhor pista do que o JSX realmente é. Como cada tag vira uma chamada de função JavaScript antes de chegar ao navegador, valem as palavras reservadas do JavaScript — e `class` é uma delas. O `for` do rótulo sofreu o mesmo e virou `htmlFor`. Se o JSX fosse HTML, nada disso precisaria existir."
+    },
+    {
+      "id": "frameworks-beg-0202",
+      "topic": "jsx",
+      "prompt": "Complete o atributo que dá nome de estilo a este elemento no JSX.",
+      "code": {
+        "language": "javascript",
+        "content": "function Aviso() {\n  return <p ______=\"destaque\">Atencao</p>;\n}",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": ["className"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "O nome que se usa em HTML já significa outra coisa em JavaScript, então o JSX acrescentou uma palavra ao fim dele.",
+      "explanation": "O `className` é o `class` do HTML com outro nome, porque `class` é palavra reservada do JavaScript. No fim, o que chega ao navegador é um `class` normal — a troca existe só no código que você escreve."
+    },
+    {
+      "id": "frameworks-beg-0203",
+      "topic": "use-state",
+      "prompt": "O que `useState` devolve?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O valor atual e a função que troca esse valor",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Só o valor atual, e você o altera com uma atribuição comum",
+          "correct": false,
+          "why": "Se atribuição comum bastasse, ninguém precisaria chamar função nenhuma. O React não fica sabendo de uma atribuição."
+        },
+        {
+          "id": "c",
+          "text": "O valor inicial e o valor anterior, para você comparar os dois",
+          "correct": false,
+          "why": "Quem compara o antes e o depois é o próprio React, e ele faz isso com o resultado do desenho, não com o que você recebe."
+        },
+        {
+          "id": "d",
+          "text": "Uma promessa, que precisa ser aguardada antes do uso",
+          "correct": false,
+          "why": "Não há espera nenhuma envolvida: o valor já está disponível na mesma linha."
+        },
+        {
+          "id": "e",
+          "text": "O elemento do DOM correspondente àquele componente", "correct": false,
+          "why": "Achar elementos do DOM é justamente o trabalho que o React assume para que você não precise fazer."
+        }
+      ],
+      "hint": "Repare no formato do que se escreve à esquerda do sinal de igual: são dois nomes entre colchetes, não um.",
+      "explanation": "São **duas** coisas, e é por isso que se escreve `const [valor, setValor]`. O primeiro é o valor de agora; o segundo é a única forma de trocá-lo avisando o React. A convenção de chamar o segundo de `set` mais o nome do primeiro não é obrigatória, mas é universal — e quem lê o seu código conta com ela."
+    },
+    {
+      "id": "frameworks-beg-0204",
+      "topic": "use-state",
+      "prompt": "Escreva o nome da função do React que cria um estado dentro de um componente, devolvendo o valor e quem o troca.",
+      "answerType": "freeWrite",
+      "accepted": ["useState"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Começa com o mesmo prefixo de três letras de todas as funções especiais do React, e termina com a palavra inglesa para estado.",
+      "explanation": "O `useState` é o primeiro *hook* que todo mundo aprende — hook é o nome que o React dá a essas funções que dão poderes a um componente. Elas começam todas com o mesmo prefixo, e isso não é estilo: é como a ferramenta reconhece que aquilo é um hook e cobra as regras de uso."
+    },
+    {
+      "id": "frameworks-beg-0205",
+      "topic": "use-state",
+      "prompt": "Dentro de um componente React, alguém escreve `itens = itens + 1` direto na variável que veio do estado. O que acontece na tela?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A tela atualiza normalmente, e a função de troca é apenas um atalho",
+          "correct": false,
+          "why": "A função de troca não é atalho para nada: ela é o único caminho que avisa o React."
+        },
+        {
+          "id": "b",
+          "text": "Nada muda na tela, porque o React não fica sabendo da alteração",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "A página inteira é recarregada para refletir o novo valor",
+          "correct": false,
+          "why": "Nenhum recarregamento acontece. Uma atribuição comum não tem efeito nenhum fora daquela execução."
+        },
+        {
+          "id": "d",
+          "text": "O valor vira negativo, porque o React inverte alterações não autorizadas",
+          "correct": false,
+          "why": "Não existe inversão nem punição. O React simplesmente não observa a variável."
+        },
+        {
+          "id": "e",
+          "text": "O componente é removido da árvore até o valor ser corrigido",
+          "correct": false,
+          "why": "O componente continua exatamente onde estava, desenhando o valor antigo."
+        }
+      ],
+      "hint": "Pense em quem precisa ser avisado para que o redesenho aconteça, e se uma atribuição comum avisa alguém.",
+      "explanation": "O valor até muda naquela execução, e é isso que torna o defeito confuso: um `console.log` logo abaixo mostraria o número novo, e a tela continuaria com o velho. Como o React guarda o estado por fora da sua variável, ele só descobre que algo mudou quando a função de troca é chamada. É a diferença entre mexer numa cópia e avisar o dono."
+    },
+    {
+      "id": "frameworks-beg-0206",
+      "topic": "re-render",
+      "prompt": "Quando o estado de um componente React muda, o que acontece com a função daquele componente?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Só a linha que usa o estado é executada de novo",
+          "correct": false,
+          "why": "Não há execução parcial de uma função. O corpo inteiro roda."
+        },
+        {
+          "id": "b",
+          "text": "Ela não roda de novo: o React edita direto o texto do elemento na tela",
+          "correct": false,
+          "why": "Editar o elemento direto é a abordagem imperativa que o React veio substituir."
+        },
+        {
+          "id": "c",
+          "text": "Ela roda de novo apenas se você pedir explicitamente",
+          "correct": false,
+          "why": "Não há nada a pedir: chamar a função de troca do estado já basta."
+        },
+        {
+          "id": "d",
+          "text": "Ela é executada uma vez a cada segundo, até o valor se estabilizar",
+          "correct": false,
+          "why": "Não existe relógio nenhum envolvido. O que dispara o redesenho é a mudança, e não o tempo."
+        },
+        {
+          "id": "e",
+          "text": "Ela é chamada outra vez, do começo, e o corpo inteiro executa de novo",
+          "correct": true
+        }
+      ],
+      "hint": "O nome do conceito em inglês é *re-render*, e o prefixo já entrega o que é repetido.",
+      "explanation": "A função inteira roda de novo, `useState` incluído — e nessa nova chamada ele devolve o valor **novo**, porque quem guarda o estado é o React, e não a sua variável. O resultado é comparado com o anterior, e só a diferença chega à árvore de verdade. É por isso que a tela não pisca."
+    },
+    {
+      "id": "frameworks-beg-0207",
+      "topic": "re-render",
+      "prompt": "Sabendo que o corpo do componente roda a cada redesenho, o que **não** deve ser escrito direto ali?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Uma conta simples usando o valor do estado",
+          "correct": false,
+          "why": "Contas a partir do estado são justamente o que se espera ali: elas produzem o que a tela mostra."
+        },
+        {
+          "id": "b",
+          "text": "A leitura de uma prop recebida de fora",
+          "correct": false,
+          "why": "Ler prop é inofensivo: repetir a leitura dá sempre o mesmo resultado e não afeta nada."
+        },
+        {
+          "id": "c",
+          "text": "Um pedido ao servidor, que seria disparado a cada redesenho",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "A montagem do texto que aparece na tela",
+          "correct": false,
+          "why": "Montar o que aparece é exatamente a função do corpo do componente."
+        },
+        {
+          "id": "e",
+          "text": "Uma comparação entre dois valores para decidir o que mostrar",
+          "correct": false,
+          "why": "Decidir o que mostrar a partir dos dados é o trabalho normal dali, e pode repetir à vontade."
+        }
+      ],
+      "hint": "Quatro das cinco dão o mesmo resultado toda vez que rodam. Procure a que deixa marca no mundo lá fora.",
+      "explanation": "A diferença é entre **calcular** e **causar**. Calcular pode repetir mil vezes, porque o resultado é sempre o mesmo e nada acontece fora dali. Disparar um pedido, gravar um dado ou marcar a hora deixa marca — e repetir isso a cada redesenho produz pedidos em duplicata e defeitos difíceis de reproduzir. React tem um lugar próprio para essas ações, fora do corpo."
+    },
+    {
+      "id": "frameworks-beg-0208",
+      "topic": "evento",
+      "prompt": "Qual é o efeito de escrever `onClick={salvar()}`, com parênteses, em vez de `onClick={salvar}`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nenhum: os dois jeitos são equivalentes, e os parênteses são opcionais",
+          "correct": false,
+          "why": "Os parênteses não são decoração: eles chamam a função ali mesmo."
+        },
+        {
+          "id": "b",
+          "text": "O clique passa a exigir dois toques para funcionar",
+          "correct": false,
+          "why": "Não há contagem de toques envolvida em lugar nenhum."
+        },
+        {
+          "id": "c",
+          "text": "O React avisa com um erro e não desenha o componente",
+          "correct": false,
+          "why": "Não há erro: a linha é JavaScript perfeitamente válido, e é isso que torna o defeito difícil de achar."
+        },
+        {
+          "id": "d",
+          "text": "A função é chamada na hora de desenhar, e o botão fica sem ação ao ser clicado",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "A função passa a rodar no servidor em vez de no navegador",
+          "correct": false,
+          "why": "Onde o código roda não muda por causa de parênteses. Esse assunto é o da lição 04."
+        }
+      ],
+      "hint": "Os parênteses são o que chama uma função em JavaScript. Pergunte-se **quando** essa linha é lida.",
+      "explanation": "Os parênteses chamam a função no momento em que o componente desenha, e entregam ao `onClick` o que ela **devolveu** — normalmente `undefined`, que não faz nada ao clicar. O sintoma é característico: a ação acontece sozinha ao abrir a tela, e depois o botão fica mudo. E nada acusa erro, porque a linha é JavaScript válido."
+    },
+    {
+      "id": "frameworks-beg-0209",
+      "topic": "evento",
+      "prompt": "Complete o atributo de clique deste botão, escrito como o JSX exige.",
+      "code": {
+        "language": "javascript",
+        "content": "// passa a funcao, sem os parenteses\n<button ______={salvar}>Salvar</button>",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": ["onClick"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o evento de clicar, e no JSX os nomes de evento vão em camelCase — a segunda palavra começa com maiúscula.",
+      "explanation": "No HTML o atributo é todo minúsculo; no JSX vira camelCase, junto com `onChange`, `onSubmit` e os outros. E o valor entre chaves é uma função de verdade, não um texto — o que permite passar qualquer função do seu código, inclusive uma criada ali na hora."
+    },
+    {
+      "id": "frameworks-beg-0210",
+      "topic": "use-state",
+      "prompt": "Como se chamam as funções especiais do React que dão poderes a um componente, e cujo nome sempre começa com `use`?",
+      "answerType": "freeWrite",
+      "accepted": ["hooks", "hook"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "A palavra em inglês quer dizer *gancho*: é o que se engancha num componente para dar memória e outros recursos a ele.",
+      "explanation": "O `useState` é um deles, e há vários outros para guardar valores, reagir a mudanças e disparar ações fora do desenho. O prefixo comum não é estilo: é como as ferramentas reconhecem que aquilo é um desses e cobram as regras de uso — a principal delas é que precisam ser chamados sempre na mesma ordem, nunca dentro de um `if`."
+    }
+  ]
+}

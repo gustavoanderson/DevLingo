@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "language": "frameworks",
+  "level": "beginner",
+  "lessonId": "frameworks-beg-05",
+  "lessonTitle": "TypeScript, e qual deles é mais fácil",
+  "aula": {
+    "titulo": "A pergunta que todo mundo faz, respondida com medida",
+    "secoes": [
+      {
+        "topico": "typescript",
+        "titulo": "TypeScript nos três: a diferença é o atrito",
+        "texto": "TypeScript é JavaScript com **tipos declarados**. Ele não muda o que o programa faz — os tipos somem antes de rodar. O que ele muda é *quando* você descobre o erro: ao escrever, e não ao clicar.\n\nOs três aceitam TypeScript. A pergunta útil não é \"dá ou não dá\", é **quanto atrito**:\n\n- **React** é o mais confortável dos três, e a razão é a mesma de sempre: como JSX é JavaScript, o TypeScript entende aquilo sozinho, sem precisar de nada especial\n- **Svelte** é direto: `lang=\"ts\"` no bloco de script, e pronto\n- **Vue** funciona bem hoje, com uma ressalva histórica: o `<template>` não é JavaScript, então conferir o que está escrito lá dentro exigiu ferramenta própria. Foi o mais difícil dos três por bastante tempo\n\nE uma observação que vale para quem trabalha com qualidade: tipo pega erro de **forma** — esse campo existe? é número? —, e não erro de **comportamento**. Um desconto calculado ao contrário passa por qualquer tipo, porque o resultado continua sendo um número. Tipagem reduz uma categoria de defeito e deixa a outra inteira: **ela não substitui teste.**",
+        "code": {
+          "language": "javascript",
+          "content": "type Props = { nome: string; idade: number };\n\nfunction Perfil({ nome, idade }: Props) {\n  return <p>{nome} tem {idade}</p>;\n}"
+        }
+      },
+      {
+        "topico": "facil-comecar",
+        "titulo": "Mais fácil de começar: isso dá para contar",
+        "texto": "\"Qual é mais fácil\" vira uma pergunta respondível quando se troca a sensação por uma contagem. Uma que funciona bem: **quantos conceitos novos você precisa ter na cabeça antes de a primeira tela reagir a um clique?**\n\n**Svelte, um.** Declare uma variável e mude. É JavaScript de sempre.\n\n**Vue, dois.** A função que cria o valor reativo, e o `.value` para mexer nele no script.\n\n**React, quatro.** Que `JSX` não é HTML; que `useState` devolve um par; que a função inteira roda de novo a cada mudança; e que atribuir na variável não faz nada.\n\nNenhum desses quatro é difícil isolado. O que pesa é que **os quatro precisam estar na cabeça ao mesmo tempo** para o primeiro contador funcionar. É exatamente isso que a palavra *fácil* está medindo quando alguém diz que Svelte é fácil — e agora ela deixou de ser opinião e virou um número.",
+        "code": {
+          "language": "text",
+          "content": "CONCEITOS NOVOS ATE O PRIMEIRO CONTADOR\n\nSvelte   variavel comum                        1\nVue      funcao que cria o valor, e .value      2\nReact    JSX, o par, o redesenho,               4\n         e nao atribuir na variavel"
+        }
+      },
+      {
+        "topico": "facil-continuar",
+        "titulo": "Mais fácil de continuar é outra pergunta, e inverte",
+        "texto": "Aqui a resposta vira do avesso, e por um motivo que não está no código.\n\nQuando você travar — e você vai travar —, o que resolve é **alguém já ter travado antes**. React tem, de longe, a maior quantidade de pessoas usando, de respostas já escritas, de bibliotecas prontas e de vagas abertas.\n\nIsso não é argumento de qualidade, e é importante não confundir: é argumento de **probabilidade de encontrar a resposta**. Numa curva de aprendizado, esse fator costuma pesar mais que a elegância de qualquer API.\n\nEntão a resposta honesta tem duas metades, e quem der só uma está vendendo alguma coisa:\n\n- **Svelte é o mais fácil de começar** — menos conceitos até a primeira tela\n- **React é o mais fácil de continuar** — a dificuldade sai do código e vai para quantas pessoas já resolveram o seu problema\n- **Vue fica no meio, de propósito.** Ser o meio-termo é objetivo declarado do projeto, e não acidente",
+        "code": {
+          "language": "text",
+          "content": "COMECAR                        CONTINUAR\n\nSvelte  menos conceitos        React   mais respostas prontas\nVue     meio-termo             Vue     meio-termo\nReact   mais conceitos         Svelte  comunidade menor"
+        }
+      },
+      {
+        "topico": "escolher",
+        "titulo": "Um critério, e as duas coisas que valem mais que ele",
+        "texto": "Este curso não vai dizer qual escolher, porque a resposta depende do projeto — e cobrar escolha como se fosse fato seria trocar ensino por dogma. O que dá para oferecer é um critério.\n\nE há duas coisas que valem mais que a escolha em si:\n\n**Os conceitos viajam.** Componente, prop, estado, rota por arquivo e hidratação são os mesmos nos seis. Quem entendeu essas ideias troca de framework em dias, não em meses. Escolher errado é caro em produção e **barato em aprendizado** — então comece por qualquer um, e comece.\n\n**A escolha não é para sempre, nem é única.** É comum um mesmo time manter um site de conteúdo em Astro e um painel em Next. Eles não competem por lugar nenhum.",
+        "code": {
+          "language": "text",
+          "content": "SE O SEU CASO E...                    COSTUMA APONTAR PARA\n\nblog, documentacao, institucional     Astro\naplicacao com muita interacao         Next ou Nuxt\naprender o conceito sem atrito        Svelte\nvaga de emprego e resposta pronta     React, com Next\ntime que vem do HTML                  Vue, com Nuxt"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "frameworks-beg-0501",
+      "topic": "typescript",
+      "prompt": "O que o TypeScript muda em relação ao JavaScript?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ele deixa o programa mais rápido, porque os tipos ajudam o navegador a otimizar",
+          "correct": false,
+          "why": "Nada dele chega ao navegador, então não há como influenciar a execução."
+        },
+        {
+          "id": "b",
+          "text": "Ele é uma linguagem diferente, que precisa ser aprendida do zero",
+          "correct": false,
+          "why": "Todo JavaScript válido já é TypeScript válido. O que se aprende é o acréscimo, não um idioma novo."
+        },
+        {
+          "id": "c",
+          "text": "Ele antecipa a descoberta do erro para o momento em que você escreve, sem mudar o que o programa faz",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Ele impede que o programa quebre em produção",
+          "correct": false,
+          "why": "Ele reduz uma categoria de defeito. Um cálculo escrito ao contrário continua passando e quebrando lá na frente."
+        },
+        {
+          "id": "e",
+          "text": "Ele substitui os testes automatizados de um projeto",
+          "correct": false,
+          "why": "As duas coisas pegam problemas diferentes, e uma não cobre o que a outra cobre."
+        }
+      ],
+      "hint": "Os tipos somem antes de o código rodar. Pergunte-se o que pode mudar em algo que não chega a existir na execução.",
+      "explanation": "Os tipos são apagados antes de o código rodar — o que chega ao navegador é JavaScript comum. O ganho é inteiramente de **momento**: um campo escrito errado aparece sublinhado enquanto você digita, em vez de virar uma tela quebrada depois de publicado."
+    },
+    {
+      "id": "frameworks-beg-0502",
+      "topic": "typescript",
+      "prompt": "Complete o tipo desta propriedade, sabendo que ela guarda uma idade.",
+      "code": {
+        "language": "javascript",
+        "content": "type Props = {\n  nome: string;\n  idade: ______;\n};",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": ["number"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É a palavra em inglês para o tipo de dado da linha de cima trocado por algo que se conta, e vai toda em minúsculas.",
+      "explanation": "Repare que é `number` em minúsculas, e não `Number` — o TypeScript usa nomes próprios para os tipos básicos, e a versão com maiúscula significa outra coisa. E note que não há inteiro nem decimal separados: JavaScript tem um tipo numérico só."
+    },
+    {
+      "id": "frameworks-beg-0503",
+      "topic": "typescript",
+      "prompt": "Uma função calcula desconto e, por engano, **soma** em vez de subtrair. O TypeScript pega esse erro?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pega, porque ele confere o resultado de toda operação matemática",
+          "correct": false,
+          "why": "Ele não executa nada, então não há resultado para conferir."
+        },
+        {
+          "id": "b",
+          "text": "Pega, desde que a função tenha o tipo de retorno declarado",
+          "correct": false,
+          "why": "O retorno declarado seria número, e um número é o que a função devolve. Bate perfeitamente."
+        },
+        {
+          "id": "c",
+          "text": "Pega, mas só quando o valor final for negativo",
+          "correct": false,
+          "why": "Ele não olha valores: números só existem quando o programa roda, e aí ele já saiu de cena."
+        },
+        {
+          "id": "d",
+          "text": "Pega apenas se a função for usada em mais de um lugar",
+          "correct": false,
+          "why": "Quantas vezes a função é chamada não muda o que a checagem de tipos consegue enxergar."
+        },
+        {
+          "id": "e",
+          "text": "Não pega: os tipos continuam corretos, porque a soma também devolve um número",
+          "correct": true
+        }
+      ],
+      "hint": "Pergunte-se se algum tipo ficou errado nessa conta. Entra número, sai número.",
+      "explanation": "Este é o limite mais importante de entender, e vale especialmente para quem trabalha com qualidade: tipo pega erro de **forma** — o campo existe? é do tipo certo? —, e não erro de **comportamento**. A conta invertida devolve um número perfeitamente válido.\n\nQuem pega isso é teste, e é por isso que tipagem forte nunca dispensou uma suíte."
+    },
+    {
+      "id": "frameworks-beg-0504",
+      "topic": "facil-comecar",
+      "prompt": "Complete a declaração de estado deste componente Svelte, onde estado é uma variável comum de JavaScript.",
+      "code": {
+        "language": "html",
+        "content": "<script>\n  ______ itens = 0;\n</script>\n\n<button on:click={() => itens++}>{itens}</button>",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": ["let"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É a palavra do JavaScript comum para declarar uma variável cujo valor vai mudar. São três letras.",
+      "explanation": "Não há função a chamar nem objeto a criar: é a mesma palavra que declararia qualquer variável em JavaScript puro. Quem faz o resto é o compilador, que ao ver `itens++` acrescenta sozinho, no código final, a linha que atualiza a tela.\n\nEste é o motivo concreto de o Svelte contar **um** conceito onde o React conta quatro."
+    },
+    {
+      "id": "frameworks-beg-0505",
+      "topic": "facil-comecar",
+      "prompt": "Contando quantos conceitos novos são necessários até o primeiro contador funcionar, qual dos três exige menos? Escreva o nome dele.",
+      "answerType": "freeWrite",
+      "accepted": ["Svelte"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que declara estado com uma variável comum, e cujo trabalho acontece antes de o site ser publicado.",
+      "explanation": "São três conceitos de diferença para o React, e nenhum deles é difícil isolado — o que pesa é precisar dos quatro ao mesmo tempo para a primeira tela reagir.\n\nMas guarde a segunda metade da resposta, que vem na próxima seção: **mais fácil de começar não é o mesmo que mais fácil de continuar.**"
+    },
+    {
+      "id": "frameworks-beg-0506",
+      "topic": "facil-comecar",
+      "prompt": "Por que o React exige mais conceitos até o primeiro contador funcionar?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque ele exige TypeScript desde o primeiro arquivo",
+          "correct": false,
+          "why": "Nenhum dos três exige TypeScript. É escolha de quem escreve, em qualquer um deles."
+        },
+        {
+          "id": "b",
+          "text": "Porque JSX não é HTML, o estado vem em par, a função roda de novo, e atribuir não avisa ninguém",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque ele precisa de um servidor para funcionar",
+          "correct": false,
+          "why": "Ele desenha no navegador como os outros dois. Servidor é a camada de cima, e é opcional."
+        },
+        {
+          "id": "d",
+          "text": "Porque a instalação dele é mais demorada que a dos outros",
+          "correct": false,
+          "why": "O tempo de instalar não é conceito a aprender, e não é isso que a contagem mede."
+        },
+        {
+          "id": "e",
+          "text": "Porque ele não permite componentes pequenos",
+          "correct": false,
+          "why": "Componentes pequenos são a prática recomendada nele, como nos outros dois."
+        }
+      ],
+      "hint": "A contagem da aula lista quatro itens para um dos três. Procure a alternativa que enumera exatamente esses quatro.",
+      "explanation": "Nenhum dos quatro é complicado sozinho, e é justamente isso que engana quem já sabe React: cada um parece óbvio depois de aprendido. A dificuldade está em precisar dos quatro **ao mesmo tempo**, antes de a primeira tela reagir a um clique.\n\nÉ assim que uma sensação vira um número — e um número dá para discutir."
+    },
+    {
+      "id": "frameworks-beg-0507",
+      "topic": "facil-continuar",
+      "prompt": "Qual é a resposta mais honesta para *\"qual desses três é o mais fácil?\"*",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "React, sem ressalva, por ser o mais usado do mundo",
+          "correct": false,
+          "why": "Ser o mais usado responde metade da pergunta e ignora a contagem de conceitos, em que ele fica atrás."
+        },
+        {
+          "id": "b",
+          "text": "Svelte, sem ressalva, por exigir menos conceitos",
+          "correct": false,
+          "why": "Também é metade da resposta: ela ignora o que acontece quando você trava e precisa de ajuda."
+        },
+        {
+          "id": "c",
+          "text": "Nenhum: os três são igualmente difíceis, e a pergunta não faz sentido",
+          "correct": false,
+          "why": "A pergunta faz sentido, e há diferenças mensuráveis entre eles. O que falta é dizer o que se está medindo."
+        },
+        {
+          "id": "d",
+          "text": "Depende do que \"fácil\" está medindo: um é mais fácil de começar, e outro de continuar",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Vue, porque fica entre os outros dois em tudo",
+          "correct": false,
+          "why": "Ficar no meio é uma escolha de projeto legítima, mas não torna a pergunta respondida."
+        }
+      ],
+      "hint": "Duas das alternativas estão certas pela metade cada uma. Procure a que explica por que as duas metades existem.",
+      "explanation": "**Svelte é o mais fácil de começar**, e isso é contável: um conceito contra quatro. **React é o mais fácil de continuar**, porque quando você travar — e você vai travar — o que resolve é alguém já ter travado antes, e ali há muito mais gente, resposta escrita e biblioteca pronta.\n\nRepare que o segundo argumento não é sobre qualidade de código: é sobre **probabilidade de achar a resposta**. Numa curva de aprendizado, isso costuma pesar mais que a elegância de qualquer API."
+    },
+    {
+      "id": "frameworks-beg-0508",
+      "topic": "facil-continuar",
+      "prompt": "Dizer que o React é \"mais fácil de continuar\" é um argumento sobre o quê?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sobre a chance de encontrar quem já resolveu o mesmo problema",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Sobre a qualidade do código dele ser superior à dos outros dois",
+          "correct": false,
+          "why": "Confundir tamanho de comunidade com qualidade técnica é justamente o erro que essa distinção existe para evitar."
+        },
+        {
+          "id": "c",
+          "text": "Sobre ele ser o mais antigo dos três",
+          "correct": false,
+          "why": "A idade ajuda a explicar como se chegou lá, mas não é o que torna a continuação mais fácil hoje."
+        },
+        {
+          "id": "d",
+          "text": "Sobre ele exigir menos conceitos que os outros",
+          "correct": false,
+          "why": "Nessa contagem ele fica em último, com quatro. É exatamente a outra metade da resposta."
+        },
+        {
+          "id": "e",
+          "text": "Sobre ele ter melhor desempenho no navegador",
+          "correct": false,
+          "why": "Desempenho é outra discussão, e nela o Svelte costuma levar vantagem pelo tamanho do pacote."
+        }
+      ],
+      "hint": "O argumento não é técnico. Pense no que acontece quando você trava às onze da noite e vai procurar ajuda.",
+      "explanation": "Separar as duas coisas importa, porque elas são confundidas o tempo todo em discussão de framework. \"Muita gente usa\" é um fato sobre **onde estão as respostas**, e não sobre o código ser melhor.\n\nEle é um argumento legítimo, e um dos mais fortes para quem está começando — só não é o argumento que costuma ser apresentado."
+    },
+    {
+      "id": "frameworks-beg-0509",
+      "topic": "escolher",
+      "prompt": "Um blog com muitos artigos e quase nenhuma interação. Qual dos seis costuma ser a escolha mais indicada?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "React sozinho, sem meta-framework",
+          "correct": false,
+          "why": "Aí o conteúdo só existiria depois que o JavaScript rodasse, que é o pior cenário para um site de texto."
+        },
+        {
+          "id": "b",
+          "text": "Vue sozinho, sem meta-framework",
+          "correct": false,
+          "why": "Vale a mesma ressalva: sem a camada de cima, o texto não chega pronto ao visitante nem ao buscador."
+        },
+        {
+          "id": "c",
+          "text": "Astro, porque quase nada da página precisa virar JavaScript no navegador",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Qualquer um: para conteúdo, os seis se comportam igual",
+          "correct": false,
+          "why": "Eles diferem justamente em quanto JavaScript enviam para uma página que quase não reage a nada."
+        },
+        {
+          "id": "e",
+          "text": "Svelte sozinho, porque gera o menor pacote dos três",
+          "correct": false,
+          "why": "O pacote menor ajuda, mas sem a camada de cima continua faltando rota e página montada no servidor."
+        }
+      ],
+      "hint": "Pense em quantos pedaços de um artigo realmente precisam responder a um clique, e em qual dos seis parte dessa observação.",
+      "explanation": "Um artigo é texto, e hidratar texto é pagar por interatividade que ninguém vai usar. O Astro parte exatamente dessa observação e inverte o padrão: nada vira JavaScript no navegador a menos que você marque.\n\nRepare que a resposta mudaria por completo se o caso fosse um painel cheio de gráficos e filtros — ali a página inteira viraria uma ilha só, e a ideia perderia a graça."
+    },
+    {
+      "id": "frameworks-beg-0510",
+      "topic": "escolher",
+      "prompt": "Um time que vem do HTML escolheu Vue, e agora precisa de rota por arquivo e páginas montadas no servidor. Escreva o nome do meta-framework indicado.",
+      "answerType": "freeWrite",
+      "accepted": ["Nuxt"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que ocupa, no mapa da lição 01, a linha do meio — e o nome se parece de propósito com o da linha de cima.",
+      "explanation": "Cada framework de tela tem o seu par na camada de cima, e escolher um praticamente escolhe o outro.\n\nE fica a lição que vale mais que qualquer escolha: **os conceitos viajam.** Componente, prop, estado, rota por arquivo e hidratação são os mesmos nos seis. Quem entendeu essas ideias troca de ferramenta em dias, não em meses — escolher errado é caro em produção e barato em aprendizado. Então comece por qualquer um, e comece."
+    }
+  ]
+}

@@ -625,6 +625,61 @@ void main() {
       await alturaDoTitulo(tester, 'qa');
       expect(find.text('Qualidade de Software'), findsOneWidget);
     });
+
+    // O nome da trilha de frameworks foi escolhido por medicao, e nao por
+    // gosto: "Frameworks" tem as mesmas 10 letras de "JavaScript", que ja cabe
+    // justo nos ~204px que sobram. "Front-end" foi descartado por prometer
+    // demais -- HTML e CSS sao trilhas proprias --, e um nome mais longo teria
+    // acionado o FittedBox.
+    //
+    // Encolher nao seria defeito, mas seria uma escolha nao declarada. Este
+    // teste prova que a afirmacao e verdadeira, e avisa se alguem trocar o
+    // nome por um que nao caiba.
+    // ALTURA nao serve para medir isto, e descobrir isso custou uma rodada: o
+    // FittedBox encolhe por TRANSFORMACAO, entao o Text continua com os mesmos
+    // 37px de uma linha mesmo quando aparece menor na tela -- "Qualidade de
+    // Software" mede 37.0 igual a "JavaScript". A altura so denuncia quebra de
+    // linha, que e o que o teste acima usa.
+    //
+    // O que denuncia o encolhimento e comparar o retangulo PINTADO com o
+    // tamanho proprio: getRect ja passou pela transformacao, getSize nao.
+    // Iguais, nao encolheu; menor, encolheu.
+    Future<double> escalaDoTitulo(WidgetTester tester, String language) async {
+      await alturaDoTitulo(tester, language);
+      final alvo = find.text(nomeBonito(language));
+      return tester.getRect(alvo).width / tester.getSize(alvo).width;
+    }
+
+    // A medida e RELATIVA a "JavaScript", e nao a 1.0, porque a fonte do
+    // ambiente de teste desenha cada glifo como um QUADRADO: "JavaScript" mede
+    // 262.5px aqui contra os ~156px da mono de 26px no aparelho. O teste e um
+    // proxy pessimista -- o que couber aqui cabe la --, e comparar com um
+    // numero absoluto mediria a fonte de teste, nao o cabecalho.
+    //
+    // "Frameworks" tem as mesmas 10 letras de "JavaScript", entao a afirmacao
+    // que este teste trava e exatamente esta: o nome novo nao aperta o
+    // cabecalho mais do que a trilha que ja existia aperta. "Front-end" foi
+    // descartado por outro motivo -- prometer demais, ja que HTML e CSS sao
+    // trilhas proprias.
+    testWidgets('"Frameworks" nao aperta o cabecalho mais que "JavaScript"', (
+      tester,
+    ) async {
+      final baseQueJaExiste = await escalaDoTitulo(tester, 'javascript');
+      final frameworks = await escalaDoTitulo(tester, 'frameworks');
+      final naoCabe = await escalaDoTitulo(tester, 'qa');
+
+      expect(
+        frameworks,
+        moreOrLessEquals(baseQueJaExiste, epsilon: 0.01),
+        reason: 'o nome novo encolhe mais que a trilha que ja existia',
+      );
+      expect(
+        naoCabe,
+        lessThan(baseQueJaExiste),
+        reason: 'sem um nome que comprovadamente encolhe mais, a medida acima '
+            'passaria mesmo se a escala nunca fosse aplicada',
+      );
+    });
   });
 
   group('estatisticas', () {

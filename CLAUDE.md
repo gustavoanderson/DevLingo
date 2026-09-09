@@ -1497,6 +1497,101 @@ Encadeadas: a curva de custo da 01 vira o terceiro princípio da 02; o modelo V 
 
 Os dez esperam o Gustavo jogar o iniciante. Aqui o risco de calibrar no escuro é **maior** que nos outros cursos: nas linguagens havia 100 questões medidas para comparar; aqui as 50 primeiras são a régua sendo criada.
 
+## Frameworks: o curso de comparação
+
+Chave `frameworks`, nome de tela **"Frameworks"**. Cobre React, Vue, Svelte, Next, Nuxt e Astro num curso só, pedido do Gustavo em 8 de setembro de 2026: *"explicando principais diferenças, qual é mais fácil"*.
+
+É o terceiro curso que não ensina uma linguagem, e o primeiro cuja pergunta central é uma **comparação**.
+
+### Ele pede exatamente o que o curso de backend cortou
+
+Vale registrar a tensão, porque quem retomar isto vai encontrá-la. No Fundamentos de Backend, **9 tópicos foram cortados por serem "escolha de stack"**, com o critério de que *"PostgreSQL ou MongoDB"* é escolha, e cobrar escolha como se fosse fato transforma ensino em dogma.
+
+O pedido aqui é justamente esse tipo de conteúdo. A saída não foi recuar, e sim acrescentar uma linha ao critério:
+
+| Pergunta | Entra? |
+|---|---|
+| *"Qual é melhor"* | **não.** É opinião, e continua fora |
+| *"O que cada um faz diferente"* | **sim.** `React usa JSX, Vue usa diretiva` é fato verificável |
+| *"Qual é mais fácil"* | **sim, se ancorada em algo contável** |
+
+A âncora escolhida: **quantos conceitos novos são necessários antes de a primeira tela reagir a um clique.** Svelte 1, Vue 2, React 4 — e os quatro do React estão nomeados na lição 05. Uma sensação virou um número, e número se discute.
+
+Nenhuma questão manda escolher nada. A resposta que o curso ensina tem duas metades, e **dar só uma é o erro que ele existe para corrigir**: *Svelte é o mais fácil de começar; React é o mais fácil de continuar, porque a dificuldade sai do código e vai para quantas pessoas já resolveram o seu problema.* A lição 05 diz explicitamente que o segundo argumento é sobre **probabilidade de achar a resposta**, e não sobre qualidade de código — confundir os dois é o que faz discussão de framework não terminar nunca.
+
+### O recorte: não são seis alternativas, são duas camadas
+
+Este é o motivo mais forte para o curso existir, e é o erro nº 1 de quem começa.
+
+| Camada | Quem | O que faz |
+|---|---|---|
+| Desenha a tela | React, Vue, Svelte | componente, prop, estado |
+| Por cima de uma dessas | Next (React), Nuxt (Vue), Astro (vários) | rota, servidor, empacotamento |
+
+**"React ou Next?" não é escolha, é camada.** Next *é* React com rota e servidor em volta. A internet compara os seis lado a lado numa tabela, e isso ensina errado na primeira olhada — a lição 01 começa desfazendo essa confusão, e as outras quatro dependem desse mapa.
+
+### A trilha iniciante, e as amarras
+
+| Lição | Tema |
+|---|---|
+| 01 | DOM à mão, componente, estado, e o mapa das duas camadas |
+| 02 | React: JSX, `useState`, o redesenho, eventos |
+| 03 | Vue e Svelte: arquivo único, diretivas, `ref`, o compilador |
+| 04 | Next, Nuxt e Astro: rota por arquivo, servidor, hidratação, ilhas |
+| 05 | TypeScript nos três, e "qual é mais fácil" respondido com medida |
+
+Encadeadas de propósito, como as outras quatro trilhas: o componente da 01 vira a página da 04 — rota por arquivo é o componente que virou URL; o `useState` da 02 é o contraponto exato do `ref` e do `let` na 03; **a lição 03 só funciona por diferença com a 02**, e é ali que "principais diferenças" acontece de verdade; o JSX da 02 é o que o Next compila na 04; e a hidratação da 04 é o que faz a resposta do Astro ser diferente na 05. **Ao mexer em qualquer lição, confira se essas amarras continuam de pé.**
+
+O curso também **admite os custos de cada um**, e isso é deliberado: o `lista.push` que não atualiza no Svelte, a janela em que o botão aparece e não responde depois da hidratação, e o fato de as ilhas do Astro perderem a graça num painel. Curso de comparação que só lista vantagens é propaganda.
+
+### O atrito do acento não apareceu, mas quase
+
+Como no backend, o jargão é todo ASCII — `useState`, `props`, `JSX`, `ref`, `className` —, então as questões de escrita continuam viáveis.
+
+**Duas palavras centrais do curso, porém, não podem ser resposta digitada:** `hidratação` e `renderização`. Elas aparecem só onde o aluno **lê**. As respostas em português usadas são `declarativo`, `compilador`, `diretivas`, `servidor` e `ilhas` — todas sem acento, conferidas uma a uma.
+
+### O léxico saiu de medir, e a medição excluiu mais do que incluiu
+
+`_termosFrameworks` em `texto_rico.dart`. As 70 passagens de aula e enunciado foram varridas contando **só as ocorrências fora de crase e negrito**, que são as que o léxico automático veria:
+
+| Palavra | Ocorrências nuas | Veredito |
+|---|---|---|
+| `tela`, `componente` | 22 cada | **fora** |
+| `estado` | 14 | **fora** |
+| `navegador` | 13 | **fora** |
+| `servidor` | 10 | **fora** |
+| `rota`/`rotas` | 7 | **fora** |
+| `React`, `Vue`, `Svelte` | 37, 23, 17 | dentro |
+| `HTML`, `JavaScript` | 16 cada | dentro |
+
+Todas as excluídas são substantivos portugueses usados como prosa: destacá-las faria o parágrafo piscar de ciano, que é exatamente a razão registrada para `cache` no backend e `teste` no QA. Elas entram por crase quando forem o conceito sendo nomeado. `script` e `template` também ficaram de fora — técnicas neste curso, mas com colisão plausível numa lição futura.
+
+**Nada de hífen no léxico, e isso é estrutural.** O casador anda por caracteres de nome, e hífen não é um deles: `v-if` seria partido em `v` e `if` antes de qualquer comparação, e a entrada **nunca casaria**. Diretivas do Vue e marcações do Astro dependem da crase do autor. Um teste impede que alguém acrescente uma entrada com hífen achando que resolveu.
+
+**Achado de passagem, não corrigido:** `'shift-left'` no `_termosQa` é uma entrada morta pelo mesmo motivo — ela nunca pode casar. Não causa defeito visível — a palavra simplesmente não é destacada. **O Gustavo decidiu em 9 de setembro de 2026 que ela fica.** Remover seria inofensivo, mas mexeria num curso que não estava em questão, e a entrada não custa nada além de uma linha. Fica registrado como decisão, e não como pendência esquecida — quem encontrar a entrada morta de novo não precisa reabrir o assunto.
+
+### Dois erros meus nesta sessão, e o segundo é o interessante
+
+**Errei o nome do arquivo de sonda para heredoc.** O `CLAUDE.md` já registrava que heredoc do Bash quebra com conteúdo grande, e eu tentei mesmo assim antes de cair na ferramenta de escrita.
+
+**E afirmei um número sem medir.** Eu disse que "Frameworks" caberia no cabeçalho **sem** acionar o `FittedBox`. Ao escrever o teste, a asserção de controle reprovou — e o que ela revelou foi que **meu instrumento estava errado**: altura não mede encolhimento, porque o `FittedBox` encolhe por *transformação* e o `Text` continua com os mesmos 37px. "Qualidade de Software" mede 37.0 igual a "JavaScript".
+
+Sem aquela segunda asserção, eu teria entregado um teste que passava sem medir nada — a mesma família do teste com `return` cedo já registrada aqui.
+
+O instrumento certo é comparar o retângulo **pintado** (`getRect`, que já passou pela transformação) com o tamanho próprio (`getSize`). E aí veio a segunda descoberta, que vale para qualquer medida de texto neste repositório:
+
+> **A fonte do ambiente de teste desenha cada glifo como um QUADRADO.** "JavaScript" mede **262,5px** no teste contra os **~156px** da mono de 26px no aparelho — cerca de 68% mais largo. O teste é um proxy **pessimista**: o que couber nele cabe no aparelho, mas o contrário não vale, e comparar com um número absoluto mede a fonte de teste, não o cabeçalho.
+
+Por isso o teste afirma **paridade com "JavaScript"**, e não ausência de encolhimento: os dois nomes têm as mesmas 10 letras, então o que ele trava é que a trilha nova não aperta o cabeçalho mais do que a que já existia. Verificado trocando o nome por um longo: reprovou com `Actual: 0.381` contra `0.914`.
+
+### Os níveis seguintes, planejados e não escritos
+
+**Intermediário** — *o que o iniciante deixou em aberto*: efeitos e ciclo de vida; listas e a chave de identidade; estado compartilhado entre componentes; formulários; buscar dados no servidor.
+
+**Avançado** — *o que tem trade-off*: desempenho e o custo de redesenhar; componentes de servidor; testar componente contra testar a tela inteira; acessibilidade; e quando **não** usar framework nenhum.
+
+Esperam o Gustavo jogar o iniciante, pela mesma razão de sempre. E aqui vale a ressalva do curso de QA: as 50 primeiras são a régua sendo criada.
+
 ## O que separa um nível do outro
 
 Sem isso escrito, o intermediário vira "iniciante com palavras difíceis".

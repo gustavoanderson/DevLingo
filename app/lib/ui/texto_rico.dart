@@ -132,11 +132,40 @@ const Set<String> _termosQa = {
   'timebox',
 };
 
+/// Vocabulario do curso de frameworks de JavaScript.
+///
+/// Entram os nomes das seis tecnologias e o vocabulario de codigo. Ficam de
+/// fora, pela mesma razao de `cache` no lexico de backend e de `teste` no de
+/// QA, as palavras que sao portugues corrente neste curso -- destaca-las em
+/// todo paragrafo faria o texto piscar. A lista saiu de MEDIR as 70 passagens
+/// de aula e enunciado, contando so as ocorrencias fora de crase e negrito:
+///
+///   tela 22, componente 22, estado 14, navegador 13, servidor 10,
+///   rota 7, diretiva 2, compilador 1, ilha 1
+///
+/// Todas sao substantivos portugueses usados como prosa, e nenhuma e codigo.
+/// Elas entram por crase quando forem o conceito sendo nomeado.
+///
+/// `script` e `template` tambem ficaram de fora: as 4 ocorrencias sao tecnicas
+/// neste curso, mas as duas palavras existem em portugues e o ganho nao paga o
+/// risco em licao futura.
+///
+/// **Nada de hifen aqui.** O casador anda por caracteres de nome, e hifen nao e
+/// um deles -- `v-if` seria partido em `v` e `if`, e a entrada nunca casaria.
+/// Diretivas do Vue e marcacoes do Astro dependem da crase do autor.
+const Set<String> _termosFrameworks = {
+  'Astro', 'CSS', 'DOM', 'HTML', 'JSX', 'JavaScript', 'Next', 'Nuxt', 'React',
+  'Svelte', 'TypeScript', 'Vue', 'className', 'const', 'hook', 'hooks',
+  'htmlFor', 'let', 'number', 'onClick', 'prop', 'props', 'ref', 'string',
+  'useState',
+};
+
 Set<String> termosDe(String linguagem) => switch (linguagem) {
   'python' => _termosPython,
   'javascript' || 'node' => _termosJs,
   'backend' => _termosBackend,
   'qa' => _termosQa,
+  'frameworks' => _termosFrameworks,
   _ => const {},
 };
 

@@ -116,6 +116,61 @@ void main() {
     });
   });
 
+  group('lexico do curso de frameworks', () {
+    test('os nomes das seis tecnologias sao destacados', () {
+      final t = analisarTexto(
+        'Next usa React, Nuxt usa Vue, e Astro aceita Svelte tambem',
+        linguagem: 'frameworks',
+      );
+      expect(
+        _termos(t).map((x) => x.texto),
+        containsAll(['Next', 'React', 'Nuxt', 'Vue', 'Astro', 'Svelte']),
+      );
+    });
+
+    // Mesma familia dos testes de `as`, `for` e `do` acima, e a razao e a
+    // mesma: a lista saiu de MEDIR as 70 passagens do curso, e estas sao as
+    // palavras que aparecem como portugues corrente. Destaca-las faria o
+    // paragrafo piscar, exatamente como `cache` no lexico de backend.
+    //
+    // Os numeros medidos, fora de crase e negrito: tela 22, componente 22,
+    // estado 14, navegador 13, servidor 10, rota 7, diretiva 2, ilha 1.
+    test('as palavras portuguesas medidas nao viram termo', () {
+      final t = analisarTexto(
+        'o componente redesenha a tela quando o estado muda, '
+        'e o navegador pede a rota ao servidor',
+        linguagem: 'frameworks',
+      );
+      expect(_termos(t), isEmpty);
+    });
+
+    test('mas o autor consegue marca-las com crase quando forem o conceito', () {
+      final t = analisarTexto(
+        'a `hidratacao` liga o codigo ao HTML que ja esta na tela',
+        linguagem: 'frameworks',
+      );
+      expect(_termos(t).map((x) => x.texto), ['hidratacao', 'HTML']);
+    });
+
+    // O casador anda por caracteres de nome, e hifen nao e um deles: uma
+    // entrada com hifen seria partida antes de ser comparada, e nunca casaria.
+    // Diretivas do Vue (`v-if`) e marcacoes do Astro (`client:visible`)
+    // dependem da crase do autor, e este teste impede que alguem as acrescente
+    // ao lexico achando que resolveu.
+    test('entrada com hifen nunca casaria, entao nao ha nenhuma', () {
+      final comHifen = termosDe('frameworks').where((t) => t.contains('-'));
+      expect(comHifen, isEmpty);
+    });
+
+    test('v-if depende da crase, e o lexico nao parte a diretiva ao meio', () {
+      final t = analisarTexto(
+        'o `v-if` mostra ou nao mostra o elemento',
+        linguagem: 'frameworks',
+      );
+      expect(_termos(t).single.texto, 'v-if');
+    });
+  });
+
   group('a invariante', () {
     // A mesma regra do realce de sintaxe: um analisador que come um caractere
     // e pior que nenhum, porque o texto passa a mentir e ninguem ve a olho nu.

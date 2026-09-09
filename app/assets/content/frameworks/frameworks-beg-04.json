@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "language": "frameworks",
+  "level": "beginner",
+  "lessonId": "frameworks-beg-04",
+  "lessonTitle": "Next, Nuxt e Astro: a camada de cima",
+  "aula": {
+    "titulo": "Rota, servidor e o que chega ao navegador",
+    "secoes": [
+      {
+        "topico": "rota-por-arquivo",
+        "titulo": "A pasta vira o endereço",
+        "texto": "Num projeto só de React, Vue ou Svelte, decidir qual endereço mostra qual tela é trabalho seu: instala-se uma biblioteca de rotas e escreve-se a lista à mão.\n\nOs meta-frameworks resolvem isso pela **estrutura de pastas**. Um arquivo chamado `sobre` vira o endereço `/sobre`. Não há lista para escrever — e, o que importa mais, **não há como o arquivo e a rota saírem de sincronia**, porque são a mesma coisa.\n\nÉ o mesmo raciocínio que aparece em vários lugares da engenharia: quando duas coisas precisam concordar, a solução mais segura é fazer com que sejam uma só.\n\nColchetes marcam a parte que varia: um arquivo `[id]` casa com qualquer valor naquele pedaço do endereço, e o valor chega para a página usar.",
+        "code": {
+          "language": "text",
+          "content": "ARQUIVO                 ENDERECO\n\npaginas/index      ->   /\npaginas/sobre      ->   /sobre\npaginas/livros/[id]->   /livros/42"
+        }
+      },
+      {
+        "topico": "servidor-navegador",
+        "titulo": "Onde a página é montada",
+        "texto": "Aqui está a diferença que separa um site feito só com React de um feito com Next.\n\n**Montada no navegador.** O servidor manda uma página praticamente vazia e um monte de JavaScript. O navegador executa e a tela aparece. Quem está numa conexão lenta encara branco enquanto isso, e um buscador que não executa JavaScript enxerga uma página sem conteúdo.\n\n**Montada no servidor.** O HTML sai pronto de lá, com o texto já dentro. A tela aparece de cara, e o buscador vê conteúdo.\n\nMeta-framework é o que torna a segunda opção prática, porque ela exige rodar o mesmo código nos dois lugares — e organizar isso à mão é trabalhoso.\n\nE \"no servidor\" tem duas variedades que vale distinguir: **na hora do pedido**, para conteúdo que muda de pessoa para pessoa, e **uma vez só, na publicação**, para conteúdo igual para todos. A segunda é a mais rápida que existe, porque na hora do pedido já não há nada a fazer: o arquivo está pronto.",
+        "code": {
+          "language": "text",
+          "content": "NO NAVEGADOR   pagina vazia + JS  ->  navegador monta  ->  tela\nNO SERVIDOR    servidor monta     ->  HTML pronto      ->  tela"
+        }
+      },
+      {
+        "topico": "hidratacao",
+        "titulo": "A página chega pronta, e só depois ganha vida",
+        "texto": "Se o HTML já veio montado do servidor, os botões funcionam? **Ainda não.**\n\nO que chegou é texto. Para o clique funcionar, o mesmo componente precisa ser executado também no navegador e se reconectar àquele HTML que já está na tela. Esse segundo passo chama **hidratação**.\n\nO nome é bom: o servidor manda a página desidratada — a forma toda certa, sem a parte que reage — e o navegador acrescenta a água.\n\nE aqui está o custo escondido de muito site moderno: **a página parece pronta antes de estar.** Entre o texto aparecer e a hidratação terminar existe uma janela em que o botão está visível e não responde. Em celular modesto essa janela é sentida — e é um caso clássico de defeito que só aparece em aparelho de verdade, nunca na máquina de quem programou.",
+        "code": {
+          "language": "text",
+          "content": "1. servidor monta o HTML       -> voce LE a pagina\n2. navegador executa o mesmo   -> voce PODE CLICAR\n   componente e se reconecta\n\n   entre 1 e 2, o botao aparece e nao responde"
+        }
+      },
+      {
+        "topico": "ilhas",
+        "titulo": "Astro: e se quase nada precisasse de hidratação?",
+        "texto": "Astro parte de uma observação simples: **a maior parte de um site não reage a nada.** Um artigo, um menu, um rodapé são texto. Hidratar tudo isso é pagar por interatividade que ninguém vai usar.\n\nEntão o padrão dele é invertido: **nada vira JavaScript no navegador, a menos que você peça.** Você marca explicitamente os poucos pedaços que precisam funcionar, e só eles são hidratados. Esses pedaços se chamam **ilhas** — pontos interativos num mar de HTML parado.\n\nA marcação é literal, e você escolhe até *quando*: `client:load` hidrata assim que a página abre, e `client:visible` só quando a pessoa rolar até ali.\n\nDaí sai a outra particularidade do Astro. Como quase nada é enviado ao navegador, **tanto faz de que framework o componente é.** Ele aceita React, Vue e Svelte no mesmo projeto, e até na mesma página. É por isso que ele aparece na coluna \"vários\" do mapa da lição 01.\n\nE o preço, que é justo dizer: essa ideia brilha em site de conteúdo — blog, documentação, loja, institucional. Num painel onde tudo é interativo ela perde a graça, porque a página inteira vira uma ilha só.",
+        "code": {
+          "language": "html",
+          "content": "---\nimport Grafico from \"../componentes/Grafico.jsx\";\n---\n\n<h1>Relatorio</h1>          <!-- HTML puro, zero JavaScript -->\n<p>Texto que nao reage.</p>\n\n<Grafico client:visible />  <!-- a unica ilha da pagina -->"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "frameworks-beg-0401",
+      "topic": "rota-por-arquivo",
+      "prompt": "Qual é a vantagem de as rotas virem da **estrutura de pastas**, em vez de uma lista escrita à mão?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O arquivo e a rota não podem sair de sincronia, porque são a mesma coisa",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "As páginas passam a carregar mais rápido, porque a pasta é lida antes do código",
+          "correct": false,
+          "why": "Não há ganho de velocidade nisso. A vantagem é de manutenção, não de desempenho."
+        },
+        {
+          "id": "c",
+          "text": "Deixa de ser possível ter endereços com partes variáveis",
+          "correct": false,
+          "why": "Continua sendo possível: é para isso que servem os colchetes no nome do arquivo."
+        },
+        {
+          "id": "d",
+          "text": "O projeto passa a aceitar componentes de qualquer framework",
+          "correct": false,
+          "why": "Isso é uma característica do Astro, e não tem relação com o modo de declarar rotas."
+        },
+        {
+          "id": "e",
+          "text": "As rotas passam a ser decididas pelo servidor durante o uso",
+          "correct": false,
+          "why": "Elas são conhecidas antes disso, justamente porque saem da estrutura de arquivos."
+        }
+      ],
+      "hint": "Pense no defeito clássico de manter duas coisas em sincronia à mão — o mesmo da lição 01, com o número em três lugares.",
+      "explanation": "É o mesmo raciocínio do primeiro problema deste curso: quando duas coisas precisam concordar e alguém precisa lembrar disso, um dia alguém esquece. A saída mais segura é fazer com que sejam **uma coisa só**. Criar o arquivo já cria a rota; apagá-lo já a remove."
+    },
+    {
+      "id": "frameworks-beg-0402",
+      "topic": "rota-por-arquivo",
+      "prompt": "Complete o endereço que este arquivo passa a atender, num meta-framework com rota por arquivo.",
+      "code": {
+        "language": "text",
+        "content": "ARQUIVO            ENDERECO\n\npaginas/index  ->  /\npaginas/sobre  ->  ______",
+        "highlightLine": 4
+      },
+      "answerType": "fillBlank",
+      "accepted": ["/sobre"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "O endereço é o caminho do arquivo, e começa com a mesma barra que aparece na linha de cima.",
+      "explanation": "O caminho dentro da pasta de páginas **é** o endereço — daí o nome. O arquivo `index` é a exceção útil: ele responde pela pasta em que está, e é por isso que ele vira a raiz do site."
+    },
+    {
+      "id": "frameworks-beg-0403",
+      "topic": "servidor-navegador",
+      "prompt": "Um site é montado inteiramente no navegador. O que um buscador que **não executa JavaScript** enxerga ao visitá-lo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A página completa, porque o conteúdo viaja separado do JavaScript",
+          "correct": false,
+          "why": "Nesse modelo o conteúdo não viaja separado: ele só passa a existir depois que o JavaScript roda."
+        },
+        {
+          "id": "b",
+          "text": "Um aviso automático pedindo que ative o JavaScript",
+          "correct": false,
+          "why": "Esse aviso só existe se alguém o tiver escrito à mão, e ele não é o conteúdo da página."
+        },
+        {
+          "id": "c",
+          "text": "Praticamente nada, porque o conteúdo só passa a existir depois que o JavaScript roda",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O código-fonte dos componentes, em vez do texto",
+          "correct": false,
+          "why": "O que ele recebe é a página que o servidor mandou, e ali não há nem uma coisa nem outra."
+        },
+        {
+          "id": "e",
+          "text": "A versão da página de antes da última publicação",
+          "correct": false,
+          "why": "Não existem duas versões guardadas. Ele recebe exatamente o que o servidor responde agora."
+        }
+      ],
+      "hint": "Pergunte-se o que o servidor efetivamente mandou, antes de qualquer código rodar no navegador.",
+      "explanation": "Esse é o custo mais conhecido de montar tudo no navegador, e ele tem dois lados. Para buscadores, a página parece vazia. E para pessoas em conexão lenta, o efeito é o mesmo: tela em branco até o JavaScript baixar e rodar. Resolver isso é a razão de existir da camada dos meta-frameworks."
+    },
+    {
+      "id": "frameworks-beg-0404",
+      "topic": "servidor-navegador",
+      "prompt": "Onde a página precisa ser montada para que o HTML já chegue com o conteúdo dentro? Escreva a palavra em uma só palavra, sem acento.",
+      "answerType": "freeWrite",
+      "accepted": ["servidor"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É a máquina do outro lado da conexão, aquela que responde ao pedido do navegador. A lição 01 do curso de Backend abre com ela.",
+      "explanation": "Montar no `servidor` faz a tela aparecer de cara e dá conteúdo ao buscador. Isso tem duas variedades: **na hora do pedido**, para o que muda de pessoa para pessoa, e **uma vez só na publicação**, para o que é igual para todos — esta última é a mais rápida possível, porque na hora do pedido não sobra nada a fazer."
+    },
+    {
+      "id": "frameworks-beg-0405",
+      "topic": "servidor-navegador",
+      "prompt": "Qual conteúdo é o melhor candidato a ser montado **uma vez só, na publicação**, em vez de a cada pedido?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O saldo da conta de quem está logado",
+          "correct": false,
+          "why": "Ele muda de pessoa para pessoa e a cada momento. Montado uma vez só, mostraria o número errado para quase todo mundo."
+        },
+        {
+          "id": "b",
+          "text": "O carrinho de compras da sessão atual",
+          "correct": false,
+          "why": "Ele é diferente para cada visitante, então não há uma versão única que sirva."
+        },
+        {
+          "id": "c",
+          "text": "A lista de notificações não lidas",
+          "correct": false,
+          "why": "Ela muda o tempo todo e é individual — dois motivos para não ser fixada na publicação."
+        },
+        {
+          "id": "d",
+          "text": "O resultado de uma busca digitada pelo usuário",
+          "correct": false,
+          "why": "Ele depende do que a pessoa escreveu, que só se sabe na hora do pedido."
+        },
+        {
+          "id": "e",
+          "text": "Um artigo de blog, igual para todos os visitantes",
+          "correct": true
+        }
+      ],
+      "hint": "Quatro das cinco mudam conforme quem está olhando. Procure a que é idêntica para qualquer visitante.",
+      "explanation": "O critério é sempre o mesmo: **muda por pessoa ou por momento?** Se não muda, montar toda vez é repetir um trabalho de resultado idêntico — melhor fazer uma vez e servir o arquivo pronto. Se muda, não há como adiantar. E os dois convivem no mesmo site: o artigo pode ser fixo e o cabeçalho com seu nome vir depois."
+    },
+    {
+      "id": "frameworks-beg-0406",
+      "topic": "hidratacao",
+      "prompt": "O HTML chegou pronto do servidor e o texto já está visível. Por que os botões ainda podem não responder?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o servidor envia os botões desabilitados por segurança",
+          "correct": false,
+          "why": "Não há nada desabilitado de propósito. O elemento está normal, só que ainda sem código escutando."
+        },
+        {
+          "id": "b",
+          "text": "Porque o componente ainda precisa ser executado no navegador e se reconectar àquele HTML",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque HTML vindo do servidor não aceita eventos de clique",
+          "correct": false,
+          "why": "Aceita normalmente. O que falta é alguém ter registrado o que fazer no clique."
+        },
+        {
+          "id": "d",
+          "text": "Porque o navegador precisa recarregar a página uma segunda vez",
+          "correct": false,
+          "why": "Não há segundo carregamento. A mesma página ganha comportamento onde está."
+        },
+        {
+          "id": "e",
+          "text": "Porque o clique só passa a funcionar depois do primeiro movimento do mouse",
+          "correct": false,
+          "why": "Nada depende de mexer o mouse. O que falta é a etapa que liga o código ao HTML já visível."
+        }
+      ],
+      "hint": "O que chegou do servidor é texto. Pergunte-se o que ainda precisa acontecer para haver código escutando o clique.",
+      "explanation": "Essa etapa chama **hidratação**, e o nome descreve bem: o servidor manda a página desidratada — forma certa, sem a parte que reage — e o navegador acrescenta a água. Só depois dela o botão passa a fazer algo."
+    },
+    {
+      "id": "frameworks-beg-0407",
+      "topic": "hidratacao",
+      "prompt": "Qual é o efeito indesejado que a hidratação produz para quem está usando o site?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O texto aparece embaralhado até o processo terminar",
+          "correct": false,
+          "why": "O texto aparece correto desde o começo: ele veio pronto do servidor."
+        },
+        {
+          "id": "b",
+          "text": "A página é exibida duas vezes seguidas, com um piscar entre elas",
+          "correct": false,
+          "why": "O conteúdo permanece o mesmo na tela. A etapa acrescenta comportamento, não redesenha tudo."
+        },
+        {
+          "id": "c",
+          "text": "As imagens só carregam depois de todo o resto",
+          "correct": false,
+          "why": "A ordem de carregamento das imagens é outro assunto, e independe dessa etapa."
+        },
+        {
+          "id": "d",
+          "text": "A página parece pronta antes de estar, e há uma janela em que o botão aparece e não responde",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "O endereço da página muda sozinho ao terminar",
+          "correct": false,
+          "why": "O endereço não muda. Nada de navegação acontece nessa etapa."
+        }
+      ],
+      "hint": "O problema não é o que se vê, e sim a diferença entre o que se vê e o que já funciona.",
+      "explanation": "É um defeito de percepção, e por isso escapa fácil: a tela está perfeita, e quem programou, na sua máquina rápida, nunca sentiu a janela. Quem está num celular modesto toca no botão, não acontece nada, e toca de novo — mais forte. Esse tipo de coisa é encontrada usando o site num aparelho de verdade, nunca lendo o código."
+    },
+    {
+      "id": "frameworks-beg-0408",
+      "topic": "ilhas",
+      "prompt": "Qual é a observação sobre sites que dá origem ao modelo de **ilhas** do Astro?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A maior parte de um site é conteúdo parado, que não reage a nada",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "A maior parte dos visitantes desliga o JavaScript do navegador",
+          "correct": false,
+          "why": "Praticamente ninguém faz isso. O argumento é sobre o que a página precisa, não sobre o que o visitante permite."
+        },
+        {
+          "id": "c",
+          "text": "Componentes de frameworks diferentes não podem coexistir numa página",
+          "correct": false,
+          "why": "É o contrário: no Astro eles coexistem, e isso é consequência do modelo, não a origem dele."
+        },
+        {
+          "id": "d",
+          "text": "Buscadores penalizam páginas que usam componentes",
+          "correct": false,
+          "why": "Não há penalidade por usar componentes. O que pesa para o buscador é o conteúdo chegar ou não no HTML."
+        },
+        {
+          "id": "e",
+          "text": "Montar a página no servidor é sempre mais lento que no navegador",
+          "correct": false,
+          "why": "Costuma ser o contrário para quem está olhando, e de todo modo não é essa a observação de origem."
+        }
+      ],
+      "hint": "Pense num artigo de blog: quantos pedaços dele realmente precisam responder a um clique?",
+      "explanation": "Um artigo, um menu e um rodapé são texto. Hidratar tudo isso é pagar por interatividade que ninguém vai usar — então o Astro inverte o padrão: **nada vira JavaScript no navegador, a menos que você peça.** Os poucos pedaços que você marca são as ilhas, num mar de HTML parado."
+    },
+    {
+      "id": "frameworks-beg-0409",
+      "topic": "ilhas",
+      "prompt": "Complete a marcação para que este componente só seja hidratado quando a pessoa rolar a página até ele.",
+      "code": {
+        "language": "html",
+        "content": "<h1>Relatorio</h1>\n<p>Texto que nao reage.</p>\n\n<Grafico ______ />",
+        "highlightLine": 4
+      },
+      "answerType": "fillBlank",
+      "accepted": ["client:visible"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "São duas palavras em inglês separadas por dois pontos. A primeira diz onde, e a segunda é o oposto de escondido.",
+      "explanation": "A marcação diz **quando** a ilha ganha vida. O `client:visible` adia até a pessoa chegar lá, o que é ideal para algo no fim de uma página longa; `client:load` hidrata assim que a página abre. Sem marcação nenhuma, o componente é desenhado como HTML e nunca vira JavaScript no navegador."
+    },
+    {
+      "id": "frameworks-beg-0410",
+      "topic": "ilhas",
+      "prompt": "Como se chamam os pedaços interativos de uma página Astro, cercados por HTML que não reage a nada? Escreva no plural.",
+      "answerType": "freeWrite",
+      "accepted": ["ilhas", "ilha", "islands"],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "A metáfora é geográfica: pedaços de terra firme cercados por um mar de HTML parado.",
+      "explanation": "Como quase nada é enviado ao navegador, **tanto faz de que framework cada ilha é** — e é por isso que o Astro aceita React, Vue e Svelte no mesmo projeto, ocupando a linha \"vários\" do mapa da lição 01.\n\nO preço é justo dizer: a ideia brilha em site de conteúdo, e perde a graça num painel onde tudo é interativo, porque aí a página inteira vira uma ilha só."
+    }
+  ]
+}
