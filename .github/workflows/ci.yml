@@ -1,0 +1,158 @@
+name: CI
+
+# Portao de qualidade do repositorio inteiro, e nao so do banco de questoes.
+#
+# O nome importa mais do que parece. Ele era "Validar banco de questoes", e a
+# aba Actions passou a anunciar como validacao de conteudo um fluxo que ja
+# rodava `flutter analyze` e a suite inteira. O CLAUDE.md registrou a versao
+# errada, eu li de la e repeti duas vezes ao Gustavo que "o CI so valida o
+# JSON" -- ate abrir o arquivo. Nome de fluxo e documentacao: se ele mentir,
+# alguem acredita.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  conteudo:
+    name: Conteudo e contrato em Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v5
+
+      - name: Preparar o Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install jsonschema
+
+      - name: Rodar o validador
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 tools/validate_questions.py app/assets/content/ \
+            | tee saida-do-validador.txt
+
+      - name: Provar o contrato de normalizacao (lado Python)
+        run: python3 tools/test_normalize.py
+
+      # Mesma razao do badge de testes, no outro job: numero de README escrito
+      # a mao envelhece em silencio. O de questoes ja errou uma vez -- saiu 214
+      # quando eram 204, e o erro chegou a uma mensagem de commit.
+      - name: Os badges de questoes e trilhas nao podem mentir
+        shell: bash
+        run: |
+          questoes=$(grep -oE 'Questoes analisadas: [0-9]+' saida-do-validador.txt \
+                     | grep -oE '[0-9]+')
+          trilhas=$(find app/assets/content -mindepth 1 -maxdepth 1 -type d | wc -l)
+
+          badge_q=$(grep -oE 'badge/questões-[0-9]+' README.md | grep -oE '[0-9]+')
+          badge_t=$(grep -oE 'badge/trilhas-[0-9]+' README.md | grep -oE '[0-9]+')
+
+          echo "questoes: banco $questoes, README $badge_q"
+          echo "trilhas:  banco $trilhas, README $badge_t"
+
+          falhou=0
+          if [ "$questoes" != "$badge_q" ]; then
+            echo "::error::o README anuncia $badge_q questoes e o banco tem $questoes."
+            falhou=1
+          fi
+          if [ "$trilhas" != "$badge_t" ]; then
+            echo "::error::o README anuncia $badge_t trilhas e existem $trilhas pastas."
+            falhou=1
+          fi
+          exit $falhou
+
+  app:
+    name: App em Dart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v5
+
+      # A versao e fixa de proposito. O contrato de normalizacao compara duas
+      # implementacoes; deixar uma delas flutuar sozinha esvazia a comparacao.
+      - name: Preparar o Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+
+      - name: Baixar as dependencias
+        working-directory: app
+        run: flutter pub get
+
+      - name: Analise estatica
+        working-directory: app
+        run: flutter analyze
+
+      # Roda o mesmo tools/normalize_cases.json que o job de Python roda.
+      # Se as duas implementacoes divergirem, um dos dois jobs reprova.
+      #
+      # O reporter `json` e escolha deliberada, e nao gosto: a saida normal do
+      # `flutter test` MUDA de formato conforme o ambiente. Medido, o mesmo
+      # comando imprime "00:27 +343: All tests passed!" nesta maquina e
+      # "343 tests passed." no runner. Contar com expressao regular quebraria
+      # num dos dois, e portao que quebra sozinho ensina a ignorar portao.
+      #
+      # Este passo NAO reprova quando um teste falha, de proposito. Quem
+      # reprova e o resumo abaixo, que diz QUAL teste caiu e com que erro --
+      # bem mais util que um log de JSON cru terminando em vermelho.
+      - name: Testes
+        working-directory: app
+        shell: bash
+        run: flutter test --coverage --reporter json > ../saida-dos-testes.jsonl || true
+
+      - name: Resumo dos testes
+        id: testes
+        run: python3 tools/resumo_dos_testes.py saida-dos-testes.jsonl
+
+      # O README anuncia quantos testes existem, e ate aqui esse numero era
+      # digitado a mao -- entrou como 340 quando ja eram 343. Numero escrito a
+      # mao envelhece em silencio, e num portfolio de qualidade numero errado e
+      # pior que numero nenhum.
+      #
+      # A alternativa seria o CI reescrever o README sozinho, mas isso exigiria
+      # que ele commitasse na main. Uma regra que reclama custa nada e nao
+      # inventa commit. E a mesma forma da regra dos assets do pubspec.
+      - name: O badge de testes do README nao pode mentir
+        shell: bash
+        run: |
+          real="${{ steps.testes.outputs.total }}"
+          badge=$(grep -oE 'badge/testes-[0-9]+' README.md | grep -oE '[0-9]+')
+
+          echo "suite: $real   README: $badge"
+
+          if [ -z "$real" ]; then
+            echo "::error::nao consegui ler quantos testes rodaram."
+            exit 1
+          fi
+          if [ "$real" != "$badge" ]; then
+            echo "::error::o README anuncia $badge testes e a suite tem $real."
+            echo "::error::Atualize o badge 'testes-$badge' para 'testes-$real'."
+            exit 1
+          fi
+
+      # Cobertura vai para o resumo da execucao, e nao para um badge no README.
+      # O numero muda a cada commit: fixa-lo no README faria o passo do badge
+      # reprovar o tempo todo, e portao que reprova sem motivo ensina a
+      # ignora-lo. Quem quiser o numero abre a aba Actions.
+      #
+      # O relatorio diz a porcentagem E o denominador, porque o `--coverage` so
+      # instrumenta arquivo que algum teste importa -- ver o cabecalho do
+      # script. Publicar so a porcentagem esconderia o que ficou de fora.
+      - name: Medir a cobertura
+        run: python3 tools/resumo_da_cobertura.py app
+
+      # Guardado para quem quiser abrir no proprio editor. lcov.info sozinho e
+      # ilegivel; qualquer visualizador de cobertura o le.
+      - name: Guardar o relatorio de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-lcov
+          path: app/coverage/lcov.info
+          if-no-files-found: error

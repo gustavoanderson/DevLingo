@@ -1019,7 +1019,7 @@ Isso reordena tudo. Badges, cronômetro e monetização — que ele levantou —
 
 | Ordem | O quê | Por quê |
 |---|---|---|
-| **1** | Os 334 testes rodando no CI, com cobertura e badges no README | Hoje o CI **só valida o JSON do conteúdo**. Os testes existem e ninguém fora daqui sabe. Duas horas de trabalho para tornar visível o maior ativo do projeto |
+| ~~**1**~~ | ~~Os testes rodando no CI, com cobertura e badges~~ | **feito em 10 de setembro de 2026** — e a premissa desta linha estava errada. Ver "O CI, e a linha que este arquivo errou" |
 | **2** | Suíte E2E do próprio app com **Appium** | O ativo de portfólio mais forte, e a razão está abaixo |
 | **3** | Badges de percurso e sequência de dias | Funcionalidade real, e **superfície nova para a automação testar** |
 | contínuo | O intermediário das trilhas, calibrado pelo que ele jogar | O conteúdo é o que menos impressiona recrutador e o que mais serve ao app |
@@ -1064,6 +1064,56 @@ Duas ressalvas que apareceram na conversa e valem guardar:
 Badge por **concluir lição ou manter sequência de dias** celebra persistência e combina com o app. Badge por **acertar de primeira, terminar rápido ou zerar sem erro** pune quem erra por via indireta — e transformaria "errar não termina a questão" em mentira: a mecânica não pune, mas a medalha que você não ganhou pune.
 
 O mesmo vale para o cronômetro que ele quer: **opt-in de verdade**. O que quebraria a regra registrada seria o app sugerir o modo desafio, comparar seu tempo com o de outros, ou exibir o cronômetro por padrão.
+
+### O CI, e a linha que este arquivo errou
+
+`.github/workflows/ci.yml`. Dois jobs: conteúdo e contrato em Python, e o app em Dart.
+
+**Este arquivo afirmava que o CI "só valida o JSON do conteúdo", e isso era falso.** O job `app` já rodava `flutter analyze` e a suíte inteira desde o começo. Eu li a linha errada aqui, repeti duas vezes ao Gustavo como se fosse fato, e planejei um dia de trabalho em cima dela — até abrir o arquivo e ver os 343 testes passando no runner.
+
+A causa raiz não foi só o `CLAUDE.md`: **o workflow se chamava "Validar banco de questoes"**, então a aba Actions anunciava como validação de conteúdo um fluxo que fazia o dobro disso. Hoje ele se chama `CI`, e o arquivo é `ci.yml`.
+
+Fica a regra: **nome de fluxo é documentação.** Se ele mentir, alguém acredita — inclusive quem escreveu.
+
+#### Números do README não podem ser digitados à mão
+
+Três badges anunciam contagens: testes, questões e trilhas. Todos eram escritos à mão, e dois já tinham envelhecido — o de testes dizia 340 contra 343 reais, e o de questões já saiu 214 quando eram 204, com o erro chegando a uma mensagem de commit.
+
+Hoje o CI **reprova quando qualquer um dos três diverge do real**. A alternativa — o CI reescrever o README sozinho — foi descartada: exigiria que ele commitasse na `main`. Uma regra que reclama custa nada e não inventa commit, e é a mesma forma da regra dos assets do `pubspec`.
+
+**A cobertura não entra nessa lista, de propósito.** Ela muda a cada commit; fixá-la no README faria o portão reprovar o tempo todo, e portão que reprova sem motivo ensina a contorná-lo.
+
+#### Contar testes por expressão regular quebra, e foi medido
+
+A saída do `flutter test` **muda de formato conforme o ambiente**:
+
+```
+local:  00:27 +343: All tests passed!
+CI:     343 tests passed.
+```
+
+Uma expressão regular escrita contra um dos dois não pega o outro. Por isso o CI usa `--reporter json`, que existe para ser lido por máquina e não muda de forma, e `tools/resumo_dos_testes.py` traduz aquilo de volta para gente.
+
+O passo dos testes **não reprova** quando um teste falha; quem reprova é o resumo, que diz **qual** teste caiu e com que erro. Log de JSON cru terminando em vermelho não ajuda ninguém.
+
+O script foi verificado com duas sondas: um `testDone` trocado para `failure` (nomeou o teste e saiu com 1) e um arquivo sem teste nenhum (**suíte vazia que passa é o pior falso verde possível**, então ele reprova).
+
+#### Cobertura: 95,6%, e o denominador junto
+
+`tools/resumo_da_cobertura.py` escreve no resumo da execução. Ele diz a porcentagem **e quantos arquivos estão dentro dela**, porque o `flutter test --coverage` só instrumenta arquivo que algum teste **importa** — o que ninguém importa não entra na conta.
+
+Medido em 10 de setembro de 2026: **2.366 de 2.476 linhas, em 28 dos 32 arquivos de `lib/`**. Os quatro de fora, e por que estão certos assim:
+
+| Arquivo | Por quê |
+|---|---|
+| `auth/autenticacao_firebase.dart` | é a implementação real da interface; os testes usam a falsa, **por desenho** |
+| `data/nuvem_firestore.dart` | idem |
+| `main.dart` | fiação do app |
+| `ui/paleta.dart` | constantes de cor, sem lógica |
+
+Publicar só "95,6%" seria deixar ler como "95,6% do app". Num repositório que é portfólio de qualidade, esse tipo de número é pior que número nenhum: quem avalia reconhece a diferença entre uma métrica honesta e uma escolhida por ser bonita.
+
+**Não há piso de cobertura**, e é deliberado. Um piso escolhido hoje seria número inventado — mesma razão pela qual `check_nivel_coerente` avisa em vez de reprovar.
 
 #### Telas de marco: o Tr∅nikAt parabenizando a cada 10 questões
 
