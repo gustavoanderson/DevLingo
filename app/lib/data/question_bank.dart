@@ -28,8 +28,20 @@ class QuestionBank {
   int get totalDeQuestoes =>
       lessons.fold(0, (soma, licao) => soma + licao.questions.length);
 
+  /// As trilhas que existem no banco, na ordem sugerida de aprendizado.
+  ///
+  /// Antes isto era `..sort()` puro, e a ordem alfabetica punha Frameworks
+  /// acima de JavaScript -- a trilha que depende dele. Ver [ordemDasTrilhas].
+  ///
+  /// O desempate alfabetico no fim nao e decoracao: sem ele, duas trilhas fora
+  /// da lista de ordem empatariam e a ordem entre elas passaria a depender de
+  /// como o `Set` iterou, que e detalhe de implementacao e muda sem aviso.
   List<String> get linguagens =>
-      lessons.map((licao) => licao.language).toSet().toList()..sort();
+      lessons.map((licao) => licao.language).toSet().toList()
+        ..sort((a, b) {
+          final ordem = posicaoDaTrilha(a).compareTo(posicaoDaTrilha(b));
+          return ordem != 0 ? ordem : a.compareTo(b);
+        });
 
   /// As lições de uma linguagem e nível, em ordem de número.
   List<Lesson> trilha(String language, Level level) =>

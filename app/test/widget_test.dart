@@ -26,6 +26,40 @@ void main() {
     expect(banco.linguagens, containsAll(<String>['python', 'javascript']));
   });
 
+  test('as trilhas vem na ordem sugerida, e nao na alfabetica', () {
+    // A ordem alfabetica nao foi decidida por ninguem: saia do `..sort()`, e
+    // punha Frameworks -- que DEPENDE de JavaScript -- acima dele, com Python
+    // em quarto lugar. As duas comparacoes abaixo sao justamente as que a
+    // ordem alfabetica inverteria (backend, frameworks, javascript, python).
+    final ordem = banco.linguagens;
+
+    expect(
+      ordem.indexOf('python'),
+      lessThan(ordem.indexOf('javascript')),
+      reason: 'a primeira linguagem recomendada vem primeiro',
+    );
+    expect(
+      ordem.indexOf('javascript'),
+      lessThan(ordem.indexOf('frameworks')),
+      reason: 'Frameworks assume JavaScript, entao nao pode vir antes dele',
+    );
+  });
+
+  test('toda trilha do banco tem descricao no cartao', () {
+    // Pega o esquecimento no dia em que a sexta trilha for escrita: sem esta
+    // linha, ela apareceria na tela com o nome nu, que e o defeito de
+    // descoberta que motivou as descricoes.
+    for (final linguagem in banco.linguagens) {
+      expect(
+        descricaoDe(linguagem),
+        isNotNull,
+        reason:
+            'a trilha "$linguagem" existe no banco e nao tem descricao. '
+            'Acrescente uma linha em `descricaoDaLinguagem`.',
+      );
+    }
+  });
+
   test('a trilha de Python iniciante tem 5 licoes e 50 questoes', () {
     final trilha = banco.trilha('python', Level.beginner);
 

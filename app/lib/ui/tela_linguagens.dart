@@ -248,6 +248,11 @@ class _CartaoDaTrilha extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = licoes.fold<int>(0, (soma, l) => soma + l.questions.length);
     final completa = respondidas >= total && total > 0;
+
+    // So no iniciante. A descricao diz o que a TRILHA cobre, e repeti-la nos
+    // tres cartoes da mesma linguagem seria a mesma frase tres vezes seguidas
+    // -- o que muda entre eles e o nivel, que a linha de baixo ja diz.
+    final descricao = level == Level.beginner ? descricaoDe(language) : null;
     final cor = completa
         ? Paleta.certo
         : respondidas > 0
@@ -280,7 +285,24 @@ class _CartaoDaTrilha extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 4),
+            // A descricao cola no nome, e os numeros ficam agrupados com a
+            // barra. A hierarquia sai da PROXIMIDADE, e nao de uma cor nova:
+            // descricao e metadados sao os dois `suave` em 13px, e inventar um
+            // tom intermediario para separa-los mexeria numa paleta que e
+            // documentada e ja foi julgada renderizada.
+            if (descricao != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                descricao,
+                style: const TextStyle(
+                  color: Paleta.suave,
+                  fontFamily: fonteMono,
+                  fontSize: 13,
+                  height: 1.35,
+                ),
+              ),
+            ],
+            SizedBox(height: descricao == null ? 4 : 12),
             Text(
               '${level.rotulo.toLowerCase()} · ${licoes.length} '
               '${licoes.length == 1 ? "lição" : "lições"} · '

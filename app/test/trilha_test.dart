@@ -288,7 +288,9 @@ void main() {
       final trilhas = TelaLinguagens.trilhasDe(bancoDuasLinguagens);
 
       expect(trilhas, hasLength(2));
-      expect(trilhas.map((t) => t.language), ['javascript', 'python']);
+      // Python antes de JavaScript e ordem SUGERIDA, nao alfabetica: ver
+      // `ordemDasTrilhas`. Em ordem alfabetica isto seria o contrario.
+      expect(trilhas.map((t) => t.language), ['python', 'javascript']);
       expect(
         trilhas.every((t) => t.level == Level.beginner),
         isTrue,
@@ -320,6 +322,19 @@ void main() {
 
       expect(find.text('JS um'), findsOneWidget);
       expect(find.text('concluída'), findsOneWidget);
+    });
+
+    testWidgets('o cartao diz o que a trilha cobre', (tester) async {
+      // Defeito de descoberta apontado pelo Gustavo: quem abre a lista ve
+      // "Frameworks" e nao tem como saber que aquilo e sobre JavaScript. O
+      // nome sozinho nunca comunicou conteudo -- vale igual para "Backend".
+      await montar(
+        tester,
+        TelaLinguagens(banco: bancoDuasLinguagens, progresso: ProgressoFalso()),
+      );
+
+      expect(find.text(descricaoDe('python')!), findsOneWidget);
+      expect(find.text(descricaoDe('javascript')!), findsOneWidget);
     });
 
     testWidgets('da trilha da para voltar a escolha de linguagem', (

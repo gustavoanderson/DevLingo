@@ -35,9 +35,14 @@ const Map<String, String> nomeDaLinguagem = {
   ///
   /// O nome de tela e "Frameworks", e nao "Front-end", porque HTML e CSS ja
   /// estao reservados como trilhas proprias e este curso nao cobre nenhum dos
-  /// dois. Sao 10 caracteres, cerca de 156px na mono de 26px -- exatamente o
-  /// mesmo que "JavaScript", contra os ~204px que sobram no cabecalho. Cabe
-  /// sem acionar o FittedBox de `_Cabecalho`.
+  /// dois.
+  ///
+  /// Sao as mesmas 10 letras de "JavaScript", entao ele nao aperta o cabecalho
+  /// mais do que a trilha que ja existia -- e e isso, e nao "cabe sem
+  /// encolher", que o teste trava. A diferenca importa: medido, "Frameworks
+  /// modernos para JavaScript" cairia para 0,261 da escala, uns 7px numa fonte
+  /// pensada para 26. O nome longo vive na DESCRICAO, que aparece no cartao da
+  /// escolha, onde nao ha tres icones disputando a linha.
   'frameworks': 'Frameworks',
   'html': 'HTML',
   'css': 'CSS',
@@ -50,6 +55,86 @@ const Map<String, String> nomeDaLinguagem = {
 };
 
 String nomeBonito(String chave) => nomeDaLinguagem[chave] ?? chave;
+
+/// Uma linha dizendo o que a trilha cobre, no cartao da tela de escolha.
+///
+/// Nasceu de um defeito de descoberta que o Gustavo apontou: quem abre a lista
+/// ve "Frameworks" e nao tem como saber que aquilo e sobre JavaScript. E o
+/// problema nao era so daquela trilha -- "Backend" nao diz que cobre HTTP e
+/// bancos, e "Qualidade de Software" nao diz que fala de ciclo do bug.
+///
+/// **O nome curto continua sendo o nome.** A descricao vive so no cartao, que
+/// e outra superficie: o cabecalho da trilha divide a linha com a seta e tres
+/// icones, e ali nao caberia nada disto. Ver o comentario de `frameworks` em
+/// [nomeDaLinguagem].
+///
+/// Os cinco textos tem entre 62 e 68 caracteres de proposito. Comprimento
+/// parecido faz os cinco quebrarem em duas linhas do mesmo jeito, e os cartoes
+/// ficam com a mesma altura -- lista de cartoes de altura irregular le como
+/// desalinho, nao como conteudo diferente.
+///
+/// **Nao passa pelo `textoComTermos`, e isso foi decidido medindo.** O lexico
+/// ja conhece React, Vue, Next, HTTP e REST, entao os nomes acenderiam
+/// sozinhos. Mas na linha da Frameworks seriam 7 de 11 palavras destacadas: o
+/// cartao viraria uma mancha ciano, e destaque que cobre quase tudo deixa de
+/// destacar. Mesma regra do verde no `CLAUDE.md` -- acento, nunca corpo.
+const Map<String, String> descricaoDaLinguagem = {
+  'python': 'Sua primeira linguagem: valores, contas, decisões, textos e listas',
+  'javascript':
+      'A linguagem do navegador: variáveis, comparação, funções e arrays',
+  'frameworks':
+      'React, Vue, Svelte, Next, Nuxt e Astro — melhor depois do JavaScript',
+  'backend':
+      'O lado do servidor: HTTP, APIs e REST, bancos de dados e autenticação',
+  'qa': 'O ofício de testar: princípios, níveis, ciclo do bug e técnicas',
+};
+
+String? descricaoDe(String chave) => descricaoDaLinguagem[chave];
+
+/// Em que ordem as trilhas aparecem na tela de escolha.
+///
+/// **Isto existe porque a ordem alfabetica estava ensinando errado.** Ela nao
+/// foi decidida por ninguem: saia do `..sort()` da lista de linguagens, e o
+/// resultado era Backend, Frameworks, JavaScript, Python, Qualidade. Ou seja,
+/// a trilha que DEPENDE de JavaScript aparecia acima dele, e a primeira
+/// linguagem recomendada ficava em quarto lugar.
+///
+/// A ordem abaixo sugere um caminho: comece por Python, siga para JavaScript,
+/// e so entao Frameworks, que assume os dois. Backend rende mais depois de ver
+/// codigo, e Qualidade nao tem pre-requisito de linguagem.
+///
+/// **Sugerir nao e trancar.** O `CLAUDE.md` e explicito que nada tranca no
+/// DevLingo -- trancar puniria, e atrapalharia quem quer revisar ou espiar
+/// adiante. Qualquer trilha continua abrindo a qualquer momento.
+///
+/// As trilhas que ainda nao existem estao aqui num palpite inicial, para que
+/// nenhuma delas caia no fim da lista no dia em que ganhar conteudo. Quem
+/// escrever uma delas revisita a posicao.
+const List<String> ordemDasTrilhas = [
+  'python',
+  'javascript',
+  'frameworks',
+  'node',
+  'html',
+  'css',
+  'backend',
+  'sql',
+  'qa',
+  'csharp',
+  'golang',
+  'cpp',
+  'ruby',
+  'cobol',
+];
+
+/// Posicao da trilha na ordem sugerida.
+///
+/// Chave desconhecida vai para o fim em vez de sumir ou explodir: uma trilha
+/// nova que alguem esqueceu de listar precisa continuar aparecendo na tela.
+int posicaoDaTrilha(String chave) {
+  final posicao = ordemDasTrilhas.indexOf(chave);
+  return posicao < 0 ? ordemDasTrilhas.length : posicao;
+}
 
 /// Uma parte da aula, preparando um topico especifico.
 class SecaoDaAula {
