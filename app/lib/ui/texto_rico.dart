@@ -188,6 +188,29 @@ const Set<String> _termosJava = {
   'toUpperCase', 'trim', 'true', 'var', 'void', 'while',
 };
 
+/// Vocabulario do curso de Selenium.
+///
+/// A medicao das 70 passagens confirmou, com dados novos, a exclusao que o
+/// lexico de QA ja tinha feito: `teste` aparece 61 VEZES fora de marcacao.
+/// Destaca-la faria praticamente toda frase do curso piscar.
+///
+/// As outras excluidas, todas portugues corrente aqui: tela 16, elemento 12,
+/// seletor 11, espera 9, navegador 8, clique 1.
+///
+/// `driver` fica DENTRO, apesar de parecer da mesma familia: ele nao e
+/// palavra portuguesa, e no curso ele e sempre o objeto do codigo -- a
+/// variavel que se chama `driver`, ou o programa `chromedriver`.
+///
+/// O codigo destas licoes e Java, e o realce dele sai do tokenizador de Java
+/// por `code.language`. Este lexico serve so ao texto corrido.
+const Set<String> _termosSelenium = {
+  'By', 'ChromeDriver', 'ExpectedConditions', 'JUnit', 'Selenium', 'TestNG',
+  'WebDriver', 'WebDriverWait', 'WebElement', 'assertEquals', 'assertFalse',
+  'assertTrue', 'clear', 'click', 'close', 'cssSelector', 'driver',
+  'findElement', 'findElements', 'flaky', 'getAttribute', 'getText', 'quit',
+  'sendKeys', 'xpath',
+};
+
 Set<String> termosDe(String linguagem) => switch (linguagem) {
   'python' => _termosPython,
   'javascript' || 'node' => _termosJs,
@@ -195,6 +218,7 @@ Set<String> termosDe(String linguagem) => switch (linguagem) {
   'qa' => _termosQa,
   'frameworks' => _termosFrameworks,
   'java' => _termosJava,
+  'selenium' => _termosSelenium,
   _ => const {},
 };
 

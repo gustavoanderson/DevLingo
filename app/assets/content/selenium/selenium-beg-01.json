@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "language": "selenium",
+  "level": "beginner",
+  "lessonId": "selenium-beg-01",
+  "lessonTitle": "O navegador dirigido de fora",
+  "aula": {
+    "titulo": "O que o Selenium é, e o que ele não é",
+    "secoes": [
+      {
+        "topico": "webdriver",
+        "titulo": "Três peças, e uma conversa entre elas",
+        "texto": "O Selenium **dirige um navegador de verdade**. Não simula, não desenha por conta própria: ele abre o Chrome ou o Firefox que está na máquina e manda comandos.\n\nEssa conversa tem três peças:\n\n- **o seu código**, escrito em Java\n- **o driver** — um programa à parte, como o `chromedriver`, que traduz seus comandos\n- **o navegador**, que executa\n\nO seu código nunca fala com o navegador diretamente. Ele fala com o driver, por HTTP, num protocolo padronizado chamado **W3C WebDriver**.\n\nSaber disso não é curiosidade: metade dos erros de configuração vem dali. *\"Session not created: version mismatch\"* quer dizer que o driver e o navegador estão em versões incompatíveis — e a mensagem só faz sentido depois de entender que são dois programas.",
+        "code": {
+          "language": "text",
+          "content": "seu codigo Java  --HTTP-->  chromedriver  -->  Chrome\n  (o teste)                 (tradutor)        (executa)"
+        }
+      },
+      {
+        "topico": "nao-e-framework",
+        "titulo": "Selenium não é framework de teste",
+        "texto": "Esta é a confusão número um, e ela atrapalha desde o primeiro dia.\n\n**O Selenium não testa nada.** Ele não sabe o que é uma asserção, não organiza casos, não gera relatório, não diz se passou. Ele sabe abrir página, achar elemento, clicar e ler texto.\n\nQuem transforma isso em teste é outra ferramenta — **JUnit** ou **TestNG** —, que traz asserção, ciclo de vida e relatório. Essa parte é a lição 05.\n\nA divisão importa numa entrevista: *\"o que o Selenium faz?\"* tem resposta curta e precisa. Quem responde \"ele testa o sistema\" mostra que nunca separou as duas coisas.\n\nE tem consequência prática: um script que abre a página e clica em tudo, sem asserção nenhuma, **passa sempre** — porque não há nada que possa falhar. Automação sem asserção é passeio.",
+        "code": {
+          "language": "java",
+          "content": "// Selenium: dirige\ndriver.get(\"https://exemplo.com\");\ndriver.findElement(By.id(\"entrar\")).click();\n\n// JUnit: julga\nassertEquals(\"Bem-vindo\", driver.getTitle());"
+        }
+      },
+      {
+        "topico": "sessao",
+        "titulo": "Abrir e fechar a sessão",
+        "texto": "Criar um `ChromeDriver` **abre um navegador**. Ele fica aberto até alguém mandar fechar, e um teste que esquece disso deixa processos vivos na máquina — cem execuções, cem navegadores.\n\nExistem dois métodos, e confundi-los é clássico:\n\n- `close()` fecha **a janela atual**. Se for a última, a sessão acaba junto\n- `quit()` encerra **a sessão inteira** e mata o processo do driver\n\nNo fim de um teste, o certo é quase sempre `quit()`.\n\nE o lugar certo dele não é a última linha do teste: é um bloco que roda **mesmo se o teste falhar**. Na última linha, um teste que quebra no meio nunca chega ao fechamento — e é assim que sobram trinta Chromes abertos depois de uma suíte vermelha. O JUnit resolve isso com `@AfterEach`, na lição 05.",
+        "code": {
+          "language": "java",
+          "content": "WebDriver driver = new ChromeDriver();   // abre o navegador\n\ndriver.get(\"https://exemplo.com\");\nSystem.out.println(driver.getTitle());\n\ndriver.quit();   // encerra a sessao inteira"
+        }
+      },
+      {
+        "topico": "comandos",
+        "titulo": "O punhado de comandos que resolve quase tudo",
+        "texto": "A interface `WebDriver` é pequena, e o essencial cabe numa lista:\n\n- `get(url)` — navega até o endereço\n- `getTitle()` — o título da página\n- `getCurrentUrl()` — onde estamos agora\n- `findElement(By...)` — acha **um** elemento\n- `findElements(By...)` — acha **uma lista**, que pode vir vazia\n\nA diferença entre os dois últimos é a que mais gera dúvida, e vale decorar:\n\n`findElement` lança exceção quando não acha — `NoSuchElementException`. `findElements` devolve lista vazia, sem reclamar.\n\nPor isso, para verificar que algo **não** está na tela, use `findElements` e confira se a lista está vazia. Com `findElement`, você teria que capturar uma exceção para concluir que deu certo — e teste que depende de exceção para passar é teste difícil de ler.",
+        "code": {
+          "language": "java",
+          "content": "driver.get(\"https://exemplo.com\");\n\nString titulo = driver.getTitle();\n\n// para conferir AUSENCIA, use a versao no plural\nboolean semErro = driver.findElements(By.className(\"erro\")).isEmpty();"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "selenium-beg-0101",
+      "topic": "nao-e-framework",
+      "prompt": "Numa entrevista, perguntam o que o Selenium faz. Qual é a resposta correta?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ele testa o sistema e diz se passou ou falhou",
+          "correct": false,
+          "why": "Ele não sabe o que é passar nem falhar. Quem julga é o framework de teste."
+        },
+        {
+          "id": "b",
+          "text": "Ele simula um navegador para rodar mais rápido",
+          "correct": false,
+          "why": "É o contrário do que faz: ele dirige um navegador de verdade, instalado na máquina."
+        },
+        {
+          "id": "c",
+          "text": "Ele dirige um navegador de verdade: abre página, acha elemento, clica e lê",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Ele gera relatórios de execução dos testes",
+          "correct": false,
+          "why": "Relatório vem do JUnit, do TestNG ou de uma ferramenta em cima deles."
+        },
+        {
+          "id": "e",
+          "text": "Ele analisa o código do sistema em busca de defeitos",
+          "correct": false,
+          "why": "Isso é análise estática, outra categoria de ferramenta. O Selenium só age pela interface."
+        }
+      ],
+      "hint": "Três das cinco descrevem coisas que **outra** ferramenta faz. Procure a que descreve só dirigir o navegador.",
+      "explanation": "O Selenium **não testa nada**: ele não conhece asserção, não organiza casos, não gera relatório. Quem faz isso é o JUnit ou o TestNG.\n\nA consequência prática é dura: um script que abre a página e clica em tudo, sem asserção nenhuma, **passa sempre** — não há o que possa falhar. Automação sem asserção é passeio, e ela existe em muito projeto real.\n\nSeparar as duas coisas é a primeira pergunta que distingue quem usou a ferramenta de quem a entendeu."
+    },
+    {
+      "id": "selenium-beg-0102",
+      "topic": "webdriver",
+      "prompt": "Seu código Java fala diretamente com o navegador?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sim: a biblioteca controla o navegador por dentro",
+          "correct": false,
+          "why": "Existe um programa intermediário, e é ele quem conversa com o navegador."
+        },
+        {
+          "id": "b",
+          "text": "Não: ele fala com um driver, que traduz os comandos para o navegador",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Sim, desde que o navegador esteja na mesma máquina",
+          "correct": false,
+          "why": "Estar na mesma máquina não muda a arquitetura: o driver continua no meio."
+        },
+        {
+          "id": "d",
+          "text": "Não: o código é convertido em JavaScript e roda dentro da página",
+          "correct": false,
+          "why": "Isso descreve outra família de ferramentas. O Selenium age de fora."
+        },
+        {
+          "id": "e",
+          "text": "Depende do navegador: com Chrome sim, com Firefox não",
+          "correct": false,
+          "why": "Os dois seguem o mesmo protocolo, e cada um tem o seu driver."
+        }
+      ],
+      "hint": "São três peças na conversa, e a do meio é um programa separado com nome próprio.",
+      "explanation": "Seu código fala com o **driver** — `chromedriver`, `geckodriver` — por HTTP, num protocolo padronizado chamado **W3C WebDriver**. O driver é quem manda no navegador.\n\nIsso explica metade dos erros de configuração. *\"Session not created: version mismatch\"* quer dizer que o driver e o navegador estão em versões incompatíveis, e a mensagem só faz sentido depois de entender que são **dois programas diferentes**, atualizados separadamente."
+    },
+    {
+      "id": "selenium-beg-0103",
+      "topic": "sessao",
+      "prompt": "Qual é a diferença entre `close()` e `quit()`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`close()` fecha a janela atual; `quit()` encerra a sessão inteira",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`close()` salva o estado antes de sair; `quit()` descarta tudo",
+          "correct": false,
+          "why": "Nenhum dos dois salva estado. A diferença é o alcance do fechamento."
+        },
+        {
+          "id": "c",
+          "text": "São sinônimos: os dois fazem a mesma coisa",
+          "correct": false,
+          "why": "Coincidem quando há uma janela só, e é justamente isso que esconde a diferença."
+        },
+        {
+          "id": "d",
+          "text": "`close()` é para Chrome e `quit()` para Firefox",
+          "correct": false,
+          "why": "Os dois existem em qualquer navegador. Não há relação com a marca."
+        },
+        {
+          "id": "e",
+          "text": "`quit()` fecha o navegador e `close()` fecha o driver",
+          "correct": false,
+          "why": "Está invertido: quem encerra o processo do driver é o `quit()`."
+        }
+      ],
+      "hint": "Um dos dois age sobre uma janela, o outro sobre tudo. Pense no que sobra rodando depois de cada um.",
+      "explanation": "`close()` fecha **a janela atual** — se for a última, a sessão acaba junto, e é por isso que os dois parecem iguais em teste simples. `quit()` encerra **a sessão inteira** e mata o processo do driver.\n\nNo fim de um teste, o certo é quase sempre `quit()`. Com `close()` numa suíte que abre abas, sobram processos vivos: cem execuções, cem drivers, e a máquina de quem roda a suíte fica sem memória sem ninguém entender por quê."
+    },
+    {
+      "id": "selenium-beg-0104",
+      "topic": "comandos",
+      "prompt": "O que acontece quando `findElement` não encontra o elemento?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Devolve `null`",
+          "correct": false,
+          "why": "Seria conveniente e não é o que acontece — e é bom que não seja, senão o erro apareceria só na linha seguinte."
+        },
+        {
+          "id": "b",
+          "text": "Devolve uma lista vazia",
+          "correct": false,
+          "why": "Lista vazia é o comportamento da versão no plural."
+        },
+        {
+          "id": "c",
+          "text": "Lança `NoSuchElementException`",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Espera para sempre até o elemento aparecer",
+          "correct": false,
+          "why": "Ele pode esperar um tempo, se houver espera configurada, mas desiste e falha."
+        },
+        {
+          "id": "e",
+          "text": "Devolve um elemento vazio, que aceita comandos sem efeito",
+          "correct": false,
+          "why": "Não existe elemento vazio. Isso esconderia o problema, que é o oposto do que se quer num teste."
+        }
+      ],
+      "hint": "Ele não devolve um valor de consolação. Pense no que acontece quando um método Java não tem o que devolver.",
+      "explanation": "`findElement` **lança exceção**; `findElements`, no plural, devolve **lista vazia**.\n\nA diferença decide como se verifica ausência. Para conferir que uma mensagem de erro **não** apareceu, o caminho é `findElements(...).isEmpty()`. Com `findElement`, seria preciso capturar a exceção para concluir que deu certo — e teste que depende de `catch` para passar é teste difícil de ler e fácil de escrever errado.\n\nE lançar exceção é o comportamento **certo**: devolver `null` faria o erro aparecer uma linha depois, apontando para o lugar errado."
+    },
+    {
+      "id": "selenium-beg-0105",
+      "topic": "sessao",
+      "prompt": "Complete o método que encerra a sessão e mata o processo do driver.",
+      "code": {
+        "language": "java",
+        "content": "WebDriver driver = new ChromeDriver();\ndriver.get(\"https://exemplo.com\");\ndriver.______();",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "quit"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São quatro letras, e a palavra em inglês quer dizer *sair* — não é a que quer dizer *fechar*.",
+      "explanation": "`quit()` encerra a sessão inteira. `close()` fecharia só a janela atual.\n\nE o lugar dele importa mais do que parece: na **última linha do teste**, um teste que quebra no meio nunca chega até aqui, e o navegador fica aberto. É assim que sobram trinta Chromes depois de uma suíte vermelha.\n\nO lugar certo é um bloco que roda **mesmo em caso de falha** — o `@AfterEach` do JUnit, que a lição 05 apresenta."
+    },
+    {
+      "id": "selenium-beg-0106",
+      "topic": "comandos",
+      "prompt": "Escreva o método do `WebDriver` que navega até um endereço. Só o nome, sem parênteses.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "get"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São três letras, e é o mesmo verbo do método HTTP usado para buscar uma página.",
+      "explanation": "`driver.get(\"https://exemplo.com\")` navega e **espera a página carregar** antes de devolver o controle — o que já resolve uma parte da sincronização, e engana quem acha que isso vale para o resto.\n\nO nome não é coincidência: é o mesmo verbo do `GET` do HTTP, que a trilha de Backend apresenta.\n\nExiste também `navigate().to()`, equivalente, com a vantagem de dar acesso a `back()`, `forward()` e `refresh()`."
+    },
+    {
+      "id": "selenium-beg-0107",
+      "topic": "nao-e-framework",
+      "prompt": "Um colega escreveu um script que abre a página, preenche o formulário e clica em enviar — sem nenhuma asserção. O que se pode dizer dele?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "É um teste válido: se algo quebrar, o script falha",
+          "correct": false,
+          "why": "Só falharia se um elemento não fosse encontrado. Comportamento errado com a tela certa passa direto."
+        },
+        {
+          "id": "b",
+          "text": "É um teste de desempenho",
+          "correct": false,
+          "why": "Teste de desempenho mede tempo e carga, e este não mede nada."
+        },
+        {
+          "id": "c",
+          "text": "É um teste de segurança, porque exercita o formulário",
+          "correct": false,
+          "why": "Exercitar um formulário não investiga nenhuma propriedade de segurança."
+        },
+        {
+          "id": "d",
+          "text": "Ele passa quase sempre, porque não há nada que possa reprovar",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Não compila: o JUnit exige pelo menos uma asserção",
+          "correct": false,
+          "why": "Nem o JUnit nem o compilador exigem asserção. Um teste sem nenhuma é um teste verde e vazio."
+        }
+      ],
+      "hint": "Pergunte-se o que precisaria dar errado para esse script ficar vermelho.",
+      "explanation": "Sem asserção, o script só falha se um elemento não for encontrado. **O sistema pode gravar o dado errado, mostrar a mensagem errada ou cobrar o valor errado, e ele passa.**\n\nEsse é o principal defeito de suítes de automação em projeto real, e ele é pior que não ter teste: uma suíte verde e vazia dá a sensação de cobertura sem oferecer nenhuma.\n\nÉ também a razão de o Selenium sozinho não bastar. Ele dirige; **quem julga é a asserção**."
+    },
+    {
+      "id": "selenium-beg-0108",
+      "topic": "webdriver",
+      "prompt": "Você atualizou o Chrome e a suíte parou de rodar, com *\"session not created: version mismatch\"*. Qual é a causa?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A biblioteca do Selenium precisa ser recompilada",
+          "correct": false,
+          "why": "A biblioteca em Java não tem relação com a versão do navegador instalado."
+        },
+        {
+          "id": "b",
+          "text": "O site mudou e os localizadores ficaram inválidos",
+          "correct": false,
+          "why": "Localizador inválido dá outro erro, e depois de a sessão ter aberto."
+        },
+        {
+          "id": "c",
+          "text": "O driver ficou numa versão incompatível com a do navegador",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Faltou aumentar o tempo de espera",
+          "correct": false,
+          "why": "Espera resolve problema de sincronização, e a sessão nem chegou a abrir."
+        },
+        {
+          "id": "e",
+          "text": "O teste precisa rodar como administrador",
+          "correct": false,
+          "why": "Permissão daria outra mensagem, e não uma sobre versões."
+        }
+      ],
+      "hint": "A mensagem fala em versões incompatíveis. Lembre que são dois programas separados, atualizados separadamente.",
+      "explanation": "O navegador se atualiza sozinho; o driver, não. Quando as versões se afastam, a sessão nem chega a abrir.\n\nEsse é o erro mais comum de configuração, e o Selenium moderno o resolve com o **Selenium Manager**, que baixa o driver certo automaticamente.\n\nVale saber para uma entrevista: quem entende a arquitetura de três peças lê essa mensagem e sabe o que fazer; quem acha que o Selenium controla o navegador por dentro fica sem hipótese nenhuma."
+    },
+    {
+      "id": "selenium-beg-0109",
+      "topic": "comandos",
+      "prompt": "Complete a chamada que verifica se **nenhuma** mensagem de erro apareceu na tela.",
+      "code": {
+        "language": "java",
+        "content": "boolean semErro = driver.______(By.className(\"erro\")).isEmpty();",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "findElements"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É a versão no **plural** — repare que o código chama `isEmpty()` no resultado, então ele precisa ser uma lista.",
+      "explanation": "Para verificar **ausência**, use o plural: ele devolve lista vazia em vez de lançar exceção.\n\nCom `findElement` no singular, seria preciso envolver em `try`/`catch` e considerar a exceção como sucesso — o que inverte a leitura do teste e confunde quem revisa.\n\nA pista está no próprio código: `isEmpty()` só existe em coleção. Ler o que o código já diz costuma resolver a dúvida antes da documentação."
+    },
+    {
+      "id": "selenium-beg-0110",
+      "topic": "sessao",
+      "prompt": "Por que colocar `driver.quit()` na última linha do método de teste é uma má ideia?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o `quit()` é lento e atrasa a suíte",
+          "correct": false,
+          "why": "Ele leva menos de um segundo, e de todo modo precisa acontecer."
+        },
+        {
+          "id": "b",
+          "text": "Porque o navegador precisa continuar aberto para o próximo teste",
+          "correct": false,
+          "why": "Reaproveitar sessão entre testes cria dependência entre eles, que é outro problema."
+        },
+        {
+          "id": "c",
+          "text": "Porque o `quit()` só funciona dentro de um bloco de preparação",
+          "correct": false,
+          "why": "Ele funciona em qualquer lugar. A questão é se aquele lugar chega a ser alcançado."
+        },
+        {
+          "id": "d",
+          "text": "Porque só o framework de teste tem permissão para encerrar a sessão",
+          "correct": false,
+          "why": "Não existe restrição de permissão. Qualquer código pode encerrá-la."
+        },
+        {
+          "id": "e",
+          "text": "Porque um teste que falha no meio nunca chega até lá, e o navegador fica aberto",
+          "correct": true
+        }
+      ],
+      "hint": "Pense no que acontece com as linhas seguintes quando uma asserção falha no meio do método.",
+      "explanation": "Quando uma asserção falha, ela **interrompe o método**. As linhas seguintes não rodam — inclusive o fechamento.\n\nNuma suíte com trinta testes vermelhos, sobram trinta navegadores abertos, e a máquina fica sem memória. O sintoma aparece longe da causa: os primeiros testes passam e os últimos falham por lentidão, o que parece teste instável e não é.\n\nO lugar certo é um bloco que roda **sempre**, mesmo em caso de falha: o `@AfterEach` do JUnit, na lição 05."
+    }
+  ]
+}

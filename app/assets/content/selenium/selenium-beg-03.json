@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "language": "selenium",
+  "level": "beginner",
+  "lessonId": "selenium-beg-03",
+  "lessonTitle": "Esperas: o teste é mais rápido que a tela",
+  "aula": {
+    "titulo": "A causa número um de teste instável",
+    "secoes": [
+      {
+        "topico": "corrida",
+        "titulo": "Por que a espera existe",
+        "texto": "O seu teste roda em milissegundos. A tela, não: ela pede dados ao servidor, desenha, anima, e só então o botão está lá.\n\nEntão o teste manda clicar num botão que **ainda não existe**, e recebe `NoSuchElementException`. Ou pior: o botão existe, mas está atrás de uma animação, e o clique cai em outro lugar.\n\nIsso é uma **condição de corrida**: dois relógios independentes, e o resultado depende de qual chegou primeiro. Na sua máquina, rápida e sem carga, o teste passa. Na máquina do colega ou no servidor de integração, falha — e ninguém consegue reproduzir.\n\n**Essa é a causa número um de teste instável**, junto com o seletor frágil da lição passada. As duas juntas explicam a maioria das suítes que o time deixou de levar a sério.",
+        "code": {
+          "language": "java",
+          "content": "driver.get(\"https://exemplo.com/pedidos\");\n\n// a lista ainda esta sendo buscada no servidor\ndriver.findElement(By.id(\"primeiro-pedido\")).click();\n// NoSuchElementException -- as vezes"
+        }
+      },
+      {
+        "topico": "sleep",
+        "titulo": "Thread.sleep é o pecado capital",
+        "texto": "A primeira ideia de todo mundo é mandar o teste dormir alguns segundos. Ela funciona, e é a pior solução possível — por dois motivos ao mesmo tempo.\n\n**É lenta.** Se a tela carrega em 200 ms, o teste desperdiça 2,8 segundos. Multiplique por trezentos testes: quinze minutos jogados fora em toda execução.\n\n**E continua instável.** No dia em que o servidor demorar 3,5 segundos, o teste falha do mesmo jeito. Você não resolveu a corrida: apostou um número nela.\n\nA reação natural quando isso acontece é aumentar para cinco segundos, depois dez. A suíte fica cada vez mais lenta e continua falhando de vez em quando — e é assim que uma suíte morre.\n\nO problema de fundo é o tipo de espera: `sleep` espera TEMPO, e o que você quer é esperar uma CONDIÇÃO.",
+        "code": {
+          "language": "java",
+          "content": "// nunca faca isto\nThread.sleep(3000);\ndriver.findElement(By.id(\"primeiro-pedido\")).click();\n\n// lento quando a tela e rapida,\n// e insuficiente quando ela demora 3,5s"
+        }
+      },
+      {
+        "topico": "explicita",
+        "titulo": "Espera explícita: aguarde a condição",
+        "texto": "A resposta certa é dizer **o que** se espera, e não **quanto tempo**. Isso é a espera explícita, e ela tem duas partes:\n\n- um `WebDriverWait`, com um teto de tempo\n- uma **condição**, vinda de `ExpectedConditions`\n\nO teste consulta a condição repetidamente, e segue **assim que ela for satisfeita**. Se a tela responder em 200 ms, o teste espera 200 ms. Se demorar 4 s, ele espera 4 s. O teto só existe para falhar com mensagem útil em vez de pendurar para sempre.\n\nAs condições mais usadas:\n\n- `presenceOfElementLocated` — existe na árvore\n- `visibilityOfElementLocated` — existe **e** está visível\n- `elementToBeClickable` — visível **e** habilitado\n- `invisibilityOfElementLocated` — sumiu, útil para esperar um carregamento acabar\n\nA diferença entre as três primeiras é a fonte de muita confusão, e a próxima seção trata dela.",
+        "code": {
+          "language": "java",
+          "content": "WebDriverWait espera =\n    new WebDriverWait(driver, Duration.ofSeconds(10));\n\nWebElement botao = espera.until(\n    ExpectedConditions.elementToBeClickable(By.id(\"primeiro-pedido\")));\n\nbotao.click();"
+        }
+      },
+      {
+        "topico": "existir-visivel",
+        "titulo": "Existir não é estar visível",
+        "texto": "São três perguntas diferentes, e escolher a errada produz falha confusa:\n\n- **existe** — o elemento está na árvore, e pode estar escondido\n- **está visível** — ocupa espaço na tela e não está oculto\n- **é clicável** — visível e habilitado\n\nUm elemento pode existir e estar invisível — dentro de um menu fechado, por exemplo. Esperar só pela existência e mandar clicar produz `ElementNotInteractableException`, que confunde: o elemento **foi encontrado**, então o problema parece ser outro.\n\nA regra prática é simples: **espere pelo que você vai fazer.** Vai clicar? `elementToBeClickable`. Vai só ler o texto? `visibilityOfElementLocated`. Vai apenas conferir que existe? `presenceOfElementLocated`.\n\nEsperar por menos do que você precisa é a origem de metade das falhas que parecem aleatórias.",
+        "code": {
+          "language": "java",
+          "content": "// existe, mas esta dentro de um menu fechado\nespera.until(ExpectedConditions\n    .presenceOfElementLocated(By.id(\"sair\")));\ndriver.findElement(By.id(\"sair\")).click();\n// ElementNotInteractableException\n\n// espere pelo que voce vai FAZER\nespera.until(ExpectedConditions\n    .elementToBeClickable(By.id(\"sair\"))).click();"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "selenium-beg-0301",
+      "topic": "sleep",
+      "prompt": "Por que `Thread.sleep(3000)` é considerado a pior solução para o problema de sincronização?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "É lento quando a tela é rápida, e insuficiente quando ela demora mais que o previsto",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Porque o Selenium não permite pausar a execução",
+          "correct": false,
+          "why": "Permite: `Thread.sleep` é Java puro e funciona normalmente."
+        },
+        {
+          "id": "c",
+          "text": "Porque ele não funciona: o teste continua clicando cedo demais",
+          "correct": false,
+          "why": "Ele funciona na maioria das vezes, e é justamente isso que faz tanta gente adotá-lo."
+        },
+        {
+          "id": "d",
+          "text": "Porque ele deixa o navegador em estado inconsistente",
+          "correct": false,
+          "why": "Pausar o teste não afeta o navegador de forma nenhuma."
+        },
+        {
+          "id": "e",
+          "text": "Porque só funciona em Chrome",
+          "correct": false,
+          "why": "Não tem relação com navegador: é uma pausa no seu programa Java."
+        }
+      ],
+      "hint": "Ele é ruim por dois motivos ao mesmo tempo, e eles se contradizem: é demais e é de menos.",
+      "explanation": "Se a tela carrega em 200 ms, o teste desperdiça 2,8 segundos — multiplicado por trezentos testes, são quinze minutos por execução. E no dia em que o servidor demorar 3,5 s, ele falha do mesmo jeito.\n\nA reação natural é aumentar para cinco segundos, depois dez. A suíte fica cada vez mais lenta **e continua falhando de vez em quando**. É assim que uma suíte morre.\n\nO problema de fundo: `sleep` espera TEMPO, e o que você precisa é esperar uma CONDIÇÃO."
+    },
+    {
+      "id": "selenium-beg-0302",
+      "topic": "explicita",
+      "prompt": "Complete a classe que aguarda uma condição com um teto de tempo.",
+      "code": {
+        "language": "java",
+        "content": "______ espera = new ______(driver, Duration.ofSeconds(10));\nespera.until(ExpectedConditions.elementToBeClickable(By.id(\"salvar\")));",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "WebDriverWait"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas, em camelCase: o nome da interface principal do Selenium seguido da palavra inglesa para *esperar*.",
+      "explanation": "`WebDriverWait` consulta a condição repetidamente e segue **assim que ela for satisfeita**. Se a tela responder em 200 ms, ele espera 200 ms.\n\nO tempo passado no construtor é um **teto**, e não uma duração: ele existe para falhar com mensagem útil em vez de pendurar para sempre. Confundir teto com duração é o mal-entendido mais comum sobre espera explícita — quem confunde acha que `ofSeconds(10)` deixa a suíte dez segundos mais lenta por teste, e volta para o `sleep`."
+    },
+    {
+      "id": "selenium-beg-0303",
+      "topic": "existir-visivel",
+      "prompt": "Você esperou por `presenceOfElementLocated` e mandou clicar. O teste falhou com `ElementNotInteractableException`. O que aconteceu?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O elemento não foi encontrado",
+          "correct": false,
+          "why": "Se não fosse encontrado, a exceção seria outra — e a espera teria estourado antes."
+        },
+        {
+          "id": "b",
+          "text": "O elemento existe na árvore, mas não está visível ou habilitado",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "O tempo de espera foi curto demais",
+          "correct": false,
+          "why": "A espera foi satisfeita — a condição que você pediu se cumpriu. O problema é qual condição você pediu."
+        },
+        {
+          "id": "d",
+          "text": "O localizador está errado",
+          "correct": false,
+          "why": "O localizador funcionou: ele achou o elemento. A exceção veio depois disso."
+        },
+        {
+          "id": "e",
+          "text": "O navegador está numa versão incompatível",
+          "correct": false,
+          "why": "Incompatibilidade de versão impede a sessão de abrir, bem antes de qualquer clique."
+        }
+      ],
+      "hint": "A espera que você pediu foi satisfeita. Compare o que ela garante com o que um clique exige.",
+      "explanation": "**Existir não é estar visível.** Um elemento dentro de um menu fechado está na árvore e não pode ser clicado.\n\nA exceção confunde porque o elemento **foi encontrado** — quem investiga procura o problema no localizador, que está correto.\n\nA regra que resolve: **espere pelo que você vai fazer.** Vai clicar? `elementToBeClickable`. Vai ler texto? `visibilityOfElementLocated`. Vai só conferir presença? `presenceOfElementLocated`. Esperar por menos do que você precisa é a origem de metade das falhas que parecem aleatórias."
+    },
+    {
+      "id": "selenium-beg-0304",
+      "topic": "corrida",
+      "prompt": "Um teste passa na sua máquina e falha no servidor de integração, sem que o código tenha mudado. Qual é a explicação mais provável?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O servidor está com o Selenium desatualizado",
+          "correct": false,
+          "why": "Versão diferente daria erro de sessão, e não uma falha intermitente."
+        },
+        {
+          "id": "b",
+          "text": "O teste tem um defeito de lógica que só aparece em Linux",
+          "correct": false,
+          "why": "Possível, e bem menos provável que a diferença de velocidade."
+        },
+        {
+          "id": "c",
+          "text": "Uma condição de corrida: lá a tela demora mais para ficar pronta",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O servidor não tem permissão para abrir o navegador",
+          "correct": false,
+          "why": "Sem permissão, nenhum teste rodaria — e não só alguns, às vezes."
+        },
+        {
+          "id": "e",
+          "text": "O sistema testado está em outra versão",
+          "correct": false,
+          "why": "Valeria investigar, mas não explica a falha ser intermitente na mesma versão."
+        }
+      ],
+      "hint": "A diferença entre as duas máquinas é de velocidade e carga. Pense no que depende disso.",
+      "explanation": "Sua máquina é rápida e está sem carga. O servidor de integração roda várias coisas ao mesmo tempo, e a tela demora mais — o suficiente para o teste chegar antes.\n\n**\"Passa aqui e falha lá\" é quase sempre sincronização.** É a primeira hipótese a investigar, antes de qualquer outra.\n\nE repare por que isso é grave além do incômodo: falha que não se reproduz na máquina de quem investiga ensina o time a reexecutar. A partir daí, a suíte deixou de servir."
+    },
+    {
+      "id": "selenium-beg-0305",
+      "topic": "explicita",
+      "prompt": "Escreva a classe que reúne as condições prontas — `elementToBeClickable`, `visibilityOfElementLocated` e as outras.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "ExpectedConditions"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas, em camelCase e no plural: *esperadas* e *condições*, nessa ordem, em inglês.",
+      "explanation": "`ExpectedConditions` traz as condições prontas, e conhecer quatro já resolve quase tudo: `presenceOfElementLocated`, `visibilityOfElementLocated`, `elementToBeClickable` e `invisibilityOfElementLocated`.\n\nA última merece atenção porque é a menos lembrada e resolve um caso comum: **esperar uma tela de carregamento sumir**. Sem ela, o teste tenta clicar por cima do véu de carregamento e falha com uma mensagem que não ajuda nada.\n\nE é possível escrever a própria condição, com uma função que devolve verdadeiro quando o estado desejado chegar."
+    },
+    {
+      "id": "selenium-beg-0306",
+      "topic": "sleep",
+      "prompt": "Existe alguma situação em que `Thread.sleep` se justifica?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sempre que a espera explícita ficar verbosa demais",
+          "correct": false,
+          "why": "Verbosidade não é razão para trocar correção por aposta."
+        },
+        {
+          "id": "b",
+          "text": "Nunca, em hipótese alguma",
+          "correct": false,
+          "why": "Absoluto demais. Há casos raros em que não existe condição observável."
+        },
+        {
+          "id": "c",
+          "text": "Sempre que o sistema usar muito JavaScript",
+          "correct": false,
+          "why": "É justamente onde a espera explícita mais se paga."
+        },
+        {
+          "id": "d",
+          "text": "Em raras situações sem condição observável, e depurando — nunca como solução de sincronização",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Em testes que rodam no servidor de integração",
+          "correct": false,
+          "why": "É onde ele mais falha, porque a máquina é mais lenta e imprevisível."
+        }
+      ],
+      "hint": "A resposta não é o absoluto nem a permissão ampla. Procure a que admite exceção e diz qual é.",
+      "explanation": "A honestidade aqui vale mais que a regra: **existem casos sem condição observável.** Uma animação sem estado consultável, um sistema de terceiro que não expõe sinal nenhum. Nesses casos uma pausa curta é o que sobra — e ela deve vir **com um comentário dizendo por quê**, senão o próximo leitor a copia para toda parte.\n\nDepurando, uma pausa também ajuda a ver o que está acontecendo na tela.\n\nO que não se justifica é usá-lo como **solução de sincronização**, que é o uso que se vê em quase toda suíte."
+    },
+    {
+      "id": "selenium-beg-0307",
+      "topic": "existir-visivel",
+      "prompt": "Complete a condição adequada para esperar antes de **clicar** num botão.",
+      "code": {
+        "language": "java",
+        "content": "espera.until(ExpectedConditions.______(By.id(\"salvar\"))).click();",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "elementToBeClickable"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São quatro palavras juntas em camelCase, e elas dizem literalmente *elemento a ser clicável*.",
+      "explanation": "`elementToBeClickable` garante as duas coisas que um clique exige: visível **e** habilitado.\n\nRepare que ele **devolve o elemento**, e por isso dá para encadear o `.click()` na mesma linha. Isso não é economia de digitação: buscar o elemento de novo depois da espera abriria uma janela em que a página pode ter mudado no meio — a origem do `StaleElementReferenceException`, que aparece no nível seguinte.\n\nA regra: **espere pelo que você vai fazer.**"
+    },
+    {
+      "id": "selenium-beg-0308",
+      "topic": "corrida",
+      "prompt": "O que é uma **espera implícita**, e por que ela não substitui a explícita?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ela pausa entre cada comando, e por isso deixa a suíte lenta",
+          "correct": false,
+          "why": "Ela não pausa quando o elemento já está lá: só espera quando ele falta."
+        },
+        {
+          "id": "b",
+          "text": "Ela só funciona com `By.id`",
+          "correct": false,
+          "why": "Vale para qualquer localizador."
+        },
+        {
+          "id": "c",
+          "text": "Ela precisa ser configurada antes de cada comando",
+          "correct": false,
+          "why": "É configurada uma vez e vale para a sessão inteira — daí o nome."
+        },
+        {
+          "id": "d",
+          "text": "Ela é a mesma coisa que a explícita, com outro nome",
+          "correct": false,
+          "why": "São mecanismos diferentes, e misturá-los produz esperas imprevisíveis."
+        },
+        {
+          "id": "e",
+          "text": "Ela é um tempo global para achar elementos, e não espera por estado — visível, clicável, sumido",
+          "correct": true
+        }
+      ],
+      "hint": "Ela resolve uma pergunta só. Compare com as três perguntas da seção sobre existir, estar visível e ser clicável.",
+      "explanation": "A implícita é configurada uma vez e diz *\"ao procurar um elemento, tente por até N segundos antes de desistir\"*. Ela resolve **presença**, e só.\n\nEla não sabe esperar por visibilidade, por um botão ficar habilitado, nem por um carregamento sumir — e esses são a maioria dos casos reais.\n\nE há uma armadilha registrada na documentação do próprio Selenium: **misturar implícita com explícita produz esperas imprevisíveis**, às vezes somando os dois tempos. A recomendação é escolher um caminho, e o caminho é o explícito."
+    },
+    {
+      "id": "selenium-beg-0309",
+      "topic": "explicita",
+      "prompt": "Com `WebDriverWait` de 10 segundos e a tela respondendo em 200 ms, quanto tempo o teste espera?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cerca de 200 ms: ele segue assim que a condição for satisfeita",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "5 segundos, a metade do teto",
+          "correct": false,
+          "why": "Não há divisão nenhuma. O tempo não é distribuído."
+        },
+        {
+          "id": "c",
+          "text": "10 segundos, sempre",
+          "correct": false,
+          "why": "Esse é o mal-entendido mais comum sobre espera explícita, e é o que faz gente voltar para o `sleep`."
+        },
+        {
+          "id": "d",
+          "text": "Nada: a espera explícita não pausa a execução",
+          "correct": false,
+          "why": "Ela pausa enquanto a condição não se cumprir — só não pausa além disso."
+        },
+        {
+          "id": "e",
+          "text": "Depende do navegador",
+          "correct": false,
+          "why": "O comportamento é o mesmo em qualquer navegador."
+        }
+      ],
+      "hint": "O número passado no construtor é um limite, e não uma duração. Pergunte-se quando a espera termina.",
+      "explanation": "Ele consulta a condição em intervalos curtos e **segue assim que ela for satisfeita** — cerca de 200 ms aqui. Os 10 segundos são um **teto**, que só existe para falhar com mensagem útil em vez de pendurar.\n\nEntender isso muda a economia da suíte: **não há custo em usar um teto generoso.** Um teto de 10 segundos não deixa nada mais lento; ele só define quanto tempo se aceita esperar antes de considerar defeito.\n\nQuem acha que o teto é a duração conclui que espera explícita é lenta, e volta para o `sleep` — que é lento de verdade."
+    },
+    {
+      "id": "selenium-beg-0310",
+      "topic": "sleep",
+      "prompt": "Escreva, em uma palavra e sem acento, o que a espera explícita aguarda — em oposição ao tempo que o `sleep` aguarda.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "condicao"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que o `until` recebe: um estado que precisa ser verdadeiro para o teste continuar. Escreva sem cedilha e sem til.",
+      "explanation": "`sleep` espera tempo; a espera explícita aguarda uma condição. Essa frase resolve praticamente todos os problemas de sincronização de uma suíte.\n\nE ela vale além do Selenium: em Appium, em Cypress, em Playwright, o princípio é o mesmo. Cada ferramenta tem sua sintaxe, e a regra é uma só — **espere pelo estado que você precisa, nunca por um número de segundos**.\n\nQuando não existir condição observável, o problema deixa de ser do teste e passa a ser do sistema: falta um sinal que diga que ele está pronto."
+    }
+  ]
+}

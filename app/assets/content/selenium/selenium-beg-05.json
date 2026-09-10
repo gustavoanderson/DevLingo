@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "language": "selenium",
+  "level": "beginner",
+  "lessonId": "selenium-beg-05",
+  "lessonTitle": "JUnit: quem julga, e quem arruma a bagunça",
+  "aula": {
+    "titulo": "De script a teste de verdade",
+    "secoes": [
+      {
+        "topico": "assercao",
+        "titulo": "A asserção é o teste",
+        "texto": "O Selenium dirige; o **JUnit julga**. E quem julga é a asserção.\n\nAs que resolvem quase tudo:\n\n- `assertEquals(esperado, obtido)` — os dois são iguais\n- `assertTrue(condicao)` — a condição é verdadeira\n- `assertFalse(condicao)` — é falsa\n\nA ordem dos argumentos do `assertEquals` importa, e não por capricho: **primeiro o esperado, depois o obtido**. Invertido, a mensagem de falha sai ao contrário — *\"esperava Ada, veio Bem-vindo\"* — e manda quem investiga para o lado errado.\n\nDuas regras que separam asserção útil de asserção decorativa:\n\n**Asserte o que o usuário veria.** Conferir que um elemento existe prova pouco; conferir que ele mostra o valor certo prova o comportamento.\n\n**Prefira poucas e específicas.** Um teste com quinze asserções falha na primeira e esconde as outras quatorze — e você descobre um problema por execução.",
+        "code": {
+          "language": "java",
+          "content": "// esperado primeiro, obtido depois\nassertEquals(\"Bem-vindo, Ada\", inicial.saudacao());\n\nassertTrue(inicial.menuVisivel());\nassertFalse(inicial.temMensagemDeErro());"
+        }
+      },
+      {
+        "topico": "ciclo",
+        "titulo": "Preparar e arrumar, sempre",
+        "texto": "Todo teste precisa de um navegador aberto no começo e fechado no fim. Repetir isso em cada método é ruído — e, pior, o fechamento na última linha **não roda quando o teste falha**.\n\nO JUnit resolve com anotações de ciclo de vida:\n\n- `@BeforeEach` — roda **antes de cada** teste\n- `@AfterEach` — roda **depois de cada** teste, **inclusive quando ele falha**\n- `@BeforeAll` e `@AfterAll` — uma vez para a classe inteira\n\nO `@AfterEach` é o que impede os trinta Chromes abertos depois de uma suíte vermelha, e é por isso que o `quit()` mora ali, e não no fim do método de teste.\n\nA escolha entre `Each` e `All` é uma decisão de projeto com preço nos dois lados: abrir um navegador por teste é mais lento e garante **isolamento**; abrir um só para a classe é rápido e cria **dependência entre testes**. Comece pelo isolado — teste que depende do anterior falha em ordem aleatória e ninguém entende por quê.",
+        "code": {
+          "language": "java",
+          "content": "private WebDriver driver;\n\n@BeforeEach\nvoid abrir() {\n  driver = new ChromeDriver();\n}\n\n@AfterEach\nvoid fechar() {\n  driver.quit();   // roda mesmo se o teste falhar\n}"
+        }
+      },
+      {
+        "topico": "independencia",
+        "titulo": "Cada teste tem que se bastar",
+        "texto": "Esta é a propriedade que mais distingue uma suíte que dura de uma que apodrece: **nenhum teste pode depender de outro**.\n\nO padrão que quebra isso é sedutor: o teste 1 cria o cadastro, o teste 2 o edita, o teste 3 o apaga. Economiza tempo e parece organizado. E aí:\n\n- rodar só o teste 2 **falha**, porque o cadastro não existe\n- o teste 1 falhando derruba os outros dois, e o relatório mostra **três** defeitos onde há um\n- rodar em paralelo vira impossível\n- a ordem de execução, que o JUnit não garante, passa a importar\n\nO conserto é cada teste **preparar o que precisa** — no `@BeforeEach` ou nas primeiras linhas — e não contar com o que outro deixou.\n\nCusta mais tempo de execução, e é o preço de um relatório em que cada linha vermelha significa um problema real.",
+        "code": {
+          "language": "java",
+          "content": "// dependente: quebra se rodar sozinho\n@Test void t1_criar()  { /* cria o cadastro */ }\n@Test void t2_editar() { /* supoe que t1 rodou */ }\n\n// independente: prepara o que precisa\n@Test\nvoid editarCadastro() {\n  String id = criarCadastroDeTeste();\n  // ... edita e verifica\n}"
+        }
+      },
+      {
+        "topico": "instavel",
+        "titulo": "O teste instável, e por que ele é pior que o vermelho",
+        "texto": "Um teste que **falha sempre** aponta um defeito, e alguém conserta. Um teste que falha **de vez em quando** ensina o time a reexecutar — e a partir daí a suíte deixou de servir, porque uma reprovação verdadeira se perde no ruído.\n\nAs causas, em ordem de frequência, e as três primeiras foram o assunto das lições anteriores:\n\n- **espera mal resolvida** — `sleep` no lugar de condição\n- **seletor frágil** — posição, texto de interface, classe de estilo\n- **dependência entre testes** — a ordem passou a importar\n- **dado compartilhado** — dois testes usando o mesmo cadastro\n\nE a atitude importa tanto quanto a causa. **Reexecutar até passar não é diagnóstico**, e marcar o teste para ser ignorado é pior: a cobertura some e ninguém percebe.\n\nUm teste instável merece o mesmo tratamento de um defeito de produção — investigação até a causa. Numa entrevista de QA, é sobre isso que perguntam quando querem saber se você já manteve uma suíte de verdade.",
+        "code": {
+          "language": "java",
+          "content": "// nao faca isto\n@Disabled(\"falha as vezes, ver depois\")\n@Test void checkoutCompleto() { }\n\n// a cobertura sumiu, e o relatorio continua verde"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "selenium-beg-0501",
+      "topic": "assercao",
+      "prompt": "Por que a ordem dos argumentos de `assertEquals(esperado, obtido)` importa?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Invertida, a mensagem de falha sai ao contrário e manda quem investiga para o lado errado",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Invertida, a comparação deixa de funcionar",
+          "correct": false,
+          "why": "A comparação funciona igual: igualdade não tem lado. O que muda é a mensagem."
+        },
+        {
+          "id": "c",
+          "text": "Invertida, o teste passa a sempre passar",
+          "correct": false,
+          "why": "Ele continua reprovando quando os valores diferem."
+        },
+        {
+          "id": "d",
+          "text": "Não importa: é apenas convenção de estilo",
+          "correct": false,
+          "why": "A mensagem de falha depende dela, e mensagem ruim custa tempo de investigação."
+        },
+        {
+          "id": "e",
+          "text": "Invertida, o JUnit não compila",
+          "correct": false,
+          "why": "Os dois parâmetros têm o mesmo tipo, então compila normalmente."
+        }
+      ],
+      "hint": "Os dois valores são comparados do mesmo jeito. O que muda é o que se lê quando o teste reprova.",
+      "explanation": "A comparação funciona nos dois sentidos — o que muda é a **mensagem**: `expected: <X> but was: <Y>`.\n\nInvertida, ela diz *\"esperava Bem-vindo, veio Ada\"* quando na verdade é o contrário. Quem investiga às onze da noite lê isso e procura o problema no lugar errado.\n\nÉ um exemplo pequeno de uma regra grande: **teste bom não é o que reprova, é o que reprova dizendo por quê**. Mensagem de falha é interface, e merece o mesmo cuidado de qualquer texto que alguém vai ler."
+    },
+    {
+      "id": "selenium-beg-0502",
+      "topic": "ciclo",
+      "prompt": "Complete a anotação que garante o fechamento do navegador **mesmo quando o teste falha**.",
+      "code": {
+        "language": "java",
+        "content": "@______\nvoid fechar() {\n  driver.quit();\n}",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "AfterEach"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas em camelCase: *depois* e *cada*, em inglês. O arroba já está no código.",
+      "explanation": "`@AfterEach` roda depois de **cada** teste, e roda **inclusive quando ele falha** — que é a razão de existir.\n\nCom o `quit()` na última linha do método de teste, uma asserção que reprova interrompe tudo e o navegador fica aberto. Numa suíte com trinta testes vermelhos, sobram trinta navegadores, a máquina fica sem memória, e os últimos testes falham por lentidão — parecendo instabilidade que não é.\n\nO sintoma aparece **longe da causa**, e esse é o tipo de problema que mais custa tempo para diagnosticar."
+    },
+    {
+      "id": "selenium-beg-0503",
+      "topic": "independencia",
+      "prompt": "Três testes: o primeiro cria um cadastro, o segundo o edita, o terceiro o apaga. Qual é o problema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nenhum: é uma forma organizada de cobrir o fluxo",
+          "correct": false,
+          "why": "Parece organizado, e cria uma dependência que cobra caro na manutenção."
+        },
+        {
+          "id": "b",
+          "text": "Rodar um sozinho falha, uma falha derruba as outras, e a ordem passa a importar",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "São testes demais para um fluxo só",
+          "correct": false,
+          "why": "A quantidade não é o problema — cobrir cada operação é razoável."
+        },
+        {
+          "id": "d",
+          "text": "O JUnit não permite mais de um teste por classe",
+          "correct": false,
+          "why": "Permite quantos forem necessários."
+        },
+        {
+          "id": "e",
+          "text": "Falta uma asserção no terceiro",
+          "correct": false,
+          "why": "Pode faltar, e não é o problema estrutural que o arranjo cria."
+        }
+      ],
+      "hint": "Pense no que acontece se você quiser rodar **só o segundo**, ou se o primeiro reprovar.",
+      "explanation": "Três consequências, e todas doem:\n\nRodar só o segundo **falha**, porque o cadastro não existe — e quem investiga um defeito precisa justamente rodar um teste isolado. O primeiro falhando derruba os outros dois, e o relatório mostra **três** problemas onde há **um**. E a ordem de execução, que o JUnit não garante, passa a importar.\n\nO conserto é cada teste preparar o que precisa. Custa tempo de execução, e paga com um relatório em que **cada linha vermelha significa um problema real**."
+    },
+    {
+      "id": "selenium-beg-0504",
+      "topic": "instavel",
+      "prompt": "Por que um teste instável é considerado pior que um teste que falha sempre?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque ele consome mais tempo de execução",
+          "correct": false,
+          "why": "O tempo é o mesmo. O dano é de outra natureza."
+        },
+        {
+          "id": "b",
+          "text": "Porque o JUnit não sabe relatar falhas intermitentes",
+          "correct": false,
+          "why": "Ele relata normalmente cada execução."
+        },
+        {
+          "id": "c",
+          "text": "Porque ele ensina o time a reexecutar, e aí uma falha verdadeira se perde no ruído",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque ele impede o uso de integração contínua",
+          "correct": false,
+          "why": "Não impede — ele apenas torna o resultado da integração pouco confiável."
+        },
+        {
+          "id": "e",
+          "text": "Porque ele indica um defeito mais grave no sistema",
+          "correct": false,
+          "why": "A causa costuma estar no teste, e não no sistema."
+        }
+      ],
+      "hint": "Falha constante gera uma ação. Pergunte-se que hábito a falha intermitente gera no time.",
+      "explanation": "Falha constante aponta um defeito, e alguém conserta. Falha intermitente **ensina o time a reexecutar** — e a partir daí a suíte deixou de servir, porque uma reprovação verdadeira se perde no ruído.\n\nMarcar o teste como ignorado é pior ainda: a cobertura some e o relatório continua verde, o que é a pior combinação possível.\n\nAs causas mais comuns são as três lições anteriores deste curso — **espera mal resolvida, seletor frágil, dependência entre testes**. Não é coincidência: elas vêm antes justamente por isso."
+    },
+    {
+      "id": "selenium-beg-0505",
+      "topic": "assercao",
+      "prompt": "Escreva o nome da asserção que compara um valor esperado com o obtido. Só o nome, em camelCase.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "assertEquals"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas: o verbo *afirmar* e a palavra *iguais*, as duas em inglês, no plural a segunda.",
+      "explanation": "`assertEquals(esperado, obtido)` é a asserção mais usada, e a ordem dos argumentos decide a qualidade da mensagem de falha.\n\nDuas boas práticas que valem mais que decorar o nome:\n\n**Asserte o que o usuário veria.** Conferir que um elemento existe prova pouco; conferir que ele mostra o valor certo prova o comportamento.\n\n**Prefira poucas e específicas.** Um teste com quinze asserções falha na primeira e esconde as outras quatorze — você descobre um problema por execução, e a suíte vira um jogo de tentativa."
+    },
+    {
+      "id": "selenium-beg-0506",
+      "topic": "ciclo",
+      "prompt": "Qual é a diferença entre abrir o navegador em `@BeforeEach` e em `@BeforeAll`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`@BeforeAll` não funciona com Selenium",
+          "correct": false,
+          "why": "Funciona. A questão é o que ele implica, e não se é possível."
+        },
+        {
+          "id": "b",
+          "text": "São equivalentes: o JUnit trata os dois igual",
+          "correct": false,
+          "why": "Um roda por teste e o outro uma vez para a classe — a diferença é justamente essa."
+        },
+        {
+          "id": "c",
+          "text": "`@BeforeAll` abre um navegador por teste, e `@BeforeEach` abre um só",
+          "correct": false,
+          "why": "Está invertido: `Each` é o que roda a cada teste."
+        },
+        {
+          "id": "d",
+          "text": "`@BeforeEach` isola cada teste e é mais lento; `@BeforeAll` é rápido e cria dependência",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "A diferença só aparece quando os testes rodam em paralelo",
+          "correct": false,
+          "why": "Ela aparece já na execução sequencial, no estado que sobra de um teste para o outro."
+        }
+      ],
+      "hint": "Um abre um navegador por teste; o outro, um para a classe inteira. Pense no que sobra de um teste para o seguinte.",
+      "explanation": "Com `@BeforeEach`, cada teste começa num navegador limpo — sem sessão, sem cookie, sem o que o anterior deixou. Custa alguns segundos por teste e **garante isolamento**.\n\nCom `@BeforeAll`, todos compartilham a mesma sessão: é rápido e **cria dependência**, porque o estado de um chega ao seguinte.\n\nA recomendação é começar pelo isolado, e só otimizar se a suíte ficar lenta demais — e aí com consciência do que se está trocando. **Teste que depende do anterior falha em ordem aleatória, e ninguém entende por quê.**"
+    },
+    {
+      "id": "selenium-beg-0507",
+      "topic": "instavel",
+      "prompt": "Um teste falha em uma execução a cada cinco. Qual é a atitude correta?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Marcá-lo como ignorado até sobrar tempo para investigar",
+          "correct": false,
+          "why": "É a pior saída: a cobertura some e o relatório fica verde, escondendo que algo deixou de ser testado."
+        },
+        {
+          "id": "b",
+          "text": "Configurar reexecução automática em caso de falha",
+          "correct": false,
+          "why": "Esconde o sintoma e mantém a causa. E passa a esconder também as falhas verdadeiras."
+        },
+        {
+          "id": "c",
+          "text": "Aumentar todos os tempos de espera da suíte",
+          "correct": false,
+          "why": "Deixa tudo mais lento e não trata a causa, que pode nem ser espera."
+        },
+        {
+          "id": "d",
+          "text": "Reescrever o teste do zero",
+          "correct": false,
+          "why": "Sem saber a causa, a reescrita costuma reproduzir o mesmo problema com outra roupa."
+        },
+        {
+          "id": "e",
+          "text": "Investigar até a causa, como se fosse defeito de produção",
+          "correct": true
+        }
+      ],
+      "hint": "Quatro alternativas fazem o sintoma sumir. Uma trata a causa.",
+      "explanation": "Instabilidade tem causa, e ela quase sempre está numa das quatro conhecidas: **espera, seletor, dependência entre testes, dado compartilhado**. Nenhuma delas se resolve escondendo o sintoma.\n\nMarcar como ignorado é o pior caminho: a cobertura some e o relatório continua verde. Reexecutar automaticamente é quase tão ruim, porque passa a esconder também as falhas verdadeiras.\n\nNuma entrevista de QA, é isto que perguntam quando querem saber se você **já manteve** uma suíte, e não apenas escreveu uma."
+    },
+    {
+      "id": "selenium-beg-0508",
+      "topic": "independencia",
+      "prompt": "Escreva, em uma palavra e sem acento, a propriedade que um teste tem quando não depende de nenhum outro para rodar.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "independencia",
+        "independente",
+        "isolamento"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o contrário de depender de outro. Escreva sem cedilha e sem til.",
+      "explanation": "Um teste independente pode rodar sozinho, em qualquer ordem, e em paralelo com os outros.\n\nA verificação é direta e vale como hábito: **rode um teste isolado.** Se ele falhar sozinho e passar em conjunto, a independência não existe — e você descobriu isso antes que a suíte crescesse.\n\nO custo é preparar dados em cada teste, o que é mais lento. O ganho é um relatório em que cada linha vermelha significa **um** problema real, e não uma reação em cadeia."
+    },
+    {
+      "id": "selenium-beg-0509",
+      "topic": "assercao",
+      "prompt": "Qual destas asserções prova mais sobre o comportamento do sistema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`assertEquals(\"Bem-vindo, Ada\", inicial.saudacao())`",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`assertTrue(driver.findElements(By.id(\"saudacao\")).size() > 0)`",
+          "correct": false,
+          "why": "Prova que o elemento existe. Ele pode existir mostrando o nome errado."
+        },
+        {
+          "id": "c",
+          "text": "`assertTrue(driver.getCurrentUrl().contains(\"http\"))`",
+          "correct": false,
+          "why": "Todo endereço contém isso. A asserção nunca reprova, e portanto não testa nada."
+        },
+        {
+          "id": "d",
+          "text": "`assertNotNull(driver)`",
+          "correct": false,
+          "why": "Prova que a sessão existe, o que já era verdade antes de o teste começar."
+        },
+        {
+          "id": "e",
+          "text": "`assertTrue(inicial.carregou())`",
+          "correct": false,
+          "why": "Melhor que as outras erradas, e ainda assim não diz se o conteúdo está certo."
+        }
+      ],
+      "hint": "Três delas passariam mesmo com o sistema mostrando informação errada. Procure a que compara o conteúdo.",
+      "explanation": "Só a segunda verifica **o que o usuário veria**. As outras passam com o sistema saudando a pessoa errada.\n\nRepare na terceira: `getCurrentUrl().contains(\"http\")` é verdadeira em qualquer endereço. Ela **nunca reprova**, e por isso não testa nada — mas conta como asserção no relatório e dá sensação de cobertura.\n\nEsse é o mesmo problema da lição 01, agora mais sutil: lá era automação **sem** asserção; aqui é asserção que não pode falhar. **Uma asserção que nunca reprova é decoração.**"
+    },
+    {
+      "id": "selenium-beg-0510",
+      "topic": "ciclo",
+      "prompt": "Complete a anotação que prepara o cenário antes de **cada** teste.",
+      "code": {
+        "language": "java",
+        "content": "@______\nvoid abrir() {\n  driver = new ChromeDriver();\n  driver.get(\"https://exemplo.com\");\n}",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "BeforeEach"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas em camelCase: *antes* e *cada*, em inglês. É o par do que fecha o navegador no fim.",
+      "explanation": "`@BeforeEach` roda antes de **cada** teste, e forma o par com o `@AfterEach`: um abre, o outro fecha, e o teste no meio só cuida do que interessa.\n\nEsse arranjo entrega três coisas de uma vez: **isolamento** — cada teste começa limpo; **legibilidade** — o método de teste não tem cerimônia; e **limpeza garantida**, porque o fechamento acontece mesmo em caso de falha.\n\nÉ o mesmo princípio do Page Object da lição 04, aplicado ao ciclo de vida em vez de aos seletores: **tirar do teste tudo que não é a história que ele conta.**"
+    }
+  ]
+}

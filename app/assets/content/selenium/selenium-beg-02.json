@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "language": "selenium",
+  "level": "beginner",
+  "lessonId": "selenium-beg-02",
+  "lessonTitle": "Localizadores: como apontar para um elemento",
+  "aula": {
+    "titulo": "O seletor é a parte do teste que mais quebra",
+    "secoes": [
+      {
+        "topico": "estrategias",
+        "titulo": "As formas de apontar",
+        "texto": "Todo comando do Selenium começa achando um elemento, e a classe `By` reúne as formas de apontar:\n\n- `By.id(\"entrar\")` — o `id` do HTML\n- `By.name(\"email\")` — o atributo `name`\n- `By.className(\"erro\")` — uma classe de CSS\n- `By.linkText(\"Sair\")` — o texto exato de um link\n- `By.cssSelector(...)` — seletor de CSS, o mesmo do arquivo de estilo\n- `By.xpath(...)` — caminho ou consulta na árvore do documento\n\nEles não são equivalentes, e a escolha entre eles **é a decisão de projeto mais consequente da suíte** — porque o seletor é a parte que mais quebra quando o sistema muda.\n\nUm seletor ruim não falha na hora: ele funciona hoje, e quebra três meses depois, num commit que ninguém associa ao teste.",
+        "code": {
+          "language": "java",
+          "content": "driver.findElement(By.id(\"entrar\")).click();\ndriver.findElement(By.name(\"email\")).sendKeys(\"ada@exemplo.com\");\n\nString erro = driver.findElement(By.className(\"erro\")).getText();"
+        }
+      },
+      {
+        "topico": "id",
+        "titulo": "Por que o id vem primeiro",
+        "texto": "Quando existe, o `id` é a primeira escolha, e por três razões:\n\n- **É único na página**, por definição do HTML\n- **É o mais rápido** — o navegador tem índice para ele\n- **Ele é contrato**: alguém escreveu aquele `id` de propósito, e mudá-lo é uma decisão consciente\n\nA terceira é a que mais importa, e é fácil de subestimar. Um seletor apoiado em posição ou em texto depende de decisões que ninguém tomou pensando em teste — e por isso muda sem aviso. Um `id` muda quando alguém decide mudá-lo.\n\nSe o sistema **não** tem `id` nos elementos que você precisa alcançar, a melhor conversa não é sobre seletor: é pedir ao time que acrescente. Um atributo dedicado a teste — muitos times usam `data-test` — custa uma linha e economiza manutenção por anos.\n\n**Quando o seletor fica difícil, o problema costuma ser o sistema, e não o seletor.**",
+        "code": {
+          "language": "java",
+          "content": "// primeira escolha: id\ndriver.findElement(By.id(\"botao-entrar\"));\n\n// se o time adotar atributo dedicado a teste\ndriver.findElement(By.cssSelector(\"[data-test='botao-entrar']\"));"
+        }
+      },
+      {
+        "topico": "css-xpath",
+        "titulo": "CSS e XPath, e a diferença que importa",
+        "texto": "Quando não há `id`, sobram `cssSelector` e `xpath`. A discussão sobre qual é melhor rende há anos, e ela está mal colocada.\n\n**O problema do XPath nunca foi a sintaxe.** É ele permitir escrever caminho por posição:\n\nO primeiro casa um **atributo**, e é tão legítimo quanto qualquer CSS. O segundo casa um **caminho**, e quebra assim que alguém acrescentar uma `div` no meio — sem que ninguém perceba a relação.\n\nO XPath tem duas capacidades que o CSS não tem, e por elas ele vale:\n\n- casar por **texto**: `//button[text()='Entrar']`\n- subir na árvore, com `..` — do filho para o pai\n\nA regra prática: **CSS por padrão; XPath quando precisar de texto ou de subir.** E, nos dois, casar atributo — nunca posição.",
+        "code": {
+          "language": "java",
+          "content": "// ok: casa atributo\nBy.cssSelector(\"input[name='email']\");\nBy.xpath(\"//input[@name='email']\");\n\n// nunca: casa posicao\nBy.xpath(\"//div[3]/form/div[2]/input[1]\");"
+        }
+      },
+      {
+        "topico": "fragil",
+        "titulo": "Como reconhecer um seletor frágil",
+        "texto": "Três sinais denunciam um seletor que vai dar trabalho:\n\n**Ele depende de posição.** `//div[3]/span[2]` promete quebrar. Qualquer elemento acrescentado acima muda a conta.\n\n**Ele depende de texto de interface.** `By.linkText(\"Entrar\")` quebra quando o botão virar \"Acessar\", quando o sistema ganhar outro idioma, ou quando alguém corrigir um acento. E o teste vai reprovar dizendo *\"elemento não encontrado\"*, escondendo que a causa foi uma mudança de texto.\n\n**Ele depende de classe de estilo.** `By.className(\"btn-primary-lg\")` casa com aparência, e aparência muda por decisão de design — que ninguém comunica a quem escreve teste.\n\nO teste que resulta disso **não falha**: ele fica **instável**, o que é pior. Suíte que reprova de vez em quando ensina o time a reexecutar em vez de investigar, e a partir daí ela deixa de ser levada a sério.",
+        "code": {
+          "language": "java",
+          "content": "// fragil: posicao\nBy.xpath(\"//div[3]/span[2]\");\n\n// fragil: texto de interface\nBy.linkText(\"Entrar\");\n\n// fragil: classe de estilo\nBy.className(\"btn-primary-lg\");\n\n// estavel: identificador que existe para ser apontado\nBy.id(\"botao-entrar\");"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "selenium-beg-0201",
+      "topic": "id",
+      "prompt": "Por que o `id` é a primeira escolha de localizador?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque é o único que funciona em todos os navegadores",
+          "correct": false,
+          "why": "Todas as estratégias funcionam em qualquer navegador que siga o padrão."
+        },
+        {
+          "id": "b",
+          "text": "Porque o Selenium recomenda evitar CSS",
+          "correct": false,
+          "why": "CSS é uma escolha excelente, e a segunda da lista quando não há `id`."
+        },
+        {
+          "id": "c",
+          "text": "Porque ele nunca muda em sistema nenhum",
+          "correct": false,
+          "why": "Ele pode mudar. A diferença é que mudá-lo é uma decisão consciente, e não um efeito colateral."
+        },
+        {
+          "id": "d",
+          "text": "Porque só ele aceita ser combinado com esperas",
+          "correct": false,
+          "why": "Qualquer localizador funciona com espera explícita."
+        },
+        {
+          "id": "e",
+          "text": "É único na página, é o mais rápido, e alguém o escreveu de propósito",
+          "correct": true
+        }
+      ],
+      "hint": "Uma das alternativas dá três razões. As outras dão uma só, e nenhuma delas é verdadeira.",
+      "explanation": "As três razões pesam, e a terceira mais que as outras: um `id` é contrato. Alguém o escreveu de propósito, e mudá-lo é decisão consciente.\n\nCompare com um seletor apoiado em posição ou em classe de estilo: ele depende de decisões que ninguém tomou pensando em teste, e por isso muda sem aviso.\n\nE quando não há `id`? A melhor conversa não é sobre seletor — é pedir ao time que acrescente um atributo dedicado a teste. **Seletor difícil costuma ser sintoma de sistema mal preparado.**"
+    },
+    {
+      "id": "selenium-beg-0202",
+      "topic": "css-xpath",
+      "prompt": "Qual destes dois XPath é aceitável, e por quê?",
+      "code": {
+        "language": "java",
+        "content": "// A\nBy.xpath(\"//input[@name='email']\");\n\n// B\nBy.xpath(\"//div[3]/form/div[2]/input[1]\");"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "B, porque é mais específico e acha o elemento com certeza",
+          "correct": false,
+          "why": "Ser específico quanto ao caminho é justamente o defeito: qualquer elemento acrescentado no meio o invalida."
+        },
+        {
+          "id": "b",
+          "text": "Nenhum: XPath deve ser sempre evitado",
+          "correct": false,
+          "why": "XPath tem capacidades que o CSS não tem, e usá-lo por elas é legítimo."
+        },
+        {
+          "id": "c",
+          "text": "Os dois, porque XPath é uma linguagem padronizada",
+          "correct": false,
+          "why": "A sintaxe ser padronizada não torna qualquer expressão uma boa escolha."
+        },
+        {
+          "id": "d",
+          "text": "A, porque casa um **atributo** em vez de um caminho por posição",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "B, porque é mais rápido de avaliar",
+          "correct": false,
+          "why": "A diferença de velocidade é irrelevante, e não é ela que decide."
+        }
+      ],
+      "hint": "Um dos dois sobrevive a alguém acrescentar uma `div` no meio da página. O outro não.",
+      "explanation": "O problema do XPath **nunca foi a sintaxe**: é ele permitir escrever caminho por posição. `//div[3]/form/div[2]` quebra assim que alguém acrescentar um elemento acima — e ninguém associa aquele commit ao teste que reprovou dias depois.\n\nCasar atributo é tão legítimo em XPath quanto em CSS.\n\nA regra prática: **CSS por padrão; XPath quando precisar do que só ele faz** — casar por texto com `text()`, ou subir na árvore com `..`. E, nos dois, casar atributo."
+    },
+    {
+      "id": "selenium-beg-0203",
+      "topic": "fragil",
+      "prompt": "O botão \"Entrar\" foi renomeado para \"Acessar\". Que localizador quebra?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`By.id(\"botao-entrar\")`",
+          "correct": false,
+          "why": "O `id` não muda quando o texto visível muda — são coisas independentes."
+        },
+        {
+          "id": "b",
+          "text": "`By.name(\"acao\")`",
+          "correct": false,
+          "why": "O atributo `name` também é independente do texto exibido."
+        },
+        {
+          "id": "c",
+          "text": "`By.linkText(\"Entrar\")`",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "`By.cssSelector(\"[data-test='entrar']\")`",
+          "correct": false,
+          "why": "Atributo dedicado a teste existe justamente para não depender do texto."
+        },
+        {
+          "id": "e",
+          "text": "Nenhum: o Selenium acompanha renomeações automaticamente",
+          "correct": false,
+          "why": "Ele não acompanha nada. Cada localizador é reavaliado do zero a cada busca."
+        }
+      ],
+      "hint": "Procure o localizador que aponta para o que a pessoa **lê** na tela, e não para um atributo do HTML.",
+      "explanation": "`linkText` aponta para o texto visível, então ele depende de uma decisão de produto: qualquer troca de palavra, tradução para outro idioma ou correção de acento o invalida.\n\nE o pior é a mensagem que o teste vai dar: *\"elemento não encontrado\"*. Ela não diz que o texto mudou — quem investiga procura defeito no sistema antes de descobrir que só o rótulo foi alterado.\n\nO caso em que `linkText` se justifica é quando **o próprio texto é o objeto do teste**. Aí ele não é frágil: é o ponto."
+    },
+    {
+      "id": "selenium-beg-0204",
+      "topic": "estrategias",
+      "prompt": "Complete a estratégia que localiza um elemento pelo atributo `id` do HTML.",
+      "code": {
+        "language": "java",
+        "content": "driver.findElement(By.______(\"botao-entrar\")).click();",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "id"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas letras, e é o nome do próprio atributo do HTML, todo em minúsculas.",
+      "explanation": "`By.id` é a primeira escolha sempre que existir. Ele é único por definição do HTML, é o mais rápido, e sobretudo **é contrato**.\n\nRepare que o nome do método é o nome do atributo, e essa correspondência vale para vários: `By.name`, `By.className`, `By.tagName`. Quando não valer, o nome diz o que ele faz — `linkText`, `cssSelector`, `xpath`.\n\nE se o elemento não tiver `id`? A conversa certa é pedir ao time que acrescente."
+    },
+    {
+      "id": "selenium-beg-0205",
+      "topic": "css-xpath",
+      "prompt": "O que o XPath consegue fazer que o `cssSelector` não consegue?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Casar por texto e subir na árvore, do filho para o pai",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Funcionar em páginas com muito JavaScript",
+          "correct": false,
+          "why": "Os dois avaliam a árvore como ela está no momento da busca."
+        },
+        {
+          "id": "c",
+          "text": "Casar por atributo",
+          "correct": false,
+          "why": "Os dois fazem isso, e é o uso recomendado dos dois."
+        },
+        {
+          "id": "d",
+          "text": "Esperar o elemento aparecer",
+          "correct": false,
+          "why": "Nenhum localizador espera nada por si. Espera é assunto da lição 03."
+        },
+        {
+          "id": "e",
+          "text": "Localizar elementos escondidos",
+          "correct": false,
+          "why": "Os dois localizam elementos escondidos igualmente — o que muda é poder interagir com eles."
+        }
+      ],
+      "hint": "São duas capacidades. Uma tem a ver com o conteúdo que se lê, e a outra com a direção do percurso na árvore.",
+      "explanation": "Duas capacidades, e elas justificam o XPath quando aparecem:\n\n- **casar por texto**: `//button[text()='Entrar']`\n- **subir na árvore**: `//input[@id='email']/..` chega ao pai\n\nA segunda resolve um caso comum de verdade — achar a linha da tabela que contém certo texto, e então clicar no botão daquela linha.\n\nFora disso, `cssSelector` é mais curto e mais legível. A regra: **CSS por padrão, XPath pelo que só ele faz.**"
+    },
+    {
+      "id": "selenium-beg-0206",
+      "topic": "fragil",
+      "prompt": "Escreva o adjetivo, sem acento, que descreve um teste que às vezes passa e às vezes falha sem que nada tenha mudado. É o termo em inglês, com cinco letras.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "flaky"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "A palavra em inglês descreve algo escamoso, que se solta em lascas — e virou o termo padrão do ofício.",
+      "explanation": "Teste `flaky` — instável — é pior que teste que falha sempre. Falha constante aponta um defeito; falha intermitente **ensina o time a reexecutar**.\n\nA partir do momento em que reexecutar vira hábito, a suíte deixa de ser levada a sério, e uma reprovação verdadeira passa despercebida no meio do ruído.\n\nAs duas maiores causas são as das lições 02 e 03: **seletor frágil** e **espera mal resolvida**. Por isso elas vêm antes de qualquer coisa neste curso."
+    },
+    {
+      "id": "selenium-beg-0207",
+      "topic": "estrategias",
+      "prompt": "Complete o seletor de CSS que localiza o campo cujo atributo `name` é `email`.",
+      "code": {
+        "language": "java",
+        "content": "driver.findElement(By.cssSelector(\"input[______='email']\"));",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "name"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É o nome do próprio atributo do HTML que se quer casar, escrito dentro dos colchetes.",
+      "explanation": "Dentro dos colchetes vai o **nome do atributo**, e não o valor: `input[name='email']` casa qualquer `input` cujo `name` seja `email`.\n\nA sintaxe é a mesma do arquivo de estilo, e é essa a vantagem: quem já escreve CSS não aprende nada novo. `#id` para identificador, `.classe` para classe, `[atributo='valor']` para atributo.\n\nE é assim que se usa um atributo dedicado a teste: `[data-test='botao-entrar']`."
+    },
+    {
+      "id": "selenium-beg-0208",
+      "topic": "id",
+      "prompt": "O sistema que você testa não tem `id` em nenhum botão. Qual é a melhor atitude?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Escrever XPath por posição, que sempre funciona",
+          "correct": false,
+          "why": "Funciona hoje e quebra no próximo ajuste de layout, sem que ninguém associe as duas coisas."
+        },
+        {
+          "id": "b",
+          "text": "Pedir ao time que acrescente um atributo dedicado a teste",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Desistir da automação naquela tela",
+          "correct": false,
+          "why": "Desistir não é preciso, e a conversa com o time costuma ser mais barata do que parece."
+        },
+        {
+          "id": "d",
+          "text": "Localizar tudo por texto visível",
+          "correct": false,
+          "why": "Passa a depender de decisões de produto — troca de palavra, tradução, correção de acento."
+        },
+        {
+          "id": "e",
+          "text": "Usar a classe de estilo do botão",
+          "correct": false,
+          "why": "Classe de estilo muda por decisão de design, que ninguém comunica a quem escreve teste."
+        }
+      ],
+      "hint": "Quatro alternativas tentam contornar o problema no teste. Uma trata a causa.",
+      "explanation": "**Quando o seletor fica difícil, o problema costuma ser o sistema, e não o seletor.** Um atributo dedicado — `data-test`, `data-testid` — custa uma linha e economiza manutenção por anos.\n\nEssa conversa também muda como o time enxerga qualidade: testabilidade passa a ser característica do produto, e não problema de quem testa depois.\n\nE ela é uma das melhores respostas de entrevista que existem, porque mostra que você **não aceita contornar** — e contornar com XPath por posição é exatamente o que a maioria faz."
+    },
+    {
+      "id": "selenium-beg-0209",
+      "topic": "css-xpath",
+      "prompt": "Escreva o nome da estratégia que usa a mesma sintaxe do arquivo de estilo. É o nome do método da classe `By`, em camelCase.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "cssSelector"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas: a sigla da linguagem de estilo, em minúsculas, seguida da palavra inglesa para *seletor*.",
+      "explanation": "`By.cssSelector` aceita a mesma sintaxe do arquivo de estilo, e é a segunda escolha quando não há `id`.\n\nA vantagem é dupla: quem já escreve CSS não aprende nada novo, e o mesmo seletor pode ser testado direto no console do navegador com `document.querySelector`, antes de entrar no código do teste.\n\nEsse hábito economiza muito tempo — **conferir o seletor no navegador antes de escrevê-lo no teste** evita a rodada de execução que só serve para descobrir que ele não casa."
+    },
+    {
+      "id": "selenium-beg-0210",
+      "topic": "fragil",
+      "prompt": "Um teste começou a falhar dizendo `NoSuchElementException`, três semanas depois de ter sido escrito. Qual investigação faz mais sentido começar?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Reexecutar algumas vezes até passar",
+          "correct": false,
+          "why": "É exatamente o hábito que faz uma suíte deixar de ser levada a sério."
+        },
+        {
+          "id": "b",
+          "text": "Aumentar o tempo de espera até parar de falhar",
+          "correct": false,
+          "why": "Pode mascarar o sintoma, e mascarar sem entender é o que produz suíte lenta e ainda instável."
+        },
+        {
+          "id": "c",
+          "text": "Trocar o localizador por um XPath mais específico",
+          "correct": false,
+          "why": "Mais específico costuma significar mais preso à estrutura, o que piora o problema."
+        },
+        {
+          "id": "d",
+          "text": "Conferir se o elemento ainda existe com aquele localizador, abrindo a página",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Reescrever o teste do zero",
+          "correct": false,
+          "why": "Reescrever sem saber a causa costuma reproduzir o mesmo problema com outra roupa."
+        }
+      ],
+      "hint": "A mensagem diz que o elemento não foi encontrado. Antes de mudar qualquer coisa, vale descobrir se ele ainda está lá.",
+      "explanation": "A mensagem é ambígua de propósito: `NoSuchElementException` pode significar que o elemento **mudou**, que ele **ainda não apareceu**, ou que ele **está em outro lugar da página**. Só olhar resolve.\n\nAs quatro alternativas erradas são as reações comuns, e todas mudam o teste antes de entender o sistema — três semanas de commits são muitos suspeitos para eliminar por tentativa.\n\nNuma entrevista, essa é a pergunta que separa quem decorou a ferramenta de quem investiga: **primeiro descobrir o que mudou, depois decidir o que fazer.**"
+    }
+  ]
+}

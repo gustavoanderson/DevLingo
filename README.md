@@ -14,8 +14,8 @@
 
 [![CI](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml/badge.svg)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
 [![Testes](https://img.shields.io/badge/testes-345%20passando-39FF14?style=flat-square)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
-[![Questões](https://img.shields.io/badge/questões-304-FFE14D?style=flat-square)](#as-trilhas)
-[![Trilhas](https://img.shields.io/badge/trilhas-6-FF2D95?style=flat-square)](#as-trilhas)
+[![Questões](https://img.shields.io/badge/questões-354-FFE14D?style=flat-square)](#as-trilhas)
+[![Trilhas](https://img.shields.io/badge/trilhas-7-FF2D95?style=flat-square)](#as-trilhas)
 
 </div>
 
@@ -51,7 +51,7 @@ As estatísticas seguem a mesma regra: nada de *"você está pior que ontem"*. O
 
 ## As trilhas
 
-Seis trilhas de nível iniciante, **50 questões cada**:
+Sete trilhas de nível iniciante, **50 questões cada**:
 
 | Trilha | O que cobre |
 |---|---|
@@ -61,6 +61,7 @@ Seis trilhas de nível iniciante, **50 questões cada**:
 | **Qualidade de Software** | o papel do QA, os sete princípios, níveis de teste, técnicas de teste |
 | **Frameworks** | React, Vue, Svelte, Next, Nuxt e Astro: as diferenças, e qual é mais fácil |
 | **Java** | a classe e o main, tipos declarados, o `==` que engana, textos e arrays |
+| **Selenium** | WebDriver, localizadores, esperas, Page Object e teste instável |
 
 Cada lição começa com uma **aula do Tr∅nikAt** que prepara exatamente os tópicos que as questões vão cobrar. Isso não é convenção: o validador do projeto **reprova** quando os dois deixam de bater, nos dois sentidos — tópico cobrado sem aula que o prepare, e aula que prepara algo que nenhuma questão cobra.
 
@@ -135,7 +136,7 @@ O `google-services.json` **não** vai para o repositório. Quem clonar sem ele n
 
 ## Estado atual
 
-**O que existe:** as seis trilhas iniciantes, login com conta, sincronização entre aparelhos, estatísticas do jogador, tela de título em formato de fliperama, cenário animado, realce de sintaxe e som opcional.
+**O que existe:** as sete trilhas iniciantes, login com conta, sincronização entre aparelhos, estatísticas do jogador, tela de título em formato de fliperama, cenário animado, realce de sintaxe e som opcional.
 
 **O que não existe:** níveis intermediário e avançado, e as demais linguagens previstas — Node, HTML, CSS, SQL, C#, Go, C++, COBOL e Ruby.
 

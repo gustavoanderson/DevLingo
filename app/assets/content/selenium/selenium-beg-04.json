@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "language": "selenium",
+  "level": "beginner",
+  "lessonId": "selenium-beg-04",
+  "lessonTitle": "Interagir, e onde guardar os seletores",
+  "aula": {
+    "titulo": "Page Object: separar o ONDE do O QUÊ",
+    "secoes": [
+      {
+        "topico": "interacoes",
+        "titulo": "O que dá para fazer com um elemento",
+        "texto": "Achado o elemento, o repertório é pequeno:\n\n- `click()` — clica\n- `sendKeys(\"texto\")` — digita\n- `clear()` — apaga o conteúdo do campo\n- `getText()` — lê o texto visível\n- `getAttribute(\"value\")` — lê um atributo\n- `isDisplayed()`, `isEnabled()`, `isSelected()` — perguntas de estado\n\nDois detalhes que produzem defeito:\n\n`sendKeys` acrescenta, não substitui. Num campo que já tem texto, digitar por cima emenda. Para trocar o valor, `clear()` antes.\n\n`getText()` e `getAttribute(\"value\")` não são a mesma coisa. Num campo de formulário, o que a pessoa digitou fica no atributo `value`, e `getText()` devolve vazio. É a causa de muita asserção que compara vazio com vazio e passa sem testar nada.",
+        "code": {
+          "language": "java",
+          "content": "WebElement campo = driver.findElement(By.id(\"email\"));\n\ncampo.clear();\ncampo.sendKeys(\"ada@exemplo.com\");\n\n// num INPUT, o valor digitado esta no atributo\nString digitado = campo.getAttribute(\"value\");"
+        }
+      },
+      {
+        "topico": "espalhado",
+        "titulo": "O problema que aparece no terceiro teste",
+        "texto": "Escrever o primeiro teste direto, com os seletores no meio dele, é o caminho natural — e funciona.\n\nO problema aparece no terceiro. A tela de entrada é usada por praticamente todo teste, então `By.id(\"email\")` passa a estar escrito em dez arquivos. No dia em que o campo virar `By.id(\"usuario\")`, são dez arquivos para mudar — e basta esquecer um para a suíte ficar vermelha sem motivo aparente.\n\nA pergunta que decide se vale separar não é *\"é boa prática?\"*. É: **em quantos testes este seletor vai aparecer?**\n\nSe a resposta for \"um\", separar é burocracia. Se for \"todos\", separar se paga na primeira mudança de tela.\n\nE há um segundo custo, menos visível: um teste cheio de seletor **não se lê**. Quem revisa precisa decifrar `By.cssSelector(\"[data-test='btn-save']\")` para descobrir que aquilo é o botão salvar.",
+        "code": {
+          "language": "java",
+          "content": "// espalhado: o seletor aparece em todo teste\ndriver.findElement(By.id(\"email\")).sendKeys(\"ada@exemplo.com\");\ndriver.findElement(By.id(\"senha\")).sendKeys(\"segredo\");\ndriver.findElement(By.id(\"entrar\")).click();"
+        }
+      },
+      {
+        "topico": "page-object",
+        "titulo": "Uma classe por tela",
+        "texto": "O **Page Object** é uma classe que representa uma tela. Ela guarda **onde** as coisas estão e **o que dá para fazer** ali; o teste passa a dizer só o que quer.\n\nRepare no que muda na leitura. O teste vira `entrada.entrarCom(\"ada@exemplo.com\", \"segredo\")` — uma frase que qualquer pessoa do time entende, inclusive quem não programa.\n\nE a manutenção muda de escala: o seletor existe **num lugar só**. Trocar `email` por `usuario` é uma linha, independentemente de quantos testes usem aquela tela.\n\nDuas regras que fazem a diferença entre um Page Object útil e um inútil:\n\n- **Ele não contém asserção.** A classe representa a tela; julgar é papel do teste. Um Page Object que verifica coisas obriga todo teste a aceitar as verificações dele\n- **Métodos devolvem a próxima tela.** `entrarCom` devolve a tela inicial, e o teste encadeia. Isso deixa o fluxo explícito no código",
+        "code": {
+          "language": "java",
+          "content": "public class TelaDeEntrada {\n  private final WebDriver driver;\n\n  private final By email = By.id(\"email\");\n  private final By senha = By.id(\"senha\");\n  private final By entrar = By.id(\"entrar\");\n\n  public TelaDeEntrada(WebDriver driver) {\n    this.driver = driver;\n  }\n\n  public TelaInicial entrarCom(String usuario, String chave) {\n    driver.findElement(email).sendKeys(usuario);\n    driver.findElement(senha).sendKeys(chave);\n    driver.findElement(entrar).click();\n    return new TelaInicial(driver);\n  }\n}"
+        }
+      },
+      {
+        "topico": "limites",
+        "titulo": "O que NÃO colocar no Page Object",
+        "texto": "A ideia é simples e é fácil exagerar. Três erros comuns:\n\n**Asserção dentro dele.** Já dito, e vale repetir porque é o mais frequente: a classe descreve a tela, o teste julga o resultado. Misturar os dois torna impossível escrever um teste que espera falha.\n\n**Um método por elemento.** `clicarNoBotaoEntrar()` só empurra o seletor um andar acima, sem reduzir nada. O bom método representa uma **ação de negócio**, e não um toque de tela — `entrarCom(...)`, e não três chamadas separadas.\n\n**Uma classe gigante para a aplicação inteira.** Uma classe por **tela** ou por componente. Um arquivo de dois mil linhas chamado `Paginas` recria o problema que a separação existe para resolver.\n\nO teste bem escrito conta uma história de negócio. Se ele estiver falando de cliques e seletores, a separação não aconteceu de verdade — só mudou de arquivo.",
+        "code": {
+          "language": "java",
+          "content": "// o teste conta uma historia\nTelaInicial inicial = entrada.entrarCom(\"ada\", \"segredo\");\nassertEquals(\"Ada\", inicial.nomeDoUsuario());\n\n// e nao uma sequencia de cliques\n// entrada.clicarNoCampoEmail();\n// entrada.digitarEmail(\"ada\");\n// entrada.clicarNoBotaoEntrar();"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "selenium-beg-0401",
+      "topic": "espalhado",
+      "prompt": "Qual pergunta decide se vale a pena adotar Page Object num projeto?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Em quantos testes este seletor vai aparecer?",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "O time já conhece o padrão?",
+          "correct": false,
+          "why": "Conhecimento se adquire. A pergunta precisa ser sobre o custo e o ganho no projeto."
+        },
+        {
+          "id": "c",
+          "text": "O sistema usa muito JavaScript?",
+          "correct": false,
+          "why": "A tecnologia da tela não muda onde os seletores devem morar."
+        },
+        {
+          "id": "d",
+          "text": "A suíte roda em integração contínua?",
+          "correct": false,
+          "why": "Onde a suíte roda não influencia a organização do código."
+        },
+        {
+          "id": "e",
+          "text": "Quantos navegadores precisam ser suportados?",
+          "correct": false,
+          "why": "O Page Object não tem relação com navegador: ele organiza o código do teste."
+        }
+      ],
+      "hint": "O ganho aparece quando algo se repete. Procure a pergunta que mede repetição.",
+      "explanation": "Se o seletor aparece em **um** teste, separar é burocracia. Se aparece em **todos**, ele se paga na primeira mudança de tela.\n\nNo DevLingo, por exemplo, a trilha é o caminho para tudo — toda lição e a tela de estatísticas passam por ela. Ali a resposta é \"todos\", e a separação vale desde o começo.\n\nEssa formulação é melhor que \"é boa prática\" numa entrevista: ela mostra que você avalia custo e ganho em vez de aplicar padrão por reflexo."
+    },
+    {
+      "id": "selenium-beg-0402",
+      "topic": "interacoes",
+      "prompt": "Um campo já contém `\"ada\"`. Você chama `sendKeys(\"bia\")`. O que fica no campo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`bia`, substituindo o conteúdo anterior",
+          "correct": false,
+          "why": "Substituir exigiria apagar antes, e `sendKeys` não apaga nada."
+        },
+        {
+          "id": "b",
+          "text": "`adabia`",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "`ada`, porque o campo recusa o novo valor",
+          "correct": false,
+          "why": "O campo aceita normalmente: digitar nele é o que `sendKeys` faz."
+        },
+        {
+          "id": "d",
+          "text": "O campo fica vazio",
+          "correct": false,
+          "why": "Nada apaga o conteúdo por si."
+        },
+        {
+          "id": "e",
+          "text": "Depende do navegador",
+          "correct": false,
+          "why": "O comportamento é o mesmo em qualquer navegador."
+        }
+      ],
+      "hint": "O nome do método é *enviar teclas*. Pense no que aconteceria se você digitasse com o teclado num campo já preenchido.",
+      "explanation": "`sendKeys` **acrescenta**, como digitar no teclado acrescentaria. Para trocar o valor, é preciso `clear()` antes.\n\nEsse defeito é traiçoeiro porque **o primeiro teste passa**: o campo estava vazio. Ele só aparece quando o mesmo teste roda duas vezes na mesma sessão, ou quando o sistema preenche o campo sozinho com um valor anterior.\n\nÉ mais um caso de teste que passa isolado e falha em conjunto — a mesma família do estado compartilhado que o `noReset` produz em automação de celular."
+    },
+    {
+      "id": "selenium-beg-0403",
+      "topic": "page-object",
+      "prompt": "Por que um Page Object **não** deve conter asserções?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque asserções deixam a execução mais lenta",
+          "correct": false,
+          "why": "O custo de uma asserção é irrelevante. A razão é de responsabilidade."
+        },
+        {
+          "id": "b",
+          "text": "Porque o JUnit não enxerga asserções fora da classe de teste",
+          "correct": false,
+          "why": "Ele enxerga: uma asserção que falha interrompe o teste de onde quer que venha."
+        },
+        {
+          "id": "c",
+          "text": "A classe representa a tela; julgar o resultado é papel do teste",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque asserções precisam ficar sempre no fim do método",
+          "correct": false,
+          "why": "Não há essa exigência — asserção no meio é comum e útil."
+        },
+        {
+          "id": "e",
+          "text": "Porque isso impediria reaproveitar a classe em outro projeto",
+          "correct": false,
+          "why": "Page Object é específico de uma tela: reaproveitar entre projetos não é o objetivo."
+        }
+      ],
+      "hint": "Pense em quem tem autoridade para dizer se o resultado está certo, e em quem só descreve a tela.",
+      "explanation": "O Page Object descreve **onde as coisas estão e o que dá para fazer**. Quem decide se o resultado está certo é o teste.\n\nA consequência prática é decisiva: com asserção embutida, **todo teste passa a carregar aquelas verificações** — e escrever um teste que espera falha vira impossível, porque a classe reprova antes.\n\nÉ a mesma separação da lição 01, um andar acima: **Selenium dirige, JUnit julga; o Page Object descreve, o teste julga.**"
+    },
+    {
+      "id": "selenium-beg-0404",
+      "topic": "interacoes",
+      "prompt": "Complete o método que apaga o conteúdo do campo antes de digitar.",
+      "code": {
+        "language": "java",
+        "content": "WebElement campo = driver.findElement(By.id(\"email\"));\ncampo.______();\ncampo.sendKeys(\"ada@exemplo.com\");",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "clear"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São cinco letras, e a palavra em inglês quer dizer *limpar*.",
+      "explanation": "`clear()` esvazia o campo. Sem ele, `sendKeys` emenda no que já estava.\n\nO par `clear()` + `sendKeys()` é tão frequente que vale virar um método no Page Object — `preencherEmail(...)` que faz os dois. Esquecer o `clear` é um dos defeitos mais comuns em suíte de formulário, e ele só aparece na segunda execução.\n\nUma ressalva: em alguns componentes de interface o `clear()` não dispara os eventos que o sistema espera, e o campo parece vazio sem o sistema saber. Quando isso acontecer, o caminho é selecionar tudo e apagar pelo teclado."
+    },
+    {
+      "id": "selenium-beg-0405",
+      "topic": "limites",
+      "prompt": "Um Page Object tem os métodos `clicarNoCampoEmail()`, `digitarEmail()` e `clicarNoBotaoEntrar()`. Qual é o problema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nenhum: métodos pequenos são sempre melhores",
+          "correct": false,
+          "why": "Tamanho não é o critério. O critério é o nível em que o método fala."
+        },
+        {
+          "id": "b",
+          "text": "Faltam asserções nesses métodos",
+          "correct": false,
+          "why": "Asserção não deve estar ali — é justamente o que a lição diz para não fazer."
+        },
+        {
+          "id": "c",
+          "text": "Os nomes deveriam estar em inglês",
+          "correct": false,
+          "why": "O idioma é convenção do time, e não muda o problema estrutural."
+        },
+        {
+          "id": "d",
+          "text": "Eles descrevem cliques, e não ações de negócio — o teste continua sem contar uma história",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "São métodos demais para uma classe só",
+          "correct": false,
+          "why": "A quantidade não é o problema: três métodos é pouco."
+        }
+      ],
+      "hint": "Leia um teste que use esses três métodos em sequência. Ele fala de negócio ou de tela?",
+      "explanation": "Esses métodos **empurram o seletor um andar acima e não reduzem nada**: o teste continua descrevendo cliques.\n\nO bom método representa uma ação de negócio: `entrarCom(usuario, senha)` diz o que está acontecendo, e esconde que foram dois campos e um botão.\n\nO sinal de que a separação funcionou é a leitura: **o teste conta uma história que qualquer pessoa do time entende**, inclusive quem não programa. Se ele fala de cliques, a separação só mudou de arquivo."
+    },
+    {
+      "id": "selenium-beg-0406",
+      "topic": "interacoes",
+      "prompt": "Você digitou num campo e quer conferir o que ficou lá. `getText()` devolve vazio. Por quê?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O campo perdeu o foco e limpou o conteúdo",
+          "correct": false,
+          "why": "Perder o foco não apaga nada por si."
+        },
+        {
+          "id": "b",
+          "text": "Faltou esperar o campo terminar de processar",
+          "correct": false,
+          "why": "Esperar mais não muda o resultado: o valor está em outro lugar, e não atrasado."
+        },
+        {
+          "id": "c",
+          "text": "O campo está desabilitado",
+          "correct": false,
+          "why": "Se estivesse, não teria sido possível digitar nele."
+        },
+        {
+          "id": "d",
+          "text": "`getText()` só funciona depois de submeter o formulário",
+          "correct": false,
+          "why": "Ele funciona a qualquer momento — só lê outra coisa."
+        },
+        {
+          "id": "e",
+          "text": "`getText()` lê o texto visível; num campo, o valor digitado fica no atributo `value`",
+          "correct": true
+        }
+      ],
+      "hint": "Pense na diferença entre o texto que está **entre** as tags e o que está **num atributo** delas.",
+      "explanation": "`getText()` lê o texto visível entre as tags. Num `input`, o que a pessoa digitou fica no atributo `value` — então o caminho é `getAttribute(\"value\")`.\n\nO perigo é maior do que parece: `assertEquals(\"\", campo.getText())` **passa**, comparando vazio com vazio. O teste fica verde sem ter testado nada.\n\nÉ um exemplo direto do que a lição 01 alertava: automação sem asserção **de verdade** é passeio — e uma asserção que compara a coisa errada é quase a mesma coisa."
+    },
+    {
+      "id": "selenium-beg-0407",
+      "topic": "page-object",
+      "prompt": "Escreva, em uma palavra e sem acento, o que um método do Page Object deve devolver quando a ação leva a outra tela.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "tela",
+        "pagina"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o objeto que representa o destino da navegação — a próxima do fluxo. Escreva sem acento.",
+      "explanation": "`entrarCom(...)` devolve a `TelaInicial`, e o teste encadeia. Isso deixa o fluxo **explícito no código**: lendo o teste, dá para ver por onde ele passou.\n\nHá um ganho a mais, e ele é do compilador: se o método devolve a tela errada, o código **não compila**. Um erro de fluxo vira erro de compilação em vez de falha estranha em execução — e essa é uma vantagem concreta de automatizar em linguagem de tipos declarados, que a trilha de Java apresenta.\n\nQuando a ação pode levar a dois destinos — sucesso ou erro —, o comum é ter dois métodos, cada um devolvendo o seu."
+    },
+    {
+      "id": "selenium-beg-0408",
+      "topic": "espalhado",
+      "prompt": "O campo de e-mail mudou de `By.id(\"email\")` para `By.id(\"usuario\")`. Quantos arquivos mudam, com e sem Page Object?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sem Page Object, todos os testes que usam a tela; com ele, um",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Nenhum nos dois: o localizador continua válido",
+          "correct": false,
+          "why": "O `id` antigo deixou de existir, então nenhum teste acha o campo."
+        },
+        {
+          "id": "c",
+          "text": "Um nos dois casos: o Selenium acompanha a mudança",
+          "correct": false,
+          "why": "O Selenium não acompanha nada. Cada localizador é reavaliado do zero."
+        },
+        {
+          "id": "d",
+          "text": "Todos os dois casos exigem mudar todos os testes",
+          "correct": false,
+          "why": "Com o seletor num lugar só, os testes não mencionam `id` nenhum."
+        },
+        {
+          "id": "e",
+          "text": "Depende de quantos navegadores a suíte cobre",
+          "correct": false,
+          "why": "Navegador não tem relação com onde o seletor está escrito."
+        }
+      ],
+      "hint": "Conte em quantos lugares o texto `\"email\"` aparece em cada arranjo.",
+      "explanation": "Sem a separação, `By.id(\"email\")` está escrito em todo teste que passa pela tela de entrada — e basta esquecer um para a suíte ficar vermelha sem motivo aparente.\n\nCom o Page Object, o seletor existe **num lugar só**: uma linha.\n\nEsse é o argumento inteiro do padrão, e ele é medível. Numa entrevista, respondê-lo com o número — \"dez arquivos contra um\" — vale mais que citar o nome do padrão."
+    },
+    {
+      "id": "selenium-beg-0409",
+      "topic": "limites",
+      "prompt": "Complete a linha do teste para que ela conte uma **ação de negócio**, e não uma sequência de cliques.",
+      "code": {
+        "language": "java",
+        "content": "TelaDeEntrada entrada = new TelaDeEntrada(driver);\nTelaInicial inicial = entrada.______(\"ada\", \"segredo\");",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "entrarCom"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São duas palavras juntas em camelCase, e elas descrevem a ação inteira — entrar, usando aquelas credenciais.",
+      "explanation": "Um método, uma ação de negócio. Ele esconde que foram dois campos e um botão, e o teste passa a ser legível por quem não programa.\n\nRepare que ele **devolve a próxima tela**, e o tipo do retorno documenta o fluxo — se estiver errado, não compila.\n\nO contraste com `clicarNoCampoEmail()` é o ponto da lição: aquele método empurra o seletor um andar acima e **não reduz nada**. A separação só vale quando o teste muda de vocabulário."
+    },
+    {
+      "id": "selenium-beg-0410",
+      "topic": "page-object",
+      "prompt": "Onde os localizadores devem ficar num Page Object bem escrito?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Espalhados pelos métodos, cada um onde é usado",
+          "correct": false,
+          "why": "Funciona, e recria em pequena escala o problema que a classe existe para resolver."
+        },
+        {
+          "id": "b",
+          "text": "Como campos privados da classe, declarados uma vez",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Dentro do próprio teste, para ficar visível",
+          "correct": false,
+          "why": "É exatamente o arranjo que o Page Object veio substituir."
+        },
+        {
+          "id": "d",
+          "text": "Num arquivo de configuração separado, fora do código",
+          "correct": false,
+          "why": "Afasta o seletor da tela que ele descreve, e ninguém encontra quando precisa mudar."
+        },
+        {
+          "id": "e",
+          "text": "Como parâmetros dos métodos, passados pelo teste",
+          "correct": false,
+          "why": "Isso devolveria ao teste o conhecimento da estrutura da tela, que é o que se queria esconder."
+        }
+      ],
+      "hint": "O objetivo é que o seletor exista uma vez só, e que quem lê o teste nunca precise vê-lo.",
+      "explanation": "Campos privados, declarados uma vez: `private final By email = By.id(\"email\");`.\n\nSão **privados** porque o teste não deve conhecê-los — se ele precisar do seletor, falta um método na classe. E são `final` porque não mudam durante a execução.\n\nRepare que o tipo é `By`, e não `WebElement`: guardar o elemento faria o Page Object apontar para algo que pode deixar de existir quando a página redesenhar. Guardar o **localizador** e buscar na hora evita o `StaleElementReferenceException`, que é o erro mais confuso do Selenium para quem está começando."
+    }
+  ]
+}
