@@ -1065,6 +1065,27 @@ Badge por **concluir lição ou manter sequência de dias** celebra persistênci
 
 O mesmo vale para o cronômetro que ele quer: **opt-in de verdade**. O que quebraria a regra registrada seria o app sugerir o modo desafio, comparar seu tempo com o de outros, ou exibir o cronômetro por padrão.
 
+#### Telas de marco: o Tr∅nikAt parabenizando a cada 10 questões
+
+Ideia do Gustavo em 10 de setembro de 2026, e as palavras dele definem o critério de acerto: *"a ideia é ser um respiro pra pessoa, uma mensagem de gratificação do engajamento dela"*.
+
+**Respiro, e não recompensa por desempenho.** A distinção é a mesma que separa badge boa de badge ruim, uma seção acima: o marco celebra **ter chegado até ali**, não ter acertado. Uma tela que aparecesse só para quem acertou de primeira transformaria "errar não termina a questão" em mentira — e as questões reveladas contam igual, porque revelar é o `VAMOS JUNTOS`, não uma falha.
+
+Quatro coisas que a implementação deve reusar em vez de recriar, e o motivo de cada uma:
+
+- **A arte sai de `_tronikat`, em `cena_do_login.dart`, com uma `_Pose` nova.** Aquele arquivo já resolveu exatamente este problema: a primeira versão tinha dois desenhos separados e o gato voador saiu sem olho, sem boca, sem bigode e sem a divisa. Com uma função só, esquecer um traço deixou de ser possível. **Uma tela de parabéns com um Tr∅nikAt desenhado do zero repetiria aquele erro** — e o Gustavo pegou na hora da última vez
+- **O contador já existe.** `resumoDoJogador().respondidas` responde quantas questões a pessoa já respondeu. Não é preciso coluna nem consulta nova
+- **A tabela `preferencia` guarda qual marco já foi comemorado**, e ela é chave-e-valor genérica desde a versão 3 — não custa migração. Sem esse registro, reabrir o app recomemoraria o mesmo marco, e comemoração repetida vira ruído
+- **O som é a fanfarra que já existe**, e ela já passa pela chave de mudo. Um som novo abriria uma segunda conversa com a plataforma de áudio para nada
+
+Três decisões de produto que ainda são do Gustavo:
+
+1. **O marco conta por trilha ou no total?** Por trilha celebra o progresso onde ele está sendo feito; no total celebra a pessoa. Com cinco trilhas, o total chega a marcos mais rápido
+2. **Aparece entre questões ou no fim da lição?** No meio é mais surpresa e mais interrupção; no fim é mais previsível e não corta o embalo. "Respiro" sugere o meio, mas o fim da lição já é uma pausa natural
+3. **Dá para desligar?** O app tem chave para som e para cenário. Coerência sugeriria que sim
+
+E um limite honesto: **arte nova custa tempo real.** Cada pose exige copiar os traços de identidade de `tronikat.svg` — olho preto redondo, orelhas a poucos graus da vertical, verde do visor, costura ciano, `>_` no peito — e converter proporções **por escala, não por olho**, que é a regra que já falhou duas vezes neste projeto. Uma tela por marco significa uma pose por marco.
+
 ### iOS: o que fazer quando o assunto voltar
 
 **Combinado em 8 de setembro de 2026: preparar, não publicar.** A pasta `app/ios/` existe e o bundle id já está certo; nada foi compilado, porque compilar exige Mac. Ver a seção "iOS: preparado, e não compilável nesta máquina" para o quadro completo.
@@ -1515,6 +1536,57 @@ Encadeadas: a curva de custo da 01 vira o terceiro princípio da 02; o modelo V 
 **Avançado:** API e contratos; banco de dados para QA; performance; mobile; DevOps, métricas e gestão.
 
 Os dez esperam o Gustavo jogar o iniciante. Aqui o risco de calibrar no escuro é **maior** que nos outros cursos: nas linguagens havia 100 questões medidas para comparar; aqui as 50 primeiras são a régua sendo criada.
+
+### A grade de 17 temas que o Gustavo trouxe, conferida um a um
+
+Em 10 de setembro de 2026 ele trouxe uma lista de 17 temas e pediu para conferir quais o curso já cobre. A conferência foi feita contra os `topic` reais das cinco lições escritas e contra o mapa dos dez planejados acima.
+
+**O resultado é desconfortável e vale dizer com todas as letras: 1 dos 17 está coberto hoje.**
+
+| Tema | Situação |
+|---|---|
+| Fundamentos de Testes de Software | **coberto** — é exatamente o iniciante 01–05 |
+| Cypress Interception | planejado; o `cy.intercept` já está **nomeado** no critério de corte |
+| As 6 Falhas de Acessibilidade Mais Comuns | planejado dentro de "UI, usabilidade e acessibilidade" |
+| Laboratório de Testes com Cypress | planejado como "o modelo mental do Cypress" |
+| Cypress e Cucumber | planejado em partes — há BDD/Gherkin, mas não a integração |
+| Fundamentos de Testes de API | planejado como "API e contratos" |
+| SQL para Testadores | planejado como "banco de dados para QA" |
+| JavaScript para QAs | **outra trilha**, e só em parte — ver abaixo |
+| Elementos de Design de Testes Automatizados | **lacuna** |
+| Básico de Testes Web com Playwright | **lacuna** |
+| Básico de Testes de API com Playwright | **lacuna** |
+| Testes Web Avançados com Playwright | **lacuna** |
+| Testes de Mutação com Jest e Stryker | **lacuna** |
+| Testes com IA para QAs | **lacuna** |
+| Testando Aplicações de IA | **lacuna** |
+| Testes com Cypress na Era da IA | **lacuna** |
+| Cypress Simulator | **fora do formato** — ver abaixo |
+
+#### Os três achados que importam mais que a tabela
+
+**1. Playwright não existe em nenhum plano, e isso é um buraco de verdade.** Quatro dos 17 temas são dele, e o mapa dos quinze cita apenas Cypress. A causa é rastreável: o plano nasceu da ementa da EBAC cruzada com as skills que o Gustavo já tinha, e ele tinha `cypress.md` e `appium.md`. **Playwright nunca entrou porque não estava em nenhuma das duas fontes** — não porque foi avaliado e descartado. Hoje ele disputa vaga de igual para igual com o Cypress, e um portfólio de QA que só conhece um dos dois é um portfólio menor.
+
+**2. Os temas de IA são uma reversão de decisão, e ela é legítima.** No curso de Backend, 18 tópicos de IA foram **cortados com aprovação do Gustavo**, com a nota de que "se um dia entrar, é curso próprio". Aqui ele pede três. A diferença é real e não é contradição: lá eram *LLMs, RAG e embeddings* — como a IA funciona, que é outro assunto. Aqui é **testar com IA e testar IA**, que é o ofício dele encontrando ferramenta e alvo novos. *Testando Aplicações de IA* é especialmente bom para este app: não-determinismo quebra a premissa de "mesmo input, mesmo output" que sustenta todo teste tradicional, e isso é fato cobrável.
+
+**3. "JavaScript para QAs" não é a trilha `javascript` que já existe.** A trilha atual ensina a base — variáveis, comparação, funções, strings, arrays. O recorte "para QAs" é outro: `async`/`await` e promessas, porque teste de UI é assíncrono do começo ao fim; objetos e arrays como **massa de teste**; e o vocabulário de asserção. **Decisão pendente:** isso vira lição da trilha `qa`, ou nível intermediário da trilha `javascript`? Recomendação: dentro de `qa`, porque o recorte é do ofício, e quem chega ali quer testar, não aprender a linguagem.
+
+#### O que o formato do app não consegue entregar
+
+**`Cypress Simulator` e `Laboratório` são ambiente de prática, e o DevLingo não executa código.** A "Validação de código escrito pelo usuário" registra que execução real exigiria interpretador embarcado ou sandbox remoto, e está fora do escopo. O app ensina **o modelo mental** — o que `cy.intercept` resolve, quando usar stub em vez da resposta real, por que um teste fica instável — e não substitui abrir o Cypress e rodar. Vale dizer isso ao aluno na aula, em vez de fingir que o quiz treina a ferramenta.
+
+#### O tamanho disso, sem maquiagem
+
+Os dez planejados já eram 100 questões. Cobrir as nove lacunas acrescenta **algo entre 8 e 12 lições**, ou seja **mais 80 a 120 questões**. Somado, o curso de QA passaria de 150 para perto de 270 questões — mais que o banco inteiro de hoje.
+
+Nada disso é para hoje, e **nada disso deve ser escrito antes de o Gustavo jogar o iniciante**, pela razão de sempre. Mas a grade fica registrada para o dia em que for, com a distribuição por dificuldade já sugerida:
+
+| Nível | Temas |
+|---|---|
+| **Intermediário** | JavaScript para QAs; elementos de design de testes automatizados; acessibilidade; modelo mental do Cypress; Cypress e Cucumber |
+| **Avançado** | Cypress Interception; API e contratos; SQL; Playwright (básico web, básico API, avançado); mutação com Jest e Stryker; testar com IA; testar aplicações de IA |
+
+O critério de dificuldade é o mesmo já registrado: iniciante ensina *o que as coisas são*; intermediário, *por que existem*, partindo de uma dor; avançado, *o que se ganha e o que se perde*. Teste de mutação é caso claro de avançado — ele só faz sentido para quem já se perguntou se a própria suíte serve para alguma coisa.
 
 ## Frameworks: o curso de comparação
 
