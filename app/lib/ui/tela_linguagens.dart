@@ -259,73 +259,87 @@ class _CartaoDaTrilha extends StatelessWidget {
         ? Paleta.destaque
         : Paleta.linha;
 
-    return GestureDetector(
-      key: Key('trilha-$language-${level.abreviacao}'),
-      behavior: HitTestBehavior.opaque,
-      onTap: aoTocar,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: Paleta.superficie,
-          border: Border(left: BorderSide(color: cor, width: 3)),
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(Escala.raio),
-            bottomRight: Radius.circular(Escala.raio),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              nomeBonito(language),
-              style: const TextStyle(
-                color: Paleta.texto,
-                fontFamily: fonteMono,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
+    // O identificador repete a `Key`, e existe porque o `content-desc` NAO
+    // serve para achar este cartao.
+    //
+    // Medido no aparelho: a descricao do cartao de Frameworks e
+    // "0, Frameworks\nReact, Vue, ... melhor depois do JavaScript\n...". Um
+    // filtro por "contem JavaScript" casaria com o cartao de JavaScript E com
+    // este -- dois elementos para o mesmo seletor, e o teste ou falha confuso
+    // ou acerta o cartao errado.
+    //
+    // Da para contornar com expressao regular. Contornar seria a resposta
+    // errada: quando o seletor fica dificil, quem esta mal desenhado e o app.
+    return Semantics(
+      identifier: 'trilha-$language-${level.abreviacao}',
+      child: GestureDetector(
+        key: Key('trilha-$language-${level.abreviacao}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: aoTocar,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: Paleta.superficie,
+            border: Border(left: BorderSide(color: cor, width: 3)),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(Escala.raio),
+              bottomRight: Radius.circular(Escala.raio),
             ),
-            // A descricao cola no nome, e os numeros ficam agrupados com a
-            // barra. A hierarquia sai da PROXIMIDADE, e nao de uma cor nova:
-            // descricao e metadados sao os dois `suave` em 13px, e inventar um
-            // tom intermediario para separa-los mexeria numa paleta que e
-            // documentada e ja foi julgada renderizada.
-            if (descricao != null) ...[
-              const SizedBox(height: 6),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                descricao,
+                nomeBonito(language),
+                style: const TextStyle(
+                  color: Paleta.texto,
+                  fontFamily: fonteMono,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              // A descricao cola no nome, e os numeros ficam agrupados com a
+              // barra. A hierarquia sai da PROXIMIDADE, e nao de uma cor nova:
+              // descricao e metadados sao os dois `suave` em 13px, e inventar um
+              // tom intermediario para separa-los mexeria numa paleta que e
+              // documentada e ja foi julgada renderizada.
+              if (descricao != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  descricao,
+                  style: const TextStyle(
+                    color: Paleta.suave,
+                    fontFamily: fonteMono,
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+              SizedBox(height: descricao == null ? 4 : 12),
+              Text(
+                '${level.rotulo.toLowerCase()} · ${licoes.length} '
+                '${licoes.length == 1 ? "lição" : "lições"} · '
+                '$respondidas de $total questões',
                 style: const TextStyle(
                   color: Paleta.suave,
                   fontFamily: fonteMono,
                   fontSize: 13,
-                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: total == 0 ? 0 : respondidas / total,
+                  minHeight: 8,
+                  backgroundColor: Paleta.trilho,
+                  valueColor: AlwaysStoppedAnimation(
+                    cor == Paleta.linha ? Paleta.suave : cor,
+                  ),
                 ),
               ),
             ],
-            SizedBox(height: descricao == null ? 4 : 12),
-            Text(
-              '${level.rotulo.toLowerCase()} · ${licoes.length} '
-              '${licoes.length == 1 ? "lição" : "lições"} · '
-              '$respondidas de $total questões',
-              style: const TextStyle(
-                color: Paleta.suave,
-                fontFamily: fonteMono,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: total == 0 ? 0 : respondidas / total,
-                minHeight: 8,
-                backgroundColor: Paleta.trilho,
-                valueColor: AlwaysStoppedAnimation(
-                  cor == Paleta.linha ? Paleta.suave : cor,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

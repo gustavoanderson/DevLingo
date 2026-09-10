@@ -10,6 +10,7 @@ import 'package:devlingo/ui/tela_exercicio.dart';
 import 'package:devlingo/ui/tela_linguagens.dart';
 import 'package:devlingo/ui/tela_trilha.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Lesson licao({
@@ -694,6 +695,86 @@ void main() {
         reason: 'sem um nome que comprovadamente encolhe mais, a medida acima '
             'passaria mesmo se a escala nunca fosse aplicada',
       );
+    });
+  });
+
+  group('acessibilidade do cabecalho', () {
+    // Nasceu de uma medicao com Appium, e nao de uma revisao de codigo.
+    //
+    // O dump do UiAutomator no Xiaomi mostrou os QUATRO controles do topo como
+    // `android.view.View` clicaveis e ANONIMOS -- sem `content-desc`, sem
+    // `resource-id`, distinguiveis so pela posicao na tela:
+    //
+    //   x=  52- 124  y=207-279  (SEM DESCRICAO)   <- voltar
+    //   x= 890- 968  y=204-282  (SEM DESCRICAO)   <- estatisticas
+    //   x=1020-1098  y=204-282  (SEM DESCRICAO)   <- cenario
+    //   x=1150-1228  y=204-282  (SEM DESCRICAO)   <- som
+    //
+    // Nenhum teste de widget pegava isso: as `Key` do Flutter existiam e
+    // funcionavam, e elas param na fronteira do Dart. O defeito era de quem
+    // usa leitor de tela, e so a arvore de acessibilidade o revelava.
+    Future<SemanticsNode> semanticaDe(WidgetTester tester, Key chave) async {
+      await montar(
+        tester,
+        TelaTrilha(
+          banco: bancoDuasLinguagens,
+          language: 'python',
+          level: Level.beginner,
+          podeVoltar: true,
+          progresso: ProgressoFalso(),
+        ),
+      );
+      return tester.getSemantics(find.byKey(chave));
+    }
+
+    testWidgets('os quatro controles do topo tem rotulo e identificador', (
+      tester,
+    ) async {
+      // Dispensado no fim do CORPO, e nao por `addTearDown`: a verificacao de
+      // "handle vazado" do flutter_test roda antes dos tearDowns, entao o
+      // teste reprovava por causa do proprio teste -- nao do app.
+      final handle = tester.ensureSemantics();
+
+      for (final (chave, rotulo, identificador) in <(Key, String, String)>[
+        (TelaTrilha.chaveVoltar, 'Voltar', TelaTrilha.idVoltar),
+        (
+          TelaTrilha.chaveEstatisticas,
+          'Estatísticas',
+          TelaTrilha.idEstatisticas,
+        ),
+        (TelaTrilha.chaveCenario, 'Cenário animado', TelaTrilha.idCenario),
+        (TelaTrilha.chaveSom, 'Som', TelaTrilha.idSom),
+      ]) {
+        final no = await semanticaDe(tester, chave);
+
+        expect(
+          no.label,
+          rotulo,
+          reason: 'sem rotulo, o leitor de tela anuncia so "botao"',
+        );
+        expect(
+          no.identifier,
+          identificador,
+          reason: 'sem identificador, o Appium so alcanca este botao por '
+              'coordenada -- o seletor mais fragil que existe',
+        );
+      }
+
+      handle.dispose();
+    });
+
+    // O identificador e o que o Appium enxerga; a Key e o que o teste de
+    // widget usa. Sao a mesma string de proposito, declarada uma vez -- sem
+    // isso as duas divergem e cada suite aponta para um nome diferente do
+    // mesmo botao.
+    test('a Key e o identificador sao o mesmo nome', () {
+      expect(TelaTrilha.chaveSom, const Key(TelaTrilha.idSom));
+      expect(TelaTrilha.chaveCenario, const Key(TelaTrilha.idCenario));
+      expect(
+        TelaTrilha.chaveEstatisticas,
+        const Key(TelaTrilha.idEstatisticas),
+      );
+      expect(TelaTrilha.chaveVoltar, const Key(TelaTrilha.idVoltar));
     });
   });
 

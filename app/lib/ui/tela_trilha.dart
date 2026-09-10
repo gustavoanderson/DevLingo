@@ -58,9 +58,25 @@ class TelaTrilha extends StatefulWidget {
   final ValueNotifier<int>? chegouDaNuvem;
 
   static const Key chaveSombra = Key('sombra-da-trilha');
-  static const Key chaveSom = Key('trilha-som');
-  static const Key chaveCenario = Key('trilha-cenario');
-  static const Key chaveEstatisticas = Key('trilha-estatisticas');
+
+  /// Um nome so, servindo a dois consumidores.
+  ///
+  /// A `Key` do Flutter e como o teste de widget acha o botao, e ela **para na
+  /// fronteira do Dart**: o Appium nao a enxerga. Quem atravessa e o
+  /// `identifier` do `Semantics`, que o Android publica como `resource-id`.
+  ///
+  /// Declarar a string uma vez e usa-la nos dois evita o defeito obvio -- as
+  /// duas divergirem e cada suite apontar para um nome diferente do mesmo
+  /// botao.
+  static const String idVoltar = 'trilha-voltar';
+  static const String idSom = 'trilha-som';
+  static const String idCenario = 'trilha-cenario';
+  static const String idEstatisticas = 'trilha-estatisticas';
+
+  static const Key chaveVoltar = Key(idVoltar);
+  static const Key chaveSom = Key(idSom);
+  static const Key chaveCenario = Key(idCenario);
+  static const Key chaveEstatisticas = Key(idEstatisticas);
 
   @override
   State<TelaTrilha> createState() => _TelaTrilhaState();
@@ -82,7 +98,8 @@ class _TelaTrilhaState extends State<TelaTrilha>
   /// de configurações que ainda não existe seria escondê-la de quem precisa.
   bool _cenario = true;
 
-  List<Lesson> get _licoes => widget.banco.trilha(widget.language, widget.level);
+  List<Lesson> get _licoes =>
+      widget.banco.trilha(widget.language, widget.level);
 
   @override
   void initState() {
@@ -189,8 +206,9 @@ class _TelaTrilhaState extends State<TelaTrilha>
               aoAlternarSom: _alternarSom,
               cenarioLigado: _cenario,
               aoAlternarCenario: _alternarCenario,
-              aoVerEstatisticas:
-                  widget.progresso == null ? null : _verEstatisticas,
+              aoVerEstatisticas: widget.progresso == null
+                  ? null
+                  : _verEstatisticas,
             ),
             Expanded(
               child: comSombraDeRecorte(
@@ -240,11 +258,10 @@ class _Cabecalho extends StatelessWidget {
   final VoidCallback aoAlternarSom;
   final bool cenarioLigado;
   final VoidCallback aoAlternarCenario;
+
   /// Nulo quando não há repositório de progresso: aí o ícone some.
   final VoidCallback? aoVerEstatisticas;
   final VoidCallback? aoVoltar;
-
-  static const Key chaveVoltar = Key('trilha-voltar');
 
   @override
   Widget build(BuildContext context) {
@@ -256,14 +273,27 @@ class _Cabecalho extends StatelessWidget {
           Row(
             children: [
               if (aoVoltar != null) ...[
-                GestureDetector(
-                  key: chaveVoltar,
-                  behavior: HitTestBehavior.opaque,
-                  onTap: aoVoltar,
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Paleta.suave,
-                    size: 22,
+                // `Icon` sozinho nao produz rotulo nenhum, e o resultado
+                // aparecia no dump do UiAutomator como um `View` clicavel e
+                // ANONIMO. Quem usa leitor de tela ouvia so "botao", sem saber
+                // se ia sair da trilha ou desligar o som.
+                //
+                // `label` e para a pessoa; `identifier` e para o teste, e vira
+                // `resource-id` no Android. Separados de proposito: trocar o
+                // texto que se ouve nao pode quebrar a automacao.
+                Semantics(
+                  label: 'Voltar',
+                  identifier: TelaTrilha.idVoltar,
+                  button: true,
+                  child: GestureDetector(
+                    key: TelaTrilha.chaveVoltar,
+                    behavior: HitTestBehavior.opaque,
+                    onTap: aoVoltar,
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Paleta.suave,
+                      size: 22,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -310,14 +340,19 @@ class _Cabecalho extends StatelessWidget {
               // tela em vez de mudar algo aqui. Fica separada das duas chaves
               // por isso, e vem antes delas porque e a acao, nao o ajuste.
               if (aoVerEstatisticas != null) ...[
-                GestureDetector(
-                  key: TelaTrilha.chaveEstatisticas,
-                  behavior: HitTestBehavior.opaque,
-                  onTap: aoVerEstatisticas,
-                  child: const Icon(
-                    Icons.insights_outlined,
-                    color: Paleta.suave,
-                    size: 24,
+                Semantics(
+                  label: 'Estatísticas',
+                  identifier: TelaTrilha.idEstatisticas,
+                  button: true,
+                  child: GestureDetector(
+                    key: TelaTrilha.chaveEstatisticas,
+                    behavior: HitTestBehavior.opaque,
+                    onTap: aoVerEstatisticas,
+                    child: const Icon(
+                      Icons.insights_outlined,
+                      color: Paleta.suave,
+                      size: 24,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -325,27 +360,47 @@ class _Cabecalho extends StatelessWidget {
               // Nao ha tela de configuracoes ainda. Sao duas chaves, e as duas
               // respondem a mesma pergunta de quem joga: quanto de estimulo eu
               // quero. Quando surgir a terceira, as tres migram para uma tela.
-              GestureDetector(
-                key: TelaTrilha.chaveCenario,
-                behavior: HitTestBehavior.opaque,
-                onTap: aoAlternarCenario,
-                child: Icon(
-                  cenarioLigado
-                      ? Icons.landscape_outlined
-                      : Icons.landscape_rounded,
-                  color: cenarioLigado ? Paleta.destaque : Paleta.suave,
-                  size: 24,
+              // Nas duas chaves o estado vai em `toggled`, e nao no rotulo.
+              //
+              // A tentacao era escrever "Desativar cenario" quando ligado, mas
+              // isso obriga o leitor de tela a anunciar a ACAO no lugar do
+              // NOME, e a pessoa deixa de saber o que aquele botao e. Com
+              // `toggled`, o Android anuncia nome e estado separados -- e o
+              // rotulo para de mudar, que e uma coisa a menos para o teste
+              // perseguir.
+              Semantics(
+                label: 'Cenário animado',
+                identifier: TelaTrilha.idCenario,
+                toggled: cenarioLigado,
+                child: GestureDetector(
+                  key: TelaTrilha.chaveCenario,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: aoAlternarCenario,
+                  child: Icon(
+                    cenarioLigado
+                        ? Icons.landscape_outlined
+                        : Icons.landscape_rounded,
+                    color: cenarioLigado ? Paleta.destaque : Paleta.suave,
+                    size: 24,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
-              GestureDetector(
-                key: TelaTrilha.chaveSom,
-                behavior: HitTestBehavior.opaque,
-                onTap: aoAlternarSom,
-                child: Icon(
-                  somLigado ? Icons.volume_up_outlined : Icons.volume_off_outlined,
-                  color: somLigado ? Paleta.destaque : Paleta.suave,
-                  size: 24,
+              Semantics(
+                label: 'Som',
+                identifier: TelaTrilha.idSom,
+                toggled: somLigado,
+                child: GestureDetector(
+                  key: TelaTrilha.chaveSom,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: aoAlternarSom,
+                  child: Icon(
+                    somLigado
+                        ? Icons.volume_up_outlined
+                        : Icons.volume_off_outlined,
+                    color: somLigado ? Paleta.destaque : Paleta.suave,
+                    size: 24,
+                  ),
                 ),
               ),
             ],
@@ -400,63 +455,75 @@ class _CartaoDaLicao extends StatelessWidget {
         ? Paleta.destaque
         : Paleta.linha;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: aoTocar,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: Paleta.superficie,
-          border: Border(left: BorderSide(color: cor, width: 3)),
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(Escala.raio),
-            bottomRight: Radius.circular(Escala.raio),
+    // O identificador do cartao e o `lessonId`, e essa escolha nao e por
+    // conveniencia: o `id` da licao **e imutavel por regra do banco**, porque o
+    // progresso do usuario aponta para ele. O seletor do teste herda de graca
+    // uma garantia que ja existia.
+    //
+    // O `content-desc` nao serviria: ele termina com o progresso ("0 de 10"),
+    // que muda assim que alguem joga a licao. Um teste preso a ele passaria
+    // hoje e falharia amanha, relatando "elemento nao encontrado" -- escondendo
+    // que a causa foi o proprio teste anterior.
+    return Semantics(
+      identifier: 'licao-${licao.lessonId}',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: aoTocar,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: Paleta.superficie,
+            border: Border(left: BorderSide(color: cor, width: 3)),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(Escala.raio),
+              bottomRight: Radius.circular(Escala.raio),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              '${licao.numero}'.padLeft(2, '0'),
-              style: TextStyle(
-                color: cor == Paleta.linha ? Paleta.suave : cor,
-                fontFamily: fonteMono,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
+          child: Row(
+            children: [
+              Text(
+                '${licao.numero}'.padLeft(2, '0'),
+                style: TextStyle(
+                  color: cor == Paleta.linha ? Paleta.suave : cor,
+                  fontFamily: fonteMono,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    licao.lessonTitle,
-                    style: const TextStyle(
-                      color: Paleta.texto,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      height: 1.3,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      licao.lessonTitle,
+                      style: const TextStyle(
+                        color: Paleta.texto,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    concluida ? 'concluída' : '$respondidas de $total',
-                    style: TextStyle(
-                      color: concluida ? Paleta.certo : Paleta.suave,
-                      fontFamily: fonteMono,
-                      fontSize: 13,
+                    const SizedBox(height: 5),
+                    Text(
+                      concluida ? 'concluída' : '$respondidas de $total',
+                      style: TextStyle(
+                        color: concluida ? Paleta.certo : Paleta.suave,
+                        fontFamily: fonteMono,
+                        fontSize: 13,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (licao.aula != null)
-              const Icon(
-                Icons.menu_book_outlined,
-                color: Paleta.suave,
-                size: 18,
-              ),
-          ],
+              if (licao.aula != null)
+                const Icon(
+                  Icons.menu_book_outlined,
+                  color: Paleta.suave,
+                  size: 18,
+                ),
+            ],
+          ),
         ),
       ),
     );

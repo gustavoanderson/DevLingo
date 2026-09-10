@@ -13,7 +13,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-offline--first-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 
 [![CI](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml/badge.svg)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
-[![Testes](https://img.shields.io/badge/testes-343%20passando-39FF14?style=flat-square)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
+[![Testes](https://img.shields.io/badge/testes-345%20passando-39FF14?style=flat-square)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
 [![Questões](https://img.shields.io/badge/questões-254-FFE14D?style=flat-square)](#as-trilhas)
 [![Trilhas](https://img.shields.io/badge/trilhas-5-FF2D95?style=flat-square)](#as-trilhas)
 
@@ -104,7 +104,7 @@ E os achados mais valiosos vieram de alguém **jogando**: uma questão que marca
 
 O projeto é também portfólio de alguém em transição de carreira para engenharia de qualidade de software. Então a qualidade não é um capítulo à parte — é o método.
 
-**343 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
+**345 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
 
 **Um validador de conteúdo com regras que só existem porque algo passou.** Ele reprova gabarito concentrado numa letra, alternativa que repete texto, dica que entrega a resposta, aula fora de sincronia com as questões, marcador de formatação desbalanceado, e duas questões que cobram a mesma resposta com outra roupagem.
 
