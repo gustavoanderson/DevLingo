@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 1,
+  "language": "java",
+  "level": "beginner",
+  "lessonId": "java-beg-01",
+  "lessonTitle": "A classe, o main e a primeira saída",
+  "aula": {
+    "titulo": "Por que Java pede tanta cerimônia",
+    "secoes": [
+      {
+        "topico": "classe",
+        "titulo": "Todo código mora dentro de uma classe",
+        "texto": "Em Python você escreve uma linha e ela roda. Em Java, **não existe código solto**: tudo precisa estar dentro de uma `class`.\n\nA classe é o embrulho. Ela tem um nome, e esse nome **precisa ser igual ao do arquivo** — uma `class Programa` mora em `Programa.java`. Não é convenção: o compilador exige.\n\nIsso parece burocracia gratuita quando o programa tem três linhas, e é. A troca fica clara quando o programa tem trinta mil: a estrutura que incomoda no começo é a mesma que faz um sistema grande continuar navegável anos depois.\n\nEssa é a personalidade de Java em uma frase — **ela prefere ser explícita a ser curta**. Você vai reencontrar essa escolha em cada lição desta trilha.",
+        "code": {
+          "language": "java",
+          "content": "// arquivo: Programa.java\npublic class Programa {\n\n}"
+        }
+      },
+      {
+        "topico": "main",
+        "titulo": "Onde o programa começa",
+        "texto": "Ter uma classe não basta: alguém precisa dizer **por onde começar**. Esse ponto é o método `main`, e a linha que o declara é sempre a mesma.\n\nEla é longa, e cada pedaço tem função:\n\n- `public` — pode ser chamado de fora. A máquina virtual precisa alcançá-lo\n- `static` — pertence à classe, não a um objeto. Roda **sem** que nada tenha sido criado antes\n- `void` — não devolve valor nenhum\n- `String[] args` — os argumentos passados na linha de comando\n\nNo começo, decore. Cada uma dessas palavras vira óbvia mais adiante, e tentar entender as quatro antes de escrever a primeira linha é uma boa forma de desistir de Java.\n\nO que importa agora: **é aqui que a execução começa.**",
+        "code": {
+          "language": "java",
+          "content": "public class Programa {\n  public static void main(String[] args) {\n    // a execucao comeca aqui\n  }\n}"
+        }
+      },
+      {
+        "topico": "saida",
+        "titulo": "Exibir algo na tela",
+        "texto": "Para escrever na tela, Java usa `System.out.println`. Lendo de trás para frente: `println` imprime e pula linha; `out` é a saída padrão; `System` é a classe que dá acesso a ela.\n\nExiste também o `System.out.print`, sem o `ln`, que imprime e fica na mesma linha.\n\nTexto vai entre **aspas duplas**. Em Java isso não é escolha de estilo: aspas simples são para **um caractere só**, e usar aspas simples num texto é erro de compilação, não detalhe.\n\nE toda instrução termina com **ponto e vírgula**. A quebra de linha não encerra nada — quem encerra é o `;`.",
+        "code": {
+          "language": "java",
+          "content": "public class Programa {\n  public static void main(String[] args) {\n    System.out.println(\"Oi, mundo!\");\n    System.out.print(\"sem pular\");\n    System.out.println(\" linha\");\n  }\n}"
+        }
+      },
+      {
+        "topico": "compilacao",
+        "titulo": "Java compila antes de rodar",
+        "texto": "Python e JavaScript leem o seu código e executam. Java tem **um passo a mais**: primeiro compila, depois roda.\n\nO `javac` transforma o `.java` em um `.class`, escrito em *bytecode* — uma linguagem intermediária que nenhum processador entende diretamente. Quem executa esse bytecode é a **JVM**, a máquina virtual de Java.\n\nParece volta desnecessária, e é o que dá a Java a propriedade que a tornou famosa: o mesmo `.class` roda em qualquer sistema que tenha uma JVM. Windows, Linux, o servidor do banco.\n\nE tem uma consequência prática que você sente todo dia: **erro de digitação e de tipo aparecem na compilação, antes de o programa rodar**. Em Python, um nome escrito errado só explode quando a linha é alcançada — às vezes em produção, semanas depois.",
+        "code": {
+          "language": "text",
+          "content": "Programa.java  --javac-->  Programa.class  --JVM-->  roda\n   (voce)                    (bytecode)"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "java-beg-0101",
+      "topic": "classe",
+      "prompt": "Em Java, onde precisa estar todo o código que você escreve?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Em qualquer lugar do arquivo, como em Python",
+          "correct": false,
+          "why": "Código solto no arquivo não compila em Java. A linguagem exige o embrulho."
+        },
+        {
+          "id": "b",
+          "text": "Dentro de uma `class`, cujo nome combina com o do arquivo",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Dentro de uma função chamada `programa`",
+          "correct": false,
+          "why": "Não existe essa exigência. O que precisa existir é a classe, e dentro dela o ponto de partida."
+        },
+        {
+          "id": "d",
+          "text": "Num arquivo de configuração separado do código",
+          "correct": false,
+          "why": "Configuração é outro assunto. O código em si mora no arquivo `.java`."
+        },
+        {
+          "id": "e",
+          "text": "Depois da primeira linha em branco do arquivo",
+          "correct": false,
+          "why": "Linha em branco não delimita nada em Java. Quem delimita são as chaves."
+        }
+      ],
+      "hint": "Java não aceita código solto. Pense no que precisa envolver tudo, e que dá nome ao arquivo.",
+      "explanation": "O nome da classe pública **precisa** ser igual ao do arquivo: `class Programa` mora em `Programa.java`. Não é convenção de estilo, é exigência do compilador — e é a primeira aparição de uma característica que se repete na trilha inteira: **Java prefere ser explícita a ser curta.**"
+    },
+    {
+      "id": "java-beg-0102",
+      "topic": "main",
+      "prompt": "Qual é o papel do método `main` num programa Java?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Guardar as configurações que o programa vai usar",
+          "correct": false,
+          "why": "Ele não guarda nada por si. É o ponto onde a execução começa."
+        },
+        {
+          "id": "b",
+          "text": "Definir o nome do arquivo",
+          "correct": false,
+          "why": "Quem combina com o nome do arquivo é a classe, e não o método."
+        },
+        {
+          "id": "c",
+          "text": "É por onde a execução do programa começa",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "É chamado automaticamente a cada linha executada",
+          "correct": false,
+          "why": "Ele é chamado uma vez, no começo. Nada o chama de novo sozinho."
+        },
+        {
+          "id": "e",
+          "text": "Serve para importar as bibliotecas necessárias",
+          "correct": false,
+          "why": "Importar é trabalho do `import`, que fica fora da classe, no alto do arquivo."
+        }
+      ],
+      "hint": "O nome vem de *principal*. Pense no que a máquina virtual procura quando manda o programa rodar.",
+      "explanation": "A máquina virtual procura exatamente esse método para começar. É por isso que ele é `public` — precisa ser alcançável de fora — e `static` — precisa rodar **sem que nenhum objeto tenha sido criado antes**. Nesse instante o programa ainda não criou nada; se o `main` dependesse de um objeto, não haveria quem o criasse."
+    },
+    {
+      "id": "java-beg-0103",
+      "topic": "saida",
+      "prompt": "Complete a linha para que ela exiba `Oi, mundo!` na tela e pule para a linha seguinte.",
+      "code": {
+        "language": "java",
+        "content": "public class Programa {\n  public static void main(String[] args) {\n    ______(\"Oi, mundo!\");\n  }\n}",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "System.out.println"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São três partes separadas por ponto: a classe do sistema, a saída padrão, e o verbo imprimir com duas letras a mais no fim.",
+      "explanation": "Lendo de trás para frente: `println` imprime e pula linha, `out` é a saída padrão, `System` é a classe que dá acesso a ela. Sem o `ln` no fim, o texto seguinte continuaria na mesma linha.\n\nRepare que a caixa importa: `system.out.println` não compila. Java diferencia maiúscula de minúscula em tudo."
+    },
+    {
+      "id": "java-beg-0104",
+      "topic": "saida",
+      "prompt": "O que acontece se você trocar as aspas duplas por aspas simples num texto em Java?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Funciona igual: as duas formas são equivalentes",
+          "correct": false,
+          "why": "São equivalentes em Python e JavaScript, e é daí que vem a confusão. Em Java, não."
+        },
+        {
+          "id": "b",
+          "text": "O texto aparece sem as aspas, mas com um aviso",
+          "correct": false,
+          "why": "Não há aviso: o programa nem chega a rodar."
+        },
+        {
+          "id": "c",
+          "text": "O programa nem compila, porque aspas simples são para um caractere só",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O texto é exibido em maiúsculas",
+          "correct": false,
+          "why": "Aspas não mexem na caixa do texto em linguagem nenhuma."
+        },
+        {
+          "id": "e",
+          "text": "Compila, mas o texto sai vazio",
+          "correct": false,
+          "why": "Não chega a compilar. O erro aparece antes de existir programa para rodar."
+        }
+      ],
+      "hint": "Em Java as duas aspas guardam coisas de tamanho diferente. Uma delas cabe uma letra só.",
+      "explanation": "Aspas duplas fazem uma `String`; aspas simples fazem um `char`, que é **um** caractere. `'Oi'` não é texto curto, é erro de compilação.\n\nEssa distinção não existe em Python nem em JavaScript, e é uma das primeiras pedras no caminho de quem chega de lá. Ela é consequência da mesma característica de sempre: em Java, o tipo de cada coisa é declarado e conferido."
+    },
+    {
+      "id": "java-beg-0105",
+      "topic": "saida",
+      "prompt": "O que este programa exibe na tela?",
+      "code": {
+        "language": "java",
+        "content": "public class Programa {\n  public static void main(String[] args) {\n    System.out.print(\"Dev\");\n    System.out.print(\"Lingo\");\n  }\n}"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`Dev` numa linha e `Lingo` na linha seguinte",
+          "correct": false,
+          "why": "Quem pula linha é o `println`. Este código usa o outro."
+        },
+        {
+          "id": "b",
+          "text": "`DevLingo`, tudo na mesma linha",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "`Dev Lingo`, com um espaço entre as palavras",
+          "correct": false,
+          "why": "Nenhuma das duas chamadas tem espaço. Java imprime exatamente o que está entre aspas."
+        },
+        {
+          "id": "d",
+          "text": "Apenas `Lingo`, porque a segunda chamada substitui a primeira",
+          "correct": false,
+          "why": "Uma chamada não apaga a anterior: cada uma acrescenta à saída."
+        },
+        {
+          "id": "e",
+          "text": "Nada, porque falta o `ln` no fim",
+          "correct": false,
+          "why": "O `print` imprime normalmente. O `ln` só decide se pula linha depois."
+        }
+      ],
+      "hint": "Repare que as duas chamadas são `print`, e não `println`. O que muda entre os dois?",
+      "explanation": "`print` imprime e fica onde está; `println` imprime e pula linha. Como as duas chamadas são `print`, o texto sai emendado: `DevLingo`.\n\nÉ um detalhe pequeno com consequência visível, e vale conhecer os dois: montar uma linha em pedaços é exatamente o que o `print` sem `ln` serve para fazer."
+    },
+    {
+      "id": "java-beg-0106",
+      "topic": "saida",
+      "prompt": "Escreva o caractere que termina toda instrução em Java. Só o símbolo.",
+      "answerType": "freeWrite",
+      "accepted": [
+        ";"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Em Java a quebra de linha não encerra nada. Quem encerra é um sinal de pontuação com um ponto e uma vírgula.",
+      "explanation": "O ponto e vírgula é o que encerra a instrução — a quebra de linha é apenas espaço em branco para o compilador. Por isso um comando pode ocupar várias linhas sem problema nenhum, e por isso esquecer o `;` é o erro mais comum de quem chega de Python.\n\nA boa notícia é que ele aparece na **compilação**, com o número da linha. Você descobre antes de rodar."
+    },
+    {
+      "id": "java-beg-0107",
+      "topic": "compilacao",
+      "prompt": "Qual é a diferença entre como Java roda e como Python roda?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Java é compilado para bytecode antes de rodar; Python é lido e executado direto",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Java roda no navegador e Python no servidor",
+          "correct": false,
+          "why": "Os dois rodam em servidor e em máquina local. Onde o código roda não é o que os separa aqui."
+        },
+        {
+          "id": "c",
+          "text": "Java precisa de internet para executar e Python não",
+          "correct": false,
+          "why": "Nenhum dos dois precisa de rede para rodar um programa local."
+        },
+        {
+          "id": "d",
+          "text": "Java só roda em Windows; Python roda em qualquer sistema",
+          "correct": false,
+          "why": "É quase o contrário do argumento histórico de Java, que nasceu prometendo rodar em qualquer sistema com uma máquina virtual."
+        },
+        {
+          "id": "e",
+          "text": "Não há diferença: os dois funcionam do mesmo jeito",
+          "correct": false,
+          "why": "Há um passo a mais em Java, e ele muda quando os erros aparecem."
+        }
+      ],
+      "hint": "Pense no passo extra que existe em Java e não existe em Python, e no arquivo que esse passo produz.",
+      "explanation": "O `javac` transforma o `.java` em `.class`, escrito em **bytecode**, e a JVM executa esse bytecode. A volta parece desnecessária e é o que dá a Java a portabilidade que a tornou famosa: o mesmo `.class` roda em qualquer sistema com uma máquina virtual.\n\nE tem consequência diária: **erro de digitação e de tipo aparecem na compilação**, antes de o programa rodar. Em Python o mesmo erro só explode quando a linha é alcançada — às vezes em produção."
+    },
+    {
+      "id": "java-beg-0108",
+      "topic": "compilacao",
+      "prompt": "Você escreveu `Systen.out.println(\"oi\");`, com `n` no lugar do `m`. Quando esse erro aparece?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Só quando aquela linha for executada, durante o uso do programa",
+          "correct": false,
+          "why": "Isso descreve uma linguagem interpretada. Em Java o nome é conferido antes."
+        },
+        {
+          "id": "b",
+          "text": "Nunca: Java corrige nomes parecidos automaticamente",
+          "correct": false,
+          "why": "Nenhuma linguagem adivinha o que você quis escrever. Seria perigoso se adivinhasse."
+        },
+        {
+          "id": "c",
+          "text": "Apenas se alguém tiver escrito um teste para aquela linha",
+          "correct": false,
+          "why": "Teste ajuda a pegar erro de comportamento. Nome inexistente o compilador pega sozinho."
+        },
+        {
+          "id": "d",
+          "text": "Ao fechar o programa, no relatório final",
+          "correct": false,
+          "why": "Não existe relatório final. O erro aparece bem antes disso."
+        },
+        {
+          "id": "e",
+          "text": "Na compilação, antes de o programa chegar a rodar",
+          "correct": true
+        }
+      ],
+      "hint": "Java tem um passo antes da execução. Pergunte-se o que esse passo consegue conferir.",
+      "explanation": "O compilador procura `Systen` e não encontra: `cannot find symbol`. O programa nem chega a existir.\n\nEsse é o argumento central da tipagem estática, e ele vale especialmente para quem trabalha com qualidade: **uma categoria inteira de defeito deixa de chegar ao usuário**. O limite é igualmente importante — o compilador confere se o nome existe e se os tipos combinam, e **não** confere se a conta está certa. Um desconto somado em vez de subtraído compila perfeitamente."
+    },
+    {
+      "id": "java-beg-0109",
+      "topic": "main",
+      "prompt": "Complete a assinatura do método por onde a execução do programa começa.",
+      "code": {
+        "language": "java",
+        "content": "public class Programa {\n  public static void ______(String[] args) {\n    System.out.println(\"comecou\");\n  }\n}",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "main"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São quatro letras, em inglês, e querem dizer *principal*. A máquina virtual procura exatamente esse nome.",
+      "explanation": "A assinatura inteira é sempre a mesma, e a máquina virtual procura exatamente por ela. Trocar qualquer pedaço — o nome, o `static`, o tipo do parâmetro — faz o programa compilar e **não rodar**, com a mensagem de que não há ponto de entrada.\n\nÉ um dos poucos lugares em programação onde decorar é a atitude certa: o entendimento de cada palavra vem depois, e tentar entendê-las antes de escrever a primeira linha é uma boa forma de desistir de Java."
+    },
+    {
+      "id": "java-beg-0110",
+      "topic": "classe",
+      "prompt": "Uma classe pública chamada `Calculadora` precisa estar em qual arquivo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Em qualquer arquivo `.java` do projeto",
+          "correct": false,
+          "why": "O compilador é específico quanto a isso: o nome do arquivo precisa combinar com o da classe pública."
+        },
+        {
+          "id": "b",
+          "text": "Em `main.java`, junto com o ponto de entrada",
+          "correct": false,
+          "why": "O `main` pode estar em qualquer classe. Ele não dá nome a arquivo nenhum."
+        },
+        {
+          "id": "c",
+          "text": "Em `calculadora.java`, tudo em minúsculas",
+          "correct": false,
+          "why": "Java diferencia maiúscula de minúscula. O nome tem que ser idêntico, e não parecido."
+        },
+        {
+          "id": "d",
+          "text": "Em `Calculadora.java`",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Em `Programa.class`, gerado pelo compilador",
+          "correct": false,
+          "why": "O `.class` é a saída do compilador, e não onde se escreve código."
+        }
+      ],
+      "hint": "O nome precisa ser idêntico, incluindo a caixa das letras. Repare que uma das alternativas está quase certa.",
+      "explanation": "Idêntico, com a mesma caixa: `Calculadora.java`. Em sistemas que diferenciam maiúsculas — Linux, e o servidor onde o sistema vai rodar — `calculadora.java` simplesmente não compila.\n\nEssa exigência tem um efeito colateral bom: num projeto Java você sempre sabe em que arquivo procurar uma classe, sem precisar buscar. É a mesma troca de sempre — mais cerimônia na escrita, menos surpresa na leitura."
+    }
+  ]
+}

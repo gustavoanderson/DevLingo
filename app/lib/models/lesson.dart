@@ -44,6 +44,21 @@ const Map<String, String> nomeDaLinguagem = {
   /// pensada para 26. O nome longo vive na DESCRICAO, que aparece no cartao da
   /// escolha, onde nao ha tres icones disputando a linha.
   'frameworks': 'Frameworks',
+  /// Linguagem de tipos declarados, e a mais pedida nas vagas de QA que o
+  /// Gustavo acompanha -- banco e seguradora, sobretudo.
+  ///
+  /// Quatro caracteres. Cabe folgado no cabecalho da trilha.
+  'java': 'Java',
+
+  /// Automacao de teste web em Java. Quarto curso que nao ensina linguagem.
+  ///
+  /// O nome de tela e so "Selenium", e nao "Selenium com Java": sao 8
+  /// caracteres contra 17, e o cabecalho da trilha ja aperta em 21 (medido:
+  /// "Qualidade de Software" encolhe para 0,548 da escala num aparelho de
+  /// 412dp). Quem carrega o "com Java" e a DESCRICAO do cartao, que vive na
+  /// tela de escolha e nao disputa espaco com tres icones.
+  'selenium': 'Selenium',
+
   'html': 'HTML',
   'css': 'CSS',
   'sql': 'SQL',
@@ -87,6 +102,9 @@ const Map<String, String> descricaoDaLinguagem = {
   'backend':
       'O lado do servidor: HTTP, APIs e REST, bancos de dados e autenticação',
   'qa': 'O ofício de testar: princípios, níveis, ciclo do bug e técnicas',
+  'java': 'A linguagem do mundo corporativo: tipos declarados, classes e arrays',
+  'selenium':
+      'Localizadores, esperas e Page Object — em Java, melhor depois dele',
 };
 
 String? descricaoDe(String chave) => descricaoDaLinguagem[chave];
@@ -114,12 +132,17 @@ const List<String> ordemDasTrilhas = [
   'python',
   'javascript',
   'frameworks',
+  // Java vem depois das duas primeiras linguagens, e ANTES do Selenium: aquele
+  // curso le codigo Java em toda questao, entao a ordem precisa refletir a
+  // dependencia -- mesma razao que poe Frameworks depois de JavaScript.
+  'java',
   'node',
   'html',
   'css',
   'backend',
   'sql',
   'qa',
+  'selenium',
   'csharp',
   'golang',
   'cpp',

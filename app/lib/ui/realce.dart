@@ -30,19 +30,39 @@ const Set<String> _palavrasJs = {
   'undefined', 'var', 'void', 'while', 'yield',
 };
 
+/// Palavras reservadas de Java.
+///
+/// A lista inclui os TIPOS PRIMITIVOS -- `int`, `double`, `boolean`, `char`,
+/// `long`, `float`, `short`, `byte` -- porque em Java eles sao palavras
+/// reservadas de verdade, e nao nomes de classe. Em Python e JavaScript o tipo
+/// nao aparece no codigo; aqui ele esta em quase toda linha, e deixa-lo sem
+/// cor tiraria o realce justamente do que distingue a linguagem.
+///
+/// `String` fica de FORA: ela e classe, e nao palavra reservada. Ela e pintada
+/// como identificador, que e o que ela e.
+const Set<String> _palavrasJava = {
+  'abstract', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class',
+  'continue', 'default', 'do', 'double', 'else', 'enum', 'extends', 'false',
+  'final', 'finally', 'float', 'for', 'if', 'implements', 'import', 'instanceof',
+  'int', 'interface', 'long', 'new', 'null', 'package', 'private', 'protected',
+  'public', 'return', 'short', 'static', 'super', 'switch', 'this', 'throw',
+  'throws', 'true', 'try', 'void', 'while',
+};
+
 /// Marcador de lacuna. Vira pastilha na tela, e nunca aparece cru.
 const String marcadorLacuna = '______';
 
 Set<String> _palavrasDe(String linguagem) => switch (linguagem) {
   'python' => _palavrasPython,
   'javascript' || 'node' => _palavrasJs,
+  'java' => _palavrasJava,
   _ => const {},
 };
 
 /// Como um comentário de uma linha começa, em cada linguagem.
 String? _inicioDeComentario(String linguagem) => switch (linguagem) {
   'python' || 'ruby' => '#',
-  'javascript' || 'node' || 'csharp' || 'golang' || 'cpp' => '//',
+  'javascript' || 'node' || 'java' || 'csharp' || 'golang' || 'cpp' => '//',
   'sql' => '--',
   _ => null,
 };

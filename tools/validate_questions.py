@@ -517,6 +517,57 @@ def check_marcadores(data, filename, report):
     A contagem e por PARIDADE, e nao por casamento posicional, porque o texto e
     corrido e nao tem estrutura: dois marcadores abrem e fecham, tres nao.
     """
+    def blocos(texto):
+        """Repete o que `_separarMarcacao` faz no Dart: varre da esquerda para a
+        direita e, ao achar um marcador, procura o PROXIMO igual.
+
+        Ler igual ao app e o ponto. Uma checagem que interprete a marcacao de
+        outro jeito aprova texto que o app renderiza errado, que e pior que nao
+        checar.
+        """
+        i = 0
+        while i < len(texto):
+            if texto.startswith("**", i):
+                fim = texto.find("**", i + 2)
+                if fim > i + 2:
+                    yield "**", texto[i + 2:fim]
+                    i = fim + 2
+                    continue
+            if texto[i] == "`":
+                fim = texto.find("`", i + 1)
+                if fim > i + 1:
+                    yield "`", texto[i + 1:fim]
+                    i = fim + 1
+                    continue
+            i += 1
+
+    def conferir_aninhamento(texto, onde):
+        """Marcador dentro de marcador.
+
+        O analisador do app NAO suporta aninhamento: ao abrir um `**`, ele
+        procura o proximo `**` e trata tudo no meio como conteudo -- entao uma
+        crase la dentro sobra CRUA na tela.
+
+        A checagem de paridade nao pega isso, e foi assim que passou: em
+        `**sem o `ln`**` os dois marcadores estao perfeitamente balanceados. O
+        defeito so apareceu no teste de invariante em Dart, que compara a
+        concatenacao dos trechos com o texto original -- e apareceu depois de
+        15 campos ja escritos assim.
+
+        Um bloco cercado por tres crases cai aqui tambem, e e o caso mais
+        grave: as tres crases sao lidas como um par mais uma solta.
+        """
+        for marcador, conteudo in blocos(texto):
+            outro = "`" if marcador == "**" else "**"
+            if outro in conteudo:
+                report.error(
+                    onde,
+                    f"marcacao ANINHADA: {marcador}...{outro}...{marcador}. O "
+                    f"analisador do app nao suporta isso, e o marcador de "
+                    f"dentro apareceria cru na tela. Trecho: "
+                    f"{marcador + conteudo[:40] + marcador!r}",
+                )
+
     def conferir(texto, onde):
         # Os asteriscos do negrito sao contados primeiro e removidos, senao
         # cada `**` entraria tambem na conta de asterisco solto.
@@ -540,11 +591,13 @@ def check_marcadores(data, filename, report):
         for campo in ("prompt", "hint", "explanation"):
             if isinstance(q.get(campo), str):
                 conferir(q[campo], f"{filename} -> {qid} -> {campo}")
+                conferir_aninhamento(q[campo], f"{filename} -> {qid} -> {campo}")
 
     aula = data.get("aula") or {}
     for i, secao in enumerate(aula.get("secoes", []), start=1):
         if isinstance(secao.get("texto"), str):
             conferir(secao["texto"], f"{filename} -> aula -> secao {i}")
+            conferir_aninhamento(secao["texto"], f"{filename} -> aula -> secao {i}")
 
 
 def check_question_rules(question, filename, report):

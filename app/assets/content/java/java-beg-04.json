@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "language": "java",
+  "level": "beginner",
+  "lessonId": "java-beg-04",
+  "lessonTitle": "Textos: medir, cortar e por que nada muda",
+  "aula": {
+    "titulo": "String é objeto, e isso explica tudo",
+    "secoes": [
+      {
+        "topico": "metodos",
+        "titulo": "Texto tem métodos, e você chama com ponto",
+        "texto": "Como `String` é **objeto**, e não primitivo, ela traz funções embutidas. Chama-se com ponto:\n\n- `length()` — quantos caracteres. Repare nos **parênteses**: em `String` é método, e é uma das confusões mais comuns\n- `toUpperCase()` e `toLowerCase()` — troca a caixa\n- `trim()` — remove espaço das pontas\n- `contains(\"x\")` — pergunta se contém\n- `substring(1, 4)` — recorta um pedaço\n- `charAt(0)` — devolve **um** caractere, que é `char` e não `String`\n\nOs nomes seguem uma convenção que se repete na linguagem inteira: **primeira palavra minúscula, as seguintes com maiúscula**. É o *camelCase*, e vale para todo método e variável que você escrever.",
+        "code": {
+          "language": "java",
+          "content": "String nome = \"  Ada Lovelace  \";\n\nSystem.out.println(nome.trim());          // \"Ada Lovelace\"\nSystem.out.println(nome.trim().length()); // 12\nSystem.out.println(nome.toUpperCase());   // \"  ADA LOVELACE  \""
+        }
+      },
+      {
+        "topico": "imutavel",
+        "titulo": "Nenhum método muda o texto original",
+        "texto": "Aqui está a segunda característica de `String` que produz defeito, e ela é irmã do `==` da lição passada.\n\n`String` é imutável. Nenhum método muda o texto: todos **devolvem um texto novo** e deixam o original intacto.\n\nEntão `nome.toUpperCase();` sozinho, numa linha, não faz nada — o resultado foi criado e jogado fora. Para aproveitar, é preciso **guardar**:\n\nEsse é um erro que não gera aviso nenhum: o código compila, roda, e o texto continua como estava. Quem procura o defeito olha para a linha do `toUpperCase` e a acha correta.\n\nO motivo de a linguagem ser assim é bom: texto imutável pode ser compartilhado entre partes do programa sem risco de alguém alterá-lo pelas costas — e é o que permite o reaproveitamento que explica o `==` funcionando às vezes.\n\nQuando é preciso montar texto em muitos pedaços, dentro de um laço, existe `StringBuilder`, que é mutável e feito para isso.",
+        "code": {
+          "language": "java",
+          "content": "String nome = \"ada\";\n\nnome.toUpperCase();          // resultado jogado fora\nSystem.out.println(nome);    // \"ada\" -- nada mudou\n\nnome = nome.toUpperCase();   // agora sim\nSystem.out.println(nome);    // \"ADA\""
+        }
+      },
+      {
+        "topico": "indice",
+        "titulo": "Contar a partir do zero",
+        "texto": "As posições de um texto começam em **zero**. Em `\"Ada\"`, o `A` está na posição 0, o `d` na 1 e o `a` na 2.\n\nO `substring` recebe **onde começar** e **onde parar**, e a segunda posição **não entra** no resultado. `\"DevLingo\".substring(0, 3)` devolve `\"Dev\"` — as posições 0, 1 e 2.\n\nParece arbitrário, e tem uma vantagem prática: a diferença entre os dois números **é** o tamanho do pedaço. `substring(0, 3)` traz três caracteres, sem contar nos dedos.\n\nCom um argumento só, `substring(3)` corta daquela posição até o fim.\n\nE pedir posição que não existe **quebra o programa** em tempo de execução, com `StringIndexOutOfBoundsException`. O compilador não pega: ele não sabe qual texto vai estar ali.",
+        "code": {
+          "language": "java",
+          "content": "String texto = \"DevLingo\";\n\nSystem.out.println(texto.substring(0, 3));  // \"Dev\"\nSystem.out.println(texto.substring(3));     // \"Lingo\"\nSystem.out.println(texto.charAt(0));        // 'D'\nSystem.out.println(texto.length());         // 8"
+        }
+      },
+      {
+        "topico": "concatenar",
+        "titulo": "Juntar textos",
+        "texto": "O `+` junta textos, e junta também texto com número — convertendo o número automaticamente:\n\nEssa conversão automática tem uma armadilha conhecida. Como o `+` é avaliado **da esquerda para a direita**, `\"total: \" + 1 + 2` produz `\"total: 12\"`, e não `\"total: 3\"`. Quando o primeiro `+` acontece, o `1` já virou texto, e o segundo `+` só emenda.\n\nPara somar antes, use parênteses: `\"total: \" + (1 + 2)`.\n\nDesde o Java 15 existe o **bloco de texto**, com três aspas, que preserva quebras de linha — útil para JSON e SQL dentro do código.",
+        "code": {
+          "language": "java",
+          "content": "String nome = \"Ada\";\nint idade = 36;\n\nSystem.out.println(nome + \" tem \" + idade);   // Ada tem 36\n\nSystem.out.println(\"total: \" + 1 + 2);        // total: 12\nSystem.out.println(\"total: \" + (1 + 2));      // total: 3"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "java-beg-0401",
+      "topic": "imutavel",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "String nome = \"ada\";\nnome.toUpperCase();\nSystem.out.println(nome);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`ADA`",
+          "correct": false,
+          "why": "Seria o caso se o método alterasse o texto original. Ele devolve um novo."
+        },
+        {
+          "id": "b",
+          "text": "`ada`",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "`Ada`, com só a primeira letra em maiúscula",
+          "correct": false,
+          "why": "Esse seria o efeito de outro método, e mesmo ele devolveria um texto novo."
+        },
+        {
+          "id": "d",
+          "text": "Não compila: falta guardar o resultado",
+          "correct": false,
+          "why": "Compila sem aviso nenhum, e é exatamente isso que torna o defeito difícil de achar."
+        },
+        {
+          "id": "e",
+          "text": "Nada: a chamada apaga o conteúdo da variável",
+          "correct": false,
+          "why": "Nenhum método de `String` apaga o original. Eles não mexem nele de forma nenhuma."
+        }
+      ],
+      "hint": "A linha do meio não guarda o resultado em lugar nenhum. Pergunte-se se ela chega a mudar alguma coisa.",
+      "explanation": "`String` é imutável. Nenhum método muda o texto: todos devolvem um texto novo. A linha `nome.toUpperCase();` criou `\"ADA\"` e **jogou fora**.\n\nO defeito é traiçoeiro porque não gera aviso: compila, roda, e o texto continua como estava. Quem investiga olha para a linha do `toUpperCase`, acha que ela está correta, e procura o problema em outro lugar.\n\nA correção é guardar: `nome = nome.toUpperCase();`."
+    },
+    {
+      "id": "java-beg-0402",
+      "topic": "indice",
+      "prompt": "O que `\"DevLingo\".substring(0, 3)` devolve?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`Dev`",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`ev`, começando na posição 1",
+          "correct": false,
+          "why": "A contagem começa em zero, então a posição 0 é o primeiro caractere."
+        },
+        {
+          "id": "c",
+          "text": "`DevL`, incluindo a posição 3",
+          "correct": false,
+          "why": "A segunda posição marca onde parar, e ela não entra no resultado."
+        },
+        {
+          "id": "d",
+          "text": "`Lingo`, o que sobra depois da posição 3",
+          "correct": false,
+          "why": "Esse seria o resultado de `substring(3)`, com um argumento só."
+        },
+        {
+          "id": "e",
+          "text": "`D`, apenas o caractere da posição 0",
+          "correct": false,
+          "why": "Um caractere só viria de `charAt(0)`, que devolve `char` e não `String`."
+        }
+      ],
+      "hint": "A contagem começa em zero, e a segunda posição diz onde **parar** — sem incluir.",
+      "explanation": "As posições 0, 1 e 2 — `D`, `e`, `v`. A segunda posição marca onde parar e **fica de fora**.\n\nParece arbitrário e tem uma vantagem: a diferença entre os dois números **é** o tamanho do pedaço. `substring(0, 3)` traz três caracteres, sem contar nos dedos.\n\nE cuidado com o limite: `substring(0, 20)` num texto de 8 caracteres **quebra o programa** em execução. O compilador não pega, porque ele não sabe qual texto vai estar ali."
+    },
+    {
+      "id": "java-beg-0403",
+      "topic": "metodos",
+      "prompt": "Complete o método que devolve quantos caracteres o texto tem.",
+      "code": {
+        "language": "java",
+        "content": "String nome = \"DevLingo\";\nSystem.out.println(nome.______());",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "length"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É a palavra inglesa para *comprimento*, toda em minúsculas — e repare que o código já traz os parênteses.",
+      "explanation": "Em `String` é **método**, com parênteses: `nome.length()`.\n\nGuarde isso, porque na próxima lição vai mudar: em **array**, o mesmo conceito é `length` **sem** parênteses, porque lá é um campo e não um método. `array.length()` não compila, e `texto.length` também não.\n\nÉ inconsistência real da linguagem, e uma das confusões mais comuns de quem está começando."
+    },
+    {
+      "id": "java-beg-0404",
+      "topic": "concatenar",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "System.out.println(\"total: \" + 1 + 2);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`total: 3`",
+          "correct": false,
+          "why": "Seria o caso se a soma acontecesse primeiro. A ordem de avaliação impede."
+        },
+        {
+          "id": "b",
+          "text": "`total: 1 2`, com espaço entre os números",
+          "correct": false,
+          "why": "Nenhum espaço é acrescentado: os valores são emendados exatamente como estão."
+        },
+        {
+          "id": "c",
+          "text": "Não compila: não se soma texto com número",
+          "correct": false,
+          "why": "O `+` aceita texto com número e converte o número automaticamente."
+        },
+        {
+          "id": "d",
+          "text": "`total: 12`",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "`3`, porque o texto é descartado",
+          "correct": false,
+          "why": "O texto nunca é descartado. Ele é a primeira parte do resultado."
+        }
+      ],
+      "hint": "O `+` é avaliado da esquerda para a direita. Pergunte-se o que já virou texto quando o segundo `+` acontece.",
+      "explanation": "Da esquerda para a direita: `\"total: \" + 1` produz `\"total: 1\"`, e o segundo `+` emenda o `2` nesse texto.\n\nQuando o primeiro `+` acontece, o `1` **já virou texto** — e somar texto com número é concatenar.\n\nA correção são parênteses: `\"total: \" + (1 + 2)` força a soma primeiro e imprime `total: 3`. É um defeito comum em mensagem de log e de erro, onde ninguém confere o número."
+    },
+    {
+      "id": "java-beg-0405",
+      "topic": "imutavel",
+      "prompt": "Por que `String` ser imutável é considerado uma vantagem, e não uma limitação?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque textos imutáveis ocupam menos memória em qualquer situação",
+          "correct": false,
+          "why": "Ao contrário: montar texto em pedaços cria muitos objetos, e é por isso que existe `StringBuilder`."
+        },
+        {
+          "id": "b",
+          "text": "Porque impede que o programa use acentos",
+          "correct": false,
+          "why": "Acento não tem relação nenhuma com mutabilidade."
+        },
+        {
+          "id": "c",
+          "text": "Porque acelera a leitura de arquivos",
+          "correct": false,
+          "why": "Leitura de arquivo é outro assunto, e não depende disso."
+        },
+        {
+          "id": "d",
+          "text": "Porque torna a comparação com `==` sempre correta",
+          "correct": false,
+          "why": "É quase o contrário: o reaproveitamento que a imutabilidade permite é o que faz o `==` acertar às vezes e enganar."
+        },
+        {
+          "id": "e",
+          "text": "Porque o texto pode ser compartilhado sem risco de alguém alterá-lo pelas costas",
+          "correct": true
+        }
+      ],
+      "hint": "Pense num texto passado para três partes do programa ao mesmo tempo. O que poderia dar errado se ele pudesse ser alterado?",
+      "explanation": "Se `String` pudesse mudar, passar um texto para outra parte do programa significaria torcer para que ela não o alterasse. Sendo imutável, **compartilhar é seguro** — e é isso que permite o reaproveitamento de textos escritos no código.\n\nRepare na ligação com a lição passada: esse mesmo reaproveitamento é o que faz `\"oi\" == \"oi\"` dar `true` e enganar tanta gente. **A vantagem e a armadilha têm a mesma causa.**\n\nO custo aparece ao montar texto em laço, onde cada volta cria um objeto novo. Para isso existe `StringBuilder`."
+    },
+    {
+      "id": "java-beg-0406",
+      "topic": "metodos",
+      "prompt": "Escreva o método que remove os espaços das **pontas** de um texto. Só o nome, sem parênteses.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "trim"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "São quatro letras, e a palavra em inglês quer dizer *aparar*, como se apara uma cerca viva.",
+      "explanation": "O `trim()` remove espaço do começo e do fim, e **não** mexe nos espaços do meio — `\"  Ada Lovelace  \".trim()` devolve `\"Ada Lovelace\"`, com o espaço interno intacto.\n\nEle é uma das primeiras linhas de qualquer validação de formulário: quem digita costuma deixar espaço sobrando, e `\"ada \"` não é igual a `\"ada\"` para nenhuma comparação.\n\nE, como todo método de `String`, ele **devolve** um texto novo. Chamar sem guardar não muda nada."
+    },
+    {
+      "id": "java-beg-0407",
+      "topic": "indice",
+      "prompt": "O que acontece ao executar `\"Ada\".charAt(5)`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Devolve um caractere vazio",
+          "correct": false,
+          "why": "Não existe caractere vazio em Java: um `char` sempre guarda algo."
+        },
+        {
+          "id": "b",
+          "text": "Devolve o último caractere, o mais próximo disponível",
+          "correct": false,
+          "why": "Java não aproxima nada. A posição pedida ou existe ou não existe."
+        },
+        {
+          "id": "c",
+          "text": "Não compila, porque `5` é maior que o texto",
+          "correct": false,
+          "why": "O compilador não sabe qual texto estará ali quando o programa rodar."
+        },
+        {
+          "id": "d",
+          "text": "O programa quebra em execução, com erro de posição inválida",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Devolve `null`",
+          "correct": false,
+          "why": "Um `char` é primitivo, e primitivo não pode ser nulo."
+        }
+      ],
+      "hint": "`\"Ada\"` tem posições 0, 1 e 2. Pergunte-se se o compilador tem como saber disso, e quando o problema aparece.",
+      "explanation": "`StringIndexOutOfBoundsException`, em tempo de **execução**.\n\nRepare no contraste com o que vimos na lição 02: o compilador pega tipo errado, e **não** pega posição inválida — ele não sabe qual texto vai estar ali. Aqui o texto está escrito no código, mas normalmente vem do usuário.\n\nEssa é exatamente a fronteira entre o que a tipagem estática protege e o que só teste protege. Vale para a sua carreira: **compilador cuida da forma, teste cuida do comportamento.**"
+    },
+    {
+      "id": "java-beg-0408",
+      "topic": "metodos",
+      "prompt": "Complete a chamada para que ela responda se o texto contém `\"Lingo\"`.",
+      "code": {
+        "language": "java",
+        "content": "String texto = \"DevLingo\";\nboolean tem = texto.______(\"Lingo\");",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "contains"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É a palavra inglesa para *contém*, na terceira pessoa — então termina com `s`.",
+      "explanation": "`contains` devolve `boolean`, e por isso o resultado cabe direto numa variável desse tipo ou numa condição de `if`.\n\nEle diferencia maiúscula de minúscula: `texto.contains(\"lingo\")` daria `false`. Quando isso não interessa, o caminho comum é comparar tudo em minúsculas com `toLowerCase()` antes.\n\nPara saber **onde** o trecho começa, existe `indexOf`, que devolve a posição — ou `-1` quando não encontra."
+    },
+    {
+      "id": "java-beg-0409",
+      "topic": "concatenar",
+      "prompt": "Você precisa montar um texto dentro de um laço que roda dez mil vezes. Qual é a escolha adequada?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Concatenar com `+` normalmente: o compilador otimiza tudo",
+          "correct": false,
+          "why": "Numa linha o compilador ajuda, mas dentro de laço cada volta cria um objeto novo."
+        },
+        {
+          "id": "b",
+          "text": "Guardar cada pedaço numa variável diferente",
+          "correct": false,
+          "why": "Dez mil variáveis não é solução, e nem seria possível declará-las."
+        },
+        {
+          "id": "c",
+          "text": "Usar `StringBuilder`, que é mutável e feito para isso",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Converter tudo para `char` antes de juntar",
+          "correct": false,
+          "why": "Isso só transferiria o problema, e ainda complicaria o código."
+        },
+        {
+          "id": "e",
+          "text": "Usar `substring` para ir acrescentando ao fim",
+          "correct": false,
+          "why": "`substring` recorta pedaços; ele não junta nada."
+        }
+      ],
+      "hint": "O problema nasce de `String` ser imutável. Procure a alternativa que oferece o contrário disso.",
+      "explanation": "Como `String` é imutável, `texto = texto + pedaco` dentro de um laço **cria um objeto novo a cada volta** — dez mil objetos para um resultado só.\n\n`StringBuilder` é mutável: ele acumula com `append` e entrega o resultado no fim com `toString()`.\n\nA regra prática: `+` para juntar duas ou três coisas numa linha; `StringBuilder` quando a junção está dentro de um laço. Fora do laço, o `+` é mais legível e a diferença não importa."
+    },
+    {
+      "id": "java-beg-0410",
+      "topic": "imutavel",
+      "prompt": "Duas variáveis guardam o texto `\"ada\"`. Uma delas recebe `toUpperCase()` e o resultado é guardado nela. O que acontece com a outra?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Também vira `\"ADA\"`, porque as duas apontavam para o mesmo texto",
+          "correct": false,
+          "why": "Seria assim se o texto fosse alterado no lugar. Ele não é: um texto novo foi criado."
+        },
+        {
+          "id": "b",
+          "text": "Fica vazia, porque o conteúdo foi movido",
+          "correct": false,
+          "why": "Nada é movido. O original continua exatamente onde estava."
+        },
+        {
+          "id": "c",
+          "text": "O programa quebra por conflito entre as duas",
+          "correct": false,
+          "why": "Não há conflito possível: justamente por ser imutável, o texto pode ser compartilhado sem risco."
+        },
+        {
+          "id": "d",
+          "text": "Continua valendo `\"ada\"`",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Passa a valer `null`",
+          "correct": false,
+          "why": "Nada torna uma variável nula sozinha."
+        }
+      ],
+      "hint": "O método não alterou o texto original — ele criou outro. Pergunte-se o que a segunda variável ainda está apontando.",
+      "explanation": "O `toUpperCase()` **criou** `\"ADA\"` e a primeira variável passou a apontar para ele. O texto original nunca foi tocado, e a segunda variável continua nele.\n\nEssa é a vantagem da imutabilidade em ação: **ninguém consegue alterar um texto pelas costas de quem o compartilha**. Numa linguagem onde texto fosse mutável, passar uma `String` para outra parte do programa significaria confiar que ela não o modificaria."
+    }
+  ]
+}

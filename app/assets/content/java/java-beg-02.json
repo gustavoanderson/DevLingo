@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "language": "java",
+  "level": "beginner",
+  "lessonId": "java-beg-02",
+  "lessonTitle": "Tipos declarados: o que cabe em cada gaveta",
+  "aula": {
+    "titulo": "Em Java você diz o tipo antes de guardar",
+    "secoes": [
+      {
+        "topico": "declaracao",
+        "titulo": "O tipo vem antes do nome",
+        "texto": "Em Python você escreve `idade = 30` e pronto. Em Java, **a variável nasce com um tipo declarado**, e ele vem antes do nome:\n\nUma vez declarada como `int`, aquela gaveta só aceita número inteiro. Tentar guardar texto nela **não compila** — o erro aparece antes de o programa rodar.\n\nIsso é o oposto da flexibilidade de Python, e é uma troca, não uma deficiência. Você escreve mais; em compensação, uma categoria inteira de defeito deixa de existir. O compilador confere cada atribuição.\n\nExiste um atalho: `var` deixa o compilador **deduzir** o tipo pelo valor. Mas repare que o tipo continua existindo e continua fixo — `var idade = 30` cria um `int`, e ele não vira texto depois. É escrita mais curta, não tipagem dinâmica.",
+        "code": {
+          "language": "java",
+          "content": "int idade = 30;\nString nome = \"Ada\";\n\n// idade = \"trinta\";   <- nao compila\n\nvar total = 10;   // o compilador deduz: int"
+        }
+      },
+      {
+        "topico": "primitivos",
+        "titulo": "Os tipos que você vai usar todo dia",
+        "texto": "Java separa **tipos primitivos** de **classes**, e a diferença aparece na escrita: primitivo começa com letra minúscula, classe com maiúscula.\n\nOs quatro que aparecem em quase todo programa:\n\n- `int` — número inteiro\n- `double` — número com casa decimal\n- `boolean` — só `true` ou `false`\n- `char` — **um** caractere, entre aspas simples\n\nE `String`, que **não é primitivo**: é classe, e por isso começa com maiúscula. Essa diferença parece detalhe de estilo e vai ter consequência séria na lição 03, quando compararmos duas `String`.\n\nRepare que `boolean` em Java só aceita `true` e `false`. Não existe \"zero é falso\" nem \"texto vazio é falso\" como em Python e JavaScript — `if (1)` não compila.",
+        "code": {
+          "language": "java",
+          "content": "int quantidade = 7;\ndouble preco = 19.90;\nboolean ativo = true;\nchar inicial = 'A';\n\nString nome = \"Ada\";   // classe, e nao primitivo"
+        }
+      },
+      {
+        "topico": "divisao",
+        "titulo": "A divisão que engana",
+        "texto": "Esta é a primeira surpresa de verdade da linguagem, e ela pega todo mundo uma vez.\n\n**Dividir dois inteiros dá um inteiro.** `5 / 2` não é `2.5`: é `2`. A parte decimal não é arredondada, é **descartada**.\n\nO motivo é coerente com tudo que você viu: o tipo do resultado vem dos tipos da conta. `int` dividido por `int` produz `int`, e ponto. Java não muda de tipo no meio do caminho para agradar.\n\nPara obter `2.5`, pelo menos um dos lados precisa ser `double`. Escrever `5.0 / 2` resolve, e `(double) 5 / 2` também — esse `(double)` é uma **conversão**, e se lê \"trate este valor como double\".\n\nE o operador `%` devolve o **resto** da divisão. `5 % 2` é `1`. Ele é a outra metade da conta que o `/` jogou fora.",
+        "code": {
+          "language": "java",
+          "content": "int a = 5 / 2;          // 2    -- a parte decimal some\ndouble b = 5 / 2;       // 2.0  -- a conta ja tinha virado 2\ndouble c = 5.0 / 2;     // 2.5  -- agora sim\nint resto = 5 % 2;      // 1"
+        }
+      },
+      {
+        "topico": "conversao",
+        "titulo": "Passar de um tipo para outro",
+        "texto": "Java converte sozinho quando **não há risco de perder informação**. Um `int` cabe num `double`, então `double x = 7;` funciona sem cerimônia.\n\nO contrário exige que você assuma a responsabilidade por escrito. Um `double` **não** cabe num `int` — há casa decimal para perder —, então é preciso a conversão explícita `(int)`:\n\nE ela **corta**, não arredonda. `(int) 9.99` é `9`, e não `10`. Confundir os dois já produziu erro de cálculo em sistema de verdade.\n\nA regra geral vale para o resto da linguagem: **quando a conversão pode perder algo, Java obriga você a dizer que sabe disso.** Escrever `(int)` é uma assinatura, e não uma formalidade.",
+        "code": {
+          "language": "java",
+          "content": "double preco = 7;        // automatico: int cabe em double\n\ndouble valor = 9.99;\nint arredondado = (int) valor;   // 9, e nao 10 -- corta\n\n// int errado = valor;   <- nao compila sem o (int)"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "java-beg-0201",
+      "topic": "declaracao",
+      "prompt": "O que acontece ao tentar guardar um texto numa variável declarada como `int`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O programa não compila: o compilador recusa a atribuição",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Funciona, e a variável passa a guardar texto",
+          "correct": false,
+          "why": "Isso é tipagem dinâmica, de Python e JavaScript. Em Java o tipo declarado não muda."
+        },
+        {
+          "id": "c",
+          "text": "Compila, e o erro aparece quando a linha for executada",
+          "correct": false,
+          "why": "O compilador confere as atribuições antes. O programa nem chega a existir."
+        },
+        {
+          "id": "d",
+          "text": "O texto é convertido automaticamente para número",
+          "correct": false,
+          "why": "Java não adivinha conversões perigosas. Texto e número são coisas diferentes."
+        },
+        {
+          "id": "e",
+          "text": "A variável passa a valer zero",
+          "correct": false,
+          "why": "Não há valor de consolação: a compilação simplesmente falha."
+        }
+      ],
+      "hint": "Java tem um passo antes de rodar. Pergunte-se se esse passo consegue enxergar um tipo errado.",
+      "explanation": "A gaveta declarada como `int` só aceita inteiro, e o compilador confere isso antes de o programa existir: `incompatible types`.\n\nÉ o preço e o prêmio de tipagem estática ao mesmo tempo — você escreve mais e **uma categoria inteira de defeito nunca chega ao usuário**. Vale saber o limite: o compilador confere se os tipos combinam, e não se a conta está certa."
+    },
+    {
+      "id": "java-beg-0202",
+      "topic": "primitivos",
+      "prompt": "Complete a declaração de uma variável que guarda um número com casa decimal.",
+      "code": {
+        "language": "java",
+        "content": "______ preco = 19.90;",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "double"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É um tipo primitivo, então começa com letra minúscula. O nome em inglês quer dizer *dobro*, por causa da precisão.",
+      "explanation": "O `double` guarda número com casa decimal. O nome vem de *double precision*: ele usa 64 bits, o dobro do `float`, que tem 32.\n\nNa prática se usa `double` quase sempre — a precisão maior custa pouco hoje. E vale uma ressalva que vai importar na sua carreira: para dinheiro, nem `double` nem `float` servem, porque nenhum dos dois representa `0,1` exatamente. Sistema financeiro usa `BigDecimal`."
+    },
+    {
+      "id": "java-beg-0203",
+      "topic": "divisao",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "int resultado = 5 / 2;\nSystem.out.println(resultado);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`2.5`",
+          "correct": false,
+          "why": "Esse seria o resultado se algum dos lados fosse decimal. Os dois são inteiros."
+        },
+        {
+          "id": "b",
+          "text": "`3`, arredondado para cima",
+          "correct": false,
+          "why": "Não há arredondamento: a parte decimal é descartada, e não aproximada."
+        },
+        {
+          "id": "c",
+          "text": "`2`",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "`2,5` com vírgula, por causa do idioma",
+          "correct": false,
+          "why": "Java usa ponto para decimal, e de todo modo o resultado aqui não tem parte decimal."
+        },
+        {
+          "id": "e",
+          "text": "Não compila, porque a divisão não é exata",
+          "correct": false,
+          "why": "Compila normalmente. Divisão inteira é uma operação válida, com resultado inteiro."
+        }
+      ],
+      "hint": "Os dois lados da conta são inteiros. Pergunte-se de que tipo o resultado pode ser.",
+      "explanation": "`int` dividido por `int` produz `int`. A parte decimal é **descartada**, e não arredondada — por isso `2`, e não `3`.\n\nO detalhe cruel é que `double b = 5 / 2;` também dá `2.0`: a conta acontece **antes** da atribuição, e quando o resultado chega ao `double` já virou `2`. Para ter `2.5`, um dos lados precisa ser decimal na hora da conta: `5.0 / 2`."
+    },
+    {
+      "id": "java-beg-0204",
+      "topic": "divisao",
+      "prompt": "Escreva o operador que devolve o **resto** de uma divisão em Java. Só o símbolo.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "%"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o mesmo símbolo que se usa para porcentagem em texto comum, mas aqui ele não tem nada a ver com porcentagem.",
+      "explanation": "O `%` devolve o que sobra da divisão: `5 % 2` é `1`. Ele é a outra metade do que o `/` jogou fora.\n\nO uso mais comum é descobrir se um número é par: `n % 2 == 0`. E ele aparece muito em teste, para gerar casos alternados a partir de um contador."
+    },
+    {
+      "id": "java-beg-0205",
+      "topic": "conversao",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "double valor = 9.99;\nint arredondado = (int) valor;\nSystem.out.println(arredondado);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`10`, arredondado para o inteiro mais próximo",
+          "correct": false,
+          "why": "É o que a intuição diz, e é o erro clássico: a conversão corta, não arredonda."
+        },
+        {
+          "id": "b",
+          "text": "`9.99`, porque a conversão não muda o valor",
+          "correct": false,
+          "why": "Um `int` não guarda casa decimal. Alguma coisa precisa acontecer com o `.99`."
+        },
+        {
+          "id": "c",
+          "text": "`0`, porque a conversão falha",
+          "correct": false,
+          "why": "A conversão funciona. Ela só descarta a parte que não cabe."
+        },
+        {
+          "id": "d",
+          "text": "`9`",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Não compila: não se converte `double` para `int`",
+          "correct": false,
+          "why": "Converte sim, desde que você escreva `(int)` — é essa escrita que assume o risco."
+        }
+      ],
+      "hint": "A conversão precisa fazer algo com o `,99` que não cabe. Há duas possibilidades, e Java escolhe a mais simples.",
+      "explanation": "A conversão `(int)` **corta**, e não arredonda: `9.99` vira `9`, e `9.999` também.\n\nConfundir corte com arredondamento já produziu erro de cálculo em sistema de verdade — um centavo por operação, multiplicado por milhões. Quem quer arredondar de fato usa `Math.round`, que devolve `10`.\n\nE repare no que o `(int)` significa: Java só converte sozinho quando **nada se perde**. Quando há perda, ela obriga você a assinar embaixo."
+    },
+    {
+      "id": "java-beg-0206",
+      "topic": "primitivos",
+      "prompt": "Por que `String` começa com letra maiúscula, e `int` não?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque `String` é mais importante que os outros tipos",
+          "correct": false,
+          "why": "Não há hierarquia de importância. A diferença é de natureza."
+        },
+        {
+          "id": "b",
+          "text": "Porque `String` guarda mais de um caractere",
+          "correct": false,
+          "why": "O tamanho do conteúdo não decide a caixa do nome."
+        },
+        {
+          "id": "c",
+          "text": "Porque `String` é uma classe, e `int` é um tipo primitivo",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque `String` foi acrescentada à linguagem depois",
+          "correct": false,
+          "why": "As duas existem desde o começo. A idade não explica a convenção."
+        },
+        {
+          "id": "e",
+          "text": "É apenas estilo: as duas formas compilam",
+          "correct": false,
+          "why": "`string` com minúscula não compila. A caixa faz parte do nome."
+        }
+      ],
+      "hint": "Em Java, nome de classe começa com maiúscula por convenção. Pergunte-se qual dos dois é uma classe.",
+      "explanation": "Primitivo começa com minúscula; classe começa com maiúscula. É convenção da linguagem, e ela informa: quando você lê `Scanner`, `LocalDate` ou `String`, sabe que está diante de uma classe.\n\nEssa diferença ainda parece detalhe de estilo, e **ela tem consequência séria na próxima lição**: comparar duas `String` com `==` faz uma coisa diferente de comparar dois `int` com `==`. A causa é exatamente esta."
+    },
+    {
+      "id": "java-beg-0207",
+      "topic": "declaracao",
+      "prompt": "O que `var` faz numa declaração em Java?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Torna a variável capaz de guardar qualquer tipo, como em JavaScript",
+          "correct": false,
+          "why": "Essa é a tipagem dinâmica de outras linguagens. O `var` de Java não faz isso."
+        },
+        {
+          "id": "b",
+          "text": "Deixa o compilador deduzir o tipo pelo valor, e o tipo continua fixo",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Cria uma variável que pode ficar sem valor nenhum",
+          "correct": false,
+          "why": "Ao contrário: `var` exige valor na mesma linha, senão não há como deduzir nada."
+        },
+        {
+          "id": "d",
+          "text": "Marca a variável como constante, impedindo mudanças",
+          "correct": false,
+          "why": "Quem impede mudança é `final`. O `var` não tem relação com isso."
+        },
+        {
+          "id": "e",
+          "text": "Faz a variável valer em todo o programa",
+          "correct": false,
+          "why": "O alcance da variável é decidido por onde ela foi declarada, e não pelo `var`."
+        }
+      ],
+      "hint": "A palavra é a mesma de JavaScript, e faz outra coisa. Pergunte-se se o tipo deixa de existir ou só deixa de ser escrito.",
+      "explanation": "`var total = 10;` cria um `int` — o tipo é **deduzido**, e não abolido. Tentar guardar texto ali depois continua não compilando.\n\nA distinção é fina e importa: `var` é economia de escrita, não tipagem dinâmica. O tipo está lá, decidido no momento da declaração, e o compilador continua conferindo tudo."
+    },
+    {
+      "id": "java-beg-0208",
+      "topic": "conversao",
+      "prompt": "Complete a conversão que permite guardar o valor decimal numa variável inteira.",
+      "code": {
+        "language": "java",
+        "content": "double valor = 42.7;\nint inteiro = ______ valor;",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "(int)"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É o nome do tipo de destino, entre parênteses, escrito antes do valor.",
+      "explanation": "O `(int)` é a conversão explícita, e ela existe porque **há informação a perder**. Java converte sozinha quando nada se perde — `double x = 7;` funciona sem cerimônia — e exige a sua assinatura quando algo se perde.\n\nO resultado aqui é `42`: a conversão corta. Se você queria `43`, o que resolve é `Math.round`."
+    },
+    {
+      "id": "java-beg-0209",
+      "topic": "primitivos",
+      "prompt": "Por que `if (1)` não compila em Java, se funciona em Python e JavaScript?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o `if` de Java só aceita comparações, e nunca valores",
+          "correct": false,
+          "why": "Ele aceita qualquer expressão booleana, inclusive uma variável `boolean` sozinha."
+        },
+        {
+          "id": "b",
+          "text": "Porque o número precisa estar entre aspas",
+          "correct": false,
+          "why": "Aspas fariam dele um texto, e texto também não serve como condição."
+        },
+        {
+          "id": "c",
+          "text": "Porque `boolean` em Java só aceita `true` ou `false`, e `1` não é nenhum dos dois",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque o número `1` é reservado pela linguagem",
+          "correct": false,
+          "why": "Não existem números reservados. O problema é o tipo esperado na condição."
+        },
+        {
+          "id": "e",
+          "text": "Porque falta o `else` correspondente",
+          "correct": false,
+          "why": "O `else` é sempre opcional. Um `if` sozinho é válido."
+        }
+      ],
+      "hint": "Pense no tipo que a condição de um `if` exige, e se um número pode ser convertido para ele automaticamente.",
+      "explanation": "Em Python e JavaScript existe a ideia de valor \"verdadeiro por aproximação\" — zero é falso, texto vazio é falso, lista vazia é falsa. **Java não tem isso.** A condição precisa ser `boolean`, e `1` é `int`.\n\nÉ mais uma aparição da mesma personalidade: a linguagem prefere recusar a adivinhar. O preço é escrever `if (quantidade > 0)`; o prêmio é que ninguém precisa lembrar qual valor conta como falso em qual situação."
+    },
+    {
+      "id": "java-beg-0210",
+      "topic": "divisao",
+      "prompt": "Você quer que `resultado` valha `2.5`. Qual linha faz isso?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`double resultado = 5 / 2;`",
+          "correct": false,
+          "why": "A conta acontece antes da atribuição: quando o valor chega ao `double`, já virou `2`."
+        },
+        {
+          "id": "b",
+          "text": "`int resultado = 5 / 2.0;`",
+          "correct": false,
+          "why": "A conta daria `2.5`, mas ela não cabe num `int` — e isso nem compila sem conversão."
+        },
+        {
+          "id": "c",
+          "text": "`double resultado = (double) (5 / 2);`",
+          "correct": false,
+          "why": "Os parênteses fazem a divisão inteira acontecer primeiro. Converter `2` para decimal dá `2.0`."
+        },
+        {
+          "id": "d",
+          "text": "`double resultado = 5 % 2;`",
+          "correct": false,
+          "why": "O `%` devolve o resto, que aqui é `1`."
+        },
+        {
+          "id": "e",
+          "text": "`double resultado = 5.0 / 2;`",
+          "correct": true
+        }
+      ],
+      "hint": "O que decide o tipo do resultado são os tipos **na hora da conta**, e não o tipo da variável que vai recebê-lo.",
+      "explanation": "Basta que **um dos lados** seja decimal na hora da conta: `5.0 / 2` produz `2.5`.\n\nAs alternativas erradas percorrem os três enganos clássicos, e vale reler cada uma: declarar o destino como `double` não muda a conta; converter **depois** da divisão já é tarde; e o `%` responde outra pergunta.\n\nA regra que resolve todas: **em Java, o tipo do resultado sai dos operandos, e não do destino.**"
+    }
+  ]
+}

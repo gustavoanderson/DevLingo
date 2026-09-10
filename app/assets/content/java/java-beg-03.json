@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "language": "java",
+  "level": "beginner",
+  "lessonId": "java-beg-03",
+  "lessonTitle": "Decidir, e o == que engana",
+  "aula": {
+    "titulo": "Comparar em Java tem uma armadilha",
+    "secoes": [
+      {
+        "topico": "comparacao",
+        "titulo": "Perguntas que só têm duas respostas",
+        "texto": "Comparar produz um `boolean`, e em Java isso significa **exatamente** `true` ou `false` — não existe meio-termo nem valor \"quase verdadeiro\".\n\nOs operadores são os de sempre: `>`, `<`, `>=`, `<=`, `==` para igual e `!=` para diferente.\n\nRepare no `==` com dois sinais. Um sinal só é atribuição: `x = 5` guarda, `x == 5` pergunta. Trocar os dois é o erro de digitação clássico — e aqui vem uma vantagem discreta de Java: como a condição do `if` precisa ser `boolean`, escrever `if (x = 5)` **não compila**. Em C isso compilaria e viraria um defeito difícil de achar.\n\nO resultado da comparação pode ser guardado numa variável, e isso é útil quando a condição tem nome: `boolean maiorDeIdade = idade >= 18;` diz mais que repetir a conta em três lugares.",
+        "code": {
+          "language": "java",
+          "content": "int idade = 20;\n\nboolean maiorDeIdade = idade >= 18;   // true\nboolean exato = idade == 20;          // true\nboolean diferente = idade != 20;      // false"
+        }
+      },
+      {
+        "topico": "condicional",
+        "titulo": "if, else if, else",
+        "texto": "A estrutura é a mesma de quase toda linguagem, com duas diferenças de escrita: a condição vai **entre parênteses**, e o bloco vai **entre chaves**.\n\nEm Java o recuo não é sintaxe — quem delimita o bloco são as chaves. O código funciona sem recuo nenhum, e ninguém consegue lê-lo. Recue mesmo assim.\n\nUm detalhe que produz defeito de verdade: as chaves são **opcionais** quando o bloco tem uma linha só. Parece conveniente e é uma armadilha conhecida, porque acrescentar a segunda linha depois **não** a coloca dentro do `if` — ela roda sempre, e o recuo mente sobre isso.\n\nA recomendação de praticamente todo guia de estilo é a mesma: **sempre use chaves**, mesmo com uma linha.",
+        "code": {
+          "language": "java",
+          "content": "int nota = 7;\n\nif (nota >= 9) {\n  System.out.println(\"Excelente\");\n} else if (nota >= 7) {\n  System.out.println(\"Bom\");\n} else {\n  System.out.println(\"Precisa melhorar\");\n}"
+        }
+      },
+      {
+        "topico": "igualdade",
+        "titulo": "O == que engana: String não se compara assim",
+        "texto": "Aqui está a pegadinha mais famosa de Java, e a pergunta de entrevista mais repetida da linguagem.\n\nPara **primitivos** — `int`, `double`, `char`, `boolean` — o `==` compara **valor**, e funciona como você espera.\n\nPara **objetos** — e `String` é objeto, lembra da maiúscula da lição 02 — o `==` compara **se são o mesmo objeto na memória**. Não compara o conteúdo.\n\nOu seja: duas `String` com o texto idêntico podem devolver `false` no `==`, porque são dois objetos diferentes que por acaso guardam as mesmas letras.\n\nQuem compara conteúdo é o método `.equals()`.\n\nO detalhe que torna isso cruel: às vezes o `==` funciona. Java reaproveita textos escritos direto no código, então `\"oi\" == \"oi\"` costuma dar `true` — e o programador conclui que aprendeu. Aí o texto passa a vir do teclado ou do banco de dados, deixa de ser reaproveitado, e o mesmo código passa a falhar. **Um defeito que funciona em teste e quebra em produção.**\n\nA regra é simples e não tem exceção que valha a pena decorar: primitivo com `==`, objeto com `.equals()`.",
+        "code": {
+          "language": "java",
+          "content": "String a = \"oi\";\nString b = new String(\"oi\");\n\nSystem.out.println(a == b);        // false -- objetos diferentes\nSystem.out.println(a.equals(b));   // true  -- mesmo conteudo\n\nint x = 5, y = 5;\nSystem.out.println(x == y);        // true -- primitivo compara valor"
+        }
+      },
+      {
+        "topico": "logicos",
+        "titulo": "Combinar condições",
+        "texto": "Três operadores combinam perguntas:\n\n- `&&` — **e**: as duas precisam ser verdadeiras\n- `||` — **ou**: basta uma\n- `!` — **não**: inverte\n\nE eles têm uma característica que vai além da lógica: **avaliação em curto-circuito**. Java para de avaliar assim que a resposta já está decidida.\n\nNum `&&`, se o lado esquerdo for `false`, o direito **nem é executado** — o resultado já é `false` de qualquer jeito. Num `||`, se o esquerdo for `true`, o direito é ignorado.\n\nIsso não é curiosidade: é o que permite escrever `if (texto != null && texto.length() > 0)`. Se a ordem fosse invertida, o programa quebraria ao tentar medir algo que não existe. O curto-circuito é o que torna essa proteção possível — e ela é uma das linhas mais escritas em Java.",
+        "code": {
+          "language": "java",
+          "content": "int idade = 20;\nboolean temIngresso = true;\n\nif (idade >= 18 && temIngresso) {\n  System.out.println(\"Pode entrar\");\n}\n\n// o lado direito so roda se o esquerdo passar\nString nome = null;\nif (nome != null && nome.length() > 0) {\n  System.out.println(nome);\n}"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "java-beg-0301",
+      "topic": "igualdade",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "String a = \"oi\";\nString b = new String(\"oi\");\nSystem.out.println(a == b);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`true`, porque o texto é o mesmo",
+          "correct": false,
+          "why": "O texto é o mesmo, e não é isso que o `==` pergunta quando os dois lados são objetos."
+        },
+        {
+          "id": "b",
+          "text": "`oi`, porque a comparação devolve o valor",
+          "correct": false,
+          "why": "Comparação devolve `boolean`, e nunca o conteúdo comparado."
+        },
+        {
+          "id": "c",
+          "text": "`false`, porque são dois objetos diferentes na memória",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Não compila: `String` não aceita `==`",
+          "correct": false,
+          "why": "Compila perfeitamente, e é justamente isso que torna o defeito perigoso."
+        },
+        {
+          "id": "e",
+          "text": "Dá erro em tempo de execução",
+          "correct": false,
+          "why": "Nenhum erro acontece. O programa roda e responde — só que outra coisa."
+        }
+      ],
+      "hint": "Repare no `new`. Pergunte-se o que o `==` compara quando os dois lados são objetos, e não números.",
+      "explanation": "Para objetos, `==` pergunta **\"são o mesmo objeto na memória?\"**, e não \"têm o mesmo conteúdo?\". O `new` criou um objeto novo, então a resposta é `false`.\n\nO que torna isso cruel é que às vezes o `==` funciona: Java reaproveita textos escritos direto no código, então `\"oi\" == \"oi\"` costuma dar `true`. O programador conclui que aprendeu, e o mesmo código quebra quando o texto passa a vir do teclado ou do banco.\n\nÉ um defeito que **passa em teste e falha em produção**, que é a pior categoria que existe."
+    },
+    {
+      "id": "java-beg-0302",
+      "topic": "igualdade",
+      "prompt": "Escreva o nome do método que compara o **conteúdo** de duas `String` em Java. Só o nome, sem parênteses.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "equals"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É a palavra inglesa para *igual a*, com `s` no fim, toda em minúsculas.",
+      "explanation": "`a.equals(b)` compara o conteúdo. A regra que resolve todos os casos: primitivo com `==`, objeto com `.equals()`.\n\nExiste também `equalsIgnoreCase`, que ignora maiúsculas — útil ao comparar o que alguém digitou. E vale um cuidado que aparece cedo em qualquer sistema real: se `a` for nulo, `a.equals(b)` quebra. Por isso muita gente escreve a constante primeiro — `\"admin\".equals(perfil)` — que nunca é nula."
+    },
+    {
+      "id": "java-beg-0303",
+      "topic": "comparacao",
+      "prompt": "Por que `if (x = 5)` não compila em Java, embora seja um erro de digitação plausível?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque atribuição é proibida dentro de parênteses",
+          "correct": false,
+          "why": "Não há proibição geral disso. O problema é o tipo do que sobra."
+        },
+        {
+          "id": "b",
+          "text": "Porque o `if` exige dois operandos",
+          "correct": false,
+          "why": "O `if` exige uma condição, e ela pode ser até uma variável `boolean` sozinha."
+        },
+        {
+          "id": "c",
+          "text": "Porque falta o `else`",
+          "correct": false,
+          "why": "O `else` é opcional em qualquer `if`."
+        },
+        {
+          "id": "d",
+          "text": "Porque `x = 5` resulta num `int`, e a condição precisa ser `boolean`",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Porque o número `5` precisa estar entre aspas",
+          "correct": false,
+          "why": "Aspas fariam dele texto, o que também não serviria como condição."
+        }
+      ],
+      "hint": "Um sinal de igual guarda um valor e devolve esse valor. Pergunte-se de que tipo ele é, e do que o `if` precisa.",
+      "explanation": "`x = 5` atribui e resulta em `5`, um `int`. Como o `if` de Java exige `boolean`, o compilador recusa.\n\nIsso é consequência direta de Java **não** ter a ideia de \"valor quase verdadeiro\" que Python e JavaScript têm. Em C o mesmo código compila, vira sempre verdadeiro, e produz um defeito difícil de achar.\n\nÉ um bom exemplo de rigidez que **paga**: a linguagem recusa o programa em vez de aceitar um provavelmente errado."
+    },
+    {
+      "id": "java-beg-0304",
+      "topic": "condicional",
+      "prompt": "Complete a estrutura para que ela trate o caso em que nenhuma condição anterior foi verdadeira.",
+      "code": {
+        "language": "java",
+        "content": "if (nota >= 9) {\n  System.out.println(\"Excelente\");\n} ______ {\n  System.out.println(\"Continue tentando\");\n}",
+        "highlightLine": 3
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "else"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É a palavra inglesa para *senão*, e são quatro letras.",
+      "explanation": "O `else` recolhe tudo que não caiu nas condições anteriores, e por isso **não tem condição própria**.\n\nEncadeando com `else if`, Java testa de cima para baixo e para no primeiro que for verdadeiro — os seguintes nem são avaliados. Por isso a ordem importa: com `nota >= 7` antes de `nota >= 9`, o `Excelente` nunca apareceria."
+    },
+    {
+      "id": "java-beg-0305",
+      "topic": "logicos",
+      "prompt": "Complete o operador que exige que **as duas** condições sejam verdadeiras.",
+      "code": {
+        "language": "java",
+        "content": "if (idade >= 18 ______ temIngresso) {\n  System.out.println(\"Pode entrar\");\n}",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "&&"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "São dois símbolos iguais, e o símbolo é o mesmo que se usa como *e comercial* em texto.",
+      "explanation": "O `&&` é o **e** lógico: as duas precisam passar.\n\nE ele tem uma propriedade que vai além da lógica — **curto-circuito**. Se o lado esquerdo for falso, o direito **nem é executado**, porque o resultado já está decidido.\n\nIsso não é otimização: é o que permite escrever `if (texto != null && texto.length() > 0)`. Sem o curto-circuito, essa linha quebraria ao tentar medir algo que não existe."
+    },
+    {
+      "id": "java-beg-0306",
+      "topic": "logicos",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "String nome = null;\nif (nome != null && nome.length() > 0) {\n  System.out.println(\"tem nome\");\n} else {\n  System.out.println(\"sem nome\");\n}"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`sem nome`",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`tem nome`",
+          "correct": false,
+          "why": "A primeira condição já é falsa, então o bloco do `if` não roda."
+        },
+        {
+          "id": "c",
+          "text": "O programa quebra ao tentar medir o tamanho de algo nulo",
+          "correct": false,
+          "why": "Seria o caso se as duas condições fossem sempre avaliadas. Uma propriedade do `&&` impede isso."
+        },
+        {
+          "id": "d",
+          "text": "Nada: nenhum dos dois blocos roda",
+          "correct": false,
+          "why": "Com `else` presente, sempre um dos dois roda."
+        },
+        {
+          "id": "e",
+          "text": "Não compila, porque `null` não pode ser comparado",
+          "correct": false,
+          "why": "Comparar com `null` é válido e comum — é justamente a forma de proteger o resto da condição."
+        }
+      ],
+      "hint": "A primeira condição é falsa. Pergunte-se se a segunda chega a ser executada.",
+      "explanation": "Como `nome != null` é falso, o `&&` **para ali**: a chamada `nome.length()` nunca acontece, e o `NullPointerException` que ela causaria não existe.\n\nEssa é uma das linhas mais escritas em Java, e ela depende inteiramente da ordem. Invertida — `nome.length() > 0 && nome != null` — o programa quebraria.\n\nO `NullPointerException` é, com folga, o erro mais comum de Java em produção. Proteger com `!= null` antes de usar é o hábito que mais evita ligação de madrugada."
+    },
+    {
+      "id": "java-beg-0307",
+      "topic": "condicional",
+      "prompt": "Por que praticamente todo guia de estilo manda usar chaves no `if`, mesmo quando o bloco tem uma linha só?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque sem chaves o código não compila",
+          "correct": false,
+          "why": "Compila: as chaves são opcionais para um bloco de uma linha. O problema aparece depois."
+        },
+        {
+          "id": "b",
+          "text": "Porque o compilador fica mais rápido com elas",
+          "correct": false,
+          "why": "Não há diferença de desempenho. A razão é de manutenção."
+        },
+        {
+          "id": "c",
+          "text": "Porque acrescentar uma segunda linha depois não a coloca dentro do `if`, e o recuo passa a mentir",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque sem chaves o `else` deixa de funcionar",
+          "correct": false,
+          "why": "O `else` continua funcionando normalmente."
+        },
+        {
+          "id": "e",
+          "text": "Porque Java exige chaves em blocos com condição composta",
+          "correct": false,
+          "why": "Não existe essa exigência. O que a linguagem permite é justamente o que cria o risco."
+        }
+      ],
+      "hint": "O problema não está no código de hoje, e sim no de amanhã. Lembre que em Java o recuo não delimita bloco.",
+      "explanation": "Em Java quem delimita o bloco são as **chaves**, e não o recuo. Sem elas, só a primeira linha pertence ao `if` — acrescentar uma segunda a deixa rodando **sempre**, mesmo com a condição falsa.\n\nE o recuo, alinhado, sugere o contrário. O código passa a mentir para quem lê, e revisão a olho não pega.\n\nEsse defeito tem história: em 2014 uma falha de segurança séria em código C, conhecida como *goto fail*, nasceu exatamente desse padrão."
+    },
+    {
+      "id": "java-beg-0308",
+      "topic": "comparacao",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "int x = 5;\nint y = 5;\nSystem.out.println(x == y);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`5`",
+          "correct": false,
+          "why": "A comparação devolve `boolean`, e nunca o valor comparado."
+        },
+        {
+          "id": "b",
+          "text": "`true`",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "`false`, porque são duas variáveis diferentes",
+          "correct": false,
+          "why": "Isso valeria para objetos. Aqui os dois lados são primitivos."
+        },
+        {
+          "id": "d",
+          "text": "`10`, a soma dos dois",
+          "correct": false,
+          "why": "`==` compara, e não soma. Somar seria `+`."
+        },
+        {
+          "id": "e",
+          "text": "Não compila: seria preciso usar `.equals()`",
+          "correct": false,
+          "why": "`.equals()` é para objetos. Primitivo não tem método nenhum."
+        }
+      ],
+      "hint": "`int` é primitivo. Volte à regra: o que o `==` compara quando os dois lados são primitivos?",
+      "explanation": "Para primitivos, `==` compara **valor** — e `5` é igual a `5`.\n\nO contraste com a questão do `new String(\"oi\")` é o ponto da lição inteira, e vale guardar como uma frase: primitivo com `==`, objeto com `.equals()`.\n\nRepare também que a alternativa sobre `.equals()` é errada por outro motivo: primitivo não é objeto e não tem método nenhum. `5.equals(5)` não existe."
+    },
+    {
+      "id": "java-beg-0309",
+      "topic": "condicional",
+      "prompt": "Com `nota` valendo `7`, o que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "int nota = 7;\nif (nota >= 9) {\n  System.out.println(\"Excelente\");\n} else if (nota >= 7) {\n  System.out.println(\"Bom\");\n} else if (nota >= 5) {\n  System.out.println(\"Regular\");\n} else {\n  System.out.println(\"Insuficiente\");\n}"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`Bom` e `Regular`, porque as duas condições passam",
+          "correct": false,
+          "why": "As duas passariam isoladamente, e o encadeamento para no primeiro que der certo."
+        },
+        {
+          "id": "b",
+          "text": "`Excelente`",
+          "correct": false,
+          "why": "`7` não é maior ou igual a `9`, então essa condição falha."
+        },
+        {
+          "id": "c",
+          "text": "`Bom`",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "`Insuficiente`, porque o `else` sempre roda no fim",
+          "correct": false,
+          "why": "O `else` só roda quando nenhuma condição anterior passou."
+        },
+        {
+          "id": "e",
+          "text": "`Regular`",
+          "correct": false,
+          "why": "A condição de `Regular` até passaria, mas ela vem depois de uma que já foi atendida."
+        }
+      ],
+      "hint": "Duas das condições são verdadeiras para `7`. Pergunte-se se as duas chegam a ser testadas.",
+      "explanation": "Java testa de cima para baixo e **para no primeiro verdadeiro**. `7 >= 9` falha, `7 >= 7` passa, e o resto nem é avaliado.\n\nPor isso a ordem das faixas importa: escritas do menor para o maior, `Regular` capturaria tudo e as faixas acima nunca apareceriam. É um defeito comum em cálculo de faixa — de desconto, de imposto, de nota — e ele não gera erro nenhum: só resultados errados."
+    },
+    {
+      "id": "java-beg-0310",
+      "topic": "igualdade",
+      "prompt": "Numa entrevista, perguntam por que `==` às vezes funciona com `String`. Qual é a resposta correta?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Funciona quando as duas variáveis foram declaradas na mesma linha",
+          "correct": false,
+          "why": "A linha da declaração não tem influência nenhuma."
+        },
+        {
+          "id": "b",
+          "text": "Funciona quando o texto tem menos de dez caracteres",
+          "correct": false,
+          "why": "O tamanho do texto não decide nada aqui."
+        },
+        {
+          "id": "c",
+          "text": "Nunca funciona: dá `false` em todos os casos",
+          "correct": false,
+          "why": "Se desse sempre `false`, o defeito seria fácil de achar. O problema é justamente ele acertar às vezes."
+        },
+        {
+          "id": "d",
+          "text": "Funciona apenas quando as duas foram criadas com `new`",
+          "correct": false,
+          "why": "É o contrário: `new` garante objetos distintos, e portanto `false`."
+        },
+        {
+          "id": "e",
+          "text": "Java reaproveita textos escritos direto no código, então os dois nomes podem apontar para o mesmo objeto",
+          "correct": true
+        }
+      ],
+      "hint": "Pense de onde veio o texto: escrito entre aspas no código, ou construído durante a execução?",
+      "explanation": "Textos escritos direto no código ficam num depósito compartilhado, e Java reaproveita — então `\"oi\" == \"oi\"` costuma dar `true`. Texto construído durante a execução, vindo do teclado, de um arquivo ou do banco, é objeto novo, e o mesmo `==` passa a dar `false`.\n\n**É por isso que este defeito é perigoso e não apenas chato:** ele passa nos testes, onde os valores estão escritos no código, e falha em produção, onde eles vêm de fora.\n\nA resposta prática continua a mesma de sempre: objeto com `.equals()`, sem exceção."
+    }
+  ]
+}

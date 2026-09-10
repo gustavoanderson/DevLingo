@@ -160,12 +160,41 @@ const Set<String> _termosFrameworks = {
   'useState',
 };
 
+/// Vocabulario do curso de Java.
+///
+/// A medicao das 70 passagens repetiu o padrao dos outros cursos -- o
+/// vocabulario de codigo deu ZERO ocorrencias nuas, porque o autor marcou tudo
+/// com crase. O que aparece solto e portugues:
+///
+///   texto 22, array 7, classe 7, valor 5, tipo 5, objeto 2
+///
+/// Todos ficam de fora. `array` merece nota: e termo tecnico, e virou palavra
+/// portuguesa corrente ("num array de 3 itens"), como `cache` no backend.
+///
+/// **`for` fica de fora, e isto e reincidencia.** A medicao encontrou "se o
+/// lado esquerdo `for` falso" -- o mesmo verbo que ja tinha tirado `for` do
+/// lexico de JavaScript. A colisao entre o comando e o verbo do portugues nao
+/// e coincidencia daquele curso: ela reaparece em qualquer linguagem que use
+/// `for`. Quando for mesmo o comando, o autor marca com crase.
+///
+/// Os tipos primitivos entram porque em Java eles sao palavras reservadas e
+/// aparecem em quase toda linha -- e sao justamente o que distingue a
+/// linguagem de Python e JavaScript, onde o tipo nao se escreve.
+const Set<String> _termosJava = {
+  'ArrayList', 'JVM', 'String', 'StringBuilder', 'System', 'boolean', 'char',
+  'charAt', 'class', 'contains', 'double', 'else', 'equals', 'false', 'final',
+  'float', 'if', 'int', 'javac', 'length', 'long', 'main', 'new', 'null',
+  'public', 'return', 'static', 'substring', 'toLowerCase', 'toString',
+  'toUpperCase', 'trim', 'true', 'var', 'void', 'while',
+};
+
 Set<String> termosDe(String linguagem) => switch (linguagem) {
   'python' => _termosPython,
   'javascript' || 'node' => _termosJs,
   'backend' => _termosBackend,
   'qa' => _termosQa,
   'frameworks' => _termosFrameworks,
+  'java' => _termosJava,
   _ => const {},
 };
 

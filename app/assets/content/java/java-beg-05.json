@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 1,
+  "language": "java",
+  "level": "beginner",
+  "lessonId": "java-beg-05",
+  "lessonTitle": "Arrays e repetição",
+  "aula": {
+    "titulo": "Guardar muitos valores, e passar por todos",
+    "secoes": [
+      {
+        "topico": "array",
+        "titulo": "Uma fila de valores do mesmo tipo",
+        "texto": "Um **array** guarda vários valores, e em Java ele tem duas restrições que as listas de Python não têm:\n\n- **Todos os valores são do mesmo tipo.** Um `int[]` só guarda inteiros\n- **O tamanho é fixo.** Definido na criação, e não muda. Não existe \"acrescentar mais um\"\n\nAs posições começam em **zero**, como no texto da lição passada. Num array de 3 itens, as posições válidas são 0, 1 e 2 — e pedir a posição 3 quebra o programa com `ArrayIndexOutOfBoundsException`.\n\nE aqui está a inconsistência que confunde todo mundo: o tamanho de um array é `length` **sem parênteses**, porque é um campo. Numa `String` é `length()` **com** parênteses, porque é método.\n\nNão há lógica que salve; é história da linguagem. Vale decorar o par: **texto pede parênteses, array não pede.**\n\nQuando o tamanho precisa mudar, o caminho é `ArrayList`, que cresce — mas isso é assunto do próximo nível.",
+        "code": {
+          "language": "java",
+          "content": "int[] notas = {7, 9, 5};\n\nSystem.out.println(notas[0]);      // 7\nSystem.out.println(notas.length);  // 3  -- sem parenteses\n\nString[] nomes = new String[2];    // dois lugares, ambos vazios\nnomes[0] = \"Ada\";"
+        }
+      },
+      {
+        "topico": "for",
+        "titulo": "O laço com contador",
+        "texto": "O `for` clássico tem três partes, separadas por ponto e vírgula, e cada uma responde uma pergunta:\n\n- **onde começa** — `int i = 0`\n- **até quando continua** — `i < notas.length`\n- **o que muda a cada volta** — `i++`\n\nO `i++` soma um. É atalho para `i = i + 1`, e aparece em praticamente todo laço.\n\nRepare no `<` da condição. Como as posições vão de 0 até `length - 1`, usar `<=` faria o laço tentar a posição que não existe e quebrar o programa. **É o erro de percurso mais comum que existe**, e tem nome próprio em inglês: *off-by-one*.\n\nA regra que evita: com posições começando em zero, a condição é `<`, e nunca `<=`.",
+        "code": {
+          "language": "java",
+          "content": "int[] notas = {7, 9, 5};\n\nfor (int i = 0; i < notas.length; i++) {\n  System.out.println(notas[i]);\n}\n\n// i <= notas.length quebraria na ultima volta"
+        }
+      },
+      {
+        "topico": "foreach",
+        "titulo": "Quando a posição não importa",
+        "texto": "Quase sempre você quer **cada item**, e não a posição dele. Para isso existe o `for` melhorado, que se lê \"para cada nota em notas\":\n\nEle é mais curto, mais legível, e **elimina a classe inteira de erro de percurso** — não há contador para escrever errado, nem `<=` para trocar.\n\nO preço é que você não sabe em que posição está. Quando isso importa — imprimir \"item 3 de 10\", ou comparar com o vizinho —, volta o `for` clássico.\n\nA regra prática: use o `for` melhorado por padrão, e o clássico só quando precisar da posição. Escolher o clássico por hábito é como escrever um laço a mais para poder errar nele.",
+        "code": {
+          "language": "java",
+          "content": "int[] notas = {7, 9, 5};\n\nfor (int nota : notas) {\n  System.out.println(nota);\n}"
+        }
+      },
+      {
+        "topico": "acumulador",
+        "titulo": "Somar enquanto percorre",
+        "texto": "O motivo de laços existirem aparece quando algo **muda a cada volta**. O caso clássico é a soma:\n\nA variável `total` é declarada **fora** do laço, senão ela nasceria de novo a cada volta e terminaria valendo o último item. Dentro do laço ela é atualizada; depois dele, guarda o resultado.\n\nO `total += nota` é atalho para `total = total + nota`.\n\nAcompanhe o que acontece, volta a volta, porque é isto que distingue um laço de exemplo de um laço de verdade:\n\nNa primeira volta o total vira 7; na segunda, 16; na terceira, 21. O valor de cada volta entra na seguinte, e é isso que distingue um laço de exemplo de um laço de verdade.\n\nPara a **média**, cuidado com a lição 02: `total / notas.length` com os dois inteiros faz divisão inteira. `21 / 3` dá `7` por sorte; `20 / 3` daria `6`, e não `6.67`.",
+        "code": {
+          "language": "java",
+          "content": "int[] notas = {7, 9, 5};\nint total = 0;\n\nfor (int nota : notas) {\n  total += nota;\n}\n\nSystem.out.println(total);              // 21\nSystem.out.println((double) total / notas.length);  // 7.0"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "java-beg-0501",
+      "topic": "array",
+      "prompt": "Complete a expressão que devolve quantos itens este array tem. Escreva a expressão inteira.",
+      "code": {
+        "language": "java",
+        "content": "int[] notas = {7, 9, 5};\nSystem.out.println(______);",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "notas.length"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "É o nome do array, um ponto, e a mesma palavra que se usa em texto — mas aqui o final é diferente do que você escreveria numa String.",
+      "explanation": "Em array é `notas.length` **sem parênteses**, porque é um campo. Em `String` é `texto.length()` **com** parênteses, porque é método.\n\nEscrever `notas.length()` não compila, e `texto.length` também não. Não há lógica que explique — é história da linguagem.\n\nVale decorar o par: **texto pede parênteses, array não pede.** É uma das confusões mais comuns de quem está aprendendo Java, e ela custa um erro de compilação toda vez."
+    },
+    {
+      "id": "java-beg-0502",
+      "topic": "for",
+      "prompt": "O que acontece se a condição do laço for `i <= notas.length`, com `<=` em vez de `<`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nada muda: o laço percorre os mesmos itens",
+          "correct": false,
+          "why": "Ele dá uma volta a mais, e nessa volta pede uma posição que não existe."
+        },
+        {
+          "id": "b",
+          "text": "O laço pula o primeiro item",
+          "correct": false,
+          "why": "O começo é decidido pela primeira parte do `for`, que não mudou."
+        },
+        {
+          "id": "c",
+          "text": "O programa quebra na última volta, ao pedir uma posição que não existe",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "O laço roda para sempre",
+          "correct": false,
+          "why": "O contador continua crescendo e a condição continua tendo fim. Laço infinito seria outro defeito."
+        },
+        {
+          "id": "e",
+          "text": "Não compila: `<=` não é válido em `for`",
+          "correct": false,
+          "why": "`<=` é perfeitamente válido. O problema é o que ele permite acontecer."
+        }
+      ],
+      "hint": "Num array de 3 itens, as posições vão de 0 a 2, e `length` é 3. Pergunte-se qual posição o `<=` alcança.",
+      "explanation": "Com 3 itens, as posições válidas são 0, 1 e 2, e `length` é `3`. O `<=` faz o laço chegar em `i = 3`, que não existe: `ArrayIndexOutOfBoundsException`.\n\nEsse erro é tão comum que tem nome próprio em inglês — ***off-by-one***, errar por um. A regra que o evita: com posições começando em zero, a condição é `<`, e nunca `<=`.\n\nE repare no ganho do `for` melhorado: sem contador, essa classe inteira de erro deixa de ser possível."
+    },
+    {
+      "id": "java-beg-0503",
+      "topic": "foreach",
+      "prompt": "Complete o `for` melhorado para percorrer cada nota do array.",
+      "code": {
+        "language": "java",
+        "content": "int[] notas = {7, 9, 5};\nfor (int nota ______ notas) {\n  System.out.println(nota);\n}",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        ":"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É um sinal de pontuação com dois pontinhos, e se lê como a palavra *em*.",
+      "explanation": "O `:` se lê \"em\": *para cada nota **em** notas*. Onde Python escreve `in` e JavaScript escreve `of`, Java usa dois pontos.\n\nA variável `nota` recebe uma **cópia** de cada item a cada volta — então alterá-la dentro do laço não muda o array. Para alterar o array de verdade, é preciso o `for` clássico e a posição."
+    },
+    {
+      "id": "java-beg-0504",
+      "topic": "acumulador",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "int[] notas = {7, 9, 5};\nint total = 0;\nfor (int nota : notas) {\n  total += nota;\n}\nSystem.out.println(total);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`21`",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`5`, o último item somado",
+          "correct": false,
+          "why": "Seria o caso se `total` nascesse de novo a cada volta. Ela é declarada fora do laço."
+        },
+        {
+          "id": "c",
+          "text": "`3`, a quantidade de itens",
+          "correct": false,
+          "why": "A quantidade viria de `notas.length`. Aqui os valores estão sendo somados."
+        },
+        {
+          "id": "d",
+          "text": "`7`, a média das notas",
+          "correct": false,
+          "why": "A média sairia de uma divisão, e não há divisão nenhuma neste código."
+        },
+        {
+          "id": "e",
+          "text": "`0`, porque `total` não é alterado dentro do laço",
+          "correct": false,
+          "why": "O `+=` altera sim. Ele é atalho para `total = total + nota`."
+        }
+      ],
+      "hint": "Acompanhe o valor de `total` volta a volta, começando em zero.",
+      "explanation": "Volta a volta: `0 + 7 = 7`, `7 + 9 = 16`, `16 + 5 = 21`.\n\nO detalhe que faz funcionar é `total` ser declarada **fora** do laço. Dentro, ela nasceria zerada a cada volta e terminaria valendo `5`.\n\nEsta é a questão mais exigente da trilha iniciante: ela pede para rastrear um valor que **muda a cada volta**, e não aplicar um fato só. Ela fica aqui de propósito, como ponte para o próximo nível — do mesmo jeito que a questão equivalente na trilha de Python."
+    },
+    {
+      "id": "java-beg-0505",
+      "topic": "array",
+      "prompt": "Por que não é possível \"acrescentar mais um item\" a um array em Java?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque arrays só aceitam números",
+          "correct": false,
+          "why": "Existem arrays de qualquer tipo, inclusive de objetos."
+        },
+        {
+          "id": "b",
+          "text": "Porque o tamanho é fixo, definido na criação",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Porque arrays são imutáveis, como `String`",
+          "correct": false,
+          "why": "O conteúdo pode ser alterado à vontade: `notas[0] = 10` funciona. O que não muda é o tamanho."
+        },
+        {
+          "id": "d",
+          "text": "Porque só o `main` pode alterar arrays",
+          "correct": false,
+          "why": "Qualquer parte do código pode alterá-los."
+        },
+        {
+          "id": "e",
+          "text": "Porque seria preciso reordenar todos os itens antes",
+          "correct": false,
+          "why": "Ordem não tem relação com a impossibilidade de crescer."
+        }
+      ],
+      "hint": "Pense no que é decidido no momento em que o array é criado, e que não pode mais ser mudado depois.",
+      "explanation": "O tamanho é definido na criação e não muda. `new String[2]` reserva dois lugares, para sempre.\n\nCuidado com uma confusão comum: **o conteúdo é mutável, o tamanho não.** `notas[0] = 10` funciona perfeitamente — o que não existe é uma posição 3 num array de 3.\n\nQuando o tamanho precisa variar, o caminho é `ArrayList`, que cresce sozinho. É a estrutura que aparece em quase todo código Java de verdade, e ela é assunto do próximo nível."
+    },
+    {
+      "id": "java-beg-0506",
+      "topic": "for",
+      "prompt": "Escreva o operador que soma um a uma variável, usado no fim de quase todo `for`.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "++"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "São dois sinais iguais, e o sinal é o de somar.",
+      "explanation": "`i++` é atalho para `i = i + 1`.\n\nExiste também `i--`, que subtrai um, usado quando o laço percorre de trás para frente.\n\nUma sutileza que aparece mais adiante: `i++` e `++i` fazem a mesma coisa quando estão sozinhos numa linha, e diferem quando o valor é usado na mesma expressão. Dentro de um `for`, os dois são equivalentes — e escrever `i++` é a convenção."
+    },
+    {
+      "id": "java-beg-0507",
+      "topic": "foreach",
+      "prompt": "Quando o `for` clássico, com contador, é preferível ao `for` melhorado?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sempre: o clássico é mais rápido",
+          "correct": false,
+          "why": "A diferença de desempenho é irrelevante, e não é o que decide."
+        },
+        {
+          "id": "b",
+          "text": "Quando o array tem mais de dez itens",
+          "correct": false,
+          "why": "A quantidade de itens não influencia a escolha."
+        },
+        {
+          "id": "c",
+          "text": "Quando os itens não são todos do mesmo tipo",
+          "correct": false,
+          "why": "Um array em Java sempre tem itens de um tipo só."
+        },
+        {
+          "id": "d",
+          "text": "Quando o array pode estar vazio",
+          "correct": false,
+          "why": "Os dois lidam com array vazio do mesmo jeito: simplesmente não dão nenhuma volta."
+        },
+        {
+          "id": "e",
+          "text": "Quando você precisa saber a posição de cada item",
+          "correct": true
+        }
+      ],
+      "hint": "A única coisa que o `for` melhorado não oferece é uma informação. Qual?",
+      "explanation": "O `for` melhorado entrega o **item**, e não a posição. Quando a posição importa — imprimir \"item 3 de 10\", comparar com o vizinho, alterar o array no lugar — volta o clássico.\n\nA regra prática: **use o melhorado por padrão, e o clássico só quando precisar da posição.** Escolher o clássico por hábito é escrever um contador a mais para poder errar nele — e o `off-by-one` é o erro de percurso mais comum que existe."
+    },
+    {
+      "id": "java-beg-0508",
+      "topic": "acumulador",
+      "prompt": "Com `total` valendo `20` e o array tendo `3` itens, o que `System.out.println(total / notas.length);` imprime?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`6.67`, a média correta",
+          "correct": false,
+          "why": "Esse seria o resultado se algum dos lados fosse decimal. Os dois são inteiros."
+        },
+        {
+          "id": "b",
+          "text": "`7`, arredondado",
+          "correct": false,
+          "why": "Não há arredondamento em divisão inteira: a parte decimal é descartada."
+        },
+        {
+          "id": "c",
+          "text": "`6`",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "`6.0`",
+          "correct": false,
+          "why": "Para sair com casa decimal, o resultado precisaria ser `double` — e a conta produziu um `int`."
+        },
+        {
+          "id": "e",
+          "text": "Não compila: média exige conversão explícita",
+          "correct": false,
+          "why": "Compila perfeitamente, e é justamente por isso que o defeito passa despercebido."
+        }
+      ],
+      "hint": "Volte à lição 02: os dois lados da divisão são `int`. O que isso faz com o resultado?",
+      "explanation": "`total` é `int` e `length` é `int`, então a divisão é inteira: `20 / 3` dá `6`, com o `,67` descartado.\n\nO que torna isso perigoso é o código **compilar e rodar sem reclamar**. A média sai errada em silêncio, e ninguém percebe até alguém conferir na mão.\n\nA correção é converter antes: `(double) total / notas.length`. E repare como este defeito une três lições — a divisão inteira da 02, o array da 05, e a ideia de que **o compilador cuida da forma e não do comportamento**, que apareceu na 04."
+    },
+    {
+      "id": "java-beg-0509",
+      "topic": "array",
+      "prompt": "O que este código imprime?",
+      "code": {
+        "language": "java",
+        "content": "String[] nomes = new String[2];\nnomes[0] = \"Ada\";\nSystem.out.println(nomes[1]);"
+      },
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`Ada`, repetido nas duas posições",
+          "correct": false,
+          "why": "Só a posição 0 recebeu valor. Uma atribuição não preenche o array inteiro."
+        },
+        {
+          "id": "b",
+          "text": "Uma linha vazia, porque a posição guarda texto vazio",
+          "correct": false,
+          "why": "Texto vazio e ausência de texto são coisas diferentes em Java, e o array começa com a segunda."
+        },
+        {
+          "id": "c",
+          "text": "O programa quebra: a posição 1 não existe",
+          "correct": false,
+          "why": "Num array de tamanho 2, as posições 0 e 1 existem. Quebraria a posição 2."
+        },
+        {
+          "id": "d",
+          "text": "`null`",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Não compila: falta preencher todas as posições",
+          "correct": false,
+          "why": "Java não exige que você preencha nada. Ele dá um valor inicial a cada posição."
+        }
+      ],
+      "hint": "A posição existe, e nunca recebeu valor. Pergunte-se com o que Java preenche um array de objetos recém-criado.",
+      "explanation": "`new String[2]` cria duas posições e as preenche com o valor inicial do tipo. Para **objetos**, esse valor é `null`.\n\nPara **primitivos** é diferente: `new int[2]` nasce com `0` em cada posição, e `new boolean[2]` com `false`. Primitivo nunca é nulo.\n\nE aqui mora um risco real: `nomes[1].length()` lançaria `NullPointerException`. Array de objetos recém-criado é uma das origens mais comuns desse erro — e liga direto com o `!= null` da lição 03."
+    },
+    {
+      "id": "java-beg-0510",
+      "topic": "for",
+      "prompt": "Complete a condição do laço para percorrer o array inteiro sem quebrar.",
+      "code": {
+        "language": "java",
+        "content": "int[] notas = {7, 9, 5};\nfor (int i = 0; ______; i++) {\n  System.out.println(notas[i]);\n}",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "i < notas.length"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "Compare o contador com o tamanho do array — e lembre que o sinal precisa ser **menor**, sem o igual.",
+      "explanation": "`i < notas.length` percorre as posições 0, 1 e 2, e para antes da 3, que não existe.\n\nAs três partes do `for` respondem três perguntas: **onde começa** (`int i = 0`), **até quando continua** (esta), e **o que muda a cada volta** (`i++`). Ler assim torna qualquer laço decifrável.\n\nE repare que o tamanho é `notas.length`, sem parênteses — o par que vale decorar: **texto pede parênteses, array não pede.**"
+    }
+  ]
+}
