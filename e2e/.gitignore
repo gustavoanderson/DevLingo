@@ -1,3 +1,7 @@
 node_modules/
 .wdio-*
 logs/
+
+# Credenciais da conta de teste. NUNCA vao para o repositorio -- mesma regra
+# da keystore e do google-services.json.
+.env

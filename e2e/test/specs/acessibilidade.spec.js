@@ -1,4 +1,5 @@
 import titulo from '../telas/titulo.js';
+import login from '../telas/login.js';
 import escolha from '../telas/escolha.js';
 import trilha from '../telas/trilha.js';
 
@@ -37,6 +38,17 @@ describe('Acessibilidade do cabecalho da trilha', () => {
     await driver.activateApp('com.devlingo.app');
 
     await titulo.inserirFicha();
+
+    // O app exige conta, e essa e decisao registrada do projeto: "ninguem joga
+    // sem entrar". Quem ja entrou uma vez tem a sessao em cache e cai direto na
+    // escolha -- entao o login e CONDICIONAL, e nao um passo fixo.
+    //
+    // Escrever isto como passo obrigatorio faria a suite falhar na segunda
+    // execucao, procurando um campo de e-mail que nao esta mais na tela.
+    if (await login.email.isExisting()) {
+      await login.entrarComContaDeTeste();
+    }
+
     await escolha.esperar();
     await escolha.abrirTrilha('frameworks');
     await trilha.esperar();

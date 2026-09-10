@@ -1,3 +1,22 @@
+import { readFileSync } from 'node:fs';
+
+// Le o `e2e/.env` sem dependencia nova.
+//
+// Ele guarda as credenciais da conta de teste e e ignorado pelo git -- mesma
+// regra da keystore e do `google-services.json`. Ausente, a suite nao explode
+// aqui: ela falha no login com uma mensagem que diz o que criar, que e mais
+// util que um erro de arquivo nao encontrado no arranque.
+try {
+  const bruto = readFileSync(new URL('.env', import.meta.url), 'utf8');
+  for (const linha of bruto.split(/\r?\n/)) {
+    const corte = linha.indexOf('=');
+    if (linha.startsWith('#') || corte < 1) continue;
+    process.env[linha.slice(0, corte).trim()] ??= linha.slice(corte + 1).trim();
+  }
+} catch {
+  // Sem .env. Ver a mensagem de `entrarComContaDeTeste`.
+}
+
 // Configuracao da suite de ponta a ponta do DevLingo.
 //
 // Cada bloco abaixo tem um comentario dizendo POR QUE ele esta assim, e nao
@@ -123,6 +142,24 @@ export const config = {
       // Sem isto o Appium 3 recusa capacidades que ele nao conhece.
       relaxedSecurity: true,
     },
+  },
+
+  /**
+   * Reforca a configuracao de ociosidade DEPOIS que a sessao abre.
+   *
+   * A capacidade `settings[waitForIdleTimeout]` acima deveria bastar, mas
+   * capacidade com nome errado e ignorada em SILENCIO -- nao ha erro, e o
+   * sintoma e um comando que executa e nao faz nada. Aqui a chamada e
+   * explicita, e o `console.log` mostra o que o driver realmente aceitou.
+   *
+   * Cinto e suspensorio, e neste caso justificado: sem esta configuracao a
+   * tela de titulo do DevLingo e inalcancavel, porque as animacoes em laco
+   * nunca deixam a interface ficar ociosa.
+   */
+  before: async function () {
+    await driver.updateSettings({ waitForIdleTimeout: 0 });
+    const atual = await driver.getSettings();
+    console.log('waitForIdleTimeout =', atual.waitForIdleTimeout);
   },
 
   framework: 'mocha',

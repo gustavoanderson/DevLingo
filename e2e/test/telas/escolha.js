@@ -27,7 +27,7 @@ class TelaEscolha {
 
   async abrirTrilha(chave) {
     const alvo = cartao(chave);
-    await alvo.waitForDisplayed({
+    await alvo.waitForExist({
       timeoutMsg: `o cartao da trilha "${chave}" nao apareceu na tela de escolha`,
     });
     await alvo.click();
@@ -35,7 +35,14 @@ class TelaEscolha {
 
   async esperar() {
     // Python e a primeira da ordem sugerida, e a trilha que sempre existe.
-    await cartao('python').waitForDisplayed({
+    // `waitForExist`, e nao `waitForDisplayed`.
+    //
+    // Sao perguntas diferentes: "existe na arvore" e "esta visivel". Num app
+    // Flutter os nos de acessibilidade sao sinteticos, e o calculo de
+    // visibilidade do UiAutomator nem sempre concorda com o que se ve.
+    // Medido -- a sonda achava o no pelo `getPageSource`, e o
+    // `waitForDisplayed` no mesmo seletor estourava o tempo.
+    await cartao('python').waitForExist({
       timeoutMsg: 'a tela de escolha de trilha nao apareceu',
     });
   }
