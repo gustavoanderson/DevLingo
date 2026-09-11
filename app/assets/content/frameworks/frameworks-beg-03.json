@@ -19,7 +19,7 @@
       {
         "topico": "diretiva",
         "titulo": "Vue: a lógica mora em atributos",
-        "texto": "No Vue, a lógica da tela vive em atributos especiais chamados **diretivas**, que começam com `v-`:\n\n- `v-if` mostra ou não mostra\n- `v-for` repete um pedaço para cada item\n- `:titulo` passa um valor para dentro de um componente\n- `@click` escuta um evento\n\nReact não tem nada disso: lá você usa o JavaScript que já sabe dentro das chaves — `&&` para condição, `.map()` para lista.\n\nE aqui está o primeiro *trade-off* de verdade do curso. Em React você aprende **menos vocabulário novo**, e em troca escreve lógica de programação no meio da tela. Em Vue você aprende `v-if` e `v-for`, e em troca a marcação continua parecendo uma página.\n\nSvelte fica no meio: tem blocos próprios como `{#if}` e `{#each}`, mas eles não são atributos.",
+        "texto": "No Vue, a lógica da tela vive em atributos especiais chamados **diretivas**, que começam com `v-`:\n\n- `v-if` mostra ou não mostra\n- `v-for` repete um pedaço para cada item\n- `:titulo` passa um valor para dentro de um componente\n- `@click` escuta um evento\n\nReact não tem nada disso: lá você usa o JavaScript que já sabe dentro das chaves — `&&` para condição, `.map()` para lista.\n\nE aqui está o primeiro **trade-off** de verdade do curso. Em React você aprende **menos vocabulário novo**, e em troca escreve lógica de programação no meio da tela. Em Vue você aprende `v-if` e `v-for`, e em troca a marcação continua parecendo uma página.\n\nSvelte fica no meio: tem blocos próprios como `{#if}` e `{#each}`, mas eles não são atributos.",
         "code": {
           "language": "html",
           "content": "<!-- Vue -->\n<li v-for=\"livro in livros\" :key=\"livro.id\">\n  <span v-if=\"livro.lido\">lido</span>\n  <button @click=\"marcar(livro)\">Marcar</button>\n</li>"
@@ -95,7 +95,9 @@
         "highlightLine": 1
       },
       "answerType": "fillBlank",
-      "accepted": ["v-for"],
+      "accepted": [
+        "v-for"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -193,14 +195,16 @@
         "highlightLine": 3
       },
       "answerType": "fillBlank",
-      "accepted": ["ref"],
+      "accepted": [
+        "ref"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "São três letras, abreviação de *referência*: uma caixinha em volta do valor, que o Vue consegue observar.",
+      "hint": "São três letras, abreviação de **referência**: uma caixinha em volta do valor, que o Vue consegue observar.",
       "explanation": "O `ref` embrulha o valor numa caixa que o Vue observa. No script você mexe no conteúdo através de `.value`; no template não precisa, porque lá ele desembrulha sozinho — e essa assimetria é a pegadinha mais comum de quem começa em Vue."
     },
     {
@@ -247,7 +251,10 @@
       "topic": "svelte-compilador",
       "prompt": "Svelte não é uma biblioteca que roda no navegador: ele é um programa que traduz o seu arquivo em código de atualização de tela antes de o site ser publicado. Escreva o nome desse tipo de programa.",
       "answerType": "freeWrite",
-      "accepted": ["compilador", "compiler"],
+      "accepted": [
+        "compilador",
+        "compiler"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -340,7 +347,11 @@
       "topic": "diretiva",
       "prompt": "No Vue, os atributos especiais que começam com `v-` e trazem condição, repetição e eventos para dentro da marcação têm um nome. Escreva-o no plural.",
       "answerType": "freeWrite",
-      "accepted": ["diretivas", "diretiva", "directives"],
+      "accepted": [
+        "diretivas",
+        "diretiva",
+        "directives"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

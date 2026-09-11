@@ -10,7 +10,7 @@
       {
         "topico": "laco",
         "titulo": "A ideia inteira cabe em quatro passos",
-        "texto": "Um **agente** é um modelo de linguagem dentro de um laço. Só isso, e o resto do assunto é engenharia em volta dessa ideia.\n\nO ciclo tem quatro passos, e ele se repete:\n\n1. **Pensar** — o modelo recebe o objetivo e o que já aconteceu\n2. **Agir** — ele escolhe uma ferramenta e a chama\n3. **Observar** — o resultado da ferramenta volta para ele\n4. **Repetir** — com o que aprendeu, ele decide o próximo passo\n\nRepare no que **não** está aí: ninguém programou a sequência. O código não diz *\"primeiro leia o arquivo, depois rode o teste\"*. O modelo decide isso a cada volta, olhando o que aconteceu.\n\nÉ essa inversão que assusta e que dá poder. Num programa comum, o caminho está escrito. Aqui, **o caminho é escolhido durante a execução**, e por isso duas execuções do mesmo pedido podem seguir rotas diferentes e chegar ao mesmo lugar.",
+        "texto": "Um **agente** é um modelo de linguagem dentro de um laço. Só isso, e o resto do assunto é engenharia em volta dessa ideia.\n\nO ciclo tem quatro passos, e ele se repete:\n\n1. **Pensar** — o modelo recebe o objetivo e o que já aconteceu\n2. **Agir** — ele escolhe uma ferramenta e a chama\n3. **Observar** — o resultado da ferramenta volta para ele\n4. **Repetir** — com o que aprendeu, ele decide o próximo passo\n\nRepare no que **não** está aí: ninguém programou a sequência. O código não diz \"primeiro leia o arquivo, depois rode o teste\". O modelo decide isso a cada volta, olhando o que aconteceu.\n\nÉ essa inversão que assusta e que dá poder. Num programa comum, o caminho está escrito. Aqui, **o caminho é escolhido durante a execução**, e por isso duas execuções do mesmo pedido podem seguir rotas diferentes e chegar ao mesmo lugar.",
         "code": {
           "language": "python",
           "content": "while not terminou:\n    decisao = modelo.pensar(objetivo, historico)\n    if decisao.eh_resposta_final:\n        break\n    resultado = ferramentas.executar(decisao)\n    historico.append(resultado)"
@@ -19,7 +19,7 @@
       {
         "topico": "chatbot",
         "titulo": "Por que isto não é um chatbot",
-        "texto": "Um **chatbot** recebe uma pergunta e devolve texto. Ele não faz nada no mundo: não abre arquivo, não chama serviço, não muda estado. O ciclo dele é uma volta só.\n\nUm **agente** age, vê o efeito, e ajusta. A diferença não está na inteligência do modelo — pode ser exatamente o mesmo — e sim em **duas coisas que você acrescenta**: o laço e as ferramentas.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado, e você lê. Um agente que erra **apaga um arquivo**, **manda um e-mail**, **gasta dinheiro**.\n\nE muda também a natureza do acerto. Perguntar a um chatbot *\"por que meu teste falha?\"* devolve hipóteses; pedir a um agente devolve **a resposta**, porque ele foi ler o log, rodou o teste e olhou a saída.\n\nA regra que vale guardar: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**",
+        "texto": "Um **chatbot** recebe uma pergunta e devolve texto. Ele não faz nada no mundo: não abre arquivo, não chama serviço, não muda estado. O ciclo dele é uma volta só.\n\nUm **agente** age, vê o efeito, e ajusta. A diferença não está na inteligência do modelo — pode ser exatamente o mesmo — e sim em **duas coisas que você acrescenta**: o laço e as ferramentas.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado, e você lê. Um agente que erra **apaga um arquivo**, **manda um e-mail**, **gasta dinheiro**.\n\nE muda também a natureza do acerto. Perguntar a um chatbot \"por que meu teste falha?\" devolve hipóteses; pedir a um agente devolve **a resposta**, porque ele foi ler o log, rodou o teste e olhou a saída.\n\nA regra que vale guardar: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**",
         "code": {
           "language": "text",
           "content": "CHATBOT\n   pergunta  -->  texto\n   uma ida, e acabou\n\nAGENTE\n   objetivo\n      |\n      v\n   +-> pensar\n   |     agir\n   |     observar\n   +--- repete ate resolver\n      |\n      v\n   resultado"
@@ -28,7 +28,7 @@
       {
         "topico": "autonomia",
         "titulo": "Autonomia é escala, e não interruptor",
-        "texto": "A pergunta *\"o agente pode agir sozinho?\"* está mal formulada. A pergunta certa é: **agir sozinho em quê?**\n\nUm mesmo agente costuma ter permissões diferentes por tipo de ação:\n\n- **ler** qualquer coisa — risco baixo, e reversível\n- **escrever** onde há verificação automática — risco médio, e o portão pega o erro\n- **publicar** para fora — risco alto, e muitas vezes irreversível\n- **gastar** dinheiro — sempre com aprovação\n\nO critério que decide não é \"o que a ferramenta consegue fazer\", e sim **o que é verificável sem uma pessoa olhando**.\n\nSe existe um teste, um validador ou um portão que reprova o erro, o agente pode agir. Se a única forma de saber se ficou bom é alguém olhar, **então alguém precisa olhar** — e nenhum modelo melhor resolve isso.\n\nEssa formulação vale numa entrevista, e ela é o oposto do que a maioria diz. Não é sobre confiar no modelo: é sobre **onde existe uma rede embaixo dele**.",
+        "texto": "A pergunta \"o agente pode agir sozinho?\" está mal formulada. A pergunta certa é: **agir sozinho em quê?**\n\nUm mesmo agente costuma ter permissões diferentes por tipo de ação:\n\n- **ler** qualquer coisa — risco baixo, e reversível\n- **escrever** onde há verificação automática — risco médio, e o portão pega o erro\n- **publicar** para fora — risco alto, e muitas vezes irreversível\n- **gastar** dinheiro — sempre com aprovação\n\nO critério que decide não é \"o que a ferramenta consegue fazer\", e sim **o que é verificável sem uma pessoa olhando**.\n\nSe existe um teste, um validador ou um portão que reprova o erro, o agente pode agir. Se a única forma de saber se ficou bom é alguém olhar, **então alguém precisa olhar** — e nenhum modelo melhor resolve isso.\n\nEssa formulação vale numa entrevista, e ela é o oposto do que a maioria diz. Não é sobre confiar no modelo: é sobre **onde existe uma rede embaixo dele**.",
         "code": {
           "language": "text",
           "content": "   o erro dessa acao e\n   verificavel automaticamente?\n      |\n      +-- SIM --> age sozinho\n      |\n      +-- NAO --> propoe, e uma\n                  pessoa decide"
@@ -83,7 +83,7 @@
         }
       ],
       "hint": "Pense em duas coisas que você **acrescenta** em volta do modelo, e não em algo que o modelo tenha de diferente.",
-      "explanation": "Duas coisas, e nenhuma delas está no modelo: **o laço e as ferramentas**.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado e você lê; um agente que erra **apaga um arquivo, manda um e-mail, gasta dinheiro**.\n\nE muda a do acerto: perguntar a um chatbot *\"por que meu teste falha?\"* devolve hipóteses; pedir a um agente devolve a resposta, porque ele foi ler o log e rodar o teste.\n\nA frase que resume: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**"
+      "explanation": "Duas coisas, e nenhuma delas está no modelo: **o laço e as ferramentas**.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado e você lê; um agente que erra **apaga um arquivo, manda um e-mail, gasta dinheiro**.\n\nE muda a do acerto: perguntar a um chatbot \"por que meu teste falha?\" devolve hipóteses; pedir a um agente devolve a resposta, porque ele foi ler o log e rodar o teste.\n\nA frase que resume: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**"
     },
     {
       "id": "agentes-beg-0102",
@@ -280,7 +280,7 @@
         }
       ],
       "hint": "No caso do chatbot existe um passo entre a sugestão e o efeito. Qual é, e quem o executa?",
-      "explanation": "Entre a sugestão do chatbot e o efeito existe **uma pessoa lendo** — e essa pessoa é um portão, mesmo que ninguém a tenha chamado assim.\n\nDar a ferramenta ao agente **remove esse portão**. Isso é legítimo, e precisa ser uma decisão consciente, com outra rede no lugar: uma pasta restrita, uma confirmação, um registro do que foi apagado.\n\nEsse é o raciocínio central de *guardrails*, e ele aparece de novo na lição 05. **Toda ferramenta que você dá é um portão que você tira.**"
+      "explanation": "Entre a sugestão do chatbot e o efeito existe **uma pessoa lendo** — e essa pessoa é um portão, mesmo que ninguém a tenha chamado assim.\n\nDar a ferramenta ao agente **remove esse portão**. Isso é legítimo, e precisa ser uma decisão consciente, com outra rede no lugar: uma pasta restrita, uma confirmação, um registro do que foi apagado.\n\nEsse é o raciocínio central de **guardrails**, e ele aparece de novo na lição 05. **Toda ferramenta que você dá é um portão que você tira.**"
     },
     {
       "id": "agentes-beg-0108",

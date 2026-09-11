@@ -10,7 +10,7 @@
       {
         "topico": "dom-a-mao",
         "titulo": "A tela é uma árvore, e dá para mexer nela à mão",
-        "texto": "O navegador não guarda a sua página como texto. Ele monta uma **árvore de objetos** — o DOM — onde cada tag vira um nó. Mudar a tela é mudar essa árvore.\n\nDá para fazer isso na mão, e para uma página pequena é o suficiente: você acha o elemento e troca o conteúdo dele.\n\nO problema aparece quando **a mesma informação aparece em mais de um lugar**. Um contador no topo, o total no meio, um botão que desliga quando chega a zero. Mudou o valor, e agora é *você* quem precisa lembrar de atualizar os três.\n\nEsquecer um é o defeito clássico: a tela mostra dois números diferentes para o mesmo dado. E ninguém avisa — o código roda, nada quebra, só que a página passou a mentir.",
+        "texto": "O navegador não guarda a sua página como texto. Ele monta uma **árvore de objetos** — o DOM — onde cada tag vira um nó. Mudar a tela é mudar essa árvore.\n\nDá para fazer isso na mão, e para uma página pequena é o suficiente: você acha o elemento e troca o conteúdo dele.\n\nO problema aparece quando **a mesma informação aparece em mais de um lugar**. Um contador no topo, o total no meio, um botão que desliga quando chega a zero. Mudou o valor, e agora é **você** quem precisa lembrar de atualizar os três.\n\nEsquecer um é o defeito clássico: a tela mostra dois números diferentes para o mesmo dado. E ninguém avisa — o código roda, nada quebra, só que a página passou a mentir.",
         "code": {
           "language": "javascript",
           "content": "let itens = 0;\n\nfunction adicionar() {\n  itens = itens + 1;\n  // ...e agora e voce quem lembra dos tres lugares\n  document.querySelector(\"#topo\").textContent = itens;\n  document.querySelector(\"#total\").textContent = itens;\n  document.querySelector(\"#botao\").disabled = itens === 0;\n}"
@@ -19,7 +19,7 @@
       {
         "topico": "componente",
         "titulo": "Um pedaço de tela com nome",
-        "texto": "Um **componente** é um pedaço de tela embrulhado com um nome. Ele junta o que aparece com o código que o faz funcionar, e passa a ser usado como se fosse uma tag nova que você inventou.\n\nOs valores que ele recebe de fora se chamam `props`, de *properties*. Quem usa o componente passa; quem escreveu recebe. É o mesmo raciocínio de uma função — entra parâmetro, sai resultado — só que aqui o resultado é tela.\n\nE a regra é de mão única: **o componente lê a prop, não a altera.** Quem manda naquele valor é quem passou. Isso não é burocracia: é o que permite olhar para um componente sozinho e saber de onde vieram os dados dele, sem caçar pela aplicação inteira.\n\nO exemplo abaixo está escrito em React, que a lição 02 abre com calma. Vue e Svelte escrevem a mesma ideia de outro jeito, e é disso que trata a lição 03.",
+        "texto": "Um **componente** é um pedaço de tela embrulhado com um nome. Ele junta o que aparece com o código que o faz funcionar, e passa a ser usado como se fosse uma tag nova que você inventou.\n\nOs valores que ele recebe de fora se chamam `props`, de **properties**. Quem usa o componente passa; quem escreveu recebe. É o mesmo raciocínio de uma função — entra parâmetro, sai resultado — só que aqui o resultado é tela.\n\nE a regra é de mão única: **o componente lê a prop, não a altera.** Quem manda naquele valor é quem passou. Isso não é burocracia: é o que permite olhar para um componente sozinho e saber de onde vieram os dados dele, sem caçar pela aplicação inteira.\n\nO exemplo abaixo está escrito em React, que a lição 02 abre com calma. Vue e Svelte escrevem a mesma ideia de outro jeito, e é disso que trata a lição 03.",
         "code": {
           "language": "javascript",
           "content": "// quem escreve o componente RECEBE\nfunction Saudacao({ nome }) {\n  return <h1>Ola, {nome}</h1>;\n}\n\n// quem usa o componente PASSA, como se fosse tag\n<Saudacao nome=\"Ada\" />"
@@ -28,7 +28,7 @@
       {
         "topico": "estado",
         "titulo": "O dado que, ao mudar, redesenha a tela",
-        "texto": "**Estado** é o dado que pertence ao componente e que, ao mudar, faz a tela ser redesenhada.\n\nA diferença entre os dois vale decorar agora, porque ela volta em todas as lições: **prop vem de fora, estado nasce dentro.**\n\nE aqui está a virada. Você para de dizer *\"troque o texto daquele elemento\"* e passa a dizer *\"a tela é assim, em função do estado\"*. Muda o estado, e descobrir o que precisa mudar na árvore vira trabalho do framework.\n\nIsso tem nome: escrever assim é **declarativo**, e o primeiro exemplo desta aula era **imperativo**. No imperativo você dá o passo a passo. No declarativo você descreve o resultado.\n\nRepare que os três lugares do começo deixam de ser um risco: todos leem o mesmo estado, então não há como um ficar para trás.",
+        "texto": "**Estado** é o dado que pertence ao componente e que, ao mudar, faz a tela ser redesenhada.\n\nA diferença entre os dois vale decorar agora, porque ela volta em todas as lições: **prop vem de fora, estado nasce dentro.**\n\nE aqui está a virada. Você para de dizer \"troque o texto daquele elemento\" e passa a dizer \"a tela é assim, em função do estado\". Muda o estado, e descobrir o que precisa mudar na árvore vira trabalho do framework.\n\nIsso tem nome: escrever assim é **declarativo**, e o primeiro exemplo desta aula era **imperativo**. No imperativo você dá o passo a passo. No declarativo você descreve o resultado.\n\nRepare que os três lugares do começo deixam de ser um risco: todos leem o mesmo estado, então não há como um ficar para trás.",
         "code": {
           "language": "javascript",
           "content": "// imperativo: voce manda atualizar cada lugar\ndocument.querySelector(\"#total\").textContent = itens;\n\n// declarativo: voce descreve, e o framework atualiza\n<span>{itens}</span>"
@@ -37,7 +37,7 @@
       {
         "topico": "duas-camadas",
         "titulo": "Os seis não são seis alternativas",
-        "texto": "Agora o mapa, e ele desfaz a confusão mais comum de quem está começando.\n\n**React, Vue e Svelte** cuidam da tela: componente, prop, estado. É tudo que você viu até aqui.\n\n**Next, Nuxt e Astro** ficam por cima de um desses e cuidam do que falta para virar um site de verdade: qual endereço mostra qual página, o que é montado no servidor antes de chegar ao navegador, e como o código é empacotado.\n\nNext usa React. Nuxt usa Vue. Astro aceita vários, e é por isso que ele é o mais diferente dos três.\n\nEntão *\"React ou Next?\"* **não é uma escolha, é uma camada.** Next *é* React, com rota e servidor em volta — perguntar isso é como perguntar \"motor ou carro\". A pergunta que faz sentido é \"React sozinho, ou React com Next?\".\n\nO nome dessa segunda camada é **meta-framework**: framework em cima de framework.",
+        "texto": "Agora o mapa, e ele desfaz a confusão mais comum de quem está começando.\n\n**React, Vue e Svelte** cuidam da tela: componente, prop, estado. É tudo que você viu até aqui.\n\n**Next, Nuxt e Astro** ficam por cima de um desses e cuidam do que falta para virar um site de verdade: qual endereço mostra qual página, o que é montado no servidor antes de chegar ao navegador, e como o código é empacotado.\n\nNext usa React. Nuxt usa Vue. Astro aceita vários, e é por isso que ele é o mais diferente dos três.\n\nEntão \"React ou Next?\" **não é uma escolha, é uma camada.** Next **é** React, com rota e servidor em volta — perguntar isso é como perguntar \"motor ou carro\". A pergunta que faz sentido é \"React sozinho, ou React com Next?\".\n\nO nome dessa segunda camada é **meta-framework**: framework em cima de framework.",
         "code": {
           "language": "text",
           "content": "CUIDAM DA TELA        POR CIMA DELES\n\nReact          <-     Next\nVue            <-     Nuxt\nvarios deles   <-     Astro"
@@ -122,21 +122,23 @@
         }
       ],
       "hint": "Uma das cinco está com as duas metades trocadas de lugar. Vale ler as duas partes com atenção antes de decidir.",
-      "explanation": "*Imperativo* vem de dar ordens: ache o elemento, troque o texto, desligue o botão. *Declarativo* é descrever como a tela deve ser em função dos dados, e deixar a tarefa de encontrar o que mudou com o framework. Trocar um pelo outro é a ideia central por trás de React, Vue e Svelte — os três discordam de *como* fazer isso, e concordam em fazer."
+      "explanation": "**Imperativo** vem de dar ordens: ache o elemento, troque o texto, desligue o botão. **Declarativo** é descrever como a tela deve ser em função dos dados, e deixar a tarefa de encontrar o que mudou com o framework. Trocar um pelo outro é a ideia central por trás de React, Vue e Svelte — os três discordam de **como** fazer isso, e concordam em fazer."
     },
     {
       "id": "frameworks-beg-0103",
       "topic": "componente",
       "prompt": "Os valores que um componente recebe **de fora**, de quem o usa, têm um nome de cinco letras em inglês. Escreva-o.",
       "answerType": "freeWrite",
-      "accepted": ["props"],
+      "accepted": [
+        "props"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "É a abreviação de *properties*, e a palavra aparece na aula desta lição.",
+      "hint": "É a abreviação de **properties**, e a palavra aparece na aula desta lição.",
       "explanation": "As `props` são a entrada do componente, como os parâmetros de uma função. A regra é de mão única: o componente lê, não altera — quem manda no valor é quem passou. O dado que nasce dentro do próprio componente é outra coisa, e chama estado."
     },
     {
@@ -215,7 +217,7 @@
         }
       ],
       "hint": "Duas alternativas descrevem o comportamento de recarregar a página, que é justamente o que se quer evitar.",
-      "explanation": "Essa é a promessa central dos três: você muda o dado, e descobrir o que precisa mudar na tela deixa de ser problema seu. *Como* cada um descobre isso é onde eles discordam profundamente — React compara, Vue observa, Svelte compila — e é o que as lições 02 e 03 abrem."
+      "explanation": "Essa é a promessa central dos três: você muda o dado, e descobrir o que precisa mudar na tela deixa de ser problema seu. **Como** cada um descobre isso é onde eles discordam profundamente — React compara, Vue observa, Svelte compila — e é o que as lições 02 e 03 abrem."
     },
     {
       "id": "frameworks-beg-0106",
@@ -227,7 +229,9 @@
         "highlightLine": 4
       },
       "answerType": "fillBlank",
-      "accepted": ["declarativo"],
+      "accepted": [
+        "declarativo"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -235,7 +239,7 @@
         "caseSensitive": false
       },
       "hint": "É o oposto exato do que está escrito na primeira linha, e a palavra aparece na aula desta lição.",
-      "explanation": "No estilo `declarativo` você declara como a tela deve ser em função dos dados. A palavra tem a mesma raiz de *declaração*: você afirma um fato sobre a tela, em vez de mandar alguém executar um passo. É a marca comum de React, Vue e Svelte."
+      "explanation": "No estilo `declarativo` você declara como a tela deve ser em função dos dados. A palavra tem a mesma raiz de **declaração**: você afirma um fato sobre a tela, em vez de mandar alguém executar um passo. É a marca comum de React, Vue e Svelte."
     },
     {
       "id": "frameworks-beg-0107",
@@ -274,12 +278,12 @@
         }
       ],
       "hint": "O defeito antigo era depender da sua memória. Pergunte-se o que passou a ser a única fonte do valor.",
-      "explanation": "O valor deixa de ter cópias espalhadas pela árvore e passa a ter **uma fonte só**, lida por quem precisar. Não existe mais \"esqueci de atualizar o terceiro\", porque não existe mais um terceiro para atualizar — existe um terceiro que *lê*."
+      "explanation": "O valor deixa de ter cópias espalhadas pela árvore e passa a ter **uma fonte só**, lida por quem precisar. Não existe mais \"esqueci de atualizar o terceiro\", porque não existe mais um terceiro para atualizar — existe um terceiro que **lê**."
     },
     {
       "id": "frameworks-beg-0108",
       "topic": "duas-camadas",
-      "prompt": "Alguém pergunta: *\"para o meu site, React ou Next?\"*. Por que a pergunta está mal formulada?",
+      "prompt": "Alguém pergunta: \"para o meu site, React ou Next?\". Por que a pergunta está mal formulada?",
       "answerType": "multipleChoice",
       "options": [
         {
@@ -313,21 +317,24 @@
         }
       ],
       "hint": "Pense no mapa do fim da aula. Um dos dois aparece na coluna da esquerda, e o outro na da direita.",
-      "explanation": "A pergunta compara coisas de camadas diferentes — é como perguntar \"motor ou carro?\". A formulação que faz sentido é *\"React sozinho, ou React com Next por cima?\"*. E aí a resposta depende de você precisar de rota, servidor e empacotamento prontos, que é o assunto da lição 04."
+      "explanation": "A pergunta compara coisas de camadas diferentes — é como perguntar \"motor ou carro?\". A formulação que faz sentido é \"React sozinho, ou React com Next por cima?\". E aí a resposta depende de você precisar de rota, servidor e empacotamento prontos, que é o assunto da lição 04."
     },
     {
       "id": "frameworks-beg-0109",
       "topic": "duas-camadas",
       "prompt": "Como se chama o tipo de framework que é construído **por cima de outro**, cuidando de rota, servidor e empacotamento? São duas palavras unidas por hífen.",
       "answerType": "freeWrite",
-      "accepted": ["meta-framework", "metaframework"],
+      "accepted": [
+        "meta-framework",
+        "metaframework"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "O prefixo é o mesmo de *metadado*, que quer dizer dado sobre dado. Aqui, a mesma ideia aplicada uma camada acima.",
+      "hint": "O prefixo é o mesmo de **metadado**, que quer dizer dado sobre dado. Aqui, a mesma ideia aplicada uma camada acima.",
       "explanation": "Next, Nuxt e Astro são `meta-frameworks`. Eles não substituem React, Vue ou Svelte: usam um deles por baixo e resolvem o que falta para virar um site — qual endereço mostra qual página, o que é montado no servidor, e como o código chega ao navegador."
     },
     {
@@ -340,14 +347,17 @@
         "highlightLine": 3
       },
       "answerType": "fillBlank",
-      "accepted": ["Next", "Next.js"],
+      "accepted": [
+        "Next",
+        "Next.js"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "O nome quer dizer *próximo* em inglês, e se parece de propósito com o da linha logo abaixo.",
+      "hint": "O nome quer dizer **próximo** em inglês, e se parece de propósito com o da linha logo abaixo.",
       "explanation": "O `Next` usa React por baixo, e o `Nuxt` usa Vue — a semelhança entre os nomes é homenagem, não coincidência. O `Astro` é o diferente dos três: em vez de casar com um framework só, ele aceita componentes de vários na mesma página. A lição 04 abre os três."
     }
   ]

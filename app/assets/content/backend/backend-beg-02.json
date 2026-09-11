@@ -28,7 +28,7 @@
       {
         "topico": "cabecalhos",
         "titulo": "Informação sobre o pedido, ao lado dele",
-        "texto": "A lição anterior separou o **corpo** — o conteúdo — daquilo que se diz *sobre* o conteúdo. Essa segunda parte viaja nos **cabeçalhos**, e eles existem nos dois sentidos: o cliente manda os dele, o servidor manda os dele.\n\nSão pares de nome e valor. O cliente costuma dizer o que aceita receber e quem ele é; o servidor costuma dizer o que está mandando e por quanto tempo aquilo vale.\n\nTrês que você vai encontrar sempre: `Content-Type` diz o formato do corpo, para o cliente saber se aquilo é JSON, HTML ou imagem. `Authorization` carrega a credencial de quem está pedindo. E os cabeçalhos de cache dizem se a resposta pode ser guardada e reaproveitada.\n\nRepare que o `Content-Type` é o que impede o cliente de ter que adivinhar. Sem ele, os mesmos bytes poderiam ser lidos de várias formas — e adivinhação em protocolo é fonte de falha de segurança.",
+        "texto": "A lição anterior separou o **corpo** — o conteúdo — daquilo que se diz **sobre** o conteúdo. Essa segunda parte viaja nos **cabeçalhos**, e eles existem nos dois sentidos: o cliente manda os dele, o servidor manda os dele.\n\nSão pares de nome e valor. O cliente costuma dizer o que aceita receber e quem ele é; o servidor costuma dizer o que está mandando e por quanto tempo aquilo vale.\n\nTrês que você vai encontrar sempre: `Content-Type` diz o formato do corpo, para o cliente saber se aquilo é JSON, HTML ou imagem. `Authorization` carrega a credencial de quem está pedindo. E os cabeçalhos de cache dizem se a resposta pode ser guardada e reaproveitada.\n\nRepare que o `Content-Type` é o que impede o cliente de ter que adivinhar. Sem ele, os mesmos bytes poderiam ser lidos de várias formas — e adivinhação em protocolo é fonte de falha de segurança.",
         "code": {
           "language": "http",
           "content": "Content-Type: application/json\nAuthorization: Bearer abc123\nCache-Control: max-age=60"
@@ -120,7 +120,9 @@
       "topic": "status",
       "prompt": "Escreva o código de status, com três dígitos, que significa que o recurso pedido não foi encontrado.",
       "answerType": "freeWrite",
-      "accepted": ["404"],
+      "accepted": [
+        "404"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -179,7 +181,9 @@
         "highlightLine": 2
       },
       "answerType": "fillBlank",
-      "accepted": ["POST"],
+      "accepted": [
+        "POST"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -226,7 +230,7 @@
         }
       ],
       "hint": "Um deles é sobre quem você é. O outro é sobre o que você tem direito de fazer.",
-      "explanation": "São duas perguntas diferentes: o `401` diz *não sei quem você é*, e o `403` diz *sei quem você é, e você não pode*. Trocar um pelo outro faz o cliente tentar se autenticar de novo quando o problema era permissão, ou desistir quando bastava fazer login."
+      "explanation": "São duas perguntas diferentes: o `401` diz **não sei quem você é**, e o `403` diz **sei quem você é, e você não pode**. Trocar um pelo outro faz o cliente tentar se autenticar de novo quando o problema era permissão, ou desistir quando bastava fazer login."
     },
     {
       "id": "backend-beg-0207",
@@ -343,14 +347,16 @@
         }
       ],
       "hint": "Continua sendo da família de sucesso, mas é mais específico que o número redondo.",
-      "explanation": "O `201` diz *criado*: além de ter dado certo, algo passou a existir. O `200` não estaria errado, mas o `201` carrega mais informação — e por convenção vem acompanhado do endereço do que foi criado, para o cliente saber onde encontrá-lo."
+      "explanation": "O `201` diz **criado**: além de ter dado certo, algo passou a existir. O `200` não estaria errado, mas o `201` carrega mais informação — e por convenção vem acompanhado do endereço do que foi criado, para o cliente saber onde encontrá-lo."
     },
     {
       "id": "backend-beg-0210",
       "topic": "cabecalhos",
       "prompt": "Escreva o nome do cabeçalho que diz o formato do corpo da resposta. Ele tem duas palavras unidas por hífen.",
       "answerType": "freeWrite",
-      "accepted": ["Content-Type"],
+      "accepted": [
+        "Content-Type"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

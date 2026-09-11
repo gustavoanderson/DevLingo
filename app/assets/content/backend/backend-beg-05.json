@@ -10,7 +10,7 @@
       {
         "topico": "autenticacao",
         "titulo": "Duas perguntas diferentes",
-        "texto": "Existem duas perguntas que costumam ser confundidas, e separá-las resolve metade da confusão sobre o assunto.\n\n**Autenticação** pergunta *quem é você*. É o login: você prova sua identidade, normalmente com senha.\n\n**Autorização** pergunta *o que você pode fazer*. Já se sabe quem você é; falta saber se você tem direito àquilo.\n\nA lição 02 já mostrou os dois códigos correspondentes: o `401` diz que a primeira pergunta não foi respondida, e o `403` diz que a segunda foi respondida com não. Um administrador e um usuário comum passam pela mesma autenticação e recebem autorizações diferentes.",
+        "texto": "Existem duas perguntas que costumam ser confundidas, e separá-las resolve metade da confusão sobre o assunto.\n\n**Autenticação** pergunta **quem é você**. É o login: você prova sua identidade, normalmente com senha.\n\n**Autorização** pergunta **o que você pode fazer**. Já se sabe quem você é; falta saber se você tem direito àquilo.\n\nA lição 02 já mostrou os dois códigos correspondentes: o `401` diz que a primeira pergunta não foi respondida, e o `403` diz que a segunda foi respondida com não. Um administrador e um usuário comum passam pela mesma autenticação e recebem autorizações diferentes.",
         "code": {
           "language": "http",
           "content": "401  nao sei quem voce e        -> autenticacao\n403  sei, e voce nao pode      -> autorizacao"
@@ -37,7 +37,7 @@
       {
         "topico": "seguranca-web",
         "titulo": "O básico que evita o pior",
-        "texto": "Três proteções que aparecem em todo sistema, e o que cada uma resolve.\n\n**HTTPS** criptografa a conexão. Sem ele, tudo viaja legível para quem estiver no caminho — inclusive a senha e o token. É por isso que ele deixou de ser opcional.\n\n**CORS** é o navegador impedindo que um site qualquer chame a API de outro em nome do usuário logado. Ele não protege o servidor de programas em geral; protege *você* de um site malicioso aberto em outra aba.\n\nE a regra que atravessa tudo: **nunca confie no que vem do cliente**. Validação no navegador existe para dar retorno rápido a quem está preenchendo, e não para garantir nada — qualquer pessoa consegue mandar um pedido direto, sem passar pela sua tela. Toda validação que importa é refeita no servidor."
+        "texto": "Três proteções que aparecem em todo sistema, e o que cada uma resolve.\n\n**HTTPS** criptografa a conexão. Sem ele, tudo viaja legível para quem estiver no caminho — inclusive a senha e o token. É por isso que ele deixou de ser opcional.\n\n**CORS** é o navegador impedindo que um site qualquer chame a API de outro em nome do usuário logado. Ele não protege o servidor de programas em geral; protege **você** de um site malicioso aberto em outra aba.\n\nE a regra que atravessa tudo: **nunca confie no que vem do cliente**. Validação no navegador existe para dar retorno rápido a quem está preenchendo, e não para garantir nada — qualquer pessoa consegue mandar um pedido direto, sem passar pela sua tela. Toda validação que importa é refeita no servidor."
       }
     ]
   },
@@ -391,7 +391,7 @@
         }
       ],
       "hint": "É a regra que o navegador aplica quando um site tenta falar com outro domínio.",
-      "explanation": "O CORS é o navegador barrando que um site chame a API de outro em nome de quem está logado. Vale entender o limite: ele **não** protege o servidor de programas em geral — qualquer pessoa chama a API direto, sem navegador. Ele protege *o usuário* de uma aba maliciosa."
+      "explanation": "O CORS é o navegador barrando que um site chame a API de outro em nome de quem está logado. Vale entender o limite: ele **não** protege o servidor de programas em geral — qualquer pessoa chama a API direto, sem navegador. Ele protege **o usuário** de uma aba maliciosa."
     }
   ]
 }

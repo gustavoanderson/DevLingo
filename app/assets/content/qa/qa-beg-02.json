@@ -15,7 +15,7 @@
       {
         "topico": "verificacao-validacao",
         "titulo": "Construir certo, ou construir o certo",
-        "texto": "Duas palavras que soam iguais e perguntam coisas opostas.\n\n**Verificação** pergunta: *estamos construindo o produto certo... do jeito certo?* Ela confere se o software cumpre a especificação. É comparação com o documento.\n\n**Validação** pergunta: *estamos construindo o produto certo?* Ela confere se o software atende à necessidade real de quem vai usar. É comparação com o mundo.\n\nA distinção fica clara no caso em que elas discordam: um sistema pode passar em toda a verificação — cada requisito cumprido — e falhar na validação, porque os requisitos descreviam a solução errada.\n\nQuando alguém diz \"V&V\", está falando das duas juntas: o produto foi construído corretamente **e** é o produto que resolvia o problema."
+        "texto": "Duas palavras que soam iguais e perguntam coisas opostas.\n\n**Verificação** pergunta: **estamos construindo o produto certo... do jeito certo?** Ela confere se o software cumpre a especificação. É comparação com o documento.\n\n**Validação** pergunta: **estamos construindo o produto certo?** Ela confere se o software atende à necessidade real de quem vai usar. É comparação com o mundo.\n\nA distinção fica clara no caso em que elas discordam: um sistema pode passar em toda a verificação — cada requisito cumprido — e falhar na validação, porque os requisitos descreviam a solução errada.\n\nQuando alguém diz \"V&V\", está falando das duas juntas: o produto foi construído corretamente **e** é o produto que resolvia o problema."
       },
       {
         "topico": "modelo-v",
@@ -108,7 +108,9 @@
       "topic": "principios",
       "prompt": "Escreva o nome do paradoxo que descreve testes que param de encontrar defeitos por serem sempre os mesmos.",
       "answerType": "freeWrite",
-      "accepted": ["pesticida"],
+      "accepted": [
+        "pesticida"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -240,7 +242,9 @@
       "topic": "principios",
       "prompt": "Escreva por extenso, em uma palavra, quantos são os princípios do teste segundo o ISTQB.",
       "answerType": "freeWrite",
-      "accepted": ["sete"],
+      "accepted": [
+        "sete"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -260,7 +264,9 @@
         "highlightLine": 4
       },
       "answerType": "fillBlank",
-      "accepted": ["unidade"],
+      "accepted": [
+        "unidade"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

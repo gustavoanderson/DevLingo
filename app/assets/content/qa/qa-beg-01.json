@@ -10,7 +10,7 @@
       {
         "topico": "qualidade",
         "titulo": "Qualidade é percebida, não declarada",
-        "texto": "A palavra vem do latim *qualis*, \"de que natureza\". As definições formais convergem: a **ISO** fala em atender necessidades declaradas **e implícitas**; o **ISTQB** fala em atender requisitos especificados **e expectativas** do usuário.\n\nRepare que as duas têm o mesmo par. Metade é objetiva — o que foi pedido por escrito. A outra metade não está escrita em lugar nenhum, e mesmo assim se espera.\n\nDaí a conclusão que orienta o ofício: **qualidade percebida é satisfação do cliente**. Um sistema pode cumprir cada linha da especificação e ainda ser considerado ruim, porque ninguém escreveu \"e precisa ser rápido\", ou \"e a mensagem de erro precisa dizer o que fazer\".\n\nÉ por isso que o trabalho não se resume a conferir a lista. Conferir a lista é parte; perceber o que a lista não diz é a outra."
+        "texto": "A palavra vem do latim **qualis**, \"de que natureza\". As definições formais convergem: a **ISO** fala em atender necessidades declaradas **e implícitas**; o **ISTQB** fala em atender requisitos especificados **e expectativas** do usuário.\n\nRepare que as duas têm o mesmo par. Metade é objetiva — o que foi pedido por escrito. A outra metade não está escrita em lugar nenhum, e mesmo assim se espera.\n\nDaí a conclusão que orienta o ofício: **qualidade percebida é satisfação do cliente**. Um sistema pode cumprir cada linha da especificação e ainda ser considerado ruim, porque ninguém escreveu \"e precisa ser rápido\", ou \"e a mensagem de erro precisa dizer o que fazer\".\n\nÉ por isso que o trabalho não se resume a conferir a lista. Conferir a lista é parte; perceber o que a lista não diz é a outra."
       },
       {
         "topico": "gq-cq",
@@ -25,7 +25,7 @@
       {
         "topico": "profissional",
         "titulo": "O que um QA faz, além de testar",
-        "texto": "Existem muitos nomes para o cargo — analista de testes, engenheiro de qualidade, SDET, analista de automação —, e nenhum deles descreve o trabalho por completo.\n\nAs atribuições típicas incluem planejar testes e escrever roteiros, estimar esforço, **prevenir** defeitos propondo melhorias, desenvolver automação, avaliar riscos e participar das decisões do time.\n\nRepare no verbo *prevenir*. É a diferença entre alguém que recebe o produto pronto e aponta o que está errado, e alguém que participa desde a definição do requisito e evita que o erro exista. O segundo custa menos e vale mais.\n\nAs habilidades se dividem em duas famílias, e as duas contam. **Hard skills** são técnicas e mensuráveis: automação, banco de dados, metodologias, entendimento do negócio. **Soft skills** são comportamentais: pensamento crítico, questionamento, comunicação, resiliência.\n\nA de mais consequência é o **questionamento** — perguntar \"e se o usuário fizer isto?\" na reunião de refinamento é onde o defeito deixa de nascer."
+        "texto": "Existem muitos nomes para o cargo — analista de testes, engenheiro de qualidade, SDET, analista de automação —, e nenhum deles descreve o trabalho por completo.\n\nAs atribuições típicas incluem planejar testes e escrever roteiros, estimar esforço, **prevenir** defeitos propondo melhorias, desenvolver automação, avaliar riscos e participar das decisões do time.\n\nRepare no verbo **prevenir**. É a diferença entre alguém que recebe o produto pronto e aponta o que está errado, e alguém que participa desde a definição do requisito e evita que o erro exista. O segundo custa menos e vale mais.\n\nAs habilidades se dividem em duas famílias, e as duas contam. **Hard skills** são técnicas e mensuráveis: automação, banco de dados, metodologias, entendimento do negócio. **Soft skills** são comportamentais: pensamento crítico, questionamento, comunicação, resiliência.\n\nA de mais consequência é o **questionamento** — perguntar \"e se o usuário fizer isto?\" na reunião de refinamento é onde o defeito deixa de nascer."
       }
     ]
   },
@@ -184,7 +184,7 @@
         }
       ],
       "hint": "Prevenir é agir antes de o defeito existir. Em que momento do ciclo isso é possível?",
-      "explanation": "Perguntar *\"e se o usuário fizer isto?\"* na reunião de refinamento é onde o defeito deixa de nascer. Todas as outras opções são valiosas, mas agem sobre algo que já foi construído. É essa diferença que separa receber o produto pronto de participar da definição dele."
+      "explanation": "Perguntar \"e se o usuário fizer isto?\" na reunião de refinamento é onde o defeito deixa de nascer. Todas as outras opções são valiosas, mas agem sobre algo que já foi construído. É essa diferença que separa receber o produto pronto de participar da definição dele."
     },
     {
       "id": "qa-beg-0105",
@@ -201,7 +201,7 @@
         "caseSensitive": false
       },
       "hint": "Vem do inglês Quality Assurance, e dá nome ao cargo e à trilha deste curso.",
-      "explanation": "QA, de Quality Assurance. Vale notar que a sigla nomeia a *garantia*, ligada ao processo — mesmo que na prática o cargo acumule também o controle, ligado ao produto. Muitos nomes convivem para a mesma função: analista de testes, engenheiro de qualidade, SDET."
+      "explanation": "QA, de Quality Assurance. Vale notar que a sigla nomeia a **garantia**, ligada ao processo — mesmo que na prática o cargo acumule também o controle, ligado ao produto. Muitos nomes convivem para a mesma função: analista de testes, engenheiro de qualidade, SDET."
     },
     {
       "id": "qa-beg-0106",
@@ -279,7 +279,7 @@
         }
       ],
       "hint": "Pergunte o que está sendo melhorado: uma entrega específica, ou o jeito de produzir todas elas?",
-      "explanation": "Mudar como se revisa código melhora **o jeito de trabalhar**, e afeta tudo que vier depois — Garantia. Inspecionar uma entrega específica seria Controle. A mesma atividade pode virar uma ou outra conforme o alvo, e é por isso que a pergunta útil é sempre *processo ou produto?*"
+      "explanation": "Mudar como se revisa código melhora **o jeito de trabalhar**, e afeta tudo que vier depois — Garantia. Inspecionar uma entrega específica seria Controle. A mesma atividade pode virar uma ou outra conforme o alvo, e é por isso que a pergunta útil é sempre **processo ou produto?**"
     },
     {
       "id": "qa-beg-0108",

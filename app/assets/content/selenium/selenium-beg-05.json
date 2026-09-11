@@ -10,7 +10,7 @@
       {
         "topico": "assercao",
         "titulo": "A asserção é o teste",
-        "texto": "O Selenium dirige; o **JUnit julga**. E quem julga é a asserção.\n\nAs que resolvem quase tudo:\n\n- `assertEquals(esperado, obtido)` — os dois são iguais\n- `assertTrue(condicao)` — a condição é verdadeira\n- `assertFalse(condicao)` — é falsa\n\nA ordem dos argumentos do `assertEquals` importa, e não por capricho: **primeiro o esperado, depois o obtido**. Invertido, a mensagem de falha sai ao contrário — *\"esperava Ada, veio Bem-vindo\"* — e manda quem investiga para o lado errado.\n\nDuas regras que separam asserção útil de asserção decorativa:\n\n**Asserte o que o usuário veria.** Conferir que um elemento existe prova pouco; conferir que ele mostra o valor certo prova o comportamento.\n\n**Prefira poucas e específicas.** Um teste com quinze asserções falha na primeira e esconde as outras quatorze — e você descobre um problema por execução.",
+        "texto": "O Selenium dirige; o **JUnit julga**. E quem julga é a asserção.\n\nAs que resolvem quase tudo:\n\n- `assertEquals(esperado, obtido)` — os dois são iguais\n- `assertTrue(condicao)` — a condição é verdadeira\n- `assertFalse(condicao)` — é falsa\n\nA ordem dos argumentos do `assertEquals` importa, e não por capricho: **primeiro o esperado, depois o obtido**. Invertido, a mensagem de falha sai ao contrário — \"esperava Ada, veio Bem-vindo\" — e manda quem investiga para o lado errado.\n\nDuas regras que separam asserção útil de asserção decorativa:\n\n**Asserte o que o usuário veria.** Conferir que um elemento existe prova pouco; conferir que ele mostra o valor certo prova o comportamento.\n\n**Prefira poucas e específicas.** Um teste com quinze asserções falha na primeira e esconde as outras quatorze — e você descobre um problema por execução.",
         "code": {
           "language": "java",
           "content": "// esperado primeiro, obtido depois\nassertEquals(\"Bem-vindo, Ada\", inicial.saudacao());\n\nassertTrue(inicial.menuVisivel());\nassertFalse(inicial.temMensagemDeErro());"
@@ -83,7 +83,7 @@
         }
       ],
       "hint": "Os dois valores são comparados do mesmo jeito. O que muda é o que se lê quando o teste reprova.",
-      "explanation": "A comparação funciona nos dois sentidos — o que muda é a **mensagem**: `expected: <X> but was: <Y>`.\n\nInvertida, ela diz *\"esperava Bem-vindo, veio Ada\"* quando na verdade é o contrário. Quem investiga às onze da noite lê isso e procura o problema no lugar errado.\n\nÉ um exemplo pequeno de uma regra grande: **teste bom não é o que reprova, é o que reprova dizendo por quê**. Mensagem de falha é interface, e merece o mesmo cuidado de qualquer texto que alguém vai ler."
+      "explanation": "A comparação funciona nos dois sentidos — o que muda é a **mensagem**: `expected: <X> but was: <Y>`.\n\nInvertida, ela diz \"esperava Bem-vindo, veio Ada\" quando na verdade é o contrário. Quem investiga às onze da noite lê isso e procura o problema no lugar errado.\n\nÉ um exemplo pequeno de uma regra grande: **teste bom não é o que reprova, é o que reprova dizendo por quê**. Mensagem de falha é interface, e merece o mesmo cuidado de qualquer texto que alguém vai ler."
     },
     {
       "id": "selenium-beg-0502",
@@ -104,7 +104,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São duas palavras juntas em camelCase: *depois* e *cada*, em inglês. O arroba já está no código.",
+      "hint": "São duas palavras juntas em camelCase: **depois** e **cada**, em inglês. O arroba já está no código.",
       "explanation": "`@AfterEach` roda depois de **cada** teste, e roda **inclusive quando ele falha** — que é a razão de existir.\n\nCom o `quit()` na última linha do método de teste, uma asserção que reprova interrompe tudo e o navegador fica aberto. Numa suíte com trinta testes vermelhos, sobram trinta navegadores, a máquina fica sem memória, e os últimos testes falham por lentidão — parecendo instabilidade que não é.\n\nO sintoma aparece **longe da causa**, e esse é o tipo de problema que mais custa tempo para diagnosticar."
     },
     {
@@ -199,7 +199,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São duas palavras juntas: o verbo *afirmar* e a palavra *iguais*, as duas em inglês, no plural a segunda.",
+      "hint": "São duas palavras juntas: o verbo **afirmar** e a palavra **iguais**, as duas em inglês, no plural a segunda.",
       "explanation": "`assertEquals(esperado, obtido)` é a asserção mais usada, e a ordem dos argumentos decide a qualidade da mensagem de falha.\n\nDuas boas práticas que valem mais que decorar o nome:\n\n**Asserte o que o usuário veria.** Conferir que um elemento existe prova pouco; conferir que ele mostra o valor certo prova o comportamento.\n\n**Prefira poucas e específicas.** Um teste com quinze asserções falha na primeira e esconde as outras quatorze — você descobre um problema por execução, e a suíte vira um jogo de tentativa."
     },
     {
@@ -357,7 +357,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São duas palavras juntas em camelCase: *antes* e *cada*, em inglês. É o par do que fecha o navegador no fim.",
+      "hint": "São duas palavras juntas em camelCase: **antes** e **cada**, em inglês. É o par do que fecha o navegador no fim.",
       "explanation": "`@BeforeEach` roda antes de **cada** teste, e forma o par com o `@AfterEach`: um abre, o outro fecha, e o teste no meio só cuida do que interessa.\n\nEsse arranjo entrega três coisas de uma vez: **isolamento** — cada teste começa limpo; **legibilidade** — o método de teste não tem cerimônia; e **limpeza garantida**, porque o fechamento acontece mesmo em caso de falha.\n\nÉ o mesmo princípio do Page Object da lição 04, aplicado ao ciclo de vida em vez de aos seletores: **tirar do teste tudo que não é a história que ele conta.**"
     }
   ]

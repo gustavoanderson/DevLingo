@@ -37,7 +37,7 @@
       {
         "topico": "fragil",
         "titulo": "Como reconhecer um seletor frágil",
-        "texto": "Três sinais denunciam um seletor que vai dar trabalho:\n\n**Ele depende de posição.** `//div[3]/span[2]` promete quebrar. Qualquer elemento acrescentado acima muda a conta.\n\n**Ele depende de texto de interface.** `By.linkText(\"Entrar\")` quebra quando o botão virar \"Acessar\", quando o sistema ganhar outro idioma, ou quando alguém corrigir um acento. E o teste vai reprovar dizendo *\"elemento não encontrado\"*, escondendo que a causa foi uma mudança de texto.\n\n**Ele depende de classe de estilo.** `By.className(\"btn-primary-lg\")` casa com aparência, e aparência muda por decisão de design — que ninguém comunica a quem escreve teste.\n\nO teste que resulta disso **não falha**: ele fica **instável**, o que é pior. Suíte que reprova de vez em quando ensina o time a reexecutar em vez de investigar, e a partir daí ela deixa de ser levada a sério.",
+        "texto": "Três sinais denunciam um seletor que vai dar trabalho:\n\n**Ele depende de posição.** `//div[3]/span[2]` promete quebrar. Qualquer elemento acrescentado acima muda a conta.\n\n**Ele depende de texto de interface.** `By.linkText(\"Entrar\")` quebra quando o botão virar \"Acessar\", quando o sistema ganhar outro idioma, ou quando alguém corrigir um acento. E o teste vai reprovar dizendo \"elemento não encontrado\", escondendo que a causa foi uma mudança de texto.\n\n**Ele depende de classe de estilo.** `By.className(\"btn-primary-lg\")` casa com aparência, e aparência muda por decisão de design — que ninguém comunica a quem escreve teste.\n\nO teste que resulta disso **não falha**: ele fica **instável**, o que é pior. Suíte que reprova de vez em quando ensina o time a reexecutar em vez de investigar, e a partir daí ela deixa de ser levada a sério.",
         "code": {
           "language": "java",
           "content": "// fragil: posicao\nBy.xpath(\"//div[3]/span[2]\");\n\n// fragil: texto de interface\nBy.linkText(\"Entrar\");\n\n// fragil: classe de estilo\nBy.className(\"btn-primary-lg\");\n\n// estavel: identificador que existe para ser apontado\nBy.id(\"botao-entrar\");"
@@ -165,7 +165,7 @@
         }
       ],
       "hint": "Procure o localizador que aponta para o que a pessoa **lê** na tela, e não para um atributo do HTML.",
-      "explanation": "`linkText` aponta para o texto visível, então ele depende de uma decisão de produto: qualquer troca de palavra, tradução para outro idioma ou correção de acento o invalida.\n\nE o pior é a mensagem que o teste vai dar: *\"elemento não encontrado\"*. Ela não diz que o texto mudou — quem investiga procura defeito no sistema antes de descobrir que só o rótulo foi alterado.\n\nO caso em que `linkText` se justifica é quando **o próprio texto é o objeto do teste**. Aí ele não é frágil: é o ponto."
+      "explanation": "`linkText` aponta para o texto visível, então ele depende de uma decisão de produto: qualquer troca de palavra, tradução para outro idioma ou correção de acento o invalida.\n\nE o pior é a mensagem que o teste vai dar: \"elemento não encontrado\". Ela não diz que o texto mudou — quem investiga procura defeito no sistema antes de descobrir que só o rótulo foi alterado.\n\nO caso em que `linkText` se justifica é quando **o próprio texto é o objeto do teste**. Aí ele não é frágil: é o ponto."
     },
     {
       "id": "selenium-beg-0204",
@@ -320,7 +320,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São duas palavras juntas: a sigla da linguagem de estilo, em minúsculas, seguida da palavra inglesa para *seletor*.",
+      "hint": "São duas palavras juntas: a sigla da linguagem de estilo, em minúsculas, seguida da palavra inglesa para **seletor**.",
       "explanation": "`By.cssSelector` aceita a mesma sintaxe do arquivo de estilo, e é a segunda escolha quando não há `id`.\n\nA vantagem é dupla: quem já escreve CSS não aprende nada novo, e o mesmo seletor pode ser testado direto no console do navegador com `document.querySelector`, antes de entrar no código do teste.\n\nEsse hábito economiza muito tempo — **conferir o seletor no navegador antes de escrevê-lo no teste** evita a rodada de execução que só serve para descobrir que ele não casa."
     },
     {

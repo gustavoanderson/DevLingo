@@ -37,7 +37,7 @@
       {
         "topico": "ilhas",
         "titulo": "Astro: e se quase nada precisasse de hidratação?",
-        "texto": "Astro parte de uma observação simples: **a maior parte de um site não reage a nada.** Um artigo, um menu, um rodapé são texto. Hidratar tudo isso é pagar por interatividade que ninguém vai usar.\n\nEntão o padrão dele é invertido: **nada vira JavaScript no navegador, a menos que você peça.** Você marca explicitamente os poucos pedaços que precisam funcionar, e só eles são hidratados. Esses pedaços se chamam **ilhas** — pontos interativos num mar de HTML parado.\n\nA marcação é literal, e você escolhe até *quando*: `client:load` hidrata assim que a página abre, e `client:visible` só quando a pessoa rolar até ali.\n\nDaí sai a outra particularidade do Astro. Como quase nada é enviado ao navegador, **tanto faz de que framework o componente é.** Ele aceita React, Vue e Svelte no mesmo projeto, e até na mesma página. É por isso que ele aparece na coluna \"vários\" do mapa da lição 01.\n\nE o preço, que é justo dizer: essa ideia brilha em site de conteúdo — blog, documentação, loja, institucional. Num painel onde tudo é interativo ela perde a graça, porque a página inteira vira uma ilha só.",
+        "texto": "Astro parte de uma observação simples: **a maior parte de um site não reage a nada.** Um artigo, um menu, um rodapé são texto. Hidratar tudo isso é pagar por interatividade que ninguém vai usar.\n\nEntão o padrão dele é invertido: **nada vira JavaScript no navegador, a menos que você peça.** Você marca explicitamente os poucos pedaços que precisam funcionar, e só eles são hidratados. Esses pedaços se chamam **ilhas** — pontos interativos num mar de HTML parado.\n\nA marcação é literal, e você escolhe até **quando**: `client:load` hidrata assim que a página abre, e `client:visible` só quando a pessoa rolar até ali.\n\nDaí sai a outra particularidade do Astro. Como quase nada é enviado ao navegador, **tanto faz de que framework o componente é.** Ele aceita React, Vue e Svelte no mesmo projeto, e até na mesma página. É por isso que ele aparece na coluna \"vários\" do mapa da lição 01.\n\nE o preço, que é justo dizer: essa ideia brilha em site de conteúdo — blog, documentação, loja, institucional. Num painel onde tudo é interativo ela perde a graça, porque a página inteira vira uma ilha só.",
         "code": {
           "language": "html",
           "content": "---\nimport Grafico from \"../componentes/Grafico.jsx\";\n---\n\n<h1>Relatorio</h1>          <!-- HTML puro, zero JavaScript -->\n<p>Texto que nao reage.</p>\n\n<Grafico client:visible />  <!-- a unica ilha da pagina -->"
@@ -95,7 +95,9 @@
         "highlightLine": 4
       },
       "answerType": "fillBlank",
-      "accepted": ["/sobre"],
+      "accepted": [
+        "/sobre"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -149,7 +151,9 @@
       "topic": "servidor-navegador",
       "prompt": "Onde a página precisa ser montada para que o HTML já chegue com o conteúdo dentro? Escreva a palavra em uma só palavra, sem acento.",
       "answerType": "freeWrite",
-      "accepted": ["servidor"],
+      "accepted": [
+        "servidor"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -325,7 +329,9 @@
         "highlightLine": 4
       },
       "answerType": "fillBlank",
-      "accepted": ["client:visible"],
+      "accepted": [
+        "client:visible"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -340,7 +346,11 @@
       "topic": "ilhas",
       "prompt": "Como se chamam os pedaços interativos de uma página Astro, cercados por HTML que não reage a nada? Escreva no plural.",
       "answerType": "freeWrite",
-      "accepted": ["ilhas", "ilha", "islands"],
+      "accepted": [
+        "ilhas",
+        "ilha",
+        "islands"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

@@ -10,17 +10,17 @@
       {
         "topico": "niveis",
         "titulo": "Quatro níveis, do menor pedaço ao produto inteiro",
-        "texto": "Os **níveis** respondem a uma pergunta de escopo: *que tamanho de coisa está sendo testado?* Eles são os quatro degraus da subida do modelo V.\n\n**Unidade** testa a menor parte isolável — uma função, um método, uma classe. Escrito normalmente por quem programou, roda em milissegundos, e aponta o defeito com precisão cirúrgica.\n\n**Integração** testa a conversa entre partes que já funcionam sozinhas. É onde aparecem os defeitos que nenhum teste de unidade veria: formato combinado errado, ordem de chamada, campo que um envia e o outro não espera.\n\n**Sistema** testa o produto inteiro, de ponta a ponta, contra os requisitos. Aqui o software é exercitado como um todo, num ambiente parecido com o real.\n\n**Aceitação** confirma que o sistema atende à necessidade do negócio. É o último nível antes da entrega, e quem julga costuma ser o cliente ou o usuário, não o time.\n\nRepare no que muda ao subir: o teste fica **mais realista e mais lento**, e localizar a causa de uma falha fica **mais difícil**. Um teste de sistema que falha diz que algo quebrou; um de unidade diz exatamente onde."
+        "texto": "Os **níveis** respondem a uma pergunta de escopo: **que tamanho de coisa está sendo testado?** Eles são os quatro degraus da subida do modelo V.\n\n**Unidade** testa a menor parte isolável — uma função, um método, uma classe. Escrito normalmente por quem programou, roda em milissegundos, e aponta o defeito com precisão cirúrgica.\n\n**Integração** testa a conversa entre partes que já funcionam sozinhas. É onde aparecem os defeitos que nenhum teste de unidade veria: formato combinado errado, ordem de chamada, campo que um envia e o outro não espera.\n\n**Sistema** testa o produto inteiro, de ponta a ponta, contra os requisitos. Aqui o software é exercitado como um todo, num ambiente parecido com o real.\n\n**Aceitação** confirma que o sistema atende à necessidade do negócio. É o último nível antes da entrega, e quem julga costuma ser o cliente ou o usuário, não o time.\n\nRepare no que muda ao subir: o teste fica **mais realista e mais lento**, e localizar a causa de uma falha fica **mais difícil**. Um teste de sistema que falha diz que algo quebrou; um de unidade diz exatamente onde."
       },
       {
         "topico": "tipos",
         "titulo": "Funcional e não funcional: o que faz e como se comporta",
-        "texto": "Os **tipos** respondem a outra pergunta, independente do nível: *que característica está sendo avaliada?*\n\n**Teste funcional** valida **o que** o sistema faz — funcionalidades, regras de negócio, cálculos. \"O desconto de 10% foi aplicado corretamente?\"\n\n**Teste não funcional** valida **como** ele se comporta — desempenho, usabilidade, segurança, compatibilidade. \"A tela responde em menos de dois segundos com mil usuários simultâneos?\"\n\nHá ainda o **teste estrutural**, ou caixa branca, baseado na estrutura interna do código: quais caminhos foram percorridos, quais ramos ficaram sem exercitar.\n\nNível e tipo são **eixos independentes**, e essa é a parte que costuma confundir. Dá para fazer teste funcional de unidade e teste funcional de sistema; dá para fazer teste de desempenho de um componente isolado e do produto inteiro. Um não substitui o outro — eles se cruzam."
+        "texto": "Os **tipos** respondem a outra pergunta, independente do nível: **que característica está sendo avaliada?**\n\n**Teste funcional** valida **o que** o sistema faz — funcionalidades, regras de negócio, cálculos. \"O desconto de 10% foi aplicado corretamente?\"\n\n**Teste não funcional** valida **como** ele se comporta — desempenho, usabilidade, segurança, compatibilidade. \"A tela responde em menos de dois segundos com mil usuários simultâneos?\"\n\nHá ainda o **teste estrutural**, ou caixa branca, baseado na estrutura interna do código: quais caminhos foram percorridos, quais ramos ficaram sem exercitar.\n\nNível e tipo são **eixos independentes**, e essa é a parte que costuma confundir. Dá para fazer teste funcional de unidade e teste funcional de sistema; dá para fazer teste de desempenho de um componente isolado e do produto inteiro. Um não substitui o outro — eles se cruzam."
       },
       {
         "topico": "mudancas",
         "titulo": "Testes relacionados a mudanças",
-        "texto": "Toda alteração no código levanta duas perguntas diferentes, e cada uma tem seu teste.\n\n**Reteste**, também chamado de teste de confirmação: *o defeito que eu corrigi está mesmo corrigido?* Executa-se exatamente o caso que falhou, para confirmar que agora passa.\n\n**Regressão**: *a correção quebrou alguma outra coisa?* Executam-se testes de áreas que **não** foram alteradas, procurando dano colateral.\n\nA segunda é a que costuma ser negligenciada, e é a mais cara quando falha. Corrigir um defeito e criar dois é comum — o código é uma teia, e mexer num ponto puxa outro.\n\nÉ também o motivo econômico mais forte para automação: a suíte de regressão cresce a cada entrega e precisa rodar sempre. Executá-la à mão fica inviável muito antes do que se imagina."
+        "texto": "Toda alteração no código levanta duas perguntas diferentes, e cada uma tem seu teste.\n\n**Reteste**, também chamado de teste de confirmação: **o defeito que eu corrigi está mesmo corrigido?** Executa-se exatamente o caso que falhou, para confirmar que agora passa.\n\n**Regressão**: **a correção quebrou alguma outra coisa?** Executam-se testes de áreas que **não** foram alteradas, procurando dano colateral.\n\nA segunda é a que costuma ser negligenciada, e é a mais cara quando falha. Corrigir um defeito e criar dois é comum — o código é uma teia, e mexer num ponto puxa outro.\n\nÉ também o motivo econômico mais forte para automação: a suíte de regressão cresce a cada entrega e precisa rodar sempre. Executá-la à mão fica inviável muito antes do que se imagina."
       }
     ]
   },
@@ -140,7 +140,7 @@
         }
       ],
       "hint": "A pergunta não é se a tela faz a coisa certa, e sim como ela se comporta fazendo.",
-      "explanation": "Desempenho, usabilidade, segurança e compatibilidade são características **não funcionais**: elas descrevem *como* o sistema se comporta, e não *o que* ele faz. Uma tela pode calcular tudo certo e ainda ser inaceitável por demorar trinta segundos."
+      "explanation": "Desempenho, usabilidade, segurança e compatibilidade são características **não funcionais**: elas descrevem **como** o sistema se comporta, e não **o que** ele faz. Uma tela pode calcular tudo certo e ainda ser inaceitável por demorar trinta segundos."
     },
     {
       "id": "qa-beg-0304",
@@ -179,7 +179,7 @@
         }
       ],
       "hint": "São duas perguntas diferentes depois de uma correção. Esta é a primeira: consertou mesmo?",
-      "explanation": "O reteste responde *o defeito está corrigido?*, executando o caso que falhava. A outra pergunta — *a correção quebrou outra coisa?* — é da regressão. Fazer só o primeiro é o erro comum, e é como sair do conserto sem olhar o resto do carro."
+      "explanation": "O reteste responde **o defeito está corrigido?**, executando o caso que falhava. A outra pergunta — **a correção quebrou outra coisa?** — é da regressão. Fazer só o primeiro é o erro comum, e é como sair do conserto sem olhar o resto do carro."
     },
     {
       "id": "qa-beg-0305",
@@ -230,7 +230,9 @@
         "highlightLine": 1
       },
       "answerType": "fillBlank",
-      "accepted": ["aceitacao"],
+      "accepted": [
+        "aceitacao"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -323,7 +325,9 @@
       "topic": "tipos",
       "prompt": "Escreva o termo em inglês, com três caracteres, usado para nomear os testes que percorrem o sistema de ponta a ponta.",
       "answerType": "freeWrite",
-      "accepted": ["E2E"],
+      "accepted": [
+        "E2E"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -370,7 +374,7 @@
         }
       ],
       "hint": "Foram feitas duas perguntas possíveis depois de uma correção. A equipe respondeu só uma.",
-      "explanation": "Faltou a regressão. Corrigir um defeito e criar dois é comum — o código é uma teia, e mexer num ponto puxa outro. O reteste responde *consertou?*; a regressão responde *quebrou mais alguma coisa?*, e é a que costuma ser negligenciada por parecer desnecessária."
+      "explanation": "Faltou a regressão. Corrigir um defeito e criar dois é comum — o código é uma teia, e mexer num ponto puxa outro. O reteste responde **consertou?**; a regressão responde **quebrou mais alguma coisa?**, e é a que costuma ser negligenciada por parecer desnecessária."
     }
   ]
 }

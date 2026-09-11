@@ -568,6 +568,35 @@ def check_marcadores(data, filename, report):
                     f"{marcador + conteudo[:40] + marcador!r}",
                 )
 
+    def conferir_asterisco_simples(texto, onde):
+        """`*assim*` -- itálico de Markdown, que este app NAO tem.
+
+        O analisador so entende `**negrito**` e crase. Um asterisco simples
+        atravessa inteiro e aparece CRU na tela do aluno, exatamente como os
+        sete `**negrito**` que existiam antes de haver analisador nenhum.
+
+        Passou despercebido em 114 campos, de 6 trilhas, e so foi visto quando
+        o app foi aberto no celular: `*"o agente pode agir sozinho?"*` com os
+        dois asteriscos a mostra, no meio do paragrafo.
+
+        A regra distingue marcacao de OPERADOR, e a distincao e a mesma do
+        Markdown: asterisco colado ao conteudo (`*assim*`) e marcacao;
+        asterisco cercado de espaco (`2 * 4`) e multiplicacao e passa. Sem
+        isso a regra reprovaria `python-beg-0003` e `python-beg-0205`, que
+        estao corretos -- e falso positivo ensina a contornar o validador.
+        """
+        # Negrito sai antes: `**x**` tem asteriscos colados e casaria.
+        limpo = re.sub(r"\*\*.+?\*\*", " ", texto)
+        for trecho in re.findall(r"(?<!\*)\*(?!\*|\s)([^*\n]*?)(?<!\s)\*(?!\*)",
+                                 limpo):
+            report.error(
+                onde,
+                f"asterisco simples *{trecho[:40]}* nao e marcacao: o app so "
+                f"entende **negrito** e `crase`, entao os dois asteriscos "
+                f"apareceriam CRUS na tela. Use ** para enfase, crase para "
+                f"termo tecnico, ou aspas para citacao.",
+            )
+
     def conferir(texto, onde):
         # Os asteriscos do negrito sao contados primeiro e removidos, senao
         # cada `**` entraria tambem na conta de asterisco solto.
@@ -592,12 +621,16 @@ def check_marcadores(data, filename, report):
             if isinstance(q.get(campo), str):
                 conferir(q[campo], f"{filename} -> {qid} -> {campo}")
                 conferir_aninhamento(q[campo], f"{filename} -> {qid} -> {campo}")
+                conferir_asterisco_simples(
+                    q[campo], f"{filename} -> {qid} -> {campo}")
 
     aula = data.get("aula") or {}
     for i, secao in enumerate(aula.get("secoes", []), start=1):
         if isinstance(secao.get("texto"), str):
             conferir(secao["texto"], f"{filename} -> aula -> secao {i}")
             conferir_aninhamento(secao["texto"], f"{filename} -> aula -> secao {i}")
+            conferir_asterisco_simples(
+                secao["texto"], f"{filename} -> aula -> secao {i}")
 
 
 def check_question_rules(question, filename, report):

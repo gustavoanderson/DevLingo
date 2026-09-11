@@ -10,7 +10,7 @@
       {
         "topico": "typescript",
         "titulo": "TypeScript nos três: a diferença é o atrito",
-        "texto": "TypeScript é JavaScript com **tipos declarados**. Ele não muda o que o programa faz — os tipos somem antes de rodar. O que ele muda é *quando* você descobre o erro: ao escrever, e não ao clicar.\n\nOs três aceitam TypeScript. A pergunta útil não é \"dá ou não dá\", é **quanto atrito**:\n\n- **React** é o mais confortável dos três, e a razão é a mesma de sempre: como JSX é JavaScript, o TypeScript entende aquilo sozinho, sem precisar de nada especial\n- **Svelte** é direto: `lang=\"ts\"` no bloco de script, e pronto\n- **Vue** funciona bem hoje, com uma ressalva histórica: o `<template>` não é JavaScript, então conferir o que está escrito lá dentro exigiu ferramenta própria. Foi o mais difícil dos três por bastante tempo\n\nE uma observação que vale para quem trabalha com qualidade: tipo pega erro de **forma** — esse campo existe? é número? —, e não erro de **comportamento**. Um desconto calculado ao contrário passa por qualquer tipo, porque o resultado continua sendo um número. Tipagem reduz uma categoria de defeito e deixa a outra inteira: **ela não substitui teste.**",
+        "texto": "TypeScript é JavaScript com **tipos declarados**. Ele não muda o que o programa faz — os tipos somem antes de rodar. O que ele muda é **quando** você descobre o erro: ao escrever, e não ao clicar.\n\nOs três aceitam TypeScript. A pergunta útil não é \"dá ou não dá\", é **quanto atrito**:\n\n- **React** é o mais confortável dos três, e a razão é a mesma de sempre: como JSX é JavaScript, o TypeScript entende aquilo sozinho, sem precisar de nada especial\n- **Svelte** é direto: `lang=\"ts\"` no bloco de script, e pronto\n- **Vue** funciona bem hoje, com uma ressalva histórica: o `<template>` não é JavaScript, então conferir o que está escrito lá dentro exigiu ferramenta própria. Foi o mais difícil dos três por bastante tempo\n\nE uma observação que vale para quem trabalha com qualidade: tipo pega erro de **forma** — esse campo existe? é número? —, e não erro de **comportamento**. Um desconto calculado ao contrário passa por qualquer tipo, porque o resultado continua sendo um número. Tipagem reduz uma categoria de defeito e deixa a outra inteira: **ela não substitui teste.**",
         "code": {
           "language": "javascript",
           "content": "type Props = { nome: string; idade: number };\n\nfunction Perfil({ nome, idade }: Props) {\n  return <p>{nome} tem {idade}</p>;\n}"
@@ -19,7 +19,7 @@
       {
         "topico": "facil-comecar",
         "titulo": "Mais fácil de começar: isso dá para contar",
-        "texto": "\"Qual é mais fácil\" vira uma pergunta respondível quando se troca a sensação por uma contagem. Uma que funciona bem: **quantos conceitos novos você precisa ter na cabeça antes de a primeira tela reagir a um clique?**\n\n**Svelte, um.** Declare uma variável e mude. É JavaScript de sempre.\n\n**Vue, dois.** A função que cria o valor reativo, e o `.value` para mexer nele no script.\n\n**React, quatro.** Que `JSX` não é HTML; que `useState` devolve um par; que a função inteira roda de novo a cada mudança; e que atribuir na variável não faz nada.\n\nNenhum desses quatro é difícil isolado. O que pesa é que **os quatro precisam estar na cabeça ao mesmo tempo** para o primeiro contador funcionar. É exatamente isso que a palavra *fácil* está medindo quando alguém diz que Svelte é fácil — e agora ela deixou de ser opinião e virou um número.",
+        "texto": "\"Qual é mais fácil\" vira uma pergunta respondível quando se troca a sensação por uma contagem. Uma que funciona bem: **quantos conceitos novos você precisa ter na cabeça antes de a primeira tela reagir a um clique?**\n\n**Svelte, um.** Declare uma variável e mude. É JavaScript de sempre.\n\n**Vue, dois.** A função que cria o valor reativo, e o `.value` para mexer nele no script.\n\n**React, quatro.** Que `JSX` não é HTML; que `useState` devolve um par; que a função inteira roda de novo a cada mudança; e que atribuir na variável não faz nada.\n\nNenhum desses quatro é difícil isolado. O que pesa é que **os quatro precisam estar na cabeça ao mesmo tempo** para o primeiro contador funcionar. É exatamente isso que a palavra **fácil** está medindo quando alguém diz que Svelte é fácil — e agora ela deixou de ser opinião e virou um número.",
         "code": {
           "language": "text",
           "content": "CONCEITOS NOVOS ATE O PRIMEIRO CONTADOR\n\nSvelte   variavel comum                        1\nVue      funcao que cria o valor, e .value      2\nReact    JSX, o par, o redesenho,               4\n         e nao atribuir na variavel"
@@ -95,7 +95,9 @@
         "highlightLine": 3
       },
       "answerType": "fillBlank",
-      "accepted": ["number"],
+      "accepted": [
+        "number"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -154,7 +156,9 @@
         "highlightLine": 2
       },
       "answerType": "fillBlank",
-      "accepted": ["let"],
+      "accepted": [
+        "let"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -169,7 +173,9 @@
       "topic": "facil-comecar",
       "prompt": "Contando quantos conceitos novos são necessários até o primeiro contador funcionar, qual dos três exige menos? Escreva o nome dele.",
       "answerType": "freeWrite",
-      "accepted": ["Svelte"],
+      "accepted": [
+        "Svelte"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -221,7 +227,7 @@
     {
       "id": "frameworks-beg-0507",
       "topic": "facil-continuar",
-      "prompt": "Qual é a resposta mais honesta para *\"qual desses três é o mais fácil?\"*",
+      "prompt": "Qual é a resposta mais honesta para \"qual desses três é o mais fácil?\"",
       "answerType": "multipleChoice",
       "options": [
         {
@@ -340,7 +346,9 @@
       "topic": "escolher",
       "prompt": "Um time que vem do HTML escolheu Vue, e agora precisa de rota por arquivo e páginas montadas no servidor. Escreva o nome do meta-framework indicado.",
       "answerType": "freeWrite",
-      "accepted": ["Nuxt"],
+      "accepted": [
+        "Nuxt"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

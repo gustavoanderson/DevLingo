@@ -37,7 +37,7 @@
       {
         "topico": "compilacao",
         "titulo": "Java compila antes de rodar",
-        "texto": "Python e JavaScript leem o seu código e executam. Java tem **um passo a mais**: primeiro compila, depois roda.\n\nO `javac` transforma o `.java` em um `.class`, escrito em *bytecode* — uma linguagem intermediária que nenhum processador entende diretamente. Quem executa esse bytecode é a **JVM**, a máquina virtual de Java.\n\nParece volta desnecessária, e é o que dá a Java a propriedade que a tornou famosa: o mesmo `.class` roda em qualquer sistema que tenha uma JVM. Windows, Linux, o servidor do banco.\n\nE tem uma consequência prática que você sente todo dia: **erro de digitação e de tipo aparecem na compilação, antes de o programa rodar**. Em Python, um nome escrito errado só explode quando a linha é alcançada — às vezes em produção, semanas depois.",
+        "texto": "Python e JavaScript leem o seu código e executam. Java tem **um passo a mais**: primeiro compila, depois roda.\n\nO `javac` transforma o `.java` em um `.class`, escrito em **bytecode** — uma linguagem intermediária que nenhum processador entende diretamente. Quem executa esse bytecode é a **JVM**, a máquina virtual de Java.\n\nParece volta desnecessária, e é o que dá a Java a propriedade que a tornou famosa: o mesmo `.class` roda em qualquer sistema que tenha uma JVM. Windows, Linux, o servidor do banco.\n\nE tem uma consequência prática que você sente todo dia: **erro de digitação e de tipo aparecem na compilação, antes de o programa rodar**. Em Python, um nome escrito errado só explode quando a linha é alcançada — às vezes em produção, semanas depois.",
         "code": {
           "language": "text",
           "content": "Programa.java  --javac-->  Programa.class  --JVM-->  roda\n   (voce)                    (bytecode)"
@@ -121,7 +121,7 @@
           "why": "Importar é trabalho do `import`, que fica fora da classe, no alto do arquivo."
         }
       ],
-      "hint": "O nome vem de *principal*. Pense no que a máquina virtual procura quando manda o programa rodar.",
+      "hint": "O nome vem de **principal**. Pense no que a máquina virtual procura quando manda o programa rodar.",
       "explanation": "A máquina virtual procura exatamente esse método para começar. É por isso que ele é `public` — precisa ser alcançável de fora — e `static` — precisa rodar **sem que nenhum objeto tenha sido criado antes**. Nesse instante o programa ainda não criou nada; se o `main` dependesse de um objeto, não haveria quem o criasse."
     },
     {
@@ -342,7 +342,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São quatro letras, em inglês, e querem dizer *principal*. A máquina virtual procura exatamente esse nome.",
+      "hint": "São quatro letras, em inglês, e querem dizer **principal**. A máquina virtual procura exatamente esse nome.",
       "explanation": "A assinatura inteira é sempre a mesma, e a máquina virtual procura exatamente por ela. Trocar qualquer pedaço — o nome, o `static`, o tipo do parâmetro — faz o programa compilar e **não rodar**, com a mensagem de que não há ponto de entrada.\n\nÉ um dos poucos lugares em programação onde decorar é a atitude certa: o entendimento de cada palavra vem depois, e tentar entendê-las antes de escrever a primeira linha é uma boa forma de desistir de Java."
     },
     {

@@ -104,7 +104,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São duas palavras juntas, em camelCase: o nome da interface principal do Selenium seguido da palavra inglesa para *esperar*.",
+      "hint": "São duas palavras juntas, em camelCase: o nome da interface principal do Selenium seguido da palavra inglesa para **esperar**.",
       "explanation": "`WebDriverWait` consulta a condição repetidamente e segue **assim que ela for satisfeita**. Se a tela responder em 200 ms, ele espera 200 ms.\n\nO tempo passado no construtor é um **teto**, e não uma duração: ele existe para falhar com mensagem útil em vez de pendurar para sempre. Confundir teto com duração é o mal-entendido mais comum sobre espera explícita — quem confunde acha que `ofSeconds(10)` deixa a suíte dez segundos mais lenta por teste, e volta para o `sleep`."
     },
     {
@@ -199,7 +199,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São duas palavras juntas, em camelCase e no plural: *esperadas* e *condições*, nessa ordem, em inglês.",
+      "hint": "São duas palavras juntas, em camelCase e no plural: **esperadas** e **condições**, nessa ordem, em inglês.",
       "explanation": "`ExpectedConditions` traz as condições prontas, e conhecer quatro já resolve quase tudo: `presenceOfElementLocated`, `visibilityOfElementLocated`, `elementToBeClickable` e `invisibilityOfElementLocated`.\n\nA última merece atenção porque é a menos lembrada e resolve um caso comum: **esperar uma tela de carregamento sumir**. Sem ela, o teste tenta clicar por cima do véu de carregamento e falha com uma mensagem que não ajuda nada.\n\nE é possível escrever a própria condição, com uma função que devolve verdadeiro quando o estado desejado chegar."
     },
     {
@@ -260,7 +260,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São quatro palavras juntas em camelCase, e elas dizem literalmente *elemento a ser clicável*.",
+      "hint": "São quatro palavras juntas em camelCase, e elas dizem literalmente **elemento a ser clicável**.",
       "explanation": "`elementToBeClickable` garante as duas coisas que um clique exige: visível **e** habilitado.\n\nRepare que ele **devolve o elemento**, e por isso dá para encadear o `.click()` na mesma linha. Isso não é economia de digitação: buscar o elemento de novo depois da espera abriria uma janela em que a página pode ter mudado no meio — a origem do `StaleElementReferenceException`, que aparece no nível seguinte.\n\nA regra: **espere pelo que você vai fazer.**"
     },
     {
@@ -300,7 +300,7 @@
         }
       ],
       "hint": "Ela resolve uma pergunta só. Compare com as três perguntas da seção sobre existir, estar visível e ser clicável.",
-      "explanation": "A implícita é configurada uma vez e diz *\"ao procurar um elemento, tente por até N segundos antes de desistir\"*. Ela resolve **presença**, e só.\n\nEla não sabe esperar por visibilidade, por um botão ficar habilitado, nem por um carregamento sumir — e esses são a maioria dos casos reais.\n\nE há uma armadilha registrada na documentação do próprio Selenium: **misturar implícita com explícita produz esperas imprevisíveis**, às vezes somando os dois tempos. A recomendação é escolher um caminho, e o caminho é o explícito."
+      "explanation": "A implícita é configurada uma vez e diz \"ao procurar um elemento, tente por até N segundos antes de desistir\". Ela resolve **presença**, e só.\n\nEla não sabe esperar por visibilidade, por um botão ficar habilitado, nem por um carregamento sumir — e esses são a maioria dos casos reais.\n\nE há uma armadilha registrada na documentação do próprio Selenium: **misturar implícita com explícita produz esperas imprevisíveis**, às vezes somando os dois tempos. A recomendação é escolher um caminho, e o caminho é o explícito."
     },
     {
       "id": "selenium-beg-0309",

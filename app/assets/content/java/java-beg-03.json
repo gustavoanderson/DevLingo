@@ -103,7 +103,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "É a palavra inglesa para *igual a*, com `s` no fim, toda em minúsculas.",
+      "hint": "É a palavra inglesa para **igual a**, com `s` no fim, toda em minúsculas.",
       "explanation": "`a.equals(b)` compara o conteúdo. A regra que resolve todos os casos: primitivo com `==`, objeto com `.equals()`.\n\nExiste também `equalsIgnoreCase`, que ignora maiúsculas — útil ao comparar o que alguém digitou. E vale um cuidado que aparece cedo em qualquer sistema real: se `a` for nulo, `a.equals(b)` quebra. Por isso muita gente escreve a constante primeiro — `\"admin\".equals(perfil)` — que nunca é nula."
     },
     {
@@ -164,7 +164,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "É a palavra inglesa para *senão*, e são quatro letras.",
+      "hint": "É a palavra inglesa para **senão**, e são quatro letras.",
       "explanation": "O `else` recolhe tudo que não caiu nas condições anteriores, e por isso **não tem condição própria**.\n\nEncadeando com `else if`, Java testa de cima para baixo e para no primeiro que for verdadeiro — os seguintes nem são avaliados. Por isso a ordem importa: com `nota >= 7` antes de `nota >= 9`, o `Excelente` nunca apareceria."
     },
     {
@@ -186,7 +186,7 @@
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "São dois símbolos iguais, e o símbolo é o mesmo que se usa como *e comercial* em texto.",
+      "hint": "São dois símbolos iguais, e o símbolo é o mesmo que se usa como **e comercial** em texto.",
       "explanation": "O `&&` é o **e** lógico: as duas precisam passar.\n\nE ele tem uma propriedade que vai além da lógica — **curto-circuito**. Se o lado esquerdo for falso, o direito **nem é executado**, porque o resultado já está decidido.\n\nIsso não é otimização: é o que permite escrever `if (texto != null && texto.length() > 0)`. Sem o curto-circuito, essa linha quebraria ao tentar medir algo que não existe."
     },
     {
@@ -269,7 +269,7 @@
         }
       ],
       "hint": "O problema não está no código de hoje, e sim no de amanhã. Lembre que em Java o recuo não delimita bloco.",
-      "explanation": "Em Java quem delimita o bloco são as **chaves**, e não o recuo. Sem elas, só a primeira linha pertence ao `if` — acrescentar uma segunda a deixa rodando **sempre**, mesmo com a condição falsa.\n\nE o recuo, alinhado, sugere o contrário. O código passa a mentir para quem lê, e revisão a olho não pega.\n\nEsse defeito tem história: em 2014 uma falha de segurança séria em código C, conhecida como *goto fail*, nasceu exatamente desse padrão."
+      "explanation": "Em Java quem delimita o bloco são as **chaves**, e não o recuo. Sem elas, só a primeira linha pertence ao `if` — acrescentar uma segunda a deixa rodando **sempre**, mesmo com a condição falsa.\n\nE o recuo, alinhado, sugere o contrário. O código passa a mentir para quem lê, e revisão a olho não pega.\n\nEsse defeito tem história: em 2014 uma falha de segurança séria em código C, conhecida como **goto fail**, nasceu exatamente desse padrão."
     },
     {
       "id": "java-beg-0308",

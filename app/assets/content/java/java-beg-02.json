@@ -104,8 +104,8 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "É um tipo primitivo, então começa com letra minúscula. O nome em inglês quer dizer *dobro*, por causa da precisão.",
-      "explanation": "O `double` guarda número com casa decimal. O nome vem de *double precision*: ele usa 64 bits, o dobro do `float`, que tem 32.\n\nNa prática se usa `double` quase sempre — a precisão maior custa pouco hoje. E vale uma ressalva que vai importar na sua carreira: para dinheiro, nem `double` nem `float` servem, porque nenhum dos dois representa `0,1` exatamente. Sistema financeiro usa `BigDecimal`."
+      "hint": "É um tipo primitivo, então começa com letra minúscula. O nome em inglês quer dizer **dobro**, por causa da precisão.",
+      "explanation": "O `double` guarda número com casa decimal. O nome vem de **double precision**: ele usa 64 bits, o dobro do `float`, que tem 32.\n\nNa prática se usa `double` quase sempre — a precisão maior custa pouco hoje. E vale uma ressalva que vai importar na sua carreira: para dinheiro, nem `double` nem `float` servem, porque nenhum dos dois representa `0,1` exatamente. Sistema financeiro usa `BigDecimal`."
     },
     {
       "id": "java-beg-0203",

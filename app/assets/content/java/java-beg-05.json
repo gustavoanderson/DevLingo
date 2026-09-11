@@ -19,7 +19,7 @@
       {
         "topico": "for",
         "titulo": "O laço com contador",
-        "texto": "O `for` clássico tem três partes, separadas por ponto e vírgula, e cada uma responde uma pergunta:\n\n- **onde começa** — `int i = 0`\n- **até quando continua** — `i < notas.length`\n- **o que muda a cada volta** — `i++`\n\nO `i++` soma um. É atalho para `i = i + 1`, e aparece em praticamente todo laço.\n\nRepare no `<` da condição. Como as posições vão de 0 até `length - 1`, usar `<=` faria o laço tentar a posição que não existe e quebrar o programa. **É o erro de percurso mais comum que existe**, e tem nome próprio em inglês: *off-by-one*.\n\nA regra que evita: com posições começando em zero, a condição é `<`, e nunca `<=`.",
+        "texto": "O `for` clássico tem três partes, separadas por ponto e vírgula, e cada uma responde uma pergunta:\n\n- **onde começa** — `int i = 0`\n- **até quando continua** — `i < notas.length`\n- **o que muda a cada volta** — `i++`\n\nO `i++` soma um. É atalho para `i = i + 1`, e aparece em praticamente todo laço.\n\nRepare no `<` da condição. Como as posições vão de 0 até `length - 1`, usar `<=` faria o laço tentar a posição que não existe e quebrar o programa. **É o erro de percurso mais comum que existe**, e tem nome próprio em inglês: **off-by-one**.\n\nA regra que evita: com posições começando em zero, a condição é `<`, e nunca `<=`.",
         "code": {
           "language": "java",
           "content": "int[] notas = {7, 9, 5};\n\nfor (int i = 0; i < notas.length; i++) {\n  System.out.println(notas[i]);\n}\n\n// i <= notas.length quebraria na ultima volta"
@@ -126,8 +126,8 @@
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "É um sinal de pontuação com dois pontinhos, e se lê como a palavra *em*.",
-      "explanation": "O `:` se lê \"em\": *para cada nota **em** notas*. Onde Python escreve `in` e JavaScript escreve `of`, Java usa dois pontos.\n\nA variável `nota` recebe uma **cópia** de cada item a cada volta — então alterá-la dentro do laço não muda o array. Para alterar o array de verdade, é preciso o `for` clássico e a posição."
+      "hint": "É um sinal de pontuação com dois pontinhos, e se lê como a palavra **em**.",
+      "explanation": "O `:` se lê \"em\": **para cada nota **em** notas**. Onde Python escreve `in` e JavaScript escreve `of`, Java usa dois pontos.\n\nA variável `nota` recebe uma **cópia** de cada item a cada volta — então alterá-la dentro do laço não muda o array. Para alterar o array de verdade, é preciso o `for` clássico e a posição."
     },
     {
       "id": "java-beg-0504",

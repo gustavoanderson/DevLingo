@@ -10,7 +10,7 @@
       {
         "topico": "metodos",
         "titulo": "Texto tem métodos, e você chama com ponto",
-        "texto": "Como `String` é **objeto**, e não primitivo, ela traz funções embutidas. Chama-se com ponto:\n\n- `length()` — quantos caracteres. Repare nos **parênteses**: em `String` é método, e é uma das confusões mais comuns\n- `toUpperCase()` e `toLowerCase()` — troca a caixa\n- `trim()` — remove espaço das pontas\n- `contains(\"x\")` — pergunta se contém\n- `substring(1, 4)` — recorta um pedaço\n- `charAt(0)` — devolve **um** caractere, que é `char` e não `String`\n\nOs nomes seguem uma convenção que se repete na linguagem inteira: **primeira palavra minúscula, as seguintes com maiúscula**. É o *camelCase*, e vale para todo método e variável que você escrever.",
+        "texto": "Como `String` é **objeto**, e não primitivo, ela traz funções embutidas. Chama-se com ponto:\n\n- `length()` — quantos caracteres. Repare nos **parênteses**: em `String` é método, e é uma das confusões mais comuns\n- `toUpperCase()` e `toLowerCase()` — troca a caixa\n- `trim()` — remove espaço das pontas\n- `contains(\"x\")` — pergunta se contém\n- `substring(1, 4)` — recorta um pedaço\n- `charAt(0)` — devolve **um** caractere, que é `char` e não `String`\n\nOs nomes seguem uma convenção que se repete na linguagem inteira: **primeira palavra minúscula, as seguintes com maiúscula**. É o **camelCase**, e vale para todo método e variável que você escrever.",
         "code": {
           "language": "java",
           "content": "String nome = \"  Ada Lovelace  \";\n\nSystem.out.println(nome.trim());          // \"Ada Lovelace\"\nSystem.out.println(nome.trim().length()); // 12\nSystem.out.println(nome.toUpperCase());   // \"  ADA LOVELACE  \""
@@ -147,7 +147,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "É a palavra inglesa para *comprimento*, toda em minúsculas — e repare que o código já traz os parênteses.",
+      "hint": "É a palavra inglesa para **comprimento**, toda em minúsculas — e repare que o código já traz os parênteses.",
       "explanation": "Em `String` é **método**, com parênteses: `nome.length()`.\n\nGuarde isso, porque na próxima lição vai mudar: em **array**, o mesmo conceito é `length` **sem** parênteses, porque lá é um campo e não um método. `array.length()` não compila, e `texto.length` também não.\n\nÉ inconsistência real da linguagem, e uma das confusões mais comuns de quem está começando."
     },
     {
@@ -246,7 +246,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São quatro letras, e a palavra em inglês quer dizer *aparar*, como se apara uma cerca viva.",
+      "hint": "São quatro letras, e a palavra em inglês quer dizer **aparar**, como se apara uma cerca viva.",
       "explanation": "O `trim()` remove espaço do começo e do fim, e **não** mexe nos espaços do meio — `\"  Ada Lovelace  \".trim()` devolve `\"Ada Lovelace\"`, com o espaço interno intacto.\n\nEle é uma das primeiras linhas de qualquer validação de formulário: quem digita costuma deixar espaço sobrando, e `\"ada \"` não é igual a `\"ada\"` para nenhuma comparação.\n\nE, como todo método de `String`, ele **devolve** um texto novo. Chamar sem guardar não muda nada."
     },
     {
@@ -307,7 +307,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "É a palavra inglesa para *contém*, na terceira pessoa — então termina com `s`.",
+      "hint": "É a palavra inglesa para **contém**, na terceira pessoa — então termina com `s`.",
       "explanation": "`contains` devolve `boolean`, e por isso o resultado cabe direto numa variável desse tipo ou numa condição de `if`.\n\nEle diferencia maiúscula de minúscula: `texto.contains(\"lingo\")` daria `false`. Quando isso não interessa, o caminho comum é comparar tudo em minúsculas com `toLowerCase()` antes.\n\nPara saber **onde** o trecho começa, existe `indexOf`, que devolve a posição — ou `-1` quando não encontra."
     },
     {

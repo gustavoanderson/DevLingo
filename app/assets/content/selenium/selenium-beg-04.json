@@ -19,7 +19,7 @@
       {
         "topico": "espalhado",
         "titulo": "O problema que aparece no terceiro teste",
-        "texto": "Escrever o primeiro teste direto, com os seletores no meio dele, é o caminho natural — e funciona.\n\nO problema aparece no terceiro. A tela de entrada é usada por praticamente todo teste, então `By.id(\"email\")` passa a estar escrito em dez arquivos. No dia em que o campo virar `By.id(\"usuario\")`, são dez arquivos para mudar — e basta esquecer um para a suíte ficar vermelha sem motivo aparente.\n\nA pergunta que decide se vale separar não é *\"é boa prática?\"*. É: **em quantos testes este seletor vai aparecer?**\n\nSe a resposta for \"um\", separar é burocracia. Se for \"todos\", separar se paga na primeira mudança de tela.\n\nE há um segundo custo, menos visível: um teste cheio de seletor **não se lê**. Quem revisa precisa decifrar `By.cssSelector(\"[data-test='btn-save']\")` para descobrir que aquilo é o botão salvar.",
+        "texto": "Escrever o primeiro teste direto, com os seletores no meio dele, é o caminho natural — e funciona.\n\nO problema aparece no terceiro. A tela de entrada é usada por praticamente todo teste, então `By.id(\"email\")` passa a estar escrito em dez arquivos. No dia em que o campo virar `By.id(\"usuario\")`, são dez arquivos para mudar — e basta esquecer um para a suíte ficar vermelha sem motivo aparente.\n\nA pergunta que decide se vale separar não é \"é boa prática?\". É: **em quantos testes este seletor vai aparecer?**\n\nSe a resposta for \"um\", separar é burocracia. Se for \"todos\", separar se paga na primeira mudança de tela.\n\nE há um segundo custo, menos visível: um teste cheio de seletor **não se lê**. Quem revisa precisa decifrar `By.cssSelector(\"[data-test='btn-save']\")` para descobrir que aquilo é o botão salvar.",
         "code": {
           "language": "java",
           "content": "// espalhado: o seletor aparece em todo teste\ndriver.findElement(By.id(\"email\")).sendKeys(\"ada@exemplo.com\");\ndriver.findElement(By.id(\"senha\")).sendKeys(\"segredo\");\ndriver.findElement(By.id(\"entrar\")).click();"
@@ -121,7 +121,7 @@
           "why": "O comportamento é o mesmo em qualquer navegador."
         }
       ],
-      "hint": "O nome do método é *enviar teclas*. Pense no que aconteceria se você digitasse com o teclado num campo já preenchido.",
+      "hint": "O nome do método é **enviar teclas**. Pense no que aconteceria se você digitasse com o teclado num campo já preenchido.",
       "explanation": "`sendKeys` **acrescenta**, como digitar no teclado acrescentaria. Para trocar o valor, é preciso `clear()` antes.\n\nEsse defeito é traiçoeiro porque **o primeiro teste passa**: o campo estava vazio. Ele só aparece quando o mesmo teste roda duas vezes na mesma sessão, ou quando o sistema preenche o campo sozinho com um valor anterior.\n\nÉ mais um caso de teste que passa isolado e falha em conjunto — a mesma família do estado compartilhado que o `noReset` produz em automação de celular."
     },
     {
@@ -182,7 +182,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São cinco letras, e a palavra em inglês quer dizer *limpar*.",
+      "hint": "São cinco letras, e a palavra em inglês quer dizer **limpar**.",
       "explanation": "`clear()` esvazia o campo. Sem ele, `sendKeys` emenda no que já estava.\n\nO par `clear()` + `sendKeys()` é tão frequente que vale virar um método no Page Object — `preencherEmail(...)` que faz os dois. Esquecer o `clear` é um dos defeitos mais comuns em suíte de formulário, e ele só aparece na segunda execução.\n\nUma ressalva: em alguns componentes de interface o `clear()` não dispara os eventos que o sistema espera, e o campo parece vazio sem o sistema saber. Quando isso acontecer, o caminho é selecionar tudo e apagar pelo teclado."
     },
     {

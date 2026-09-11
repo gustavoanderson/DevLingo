@@ -37,7 +37,7 @@
       {
         "topico": "estilos",
         "titulo": "Os outros estilos, e a dor de cada um",
-        "texto": "REST com JSON é o caminho comum, mas não é o único. Cada alternativa nasceu de um incômodo específico, e conhecer o incômodo vale mais que decorar o nome.\n\n**GraphQL** nasceu de pedir demais ou de menos. Numa API REST, uma tela costuma precisar de três chamadas, ou de uma que devolve muito mais campo do que a tela usa. No GraphQL o cliente descreve exatamente o que quer, num pedido só.\n\n**gRPC** nasceu da conversa entre servidores, onde ninguém precisa ler o tráfego e velocidade importa. Ele não manda texto, manda binário — compacto e rápido, ao custo de você não conseguir simplesmente abrir e ler.\n\n**SOAP** é o mais antigo dos quatro, baseado em XML e bem mais cerimonioso. Você vai encontrá-lo em sistemas corporativos e bancários que existem há muito tempo.\n\nE existe o **OpenAPI**, que não é um estilo: é um jeito de *descrever* uma API REST num arquivo, para que ferramentas gerem documentação e código a partir dele.\n\nA regra para escolher não é qual é melhor — é qual dor você tem. Sem a dor, REST com JSON resolve, e é o que mais gente sabe manter."
+        "texto": "REST com JSON é o caminho comum, mas não é o único. Cada alternativa nasceu de um incômodo específico, e conhecer o incômodo vale mais que decorar o nome.\n\n**GraphQL** nasceu de pedir demais ou de menos. Numa API REST, uma tela costuma precisar de três chamadas, ou de uma que devolve muito mais campo do que a tela usa. No GraphQL o cliente descreve exatamente o que quer, num pedido só.\n\n**gRPC** nasceu da conversa entre servidores, onde ninguém precisa ler o tráfego e velocidade importa. Ele não manda texto, manda binário — compacto e rápido, ao custo de você não conseguir simplesmente abrir e ler.\n\n**SOAP** é o mais antigo dos quatro, baseado em XML e bem mais cerimonioso. Você vai encontrá-lo em sistemas corporativos e bancários que existem há muito tempo.\n\nE existe o **OpenAPI**, que não é um estilo: é um jeito de **descrever** uma API REST num arquivo, para que ferramentas gerem documentação e código a partir dele.\n\nA regra para escolher não é qual é melhor — é qual dor você tem. Sem a dor, REST com JSON resolve, e é o que mais gente sabe manter."
       }
     ]
   },
@@ -252,7 +252,9 @@
         "highlightLine": 1
       },
       "answerType": "fillBlank",
-      "accepted": ["livros"],
+      "accepted": [
+        "livros"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -267,7 +269,9 @@
       "topic": "json",
       "prompt": "Escreva o nome do formato de dados mais usado em APIs hoje. São quatro letras maiúsculas.",
       "answerType": "freeWrite",
-      "accepted": ["JSON"],
+      "accepted": [
+        "JSON"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

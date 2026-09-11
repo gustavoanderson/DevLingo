@@ -10,7 +10,7 @@
       {
         "topico": "descricao",
         "titulo": "A descrição não é documentação: é a interface",
-        "texto": "Uma **ferramenta** é uma função que o agente pode chamar. Você a declara com três coisas: um **nome**, uma **descrição** e os **parâmetros**.\n\nE aqui está o que quase todo mundo demora a entender: **o modelo nunca vê o seu código.** Ele vê só o que você escreveu na descrição. Se a descrição estiver vaga, ele vai usar a ferramenta errado — não por falta de inteligência, mas por falta de informação.\n\nIsso inverte um hábito. Em programação comum, a documentação é um extra: o código é a verdade, e o comentário ajuda. Aqui, **a descrição é a única verdade disponível**.\n\nCompare as duas abaixo. A segunda não é mais bonita: ela responde perguntas que o modelo faria — *quando eu uso isso? o que volta? o que acontece se não achar?*\n\nUma boa descrição diz **quando usar** e **quando não usar**. A segunda metade é a que quase ninguém escreve, e é a que evita a ferramenta sendo chamada para tudo.",
+        "texto": "Uma **ferramenta** é uma função que o agente pode chamar. Você a declara com três coisas: um **nome**, uma **descrição** e os **parâmetros**.\n\nE aqui está o que quase todo mundo demora a entender: **o modelo nunca vê o seu código.** Ele vê só o que você escreveu na descrição. Se a descrição estiver vaga, ele vai usar a ferramenta errado — não por falta de inteligência, mas por falta de informação.\n\nIsso inverte um hábito. Em programação comum, a documentação é um extra: o código é a verdade, e o comentário ajuda. Aqui, **a descrição é a única verdade disponível**.\n\nCompare as duas abaixo. A segunda não é mais bonita: ela responde perguntas que o modelo faria — **quando eu uso isso? o que volta? o que acontece se não achar?**\n\nUma boa descrição diz **quando usar** e **quando não usar**. A segunda metade é a que quase ninguém escreve, e é a que evita a ferramenta sendo chamada para tudo.",
         "code": {
           "language": "python",
           "content": "# ruim: o modelo tem que adivinhar\n\"busca dados\"\n\n# bom: diz quando usar, o que volta, e o limite\n\"\"\"Busca o progresso de UM jogador pelo identificador.\n\nUse quando precisar saber o que a pessoa ja respondeu.\nNAO use para listar jogadores -- ela atende um por vez.\nDevolve as licoes e quantas questoes foram respondidas\nem cada uma. Devolve vazio se o jogador nunca jogou.\"\"\""
@@ -28,7 +28,7 @@
       {
         "topico": "erro",
         "titulo": "A mensagem de erro é instrução, não desabafo",
-        "texto": "Quando uma ferramenta falha, o texto do erro **volta para o modelo**. Ele é entrada, e não registro de log.\n\nEntão a pergunta ao escrever um erro muda completamente: não é *\"isso explica o que houve?\"*, é **\"isso diz o que fazer agora?\"**.\n\nUm erro que só constata produz o modo de falha mais caro que existe: o agente tenta de novo, do mesmo jeito, e falha igual. É a fatura da lição 01 acontecendo.\n\nUm erro que instrui encerra o assunto numa volta.\n\nE existe um caso que merece atenção especial: quando a falha é **definitiva**, diga isso. Sem essa informação, o agente vai insistir educadamente até o teto de voltas — porque, do ponto de vista dele, ainda pode dar certo da próxima vez.",
+        "texto": "Quando uma ferramenta falha, o texto do erro **volta para o modelo**. Ele é entrada, e não registro de log.\n\nEntão a pergunta ao escrever um erro muda completamente: não é \"isso explica o que houve?\", é **\"isso diz o que fazer agora?\"**.\n\nUm erro que só constata produz o modo de falha mais caro que existe: o agente tenta de novo, do mesmo jeito, e falha igual. É a fatura da lição 01 acontecendo.\n\nUm erro que instrui encerra o assunto numa volta.\n\nE existe um caso que merece atenção especial: quando a falha é **definitiva**, diga isso. Sem essa informação, o agente vai insistir educadamente até o teto de voltas — porque, do ponto de vista dele, ainda pode dar certo da próxima vez.",
         "code": {
           "language": "python",
           "content": "# so constata: o agente tenta igual e falha igual\n\"Erro ao validar licao\"\n\n# instrui: uma volta resolve\n\"A licao foi reprovada em 2 regras:\n - gabaritos: nenhuma resposta certa cai em 'e'\n - impressao digital: a resposta 'length' ja e cobrada\n   em java-beg-0403\nCorrija as duas e envie de novo.\"\n\n# definitivo: diz para PARAR de tentar\n\"A trilha 'kotlin' nao existe. Trilhas validas: python,\njavascript, java, selenium. Nao tente outra grafia.\""
@@ -122,7 +122,7 @@
         }
       ],
       "hint": "Lembre que esse texto **volta para o modelo**. Pergunte-se o que ele consegue fazer de diferente depois de lê-lo.",
-      "explanation": "A mensagem de erro é **entrada do modelo**, e não registro de log. A pergunta ao escrevê-la muda: não é *\"isso explica o que houve?\"*, é **\"isso diz o que fazer agora?\"**.\n\nSem instrução, o agente tenta de novo do mesmo jeito — e é a fatura da lição 01 acontecendo, uma volta por vez.\n\nCompare com a boa versão: *\"reprovada em 2 regras: nenhum gabarito cai em 'e'; a resposta 'length' já é cobrada em java-beg-0403\"*. Uma volta resolve."
+      "explanation": "A mensagem de erro é **entrada do modelo**, e não registro de log. A pergunta ao escrevê-la muda: não é \"isso explica o que houve?\", é **\"isso diz o que fazer agora?\"**.\n\nSem instrução, o agente tenta de novo do mesmo jeito — e é a fatura da lição 01 acontecendo, uma volta por vez.\n\nCompare com a boa versão: \"reprovada em 2 regras: nenhum gabarito cai em 'e'; a resposta 'length' já é cobrada em java-beg-0403\". Uma volta resolve."
     },
     {
       "id": "agentes-beg-0203",
@@ -220,7 +220,7 @@
         "caseSensitive": false
       },
       "hint": "É a metade que quase ninguém escreve, e é a que impede a ferramenta de ser chamada para tudo. Escreva sem acento.",
-      "explanation": "Dizer **quando não usar** é o que impede a ferramenta de ser chamada para tudo. *\"NÃO use para listar jogadores — ela atende um por vez\"* economiza uma volta inteira do laço.\n\nSem isso, o modelo escolhe pela semelhança do nome, e ferramentas com nomes parecidos passam a ser confundidas.\n\nÉ o mesmo raciocínio da mensagem de erro: você está escrevendo **para um leitor que não tem contexto nenhum além do que você escreveu**. Tudo que ficar implícito, ele adivinha — e cada adivinhação custa uma volta."
+      "explanation": "Dizer **quando não usar** é o que impede a ferramenta de ser chamada para tudo. \"NÃO use para listar jogadores — ela atende um por vez\" economiza uma volta inteira do laço.\n\nSem isso, o modelo escolhe pela semelhança do nome, e ferramentas com nomes parecidos passam a ser confundidas.\n\nÉ o mesmo raciocínio da mensagem de erro: você está escrevendo **para um leitor que não tem contexto nenhum além do que você escreveu**. Tudo que ficar implícito, ele adivinha — e cada adivinhação custa uma volta."
     },
     {
       "id": "agentes-beg-0206",
@@ -259,7 +259,7 @@
         }
       ],
       "hint": "Existem falhas que passam se você tentar de novo, e falhas que nunca passam. Qual é esta, e o agente tem como saber?",
-      "explanation": "Há dois tipos de falha, e o agente **não tem como distinguir** a menos que você diga: a que pode passar numa nova tentativa — rede instável, serviço ocupado — e a que **nunca** vai passar.\n\nSem essa informação, ele insiste educadamente até o teto de voltas, porque do ponto de vista dele ainda pode dar certo.\n\nA boa mensagem fecha as duas pontas: *\"a trilha 'kotlin' não existe. Trilhas válidas: python, javascript, java, selenium. Não tente outra grafia.\"* Ela diz que é definitivo **e** entrega o caminho certo."
+      "explanation": "Há dois tipos de falha, e o agente **não tem como distinguir** a menos que você diga: a que pode passar numa nova tentativa — rede instável, serviço ocupado — e a que **nunca** vai passar.\n\nSem essa informação, ele insiste educadamente até o teto de voltas, porque do ponto de vista dele ainda pode dar certo.\n\nA boa mensagem fecha as duas pontas: \"a trilha 'kotlin' não existe. Trilhas válidas: python, javascript, java, selenium. Não tente outra grafia.\" Ela diz que é definitivo **e** entrega o caminho certo."
     },
     {
       "id": "agentes-beg-0207",

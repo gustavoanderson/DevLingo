@@ -10,7 +10,7 @@
       {
         "topico": "webdriver",
         "titulo": "Três peças, e uma conversa entre elas",
-        "texto": "O Selenium **dirige um navegador de verdade**. Não simula, não desenha por conta própria: ele abre o Chrome ou o Firefox que está na máquina e manda comandos.\n\nEssa conversa tem três peças:\n\n- **o seu código**, escrito em Java\n- **o driver** — um programa à parte, como o `chromedriver`, que traduz seus comandos\n- **o navegador**, que executa\n\nO seu código nunca fala com o navegador diretamente. Ele fala com o driver, por HTTP, num protocolo padronizado chamado **W3C WebDriver**.\n\nSaber disso não é curiosidade: metade dos erros de configuração vem dali. *\"Session not created: version mismatch\"* quer dizer que o driver e o navegador estão em versões incompatíveis — e a mensagem só faz sentido depois de entender que são dois programas.",
+        "texto": "O Selenium **dirige um navegador de verdade**. Não simula, não desenha por conta própria: ele abre o Chrome ou o Firefox que está na máquina e manda comandos.\n\nEssa conversa tem três peças:\n\n- **o seu código**, escrito em Java\n- **o driver** — um programa à parte, como o `chromedriver`, que traduz seus comandos\n- **o navegador**, que executa\n\nO seu código nunca fala com o navegador diretamente. Ele fala com o driver, por HTTP, num protocolo padronizado chamado **W3C WebDriver**.\n\nSaber disso não é curiosidade: metade dos erros de configuração vem dali. \"Session not created: version mismatch\" quer dizer que o driver e o navegador estão em versões incompatíveis — e a mensagem só faz sentido depois de entender que são dois programas.",
         "code": {
           "language": "text",
           "content": "seu codigo Java  --HTTP-->  chromedriver  -->  Chrome\n  (o teste)                 (tradutor)        (executa)"
@@ -19,7 +19,7 @@
       {
         "topico": "nao-e-framework",
         "titulo": "Selenium não é framework de teste",
-        "texto": "Esta é a confusão número um, e ela atrapalha desde o primeiro dia.\n\n**O Selenium não testa nada.** Ele não sabe o que é uma asserção, não organiza casos, não gera relatório, não diz se passou. Ele sabe abrir página, achar elemento, clicar e ler texto.\n\nQuem transforma isso em teste é outra ferramenta — **JUnit** ou **TestNG** —, que traz asserção, ciclo de vida e relatório. Essa parte é a lição 05.\n\nA divisão importa numa entrevista: *\"o que o Selenium faz?\"* tem resposta curta e precisa. Quem responde \"ele testa o sistema\" mostra que nunca separou as duas coisas.\n\nE tem consequência prática: um script que abre a página e clica em tudo, sem asserção nenhuma, **passa sempre** — porque não há nada que possa falhar. Automação sem asserção é passeio.",
+        "texto": "Esta é a confusão número um, e ela atrapalha desde o primeiro dia.\n\n**O Selenium não testa nada.** Ele não sabe o que é uma asserção, não organiza casos, não gera relatório, não diz se passou. Ele sabe abrir página, achar elemento, clicar e ler texto.\n\nQuem transforma isso em teste é outra ferramenta — **JUnit** ou **TestNG** —, que traz asserção, ciclo de vida e relatório. Essa parte é a lição 05.\n\nA divisão importa numa entrevista: \"o que o Selenium faz?\" tem resposta curta e precisa. Quem responde \"ele testa o sistema\" mostra que nunca separou as duas coisas.\n\nE tem consequência prática: um script que abre a página e clica em tudo, sem asserção nenhuma, **passa sempre** — porque não há nada que possa falhar. Automação sem asserção é passeio.",
         "code": {
           "language": "java",
           "content": "// Selenium: dirige\ndriver.get(\"https://exemplo.com\");\ndriver.findElement(By.id(\"entrar\")).click();\n\n// JUnit: julga\nassertEquals(\"Bem-vindo\", driver.getTitle());"
@@ -122,7 +122,7 @@
         }
       ],
       "hint": "São três peças na conversa, e a do meio é um programa separado com nome próprio.",
-      "explanation": "Seu código fala com o **driver** — `chromedriver`, `geckodriver` — por HTTP, num protocolo padronizado chamado **W3C WebDriver**. O driver é quem manda no navegador.\n\nIsso explica metade dos erros de configuração. *\"Session not created: version mismatch\"* quer dizer que o driver e o navegador estão em versões incompatíveis, e a mensagem só faz sentido depois de entender que são **dois programas diferentes**, atualizados separadamente."
+      "explanation": "Seu código fala com o **driver** — `chromedriver`, `geckodriver` — por HTTP, num protocolo padronizado chamado **W3C WebDriver**. O driver é quem manda no navegador.\n\nIsso explica metade dos erros de configuração. \"Session not created: version mismatch\" quer dizer que o driver e o navegador estão em versões incompatíveis, e a mensagem só faz sentido depois de entender que são **dois programas diferentes**, atualizados separadamente."
     },
     {
       "id": "selenium-beg-0103",
@@ -221,7 +221,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São quatro letras, e a palavra em inglês quer dizer *sair* — não é a que quer dizer *fechar*.",
+      "hint": "São quatro letras, e a palavra em inglês quer dizer **sair** — não é a que quer dizer **fechar**.",
       "explanation": "`quit()` encerra a sessão inteira. `close()` fecharia só a janela atual.\n\nE o lugar dele importa mais do que parece: na **última linha do teste**, um teste que quebra no meio nunca chega até aqui, e o navegador fica aberto. É assim que sobram trinta Chromes depois de uma suíte vermelha.\n\nO lugar certo é um bloco que roda **mesmo em caso de falha** — o `@AfterEach` do JUnit, que a lição 05 apresenta."
     },
     {
@@ -283,7 +283,7 @@
     {
       "id": "selenium-beg-0108",
       "topic": "webdriver",
-      "prompt": "Você atualizou o Chrome e a suíte parou de rodar, com *\"session not created: version mismatch\"*. Qual é a causa?",
+      "prompt": "Você atualizou o Chrome e a suíte parou de rodar, com \"session not created: version mismatch\". Qual é a causa?",
       "answerType": "multipleChoice",
       "options": [
         {

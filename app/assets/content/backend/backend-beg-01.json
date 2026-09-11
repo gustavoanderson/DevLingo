@@ -28,7 +28,7 @@
       {
         "topico": "requisicao",
         "titulo": "Pedido e resposta",
-        "texto": "Achado o servidor, o navegador manda uma **requisição**: um texto dizendo o que ele quer. O servidor devolve uma **resposta**: outro texto, com o resultado e algumas informações sobre ele.\n\nEsse par tem nome — request e response — e é a unidade de tudo que acontece na web. Uma página que parece uma coisa só costuma ser dezenas desses pares: um para o texto, um para cada imagem, um para cada pedaço de dado.\n\nA resposta tem duas partes que valem separar desde já. O **corpo** é o conteúdo em si, aquilo que você queria. E existe também informação *sobre* a resposta, como o tipo do conteúdo e se ele pode ser guardado — isso viaja em cabeçalhos, que a próxima lição abre com calma.\n\nO endereço completo que o cliente usa se chama URL, e ele carrega tudo que o servidor precisa para saber o que foi pedido: o protocolo, o host, e o caminho.",
+        "texto": "Achado o servidor, o navegador manda uma **requisição**: um texto dizendo o que ele quer. O servidor devolve uma **resposta**: outro texto, com o resultado e algumas informações sobre ele.\n\nEsse par tem nome — request e response — e é a unidade de tudo que acontece na web. Uma página que parece uma coisa só costuma ser dezenas desses pares: um para o texto, um para cada imagem, um para cada pedaço de dado.\n\nA resposta tem duas partes que valem separar desde já. O **corpo** é o conteúdo em si, aquilo que você queria. E existe também informação **sobre** a resposta, como o tipo do conteúdo e se ele pode ser guardado — isso viaja em cabeçalhos, que a próxima lição abre com calma.\n\nO endereço completo que o cliente usa se chama URL, e ele carrega tudo que o servidor precisa para saber o que foi pedido: o protocolo, o host, e o caminho.",
         "code": {
           "language": "http",
           "content": "https://api.exemplo.com/livros/42\n\\_____/   \\____________/ \\_______/\nprotocolo      host        caminho"
@@ -241,7 +241,9 @@
       "topic": "requisicao",
       "prompt": "O par formado pelo pedido do cliente e pelo retorno do servidor tem dois nomes em inglês, muito usados no dia a dia. Escreva os dois, separados por espaço.",
       "answerType": "freeWrite",
-      "accepted": ["request response"],
+      "accepted": [
+        "request response"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -288,7 +290,7 @@
         }
       ],
       "hint": "A resposta tem o conteúdo e informações sobre o conteúdo. O corpo é uma das duas.",
-      "explanation": "O corpo é o conteúdo: o texto da página, os dados em JSON, os bytes da imagem. Ao lado dele viajam informações *sobre* a resposta — o tipo do conteúdo, se ele pode ser guardado —, e é isso que os cabeçalhos carregam. A próxima lição abre essa parte."
+      "explanation": "O corpo é o conteúdo: o texto da página, os dados em JSON, os bytes da imagem. Ao lado dele viajam informações **sobre** a resposta — o tipo do conteúdo, se ele pode ser guardado —, e é isso que os cabeçalhos carregam. A próxima lição abre essa parte."
     },
     {
       "id": "backend-beg-0108",
@@ -300,7 +302,9 @@
         "highlightLine": 1
       },
       "answerType": "fillBlank",
-      "accepted": ["https"],
+      "accepted": [
+        "https"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -315,7 +319,9 @@
       "topic": "dns",
       "prompt": "Escreva a sigla, em três letras, do serviço que traduz nomes de domínio em endereços numéricos.",
       "answerType": "freeWrite",
-      "accepted": ["DNS"],
+      "accepted": [
+        "DNS"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,

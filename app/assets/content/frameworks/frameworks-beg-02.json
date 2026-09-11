@@ -19,7 +19,7 @@
       {
         "topico": "use-state",
         "titulo": "O estado vem em par, e você não atribui nele",
-        "texto": "Uma variável comum não serve de estado em React. Você pode mudá-la à vontade que a tela não olha para ela — e, pior, ela volta ao valor inicial no próximo desenho.\n\nPara ter estado você chama `useState`, que devolve **duas coisas**: o valor atual, e a função que troca esse valor.\n\nA regra que mais pega gente é esta: **você nunca atribui direto na variável.** Chamar a função é o que avisa o React de que algo mudou. Sem essa chamada, o valor até muda na memória e ninguém fica sabendo.\n\n`useState` é um *hook* — nome que o React dá às funções que dão poderes a um componente, e que começam todas com o mesmo prefixo. É o vocabulário que a lição 03 vai contrariar: Vue e Svelte resolvem isso sem pedir função nenhuma.",
+        "texto": "Uma variável comum não serve de estado em React. Você pode mudá-la à vontade que a tela não olha para ela — e, pior, ela volta ao valor inicial no próximo desenho.\n\nPara ter estado você chama `useState`, que devolve **duas coisas**: o valor atual, e a função que troca esse valor.\n\nA regra que mais pega gente é esta: **você nunca atribui direto na variável.** Chamar a função é o que avisa o React de que algo mudou. Sem essa chamada, o valor até muda na memória e ninguém fica sabendo.\n\n`useState` é um **hook** — nome que o React dá às funções que dão poderes a um componente, e que começam todas com o mesmo prefixo. É o vocabulário que a lição 03 vai contrariar: Vue e Svelte resolvem isso sem pedir função nenhuma.",
         "code": {
           "language": "javascript",
           "content": "import { useState } from \"react\";\n\nfunction Contador() {\n  const [itens, setItens] = useState(0);\n\n  // itens = itens + 1;  <- nao funciona: ninguem fica sabendo\n  return <button onClick={() => setItens(itens + 1)}>{itens}</button>;\n}"
@@ -95,7 +95,9 @@
         "highlightLine": 2
       },
       "answerType": "fillBlank",
-      "accepted": ["className"],
+      "accepted": [
+        "className"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -136,7 +138,8 @@
         },
         {
           "id": "e",
-          "text": "O elemento do DOM correspondente àquele componente", "correct": false,
+          "text": "O elemento do DOM correspondente àquele componente",
+          "correct": false,
           "why": "Achar elementos do DOM é justamente o trabalho que o React assume para que você não precise fazer."
         }
       ],
@@ -148,7 +151,9 @@
       "topic": "use-state",
       "prompt": "Escreva o nome da função do React que cria um estado dentro de um componente, devolvendo o valor e quem o troca.",
       "answerType": "freeWrite",
-      "accepted": ["useState"],
+      "accepted": [
+        "useState"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -156,7 +161,7 @@
         "caseSensitive": false
       },
       "hint": "Começa com o mesmo prefixo de três letras de todas as funções especiais do React, e termina com a palavra inglesa para estado.",
-      "explanation": "O `useState` é o primeiro *hook* que todo mundo aprende — hook é o nome que o React dá a essas funções que dão poderes a um componente. Elas começam todas com o mesmo prefixo, e isso não é estilo: é como a ferramenta reconhece que aquilo é um hook e cobra as regras de uso."
+      "explanation": "O `useState` é o primeiro **hook** que todo mundo aprende — hook é o nome que o React dá a essas funções que dão poderes a um componente. Elas começam todas com o mesmo prefixo, e isso não é estilo: é como a ferramenta reconhece que aquilo é um hook e cobra as regras de uso."
     },
     {
       "id": "frameworks-beg-0205",
@@ -233,7 +238,7 @@
           "correct": true
         }
       ],
-      "hint": "O nome do conceito em inglês é *re-render*, e o prefixo já entrega o que é repetido.",
+      "hint": "O nome do conceito em inglês é **re-render**, e o prefixo já entrega o que é repetido.",
       "explanation": "A função inteira roda de novo, `useState` incluído — e nessa nova chamada ele devolve o valor **novo**, porque quem guarda o estado é o React, e não a sua variável. O resultado é comparado com o anterior, e só a diferença chega à árvore de verdade. É por isso que a tela não pisca."
     },
     {
@@ -324,7 +329,9 @@
         "highlightLine": 2
       },
       "answerType": "fillBlank",
-      "accepted": ["onClick"],
+      "accepted": [
+        "onClick"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
@@ -339,14 +346,17 @@
       "topic": "use-state",
       "prompt": "Como se chamam as funções especiais do React que dão poderes a um componente, e cujo nome sempre começa com `use`?",
       "answerType": "freeWrite",
-      "accepted": ["hooks", "hook"],
+      "accepted": [
+        "hooks",
+        "hook"
+      ],
       "normalize": {
         "spaces": true,
         "quotes": true,
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "A palavra em inglês quer dizer *gancho*: é o que se engancha num componente para dar memória e outros recursos a ele.",
+      "hint": "A palavra em inglês quer dizer **gancho**: é o que se engancha num componente para dar memória e outros recursos a ele.",
       "explanation": "O `useState` é um deles, e há vários outros para guardar valores, reagir a mudanças e disparar ações fora do desenho. O prefixo comum não é estilo: é como as ferramentas reconhecem que aquilo é um desses e cobram as regras de uso — a principal delas é que precisam ser chamados sempre na mesma ordem, nunca dentro de um `if`."
     }
   ]
