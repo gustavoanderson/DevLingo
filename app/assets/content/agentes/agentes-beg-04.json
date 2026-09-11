@@ -13,7 +13,7 @@
         "texto": "Um agente com trinta ferramentas escolhe pior que um agente com cinco. Não é opinião: a lição 02 já mostrou que a escolha sai da descrição, e trinta descrições competindo é ruído.\n\nDaí a ideia de dividir em vários agentes, cada um com poucas ferramentas e um trabalho claro. E a divisão entrega três coisas:\n\n- **Escolha mais fácil**, porque cada um tem menos opções\n- **Limites diferentes**: quem escreve conteúdo não precisa poder publicar\n- **Trocar um sem mexer nos outros**\n\nMas a conta tem o outro lado, e ele quase nunca é dito: **cada passagem de bastão é uma chance de perder contexto.** O agente que recebe não viu o que o anterior viu — ele lê o que foi escrito, e o que não foi escrito se perdeu.\n\nPor isso a regra de partida é ingrata e verdadeira: **comece com um agente.** Divida quando houver um motivo nomeável — ferramentas demais, limites diferentes, ou trabalho que roda em paralelo de verdade.",
         "code": {
           "language": "text",
-          "content": "   UM AGENTE     │  VARIOS AGENTES\n ────────────────┼─────────────────\n 30 ferramentas  │ 5 + 5 + 5 ...\n escolhe pior    │ escolhe melhor\n                 │\n contexto        │ contexto passado\n   inteiro       │   de mao em mao\n                 │        ▲\n                 │        └─ e aqui\n                 │           que se\n                 │           perde"
+          "content": "UM AGENTE          VARIOS AGENTES\n-----------------  --------------\n30 ferramentas     5 + 5 + 5 ...\nescolhe pior       escolhe melhor\n\ncontexto inteiro   contexto passa\n                   de mao em mao\n                         ^\n                   e aqui que\n                   se perde"
         }
       },
       {
@@ -22,7 +22,7 @@
         "texto": "Quase toda orquestração cai em um destes três. Saber nomeá-los vale mais que decorar biblioteca.\n\n**Sequência.** A → B → C. A saída de um é a entrada do próximo. É o mais simples e o mais previsível, e assume que **você já sabe a ordem dos passos**. Escrever a questão, validar, publicar: a ordem nunca muda.\n\n**Supervisor.** Um agente central decide, a cada volta, qual especialista chamar. Ele assume o contrário: **a ordem depende do que aparecer.** É a mais flexível e a mais cara, porque o supervisor gasta uma chamada de modelo só para decidir.\n\n**Paralelo.** Vários fazem ao mesmo tempo, e alguém junta no fim. Assume que **os trabalhos são independentes** — se um precisa do resultado do outro, não é paralelo, é sequência mal desenhada.\n\nA pergunta que escolhe entre eles não é qual é mais moderno. É: **a ordem dos passos é conhecida antes de começar?** Se é, sequência. Se não é, supervisor. Se não há ordem nenhuma, paralelo.",
         "code": {
           "language": "text",
-          "content": "SEQUENCIA   voce ja sabe a ordem\n\n   A ──▶ B ──▶ C\n\n\nSUPERVISOR  a ordem depende\n\n        ┌──▶ A\n   S ───┼──▶ B    S decide a\n        └──▶ C    cada volta\n\n\nPARALELO    nao ha ordem\n\n   ┌──▶ A ──┐\n   ├──▶ B ──┼──▶ junta\n   └──▶ C ──┘"
+          "content": "SEQUENCIA   voce ja sabe a ordem\n   A --> B --> C\n\nSUPERVISOR  a ordem depende\n   S --+--> A\n       +--> B\n       +--> C\n   S decide a cada volta\n\nPARALELO    nao ha ordem\n   A --+\n   B --+--> junta\n   C --+"
         }
       },
       {

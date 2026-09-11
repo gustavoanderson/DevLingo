@@ -13,7 +13,7 @@
         "texto": "Na lição 02, as ferramentas foram declaradas direto no código do agente. Funciona, e o problema aparece quando o mesmo trabalho precisa ser feito de outro lugar.\n\nSuponha três consumidores das mesmas capacidades:\n\n- você, num assistente de código, na sua máquina\n- uma rotina que roda **na nuvem**, de madrugada, com o seu computador desligado\n- um agente de avaliação, que confere o trabalho do primeiro\n\nSem um padrão, cada um recebe a sua própria cópia das ferramentas. Três cópias divergem — e quando a regra muda, alguém esquece de atualizar uma.\n\nE tem um problema pior, e é o que costuma decidir: **a rotina da nuvem não alcança a sua máquina.** As regras de validação vivem no seu disco. Ou ela reinstala tudo a cada execução, ou ela chama alguém que já tem aquilo.\n\nÉ o mesmo raciocínio do Page Object no curso de Selenium, um andar acima: **quando algo é usado por muitos, ele mora num lugar só.**",
         "code": {
           "language": "text",
-          "content": "SEM PADRAO   cada um carrega a sua\n\n   agente A ──▶ [ regras ]\n   agente B ──▶ [ regras ]\n   agente C ──▶ [ regras ]\n                    ▲\n                    └─ 3 copias,\n                       e elas divergem\n\nCOM MCP      uma copia so\n\n   agente A ──┐\n   agente B ──┼──▶ servidor ──▶ regras\n   agente C ──┘"
+          "content": "SEM PADRAO\n   agente A --> [ regras ]\n   agente B --> [ regras ]\n   agente C --> [ regras ]\n                    ^\n                  3 copias, e\n                  elas divergem\n\nCOM MCP\n   agente A --+\n   agente B --+--> servidor\n   agente C --+        |\n                       v\n                    regras"
         }
       },
       {
@@ -22,7 +22,7 @@
         "texto": "**MCP** é o *Model Context Protocol*: um padrão aberto para conectar um modelo a ferramentas e dados que vivem fora dele.\n\nA arquitetura tem dois lados:\n\n- **O servidor** oferece capacidades. Ele é quem tem acesso ao banco, ao disco, ao serviço externo\n- **O cliente** é o agente. Ele pergunta o que existe, e chama\n\nE aqui está o que distingue MCP de uma API comum: **o cliente descobre as ferramentas em tempo de execução.** Ele pergunta *\"o que você sabe fazer?\"*, e o servidor responde com a lista — nome, descrição e parâmetros de cada uma.\n\nIsso importa porque o destinatário é um **modelo**, e não um programador. Uma API REST tem documentação para uma pessoa ler antes de escrever código. Um agente precisa da descrição **no momento da decisão**, e é ela que ele lê para escolher.\n\nRepare que isso torna a lição 02 ainda mais importante: no MCP, **a descrição é o produto**. É literalmente o que atravessa a rede.",
         "code": {
           "language": "text",
-          "content": " cliente                 servidor\n    │                       │\n    │ quais ferramentas? ──▶│\n    │◀── validar_licao, ... │\n    │                       │\n    │ validar_licao({..}) ─▶│\n    │◀── reprovada: 2 regras│\n    │                       │\n    └─ descobriu o que      │\n       existe ANTES de      │\n       precisar usar        │"
+          "content": "cliente                servidor\n   |                       |\n   |  quais ferramentas?   |\n   | --------------------> |\n   |  validar_licao, ...   |\n   | <-------------------- |\n   |  validar_licao({..})  |\n   | --------------------> |\n   |  reprovada: 2 regras  |\n   | <-------------------- |\n\n   ele DESCOBRIU o que existe\n   antes de precisar usar"
         }
       },
       {
@@ -31,7 +31,7 @@
         "texto": "Esta é a seção mais importante da lição, e a que mais separa quem entende de quem repete.\n\n**MCP se paga quando** há mais de um consumidor das mesmas ferramentas, ou quando a capacidade precisa viver em outro lugar que não o do agente, ou quando você quer que outras pessoas conectem os agentes delas ao seu sistema.\n\n**MCP é teatro quando** só um agente usa, ele roda na mesma máquina, e as operações são coisas que ele já consegue fazer. Embrulhar `ler arquivo` num servidor MCP não acrescenta nada — o agente já lê arquivo.\n\nA pergunta que decide não é *\"dá para usar MCP aqui?\"*. É: **quantos consumidores diferentes precisam disto, e eles alcançam onde a capacidade mora?**\n\nE vale saber o que MCP **não** faz, porque é aí que mora o exagero: ele não deixa o agente mais inteligente, não melhora o raciocínio, e não substitui uma boa descrição. Ele padroniza **como as ferramentas são oferecidas** — e só.\n\nNuma entrevista, dizer **onde você decidiu não usar** costuma valer mais que listar onde usou.",
         "code": {
           "language": "text",
-          "content": "┌─ SE PAGA ────────────────────┐\n│  varios consumidores         │\n│  capacidade em outra maquina │\n│  terceiros vao conectar      │\n│  operacoes do dominio        │\n└──────────────────────────────┘\n\n┌─ E TEATRO ───────────────────┐\n│  um agente so                │\n│  tudo na mesma maquina       │\n│  so voce usa                 │\n│  embrulho de \"ler arquivo\"   │\n└──────────────────────────────┘"
+          "content": "SE PAGA\n   + varios consumidores\n   + capacidade em outra maquina\n   + terceiros vao conectar\n   + operacoes do dominio\n\nE TEATRO\n   - um agente so\n   - tudo na mesma maquina\n   - so voce usa\n   - embrulho de \"ler arquivo\""
         }
       },
       {

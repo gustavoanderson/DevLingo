@@ -1887,13 +1887,37 @@ Destacar `agente` pintaria o texto de ciano **88 vezes**. É a mesma razão de `
 
 O que sobrou são siglas e nomes próprios. **`MCP` sozinho responde por 16 das ocorrências que passavam despercebidas.**
 
-### Os diagramas: largura é decisão de desenho
+### Os diagramas: ASCII puro, e a medição que obrigou a isso
 
-Os oito blocos `text` do curso iam de **40 a 66 colunas**. O bloco de código usa mono de 14px e sobram ~355dp num celular, o que dá **~42 colunas** — ou seja, a maioria **rolava na horizontal**, e fluxograma que precisa ser arrastado não ensina.
+Os oito blocos `text` do curso iam de **40 a 66 colunas**, e a maioria **rolava na horizontal** — fluxograma que precisa ser arrastado não ensina. Três deles (`autonomia`, `quando`, `porque`) eram ainda **tabela disfarçada de diagrama**.
 
-Todos foram redesenhados em **32 a 38 colunas**, com caracteres de caixa. E três deles — `autonomia`, `quando`, `porque` — eram **tabela disfarçada de diagrama**; dois viraram decisão com ramos, que é o que o conteúdo dizia desde sempre.
+Foram redesenhados em **≤34 colunas, ASCII puro, ancorados à esquerda**. E cada uma dessas três decisões custou um ciclo de build para ser descoberta.
 
-**Pendência honesta:** os caracteres `─ │ ┌ ▶` não foram vistos renderizados em aparelho. Box-drawing é bem suportado, mas `▶` e `▼` têm largura *ambígua* em Unicode e podem cair num fallback que desalinha a coluna. Quem retomar: olhe a aula de Agentes num celular antes de confiar. Se desalinhar, a troca para `>` e `v` é mecânica.
+#### 1. `▶` tem emoji presentation, e vira uma caixa laranja
+
+`▶` (U+25B6) caiu no **Noto Color Emoji**: apareceu na tela como um quadrado laranja com um triângulo branco, mais largo que o glifo mono. `▼` (U+25BC) **não** tem variante emoji e desenhou certo.
+
+Não há como prever isso lendo o arquivo. Só a tela responde.
+
+#### 2. Caractere de caixa NÃO é monoespaçado nesta fonte
+
+Este é o achado que decidiu tudo, e ele é medido. Três linhas do **mesmo** diagrama, todas com **30 colunas**, terminaram em pontos diferentes:
+
+| Linha | Composição | Último pixel |
+|---|---|---|
+| só `│` e espaços | 0 traços, 0 setas | **x = 1050** |
+| com 2 setas `→` | 0 traços | **x = 1085** |
+| com 17 traços `─` | 1 seta | **x = 1224** |
+
+Ou seja: `─` é cerca de **38% mais largo** que um glifo mono, e `→` cerca de **65%**. Qualquer desenho que dependa de alinhamento entorta — e entorta **proporcionalmente à quantidade de linha usada**, que é o pior tipo de erro, porque parece aleatório.
+
+**ASCII (`- | + > v ^`) é desenhado em largura fixa por definição da fonte.** É a única garantia.
+
+#### 3. O teto de coluna sai da tela, não da conta
+
+Calculei **42 colunas** (355dp úteis ÷ 8,4px por glifo) e errei: um diagrama de **37 colunas ainda cortava** `observar` na borda. Medindo o render, o glifo ocupa ~30px numa tela de 1280, o que dá **~36 colunas** — e o alvo virou 34, com folga.
+
+A conta serve para estimar; **quem decide é o print**.
 
 ### A colisão que eu superestimei, e o que ela ensinou
 
