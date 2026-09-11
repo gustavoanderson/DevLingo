@@ -326,7 +326,7 @@
     {
       "id": "java-beg-0109",
       "topic": "main",
-      "prompt": "Complete a assinatura do método por onde a execução do programa começa.",
+      "prompt": "Esta classe compila sem erro, e mesmo assim a máquina virtual recusa executá-la. Complete o que falta.",
       "code": {
         "language": "java",
         "content": "public class Programa {\n  public static void ______(String[] args) {\n    System.out.println(\"comecou\");\n  }\n}",
@@ -342,7 +342,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São quatro letras, em inglês, e querem dizer **principal**. A máquina virtual procura exatamente esse nome.",
+      "hint": "A máquina virtual procura sempre o mesmo nome, e ele não muda de projeto para projeto. Está na primeira seção da aula.",
       "explanation": "A assinatura inteira é sempre a mesma, e a máquina virtual procura exatamente por ela. Trocar qualquer pedaço — o nome, o `static`, o tipo do parâmetro — faz o programa compilar e **não rodar**, com a mensagem de que não há ponto de entrada.\n\nÉ um dos poucos lugares em programação onde decorar é a atitude certa: o entendimento de cada palavra vem depois, e tentar entendê-las antes de escrever a primeira linha é uma boa forma de desistir de Java."
     },
     {

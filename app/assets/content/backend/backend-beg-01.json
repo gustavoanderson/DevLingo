@@ -317,7 +317,7 @@
     {
       "id": "backend-beg-0109",
       "topic": "dns",
-      "prompt": "Escreva a sigla, em três letras, do serviço que traduz nomes de domínio em endereços numéricos.",
+      "prompt": "Você abre `93.184.216.34` no navegador e o site carrega. Você abre `exemplo.com` e recebe erro. Escreva a sigla, em três letras, do serviço que falhou.",
       "answerType": "freeWrite",
       "accepted": [
         "DNS"
@@ -328,7 +328,7 @@
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "Aparece na aula desta lição, e a sigla vem de Domain Name System.",
+      "hint": "É o passo que acontece ANTES de a requisição sair do seu computador. A aula desta lição o compara com uma agenda de telefone.",
       "explanation": "DNS, de Domain Name System. É a camada que permite que pessoas usem nomes e máquinas usem números, sem que ninguém precise saber do outro lado."
     },
     {

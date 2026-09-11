@@ -205,7 +205,7 @@
     {
       "id": "selenium-beg-0105",
       "topic": "sessao",
-      "prompt": "Complete o método que encerra a sessão e mata o processo do driver.",
+      "prompt": "O teste terminou e passou, mas o processo do `chromedriver` continuou vivo na máquina, consumindo memória. Complete a chamada que faltou.",
       "code": {
         "language": "java",
         "content": "WebDriver driver = new ChromeDriver();\ndriver.get(\"https://exemplo.com\");\ndriver.______();",
@@ -221,7 +221,7 @@
         "trailingSemicolon": false,
         "caseSensitive": true
       },
-      "hint": "São quatro letras, e a palavra em inglês quer dizer **sair** — não é a que quer dizer **fechar**.",
+      "hint": "Dos dois métodos que terminam uma sessão, é o que não deixa nada rodando atrás. A aula compara os dois lado a lado.",
       "explanation": "`quit()` encerra a sessão inteira. `close()` fecharia só a janela atual.\n\nE o lugar dele importa mais do que parece: na **última linha do teste**, um teste que quebra no meio nunca chega até aqui, e o navegador fica aberto. É assim que sobram trinta Chromes depois de uma suíte vermelha.\n\nO lugar certo é um bloco que roda **mesmo em caso de falha** — o `@AfterEach` do JUnit, que a lição 05 apresenta."
     },
     {

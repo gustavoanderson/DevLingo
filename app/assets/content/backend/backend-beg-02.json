@@ -352,7 +352,7 @@
     {
       "id": "backend-beg-0210",
       "topic": "cabecalhos",
-      "prompt": "Escreva o nome do cabeçalho que diz o formato do corpo da resposta. Ele tem duas palavras unidas por hífen.",
+      "prompt": "Um servidor devolveu um corpo em JSON, e o navegador exibiu as chaves e colchetes como texto cru em vez de interpretar. Escreva o nome do cabeçalho que veio errado.",
       "answerType": "freeWrite",
       "accepted": [
         "Content-Type"
@@ -363,7 +363,7 @@
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "A primeira palavra é conteúdo em inglês, a segunda é tipo. Aparece na aula desta lição.",
+      "hint": "Sem ele quem recebe tem o conteúdo, mas não sabe como lê-lo. Aparece na aula desta lição, no exemplo de resposta.",
       "explanation": "O `Content-Type` diz se o corpo é `application/json`, `text/html`, uma imagem ou outra coisa. Nomes de cabeçalho não diferenciam maiúscula de minúscula no HTTP, mas a convenção de escrever assim, com as iniciais em maiúscula, é quase universal."
     }
   ]

@@ -340,7 +340,7 @@
     {
       "id": "frameworks-beg-0110",
       "topic": "duas-camadas",
-      "prompt": "Complete o mapa das duas camadas com o meta-framework que é construído sobre o React.",
+      "prompt": "Complete o mapa das duas camadas.",
       "code": {
         "language": "text",
         "content": "CUIDAM DA TELA        POR CIMA DELES\n\nReact          <-     ______\nVue            <-     Nuxt\nvarios deles   <-     Astro",
@@ -357,7 +357,7 @@
         "trailingSemicolon": false,
         "caseSensitive": false
       },
-      "hint": "O nome quer dizer **próximo** em inglês, e se parece de propósito com o da linha logo abaixo.",
+      "hint": "As duas linhas de baixo já estão preenchidas e seguem a mesma lógica. Olhe o que Nuxt é para o Vue.",
       "explanation": "O `Next` usa React por baixo, e o `Nuxt` usa Vue — a semelhança entre os nomes é homenagem, não coincidência. O `Astro` é o diferente dos três: em vez de casar com um framework só, ele aceita componentes de vários na mesma página. A lição 04 abre os três."
     }
   ]
