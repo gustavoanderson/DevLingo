@@ -1,0 +1,80 @@
+# Relatorio semanal do DevLingo, por e-mail.
+#
+# Roda na nuvem, entao chega com o computador do Gustavo desligado -- que e a
+# unica razao de usar o GitHub aqui. O e-mail sai do Gmail dele, nao do
+# GitHub: este fluxo e so o despertador.
+#
+# CUSTO ZERO. Actions e gratuito em repositorio publico, e o DevLingo e
+# publico.
+#
+# ## Antes de funcionar, tres segredos precisam existir
+#
+# Em Settings -> Secrets and variables -> Actions -> New repository secret:
+#
+#   REMETENTE_EMAIL ...... a conta do Gmail que envia
+#   REMETENTE_SENHA_APP .. a senha de app de 16 letras, gerada no Google
+#   DESTINO_EMAIL ........ para onde o relatorio vai
+#
+# Segredo do GitHub e criptografado, nao aparece no codigo, e sai mascarado
+# do log mesmo se alguem imprimir por engano. Ainda assim: senha de app da
+# permissao de ENVIAR e-mail em nome de quem a gerou, e se revoga a qualquer
+# momento no mesmo lugar onde foi criada.
+#
+# Enquanto os segredos nao existirem, o fluxo roda em MODO SECO: monta o
+# relatorio, mostra no log, e nao envia nada. Assim da para conferir o
+# conteudo antes de entregar a credencial -- e, se a credencial for revogada
+# um dia, ele degrada em vez de quebrar.
+
+name: Relatorio semanal
+
+on:
+  schedule:
+    # Segunda-feira, 12:00 UTC = 9:00 em Brasilia. Segunda de manha porque o
+    # relatorio fecha a semana anterior e abre a seguinte com o que espera
+    # dele.
+    - cron: "0 12 * * 1"
+  # Para disparar a mao, sem esperar segunda.
+  workflow_dispatch:
+    inputs:
+      seco:
+        description: "Modo seco (monta e nao envia)"
+        type: boolean
+        default: false
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # O relatorio conta commits dos ultimos 7 dias; com o checkout raso
+          # padrao ele enxergaria apenas um e reportaria uma semana vazia.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # O relatorio roda o validador de verdade para saber se o banco esta
+      # aprovado, e o validador precisa disto.
+      - name: Instalar dependencias
+        run: pip install jsonschema
+
+      - name: Montar e enviar
+        env:
+          REMETENTE_EMAIL: ${{ secrets.REMETENTE_EMAIL }}
+          REMETENTE_SENHA_APP: ${{ secrets.REMETENTE_SENHA_APP }}
+          DESTINO_EMAIL: ${{ secrets.DESTINO_EMAIL }}
+        run: |
+          if [ -z "$REMETENTE_SENHA_APP" ] || [ "${{ inputs.seco }}" = "true" ]; then
+            echo "::notice::Sem credencial ou modo seco pedido — montando sem enviar."
+            python3 tools/enviar_relatorio.py --seco
+          else
+            python3 tools/enviar_relatorio.py
+          fi
+
+      # O relatorio tambem fica no resumo da execucao, que da para abrir pelo
+      # celular sem depender do e-mail ter chegado.
+      - name: Deixar o relatorio no resumo da execucao
+        if: always()
+        run: python3 tools/relatorio.py >> "$GITHUB_STEP_SUMMARY"
