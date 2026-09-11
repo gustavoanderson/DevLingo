@@ -10,7 +10,7 @@ O `README.md` apresenta o produto. Este arquivo apresenta **as decisões de enge
 
 | | |
 |---|---|
-| Questões no banco | **354**, em 7 trilhas |
+| Questões no banco | **404**, em 8 trilhas |
 | Testes automatizados | **345** unitários e de widget, mais 3 de ponta a ponta |
 | Cobertura | **95,6%** — 2.366 de 2.476 linhas, em 28 de 32 arquivos |
 | Versões publicadas | 5, de `v1.0.0` a `v1.4.0` |
@@ -167,7 +167,7 @@ E a regra que a torna operável: **autonomia se concede onde o erro é verificá
 Um portfólio que só lista acertos não é avaliável.
 
 - **Só o nível iniciante** existe. Intermediário e avançado estão planejados e não escritos
-- **Cinco das sete trilhas nunca foram jogadas por ninguém.** A dificuldade delas é estimativa
+- **Seis das oito trilhas nunca foram jogadas por ninguém.** A dificuldade delas é estimativa
 - A revisão de acessibilidade foi feita **só no cabeçalho da trilha**
 - A suíte de ponta a ponta cobre **uma tela**, e não roda em CI
 - Nunca foi compilado para **iOS** — falta hardware
@@ -179,7 +179,7 @@ Um portfólio que só lista acertos não é avaliável.
 
 | Frente | Estado |
 |---|---|
-| Curso de **Agentes de IA** | 2 de 5 lições escritas |
+| Curso de **Agentes de IA** | **5 de 5 lições escritas** — 50 questões |
 | **Servidor MCP** expondo os portões de qualidade do projeto | planejado |
 | **Revisão dirigida** — lição gerada a partir de onde a pessoa tropeçou | planejada |
 | Rotina autônoma de manutenção, com aprovação por mensagem | planejada |

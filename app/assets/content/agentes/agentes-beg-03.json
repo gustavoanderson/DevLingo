@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "language": "agentes",
+  "level": "beginner",
+  "lessonId": "agentes-beg-03",
+  "lessonTitle": "MCP: ferramentas que o agente descobre sozinho",
+  "aula": {
+    "titulo": "O padrão que separa quem oferece de quem usa",
+    "secoes": [
+      {
+        "topico": "problema",
+        "titulo": "O problema que aparece na terceira integração",
+        "texto": "Na lição 02, as ferramentas foram declaradas direto no código do agente. Funciona, e o problema aparece quando o mesmo trabalho precisa ser feito de outro lugar.\n\nSuponha três consumidores das mesmas capacidades:\n\n- você, num assistente de código, na sua máquina\n- uma rotina que roda **na nuvem**, de madrugada, com o seu computador desligado\n- um agente de avaliação, que confere o trabalho do primeiro\n\nSem um padrão, cada um recebe a sua própria cópia das ferramentas. Três cópias divergem — e quando a regra muda, alguém esquece de atualizar uma.\n\nE tem um problema pior, e é o que costuma decidir: **a rotina da nuvem não alcança a sua máquina.** As regras de validação vivem no seu disco. Ou ela reinstala tudo a cada execução, ou ela chama alguém que já tem aquilo.\n\nÉ o mesmo raciocínio do Page Object no curso de Selenium, um andar acima: **quando algo é usado por muitos, ele mora num lugar só.**",
+        "code": {
+          "language": "text",
+          "content": "SEM PADRAO              COM MCP\n\nagente A --copia 1      agente A --+\nagente B --copia 2      agente B --+--> servidor --> regras\nagente C --copia 3      agente C --+"
+        }
+      },
+      {
+        "topico": "mcp",
+        "titulo": "O que o MCP é",
+        "texto": "**MCP** é o *Model Context Protocol*: um padrão aberto para conectar um modelo a ferramentas e dados que vivem fora dele.\n\nA arquitetura tem dois lados:\n\n- **O servidor** oferece capacidades. Ele é quem tem acesso ao banco, ao disco, ao serviço externo\n- **O cliente** é o agente. Ele pergunta o que existe, e chama\n\nE aqui está o que distingue MCP de uma API comum: **o cliente descobre as ferramentas em tempo de execução.** Ele pergunta *\"o que você sabe fazer?\"*, e o servidor responde com a lista — nome, descrição e parâmetros de cada uma.\n\nIsso importa porque o destinatário é um **modelo**, e não um programador. Uma API REST tem documentação para uma pessoa ler antes de escrever código. Um agente precisa da descrição **no momento da decisão**, e é ela que ele lê para escolher.\n\nRepare que isso torna a lição 02 ainda mais importante: no MCP, **a descrição é o produto**. É literalmente o que atravessa a rede.",
+        "code": {
+          "language": "text",
+          "content": "cliente                         servidor\n   |  \"quais ferramentas voce tem?\"  |\n   |-------------------------------->|\n   |  validar_licao, impressao_dig...|\n   |<--------------------------------|\n   |  validar_licao({...})           |\n   |-------------------------------->|\n   |  reprovada em 2 regras: ...     |\n   |<--------------------------------|"
+        }
+      },
+      {
+        "topico": "quando",
+        "titulo": "Quando MCP se paga, e quando é teatro",
+        "texto": "Esta é a seção mais importante da lição, e a que mais separa quem entende de quem repete.\n\n**MCP se paga quando** há mais de um consumidor das mesmas ferramentas, ou quando a capacidade precisa viver em outro lugar que não o do agente, ou quando você quer que outras pessoas conectem os agentes delas ao seu sistema.\n\n**MCP é teatro quando** só um agente usa, ele roda na mesma máquina, e as operações são coisas que ele já consegue fazer. Embrulhar `ler arquivo` num servidor MCP não acrescenta nada — o agente já lê arquivo.\n\nA pergunta que decide não é *\"dá para usar MCP aqui?\"*. É: **quantos consumidores diferentes precisam disto, e eles alcançam onde a capacidade mora?**\n\nE vale saber o que MCP **não** faz, porque é aí que mora o exagero: ele não deixa o agente mais inteligente, não melhora o raciocínio, e não substitui uma boa descrição. Ele padroniza **como as ferramentas são oferecidas** — e só.\n\nNuma entrevista, dizer **onde você decidiu não usar** costuma valer mais que listar onde usou.",
+        "code": {
+          "language": "text",
+          "content": "SE PAGA                      E TEATRO\n\nvarios consumidores          um agente so\ncapacidade em outra maquina  tudo na mesma maquina\nterceiros vao conectar       so voce usa\noperacoes do dominio         embrulho de `ler arquivo`"
+        }
+      },
+      {
+        "topico": "seguranca",
+        "titulo": "O servidor é onde os limites moram",
+        "texto": "Separar quem oferece de quem usa tem uma consequência de segurança que costuma passar despercebida, e é uma das melhores razões para adotar o padrão.\n\n**O limite deixa de depender do agente.** Se a ferramenta `validar_licao` só valida, então **validar é tudo que aquele agente consegue fazer** — não importa o que ele decida tentar, o que ele tenha lido, nem o que alguém tenha escrito num texto que ele processou.\n\nCompare com a ferramenta genérica da lição 02, aquela `executar(comando)`: ali, a segurança inteira dependia de o modelo escolher bem.\n\nDaí saem três hábitos que valem a pena:\n\n- **Uma ferramenta faz uma coisa.** Sem parâmetro que mude a natureza da operação\n- **O servidor valida a entrada.** Ele não confia em quem chamou, mesmo sendo um agente seu\n- **O servidor registra quem chamou o quê.** Sem isso, não há como investigar depois — e agente sem registro é um sistema que ninguém consegue auditar\n\nA frase que resume a lição inteira: **o agente propõe; o servidor decide o que é possível.**",
+        "code": {
+          "language": "python",
+          "content": "# o limite esta AQUI, e nao no julgamento do modelo\ndef validar_licao(json_da_licao):\n    # so valida. nao escreve, nao apaga, nao publica.\n    registrar_chamada(\"validar_licao\", quem, quando)\n    return regras.conferir(json_da_licao)"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "agentes-beg-0301",
+      "topic": "mcp",
+      "prompt": "O que distingue um servidor MCP de uma API REST comum?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O cliente **descobre** as ferramentas em execução, em vez de depender de documentação lida antes",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "MCP é mais rápido",
+          "correct": false,
+          "why": "Velocidade não é o eixo da diferença, e os dois viajam por rede do mesmo jeito."
+        },
+        {
+          "id": "c",
+          "text": "MCP não precisa de autenticação",
+          "correct": false,
+          "why": "Precisa igual, e um servidor sem autenticação é um problema nos dois casos."
+        },
+        {
+          "id": "d",
+          "text": "MCP só funciona com modelos de linguagem grandes",
+          "correct": false,
+          "why": "É um protocolo: não há requisito de tamanho de modelo."
+        },
+        {
+          "id": "e",
+          "text": "MCP dispensa escrever descrição para as ferramentas",
+          "correct": false,
+          "why": "É o contrário: ali a descrição é o que atravessa a rede, e fica mais importante."
+        }
+      ],
+      "hint": "Pense em quem é o destinatário. Uma pessoa lê documentação antes de programar; um modelo precisa saber no momento de decidir.",
+      "explanation": "Numa API REST, a documentação é para **uma pessoa ler antes** de escrever código. Num agente, a descrição precisa chegar **no momento da decisão** — é ela que o modelo lê para escolher a ferramenta.\n\nPor isso o cliente pergunta *\"o que você sabe fazer?\"* e recebe a lista com nome, descrição e parâmetros.\n\nE isso torna a lição 02 ainda mais importante: **no MCP, a descrição é o produto.** Ela é literalmente o que atravessa a rede."
+    },
+    {
+      "id": "agentes-beg-0302",
+      "topic": "quando",
+      "prompt": "Em qual destas situações construir um servidor MCP seria **teatro**?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Três agentes diferentes precisando das mesmas regras de validação",
+          "correct": false,
+          "why": "É o caso central do padrão: muitos consumidores das mesmas ferramentas."
+        },
+        {
+          "id": "b",
+          "text": "Um agente só, rodando na sua máquina, para ler arquivos que ele já lê",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Uma rotina na nuvem que precisa de capacidades que vivem em outra máquina",
+          "correct": false,
+          "why": "Esse é o motivo de forçamento mais comum na prática."
+        },
+        {
+          "id": "d",
+          "text": "Um sistema que outras equipes vão conectar aos agentes delas",
+          "correct": false,
+          "why": "Terceiros conectando é exatamente para isso que existe um padrão aberto."
+        },
+        {
+          "id": "e",
+          "text": "Um conjunto de operações de domínio usadas por mais de um fluxo",
+          "correct": false,
+          "why": "Operações de domínio compartilhadas justificam bem a separação."
+        }
+      ],
+      "hint": "Quatro das cinco têm mais de um consumidor ou uma capacidade que mora longe. Uma não tem nenhum dos dois.",
+      "explanation": "Um agente, na mesma máquina, fazendo algo que já consegue fazer: **não há o que o padrão resolva ali**. Embrulhar `ler arquivo` num servidor só acrescenta uma peça para manter.\n\nA pergunta que decide não é *\"dá para usar MCP aqui?\"* — é **\"quantos consumidores diferentes precisam disto, e eles alcançam onde a capacidade mora?\"**\n\nNuma entrevista, **dizer onde você decidiu não usar vale mais que listar onde usou**. Quem só sabe defender a adoção não avaliou nada."
+    },
+    {
+      "id": "agentes-beg-0303",
+      "topic": "seguranca",
+      "prompt": "Por que expor `validar_licao(json)` por MCP é mais seguro que dar ao agente uma ferramenta `executar(comando)`?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque MCP criptografa as chamadas",
+          "correct": false,
+          "why": "Criptografia é transporte, e não tem relação com o que a ferramenta permite fazer."
+        },
+        {
+          "id": "b",
+          "text": "Porque o servidor pode recusar chamadas suspeitas",
+          "correct": false,
+          "why": "Pode, e isso ainda dependeria de julgar cada caso. O ganho real é anterior."
+        },
+        {
+          "id": "c",
+          "text": "Porque validar é tudo que aquele agente consegue fazer — o limite não depende do julgamento do modelo",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque o agente passa a precisar de autorização a cada chamada",
+          "correct": false,
+          "why": "Isso seria outra camada, e não é o que a separação entrega por si."
+        },
+        {
+          "id": "e",
+          "text": "Porque MCP registra tudo automaticamente",
+          "correct": false,
+          "why": "Registro é bom prática e precisa ser escrito: o protocolo não o faz sozinho."
+        }
+      ],
+      "hint": "Pergunte-se o que continua impossível depois de dar cada uma das duas ferramentas.",
+      "explanation": "Com `validar_licao`, **validar é tudo que o agente consegue** — não importa o que ele decida tentar, nem o que tenha lido num texto que processou.\n\nCom `executar(comando)`, a segurança inteira passa a depender de o modelo escolher bem. E modelo não é mecanismo de segurança: é o que você está protegendo o sistema contra, quando ele erra.\n\nA frase que resume: **o agente propõe; o servidor decide o que é possível.**"
+    },
+    {
+      "id": "agentes-beg-0304",
+      "topic": "problema",
+      "prompt": "Escreva, em uma palavra sem acento, o que três cópias das mesmas ferramentas em três agentes diferentes acabam fazendo com o tempo.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "divergir",
+        "divergem",
+        "divergencia"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que acontece com qualquer regra escrita em mais de um lugar quando alguém atualiza só um deles. Escreva sem acento.",
+      "explanation": "Três cópias divergem, e o pior é que divergem **em silêncio**: alguém atualiza a regra num lugar, esquece dos outros dois, e a partir dali os três agentes julgam a mesma coisa de jeitos diferentes.\n\nEsse é o mesmo raciocínio que já sustenta duas decisões neste projeto: o contrato compartilhado entre a normalização em Python e em Dart, e o Page Object que guarda o seletor num lugar só.\n\n**Quando algo é usado por muitos, ele mora num lugar só.** O padrão muda; o princípio não."
+    },
+    {
+      "id": "agentes-beg-0305",
+      "topic": "problema",
+      "prompt": "Uma rotina roda na nuvem de madrugada e precisa validar conteúdo. As regras de validação estão no computador do desenvolvedor. Qual é o problema?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Validação só pode acontecer durante o dia",
+          "correct": false,
+          "why": "Não há restrição de horário em nada disso."
+        },
+        {
+          "id": "b",
+          "text": "As regras em Python não rodam na nuvem",
+          "correct": false,
+          "why": "Rodam normalmente. O problema é chegar até elas, e não executá-las."
+        },
+        {
+          "id": "c",
+          "text": "A rotina precisa de permissão do sistema operacional",
+          "correct": false,
+          "why": "Não é questão de permissão: é que a máquina não está acessível."
+        },
+        {
+          "id": "d",
+          "text": "A rotina não alcança aquela máquina, então ou reinstala tudo ou chama um serviço",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Nenhum: a rotina pode ler os arquivos remotamente",
+          "correct": false,
+          "why": "Ler o arquivo da regra não basta: seria preciso o ambiente inteiro que a executa."
+        }
+      ],
+      "hint": "A rotina roda num contêiner na nuvem, e o computador do desenvolvedor costuma estar desligado.",
+      "explanation": "Esse é o **motivo de forçamento** mais comum na prática, e ele é geográfico antes de ser arquitetural: a capacidade está num lugar, e quem precisa dela está em outro.\n\nReinstalar tudo a cada execução é possível e caro — e cria uma segunda cópia do ambiente, que vai divergir.\n\nChamar um serviço resolve os dois de uma vez: a regra continua num lugar só, e quem está longe alcança."
+    },
+    {
+      "id": "agentes-beg-0306",
+      "topic": "mcp",
+      "prompt": "No MCP, quem oferece as capacidades e quem as consome?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O modelo oferece, e o servidor consome",
+          "correct": false,
+          "why": "Está invertido: o modelo é quem precisa das capacidades."
+        },
+        {
+          "id": "b",
+          "text": "Os dois oferecem e consomem igualmente",
+          "correct": false,
+          "why": "Os papéis são assimétricos, e essa assimetria é o desenho do protocolo."
+        },
+        {
+          "id": "c",
+          "text": "Depende de quem iniciou a conexão",
+          "correct": false,
+          "why": "Os papéis são fixos, independentemente de quem conectou primeiro."
+        },
+        {
+          "id": "d",
+          "text": "O usuário oferece, e o agente consome",
+          "correct": false,
+          "why": "A pessoa configura a conexão, e quem responde às chamadas é o servidor."
+        },
+        {
+          "id": "e",
+          "text": "O servidor oferece; o agente, como cliente, descobre e chama",
+          "correct": true
+        }
+      ],
+      "hint": "Quem tem acesso ao banco, ao disco e ao serviço externo é um. Quem precisa disso para trabalhar é o outro.",
+      "explanation": "**O servidor** tem acesso ao banco, ao disco, ao serviço externo — ele oferece. **O agente é o cliente**: pergunta o que existe e chama.\n\nEssa assimetria é o que dá o ganho de segurança da última seção: os limites moram no servidor, e não no julgamento de quem chama.\n\nE ela permite algo mais: **o mesmo servidor serve a agentes diferentes**, inclusive de outras pessoas. É isso que faz dele um padrão, e não uma integração."
+    },
+    {
+      "id": "agentes-beg-0307",
+      "topic": "seguranca",
+      "prompt": "Além de validar a entrada, o que um servidor MCP deve fazer para que o sistema seja auditável?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Registrar quem chamou o quê, e quando",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Limitar o número de chamadas por minuto",
+          "correct": false,
+          "why": "Protege contra abuso e não diz nada sobre o que aconteceu depois."
+        },
+        {
+          "id": "c",
+          "text": "Guardar uma cópia de todas as respostas do modelo",
+          "correct": false,
+          "why": "Ele nem vê as respostas do modelo: vê as chamadas que recebeu."
+        },
+        {
+          "id": "d",
+          "text": "Exigir confirmação humana em toda chamada",
+          "correct": false,
+          "why": "Isso acabaria com a autonomia — e para leitura, não faz sentido nenhum."
+        },
+        {
+          "id": "e",
+          "text": "Criptografar os parâmetros recebidos",
+          "correct": false,
+          "why": "Protege o transporte, e não ajuda a reconstruir o que houve."
+        }
+      ],
+      "hint": "Pense no dia em que algo deu errado e alguém precisa reconstruir o que aconteceu.",
+      "explanation": "Sem registro, **não há como investigar depois** — e agente sem registro é um sistema que ninguém consegue auditar.\n\nIsso vale mais do que parece, porque o caminho do agente é escolhido durante a execução, como a lição 01 mostrou. Duas execuções do mesmo pedido seguem rotas diferentes, e só o registro diz qual rota foi tomada **naquela vez**.\n\nÉ um caso em que a experiência de qualidade se transfere direto: **sem rastro, não há diagnóstico** — vale para teste instável e vale para agente."
+    },
+    {
+      "id": "agentes-beg-0308",
+      "topic": "quando",
+      "prompt": "Escreva, em uma palavra sem acento, o que precisa haver em número maior que um para justificar um servidor MCP.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "consumidores",
+        "consumidor",
+        "agentes",
+        "clientes"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "São quem usa as ferramentas. Com um só, e tudo na mesma máquina, um script resolve.",
+      "explanation": "Com um consumidor só, na mesma máquina, um script resolve — e construir o padrão ali é acrescentar uma peça para manter sem ganho nenhum.\n\nA outra justificativa, que vale sozinha, é **geográfica**: a capacidade mora num lugar que o agente não alcança.\n\nE existe uma terceira, mais estratégica: você quer que **outras pessoas** conectem os agentes delas ao seu sistema. Aí o padrão aberto é o produto, e não o encanamento."
+    },
+    {
+      "id": "agentes-beg-0309",
+      "topic": "mcp",
+      "prompt": "Complete a pergunta que o cliente faz ao servidor antes de qualquer chamada.",
+      "code": {
+        "language": "text",
+        "content": "cliente                         servidor\n   |  \"quais ______ voce tem?\"        |\n   |-------------------------------->|\n   |  validar_licao, impressao_dig...|\n   |<--------------------------------|",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "ferramentas"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que o servidor oferece e o agente chama — a mesma palavra da lição 02.",
+      "explanation": "O cliente **descobre** as ferramentas em execução, e essa é a diferença central em relação a uma API comum.\n\nA resposta traz, de cada uma, **nome, descrição e parâmetros** — exatamente as três coisas da lição 02. Ou seja: tudo que foi dito lá sobre descrição vaga e parâmetro frouxo continua valendo, e valendo mais, porque agora aquilo é o que atravessa a rede.\n\nUm servidor MCP com descrições ruins é um servidor que ninguém consegue usar bem — nem o seu agente, nem o de terceiros."
+    },
+    {
+      "id": "agentes-beg-0310",
+      "topic": "quando",
+      "prompt": "O que o MCP **não** faz?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Padronizar como as ferramentas são oferecidas",
+          "correct": false,
+          "why": "É exatamente o que ele faz, e a única coisa que faz."
+        },
+        {
+          "id": "b",
+          "text": "Deixar o agente mais inteligente ou melhorar o raciocínio dele",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Permitir que o cliente descubra as ferramentas",
+          "correct": false,
+          "why": "Faz, e é a característica que o distingue de uma API comum."
+        },
+        {
+          "id": "d",
+          "text": "Separar quem oferece a capacidade de quem a consome",
+          "correct": false,
+          "why": "Faz, e é dessa separação que vem o ganho de segurança."
+        },
+        {
+          "id": "e",
+          "text": "Permitir que agentes de terceiros se conectem ao seu sistema",
+          "correct": false,
+          "why": "Permite, e é uma das razões estratégicas para adotá-lo."
+        }
+      ],
+      "hint": "Quatro das cinco são o que o padrão entrega. Uma é o exagero que se ouve por aí.",
+      "explanation": "MCP **não** melhora o modelo. Ele padroniza como as ferramentas chegam até ele — e só.\n\nSaber disso importa por um motivo prático: quando um agente vai mal, a causa raramente é a ausência de MCP. É descrição vaga, erro que não instrui, ferramenta do tamanho errado, ou falta de limite. Adotar o padrão não conserta nada disso.\n\nE importa numa entrevista: **quem vende MCP como mágica não entendeu o que ele resolve** — e quem avalia percebe na primeira pergunta de acompanhamento."
+    }
+  ]
+}

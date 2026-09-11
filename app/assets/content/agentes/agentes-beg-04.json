@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "language": "agentes",
+  "level": "beginner",
+  "lessonId": "agentes-beg-04",
+  "lessonTitle": "Vários agentes: orquestração e seus padrões",
+  "aula": {
+    "titulo": "Quando um agente vira vários, e quem manda em quem",
+    "secoes": [
+      {
+        "topico": "porque",
+        "titulo": "Por que dividir, e por que isso custa caro",
+        "texto": "Um agente com trinta ferramentas escolhe pior que um agente com cinco. Não é opinião: a lição 02 já mostrou que a escolha sai da descrição, e trinta descrições competindo é ruído.\n\nDaí a ideia de dividir em vários agentes, cada um com poucas ferramentas e um trabalho claro. E a divisão entrega três coisas:\n\n- **Escolha mais fácil**, porque cada um tem menos opções\n- **Limites diferentes**: quem escreve conteúdo não precisa poder publicar\n- **Trocar um sem mexer nos outros**\n\nMas a conta tem o outro lado, e ele quase nunca é dito: **cada passagem de bastão é uma chance de perder contexto.** O agente que recebe não viu o que o anterior viu — ele lê o que foi escrito, e o que não foi escrito se perdeu.\n\nPor isso a regra de partida é ingrata e verdadeira: **comece com um agente.** Divida quando houver um motivo nomeável — ferramentas demais, limites diferentes, ou trabalho que roda em paralelo de verdade.",
+        "code": {
+          "language": "text",
+          "content": "UM AGENTE                 VARIOS AGENTES\n\n30 ferramentas            5 + 5 + 5 ...\nescolhe pior              escolhe melhor\ncontexto inteiro          contexto passado a mao\n                          <- e aqui que se perde"
+        }
+      },
+      {
+        "topico": "padroes",
+        "titulo": "Os três arranjos, e o que cada um assume",
+        "texto": "Quase toda orquestração cai em um destes três. Saber nomeá-los vale mais que decorar biblioteca.\n\n**Sequência.** A → B → C. A saída de um é a entrada do próximo. É o mais simples e o mais previsível, e assume que **você já sabe a ordem dos passos**. Escrever a questão, validar, publicar: a ordem nunca muda.\n\n**Supervisor.** Um agente central decide, a cada volta, qual especialista chamar. Ele assume o contrário: **a ordem depende do que aparecer.** É a mais flexível e a mais cara, porque o supervisor gasta uma chamada de modelo só para decidir.\n\n**Paralelo.** Vários fazem ao mesmo tempo, e alguém junta no fim. Assume que **os trabalhos são independentes** — se um precisa do resultado do outro, não é paralelo, é sequência mal desenhada.\n\nA pergunta que escolhe entre eles não é qual é mais moderno. É: **a ordem dos passos é conhecida antes de começar?** Se é, sequência. Se não é, supervisor. Se não há ordem nenhuma, paralelo.",
+        "code": {
+          "language": "text",
+          "content": "SEQUENCIA     A -> B -> C\n\nSUPERVISOR        S\n                / | \\\n               A  B  C     (S decide a cada volta)\n\nPARALELO      A  B  C\n               \\ | /\n                junta"
+        }
+      },
+      {
+        "topico": "estado",
+        "titulo": "O que viaja entre eles é o estado",
+        "texto": "Nos três arranjos existe uma coisa em comum, e é ela que quase sempre dá problema: **o que um agente sabe sobre o que já aconteceu**.\n\nEsse pacote tem nome — **estado** — e ele precisa ser explícito. Quando é implícito (\"o próximo agente vai entender pelo texto\"), o sistema funciona nos testes e falha na terceira volta, quando o texto ficou ambíguo.\n\nÉ por isso que a biblioteca mais conhecida desta área, o **LangGraph**, modela tudo como um **grafo**: nós são os agentes, arestas são as passagens possíveis, e o estado é um objeto declarado que atravessa o grafo sendo atualizado.\n\nDuas consequências práticas, e elas valem mesmo sem usar biblioteca nenhuma:\n\n- **Dá para desenhar.** Se você não consegue desenhar quem chama quem, o sistema não está desenhado — está acontecendo\n- **Dá para retomar do meio.** Com o estado guardado, uma falha no passo 4 não obriga a refazer os passos 1 a 3\n\nRepare que isto é a lição 03 outra vez, num assunto diferente: **o que é implícito diverge; o que é declarado se confere.**",
+        "code": {
+          "language": "python",
+          "content": "# o estado e DECLARADO, e nao deduzido do texto\nestado = {\n    \"trilha\": \"java\",\n    \"topico\": \"igualdade\",\n    \"ja_cobradas\": [\"equals\", \"false\"],\n    \"tentativas\": 1,\n}"
+        }
+      },
+      {
+        "topico": "bibliotecas",
+        "titulo": "LangGraph, CrewAI, AutoGen — e o laço cru",
+        "texto": "As três bibliotecas que aparecem em toda vaga, e o que cada uma assume:\n\n- **LangGraph** — grafo explícito, estado declarado, permite ciclos e retomada. Assume que você **quer controlar** o caminho. É a mais verbosa e a mais previsível\n- **CrewAI** — agentes com papel e objetivo escritos em texto, colaborando numa tarefa. Assume que a **divisão por papéis** é a abstração certa. Sobe rápido, e o caminho é menos explícito\n- **AutoGen** — agentes conversando entre si, inclusive com um humano no meio. Assume que a **conversa** é o mecanismo de coordenação\n\nE a quarta opção, que é a mais honesta e quase nunca citada: **um laço escrito à mão.** A lição 01 mostrou que o laço de um agente cabe em dez linhas. Para dois agentes numa sequência fixa, uma função chamando outra resolve — sem dependência, sem abstração, sem versão que quebra.\n\nO que uma biblioteca realmente entrega é **retomar do meio, observar o que aconteceu e limitar o que cada um pode fazer**. Se você não precisa de nada disso, ela é peso.\n\nNuma entrevista, a resposta forte não é listar as três: é dizer **o que cada uma assume**, e em que caso você escreveria o laço à mão.",
+        "code": {
+          "language": "python",
+          "content": "# duas etapas em sequencia fixa: nao precisa de biblioteca\ndef revisar(topico, trilha):\n    ja = impressao_digital(topico, trilha)   # consulta\n    rascunho = escritor(topico, evitar=ja)   # agente 1\n    return revisor(rascunho)                 # agente 2"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "agentes-beg-0401",
+      "topic": "padroes",
+      "prompt": "Qual pergunta escolhe entre sequência e supervisor?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A ordem dos passos é conhecida antes de começar?",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Quantos agentes o sistema tem?",
+          "correct": false,
+          "why": "A quantidade não decide o arranjo: dois agentes cabem nos dois."
+        },
+        {
+          "id": "c",
+          "text": "Qual biblioteca a equipe já usa?",
+          "correct": false,
+          "why": "A ferramenta vem depois do arranjo, e não antes dele."
+        },
+        {
+          "id": "d",
+          "text": "Qual arranjo gasta menos chamadas de modelo?",
+          "correct": false,
+          "why": "Sequência gasta menos, e mesmo assim não serve quando a ordem varia."
+        },
+        {
+          "id": "e",
+          "text": "Os agentes precisam conversar entre si?",
+          "correct": false,
+          "why": "Conversar é mecanismo de coordenação, e não o que define a ordem."
+        }
+      ],
+      "hint": "Um dos arranjos tem a ordem escrita por você; no outro, alguém decide a ordem durante a execução.",
+      "explanation": "**Se a ordem é conhecida, sequência.** Escrever, validar, publicar é sempre nessa ordem, e um supervisor decidindo isso a cada volta seria uma chamada de modelo desperdiçada para chegar sempre à mesma conclusão.\n\n**Se a ordem depende do que aparecer, supervisor.** Ali a flexibilidade se paga.\n\nE se não há ordem nenhuma — os trabalhos são independentes —, é paralelo. Três perguntas, três respostas, nenhuma envolvendo qual biblioteca está na moda."
+    },
+    {
+      "id": "agentes-beg-0402",
+      "topic": "porque",
+      "prompt": "Qual é o custo mais subestimado de dividir um agente em vários?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O sistema fica mais lento",
+          "correct": false,
+          "why": "Fica, e é visível na hora. O custo que pega é o que não aparece nos testes."
+        },
+        {
+          "id": "b",
+          "text": "Cada passagem de bastão é uma chance de perder contexto",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Cada agente precisa da própria chave de acesso",
+          "correct": false,
+          "why": "É detalhe de configuração, e resolve-se uma vez."
+        },
+        {
+          "id": "d",
+          "text": "O código fica mais longo",
+          "correct": false,
+          "why": "Fica, e isso é visível lendo o arquivo. O custo caro é invisível."
+        },
+        {
+          "id": "e",
+          "text": "As bibliotecas de orquestração são pagas",
+          "correct": false,
+          "why": "As três mais citadas são abertas e gratuitas."
+        }
+      ],
+      "hint": "O agente que recebe o trabalho não viu o que o anterior viu. Ele lê o que foi escrito.",
+      "explanation": "O agente que recebe **lê o que foi escrito, e o que não foi escrito se perdeu**. Isso não aparece nos testes, onde os casos são limpos: aparece na terceira volta, quando o texto passado adiante ficou ambíguo.\n\nÉ o argumento a favor da regra de partida: **comece com um agente**, e divida quando houver um motivo nomeável.\n\nE é também o argumento para declarar o estado em vez de confiar na prosa — que é o assunto da próxima seção."
+    },
+    {
+      "id": "agentes-beg-0403",
+      "topic": "estado",
+      "prompt": "Escreva, em uma palavra sem acento, o nome do pacote de informação que atravessa os agentes e diz o que já aconteceu.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "estado"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que o LangGraph declara como um objeto e faz atravessar o grafo sendo atualizado.",
+      "explanation": "Ele precisa ser **explícito**. Quando é implícito — \"o próximo agente vai entender pelo texto\" —, o sistema funciona nos testes e falha quando o texto fica ambíguo.\n\nDeclará-lo entrega duas coisas concretas: o sistema passa a ser **desenhável**, e uma falha no passo 4 não obriga a refazer os passos 1 a 3.\n\nÉ a lição 03 outra vez, noutro assunto: **o que é implícito diverge; o que é declarado se confere.**"
+    },
+    {
+      "id": "agentes-beg-0404",
+      "topic": "bibliotecas",
+      "prompt": "O que o LangGraph assume sobre quem o usa?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Que a divisão por papéis é a abstração certa",
+          "correct": false,
+          "why": "Essa é a aposta do CrewAI: agentes com papel e objetivo escritos."
+        },
+        {
+          "id": "b",
+          "text": "Que a conversa entre agentes é o mecanismo de coordenação",
+          "correct": false,
+          "why": "Essa é a aposta do AutoGen, que inclusive põe um humano na conversa."
+        },
+        {
+          "id": "c",
+          "text": "Que você quer controlar o caminho, com grafo e estado explícitos",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Que o sistema nunca precisa retomar do meio",
+          "correct": false,
+          "why": "É o contrário: retomar do meio é uma das razões de ele existir."
+        },
+        {
+          "id": "e",
+          "text": "Que só há um agente",
+          "correct": false,
+          "why": "Com um agente só, um laço à mão bastaria e a biblioteca seria peso."
+        }
+      ],
+      "hint": "Ele é o mais verboso dos três, e essa verbosidade compra alguma coisa.",
+      "explanation": "Grafo explícito, estado declarado, ciclos permitidos, retomada possível. **É a mais verbosa e a mais previsível**, e as duas coisas são a mesma escolha vista de dois ângulos.\n\nNuma entrevista, a resposta forte não é listar as três bibliotecas — é dizer **o que cada uma assume**. Quem sabe nomear a aposta consegue dizer quando ela não vale.\n\nE consegue dizer a quarta opção, que quase ninguém cita: **escrever o laço à mão.**"
+    },
+    {
+      "id": "agentes-beg-0405",
+      "topic": "padroes",
+      "prompt": "Três agentes escrevem, cada um, uma questão sobre um tópico diferente. Nenhum precisa do resultado do outro. Qual arranjo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Supervisor, para ele decidir a ordem",
+          "correct": false,
+          "why": "Não há ordem a decidir: os três trabalhos não dependem um do outro."
+        },
+        {
+          "id": "b",
+          "text": "Sequência, para o segundo aproveitar o primeiro",
+          "correct": false,
+          "why": "Não há o que aproveitar, e a espera seria pura perda de tempo."
+        },
+        {
+          "id": "c",
+          "text": "Nenhum: isso precisa de um agente só",
+          "correct": false,
+          "why": "Um agente só faria os três em fila, perdendo a independência de graça."
+        },
+        {
+          "id": "d",
+          "text": "Paralelo, com alguém juntando no fim",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Supervisor com paralelo dentro, para garantir",
+          "correct": false,
+          "why": "Acrescenta uma camada que não decide nada: complexidade sem função."
+        }
+      ],
+      "hint": "A pista está em \"nenhum precisa do resultado do outro\".",
+      "explanation": "Trabalhos **independentes** são o caso em que paralelo se paga. Pôr um supervisor ali seria gastar uma chamada de modelo para decidir algo que já está decidido.\n\nE vale a inversa, que é o erro comum: **se um precisa do resultado do outro, não é paralelo — é sequência mal desenhada.** Rodar em paralelo nesse caso produz um agente trabalhando com dado incompleto, e o defeito aparece de forma intermitente.\n\nO passo que continua sendo sequência aqui é o final: alguém junta, e isso só pode acontecer depois."
+    },
+    {
+      "id": "agentes-beg-0406",
+      "topic": "porque",
+      "prompt": "Por que um agente com trinta ferramentas escolhe pior que um com cinco?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o modelo tem limite de ferramentas",
+          "correct": false,
+          "why": "Os limites existem e são bem maiores que trinta: não é o que degrada."
+        },
+        {
+          "id": "b",
+          "text": "Porque trinta chamadas demoram mais",
+          "correct": false,
+          "why": "Ele chama uma por vez; ter trinta disponíveis não multiplica o tempo."
+        },
+        {
+          "id": "c",
+          "text": "Porque o modelo escolhe sempre a primeira da lista",
+          "correct": false,
+          "why": "Não escolhe por posição: se escolhesse, o problema seria outro e pior."
+        },
+        {
+          "id": "d",
+          "text": "Porque ferramentas demais gastam mais memória",
+          "correct": false,
+          "why": "O custo de memória é irrelevante nessa escala."
+        },
+        {
+          "id": "e",
+          "text": "Porque a escolha sai da descrição, e trinta descrições competindo é ruído",
+          "correct": true
+        }
+      ],
+      "hint": "Volte à lição 02: de onde vem a decisão de qual ferramenta usar.",
+      "explanation": "A escolha sai da **descrição** — foi o que a lição 02 estabeleceu. Trinta descrições competindo pela mesma decisão é ruído, e o efeito é o previsível: ele chama a parecida em vez da certa.\n\nEsse é o argumento honesto a favor de dividir. Repare que ele é **mensurável**: dá para contar quantas ferramentas um agente tem, e dá para ver o erro acontecer.\n\nE é diferente de \"vários agentes é mais moderno\", que não é argumento nenhum."
+    },
+    {
+      "id": "agentes-beg-0407",
+      "topic": "bibliotecas",
+      "prompt": "Quando escrever o laço à mão é a decisão certa, em vez de usar uma biblioteca?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Quando você não precisa de retomada, observação nem limites por agente",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Nunca: laço à mão não escala",
+          "correct": false,
+          "why": "Para uma sequência fixa de dois passos, não há o que escalar."
+        },
+        {
+          "id": "c",
+          "text": "Quando o time não conhece Python",
+          "correct": false,
+          "why": "Escrever o laço à mão exige mais domínio da linguagem, e não menos."
+        },
+        {
+          "id": "d",
+          "text": "Sempre: bibliotecas de orquestração não servem para nada",
+          "correct": false,
+          "why": "Elas entregam coisas reais; a questão é se você precisa delas."
+        },
+        {
+          "id": "e",
+          "text": "Quando há mais de três agentes",
+          "correct": false,
+          "why": "A quantidade não decide: três agentes numa fila fixa continuam simples."
+        }
+      ],
+      "hint": "Liste o que a biblioteca entrega de verdade. Se nada daquilo é necessário, o que sobra?",
+      "explanation": "Uma biblioteca de orquestração entrega três coisas concretas: **retomar do meio, observar o que aconteceu, e limitar o que cada agente pode fazer.** Se nenhuma delas é necessária, ela é peso — uma dependência a manter e uma versão que quebra.\n\nPara dois agentes numa sequência fixa, uma função chamando outra resolve, e o laço inteiro cabe em dez linhas, como a lição 01 mostrou.\n\nSaber dizer isso vale mais numa entrevista que saber a sintaxe das três: mostra que você avaliou, em vez de ter adotado."
+    },
+    {
+      "id": "agentes-beg-0408",
+      "topic": "padroes",
+      "prompt": "Escreva, em uma palavra sem acento, o nome do agente central que decide a cada volta qual especialista chamar.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "supervisor",
+        "orquestrador"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o arranjo mais flexível e o mais caro, porque gasta uma chamada de modelo só para decidir.",
+      "explanation": "Ele assume que **a ordem depende do que aparecer**, e é isso que ele compra com a chamada extra.\n\nQuando a ordem é sempre a mesma, essa chamada é desperdício puro: gasta-se um modelo para chegar toda vez à mesma conclusão que já estava escrita.\n\nO teste prático é direto: **se você consegue escrever a ordem dos passos num papel antes de rodar, não precisa dele.**"
+    },
+    {
+      "id": "agentes-beg-0409",
+      "topic": "estado",
+      "prompt": "Complete o campo que impede o agente de repetir uma resposta já cobrada.",
+      "code": {
+        "language": "python",
+        "content": "estado = {\n    \"trilha\": \"java\",\n    \"topico\": \"igualdade\",\n    \"__________\": [\"equals\", \"false\"],\n}",
+        "highlightLine": 4
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "ja_cobradas"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Duas palavras ligadas por sublinhado, descrevendo as respostas que já foram usadas. Sem acento.",
+      "explanation": "Guardar isso no estado é o que permite ao agente **não repetir** — e é exatamente o problema real deste projeto: gerar dez questões novas sobre um tópico estreito esbarra na regra de impressão digital quando as respostas se repetem.\n\nRepare de onde a lista vem: de uma **consulta**, e não da memória do modelo. O agente pergunta ao servidor o que já foi cobrado, e põe a resposta no estado.\n\nÉ a lição 03 e a 04 se encontrando: **a ferramenta responde, e o estado carrega a resposta adiante.**"
+    },
+    {
+      "id": "agentes-beg-0410",
+      "topic": "porque",
+      "prompt": "Qual é a regra de partida ao desenhar um sistema com agentes?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Comece com um agente por etapa do trabalho",
+          "correct": false,
+          "why": "Isso decide a divisão antes de saber se ela é necessária, e cada etapa vira uma passagem de bastão."
+        },
+        {
+          "id": "b",
+          "text": "Comece com um agente só, e divida quando puder nomear o motivo",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Comece pelo supervisor, que é o mais flexível",
+          "correct": false,
+          "why": "Flexibilidade que não é necessária custa uma chamada de modelo por volta."
+        },
+        {
+          "id": "d",
+          "text": "Comece escolhendo a biblioteca de orquestração",
+          "correct": false,
+          "why": "A ferramenta vem depois do desenho: escolhê-la antes decide por você."
+        },
+        {
+          "id": "e",
+          "text": "Comece com um agente por ferramenta",
+          "correct": false,
+          "why": "Isso maximiza as passagens de bastão, que é onde o contexto se perde."
+        }
+      ],
+      "hint": "É a regra menos empolgante das quatro, e é por isso que ela é a certa.",
+      "explanation": "**Comece com um agente.** Divida quando houver um motivo que você consiga dizer em voz alta: ferramentas demais, limites diferentes, ou trabalho genuinamente paralelo.\n\nO motivo é o custo já visto: cada passagem de bastão perde contexto, e ele só se paga quando há ganho nomeado do outro lado.\n\nRepare que é a regra menos empolgante das cinco. As outras quatro começam decidindo alguma coisa — a biblioteca, o arranjo, a quantidade — e **decidir antes de precisar é o erro que esta lição inteira descreve.**"
+    }
+  ]
+}

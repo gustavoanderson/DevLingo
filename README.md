@@ -14,7 +14,7 @@
 
 [![CI](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml/badge.svg)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
 [![Testes](https://img.shields.io/badge/testes-345%20passando-39FF14?style=flat-square)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
-[![Questões](https://img.shields.io/badge/questões-374-FFE14D?style=flat-square)](#as-trilhas)
+[![Questões](https://img.shields.io/badge/questões-404-FFE14D?style=flat-square)](#as-trilhas)
 [![Trilhas](https://img.shields.io/badge/trilhas-8-FF2D95?style=flat-square)](#as-trilhas)
 
 </div>

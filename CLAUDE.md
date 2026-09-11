@@ -1790,6 +1790,60 @@ Por isso o teste afirma **paridade com "JavaScript"**, e não ausência de encol
 
 Esperam o Gustavo jogar o iniciante, pela mesma razão de sempre. E aqui vale a ressalva do curso de QA: as 50 primeiras são a régua sendo criada.
 
+## Agentes de IA: o curso da vaga que o Gustavo quer
+
+Chave `agentes`, nome de tela **"Agentes de IA"**. Escrito em 10 de setembro de 2026, a pedido dele, depois de mudar o alvo de carreira de QA para **Forward Deployed Engineer (AI)** — vaga que paga substancialmente mais e cuja descrição cita LangGraph, CrewAI, AutoGen, orquestração multi-agente, chamada dinâmica de ferramentas, observabilidade e governança.
+
+É o quarto curso que não ensina uma linguagem, e o primeiro em que o **próprio arranjo de trabalho dele comigo é o objeto de estudo**. Isso não é coincidência: o material saiu do que este repositório já fazia.
+
+### O critério de corte: o que sobrevive à próxima versão
+
+A área se move rápido, e curso sobre ferramenta da moda envelhece em seis meses. O corte aplicado:
+
+| Entra | Fica de fora |
+|---|---|
+| O laço, e por que o caminho não é programado | A sintaxe da versão atual do LangGraph |
+| O que cada biblioteca **assume** | Qual delas é melhor |
+| Injeção de prompt, e por que não se resolve com texto | A lista de ataques do mês |
+| Quando **não** usar MCP, agente, ou biblioteca | Tutorial de instalação |
+
+**A pergunta que mais aparece no curso é "quando não".** Quando não dividir em vários agentes, quando MCP é teatro, quando escrever o laço à mão. Isso é deliberado: numa entrevista, **dizer onde você decidiu não usar vale mais que listar onde usou** — e é o que separa quem avaliou de quem adotou.
+
+### As cinco lições, e as amarras
+
+| Lição | Tema |
+|---|---|
+| 01 | O laço, chatbot × agente, autonomia, condição de parada |
+| 02 | Ferramentas: descrição, parâmetros, erro que instrui, granularidade |
+| 03 | MCP: descoberta em execução, quando se paga, o servidor como limite |
+| 04 | Vários agentes: sequência, supervisor, paralelo; estado; as três bibliotecas |
+| 05 | Avaliação, rastro, limites que não dependem de julgamento, injeção de prompt |
+
+Encadeadas, como as outras trilhas: o teto de voltas da 01 volta como limite na 05; a descrição da 02 é o que o MCP transporta pela rede na 03, o que a torna **mais** importante e não menos; a ferramenta estreita da 02 vira o argumento de segurança da 03 e a defesa contra injeção na 05; o estado da 04 é onde a resposta da ferramenta da 03 é carregada adiante; e o **"o caminho é escolhido durante a execução"** da 01 é o que torna, na 05, tanto a avaliação por uma rodada inútil quanto o rastro obrigatório.
+
+A frase que atravessa três lições é **"o agente propõe; o sistema decide o que é possível"** — ela nasce na 03 como argumento de arquitetura e chega na 05 como a única defesa que funciona contra injeção de prompt.
+
+### O que este projeto virou material do curso
+
+O curso usa o DevLingo como exemplo corrente, e isso não é enfeite: são os casos reais.
+
+- `validar_licao(json)` contra `executar(comando)` é o exemplo de granularidade da lição 02
+- A **impressão digital** é o exemplo de ferramenta que o agente precisa consultar antes de escrever — lição 04, campo `ja_cobradas` no estado
+- O validador é o exemplo de caso de avaliação **verificável** na lição 05
+- A regra *"autonomia se concede onde o erro é verificável automaticamente"*, combinada com o Gustavo, é a resposta da questão `agentes-beg-0507`
+
+### A colisão que eu superestimei, e o que ela ensinou
+
+Ao registrar a ideia das **10 questões de treino** — gerar variações de dificuldade crescente sobre uma questão que a pessoa errou —, afirmei que ela *"colide em cheio"* com a regra de impressão digital. **Foi exagero, e o Gustavo contestou.**
+
+Medindo o tópico `igualdade` na trilha `java`, existem hoje **3 respostas distintas**. A colisão é **condicional**, não certa: ela depende de as questões novas viverem na mesma chave de trilha *e* de o espaço de respostas daquele tópico ser pequeno. Dez questões novas não colidem por serem novas; colidem se **repetirem resposta** — e num tópico estreito isso acontece por volta da sexta ou sétima.
+
+O que importa da correção é o que ela muda de conclusão: **a colisão não enfraquece o caso do MCP, ela o fortalece.** O agente não tem como saber que `equals` já é cobrada em `java-beg-0302` — ele precisa **perguntar**, e `impressao_digital(resposta, trilha)` é exatamente uma das ferramentas propostas para o servidor.
+
+Três saídas, e não se excluem: o agente **consulta antes de escrever** (resolve sozinha na maioria dos casos); a revisão vive numa **chave de trilha própria** (a regra é escopada por linguagem, então nem dispara); ou a regra passa a ser escopada por **finalidade** (mexe no validador, e só se as duas primeiras não bastarem).
+
+**A lição de método:** eu afirmei "colide" sem medir. Medir mostrou que colide às vezes, por um motivo específico — e o motivo específico virou requisito de ferramenta. É a quarta vez registrada aqui em que eu afirmei um número sem medir; ver "E afirmei um número sem medir" no curso de Frameworks.
+
 ## O que separa um nível do outro
 
 Sem isso escrito, o intermediário vira "iniciante com palavras difíceis".
