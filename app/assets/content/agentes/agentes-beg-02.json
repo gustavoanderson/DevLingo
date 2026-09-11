@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "language": "agentes",
+  "level": "beginner",
+  "lessonId": "agentes-beg-02",
+  "lessonTitle": "Ferramentas: a descrição é a interface",
+  "aula": {
+    "titulo": "O modelo não lê o seu código — ele lê a sua descrição",
+    "secoes": [
+      {
+        "topico": "descricao",
+        "titulo": "A descrição não é documentação: é a interface",
+        "texto": "Uma **ferramenta** é uma função que o agente pode chamar. Você a declara com três coisas: um **nome**, uma **descrição** e os **parâmetros**.\n\nE aqui está o que quase todo mundo demora a entender: **o modelo nunca vê o seu código.** Ele vê só o que você escreveu na descrição. Se a descrição estiver vaga, ele vai usar a ferramenta errado — não por falta de inteligência, mas por falta de informação.\n\nIsso inverte um hábito. Em programação comum, a documentação é um extra: o código é a verdade, e o comentário ajuda. Aqui, **a descrição é a única verdade disponível**.\n\nCompare as duas abaixo. A segunda não é mais bonita: ela responde perguntas que o modelo faria — *quando eu uso isso? o que volta? o que acontece se não achar?*\n\nUma boa descrição diz **quando usar** e **quando não usar**. A segunda metade é a que quase ninguém escreve, e é a que evita a ferramenta sendo chamada para tudo.",
+        "code": {
+          "language": "python",
+          "content": "# ruim: o modelo tem que adivinhar\n\"busca dados\"\n\n# bom: diz quando usar, o que volta, e o limite\n\"\"\"Busca o progresso de UM jogador pelo identificador.\n\nUse quando precisar saber o que a pessoa ja respondeu.\nNAO use para listar jogadores -- ela atende um por vez.\nDevolve as licoes e quantas questoes foram respondidas\nem cada uma. Devolve vazio se o jogador nunca jogou.\"\"\""
+        }
+      },
+      {
+        "topico": "parametros",
+        "titulo": "Parâmetro frouxo vira laço",
+        "texto": "Os parâmetros também são declarados, com tipo. E tipo frouxo custa caro de um jeito específico.\n\nSe um parâmetro é só \"texto\", o modelo inventa um formato plausível. Às vezes acerta. Quando erra, a ferramenta reclama, ele tenta outro formato, erra de novo — e você pagou três voltas do laço para descobrir que faltava dizer o formato.\n\nDuas coisas resolvem quase tudo:\n\n- **Liste os valores possíveis** quando eles forem poucos. `trilha` não é \"texto\": é uma escolha entre `python`, `javascript`, `java` e as outras. O modelo deixa de adivinhar\n- **Dê exemplo no formato** quando for livre. `data` com exemplo `2026-09-11` elimina a rodada de tentativa\n\nA regra geral: **cada coisa que você não disser vira uma volta do laço.** E volta de laço é dinheiro.",
+        "code": {
+          "language": "python",
+          "content": "# frouxo: o modelo adivinha, erra, tenta de novo\n{\"trilha\": \"texto\", \"data\": \"texto\"}\n\n# apertado: nao ha o que adivinhar\n{\n  \"trilha\": [\"python\", \"javascript\", \"java\", \"selenium\"],\n  \"data\": \"AAAA-MM-DD, por exemplo 2026-09-11\"\n}"
+        }
+      },
+      {
+        "topico": "erro",
+        "titulo": "A mensagem de erro é instrução, não desabafo",
+        "texto": "Quando uma ferramenta falha, o texto do erro **volta para o modelo**. Ele é entrada, e não registro de log.\n\nEntão a pergunta ao escrever um erro muda completamente: não é *\"isso explica o que houve?\"*, é **\"isso diz o que fazer agora?\"**.\n\nUm erro que só constata produz o modo de falha mais caro que existe: o agente tenta de novo, do mesmo jeito, e falha igual. É a fatura da lição 01 acontecendo.\n\nUm erro que instrui encerra o assunto numa volta.\n\nE existe um caso que merece atenção especial: quando a falha é **definitiva**, diga isso. Sem essa informação, o agente vai insistir educadamente até o teto de voltas — porque, do ponto de vista dele, ainda pode dar certo da próxima vez.",
+        "code": {
+          "language": "python",
+          "content": "# so constata: o agente tenta igual e falha igual\n\"Erro ao validar licao\"\n\n# instrui: uma volta resolve\n\"A licao foi reprovada em 2 regras:\n - gabaritos: nenhuma resposta certa cai em 'e'\n - impressao digital: a resposta 'length' ja e cobrada\n   em java-beg-0403\nCorrija as duas e envie de novo.\"\n\n# definitivo: diz para PARAR de tentar\n\"A trilha 'kotlin' nao existe. Trilhas validas: python,\njavascript, java, selenium. Nao tente outra grafia.\""
+        }
+      },
+      {
+        "topico": "granularidade",
+        "titulo": "Quantas ferramentas, e de que tamanho",
+        "texto": "A pergunta aparece cedo: uma ferramenta grande que faz tudo, ou várias pequenas?\n\n**Ferramenta grande demais** — uma `executar(comando)` que aceita qualquer coisa — parece flexível e é um problema. Ela não tem limite, não tem validação, e você perdeu a capacidade de dizer o que o agente pode ou não fazer. Toda a segurança passa a depender do julgamento do modelo.\n\n**Ferramentas pequenas demais** — `abrir_arquivo`, `ler_linha`, `fechar_arquivo` — gastam três voltas do laço para uma operação só, e cada volta custa.\n\nO tamanho certo é o da **operação de negócio**: `validar_licao(json)`, e não `ler_arquivo` seguido de `rodar_python` seguido de `interpretar_saida`.\n\nRepare que é exatamente o mesmo critério do Page Object no curso de Selenium — um método representa uma ação de negócio, e não um clique. **A lição se repete porque o princípio é o mesmo: a interface deve falar a língua do problema, não a da máquina.**",
+        "code": {
+          "language": "python",
+          "content": "# grande demais: sem limite, sem validacao\nexecutar(comando)\n\n# pequena demais: tres voltas para uma operacao\nabrir_arquivo(caminho)\nler_linha(n)\nfechar_arquivo()\n\n# do tamanho certo: uma operacao de negocio\nvalidar_licao(json)"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "agentes-beg-0201",
+      "topic": "descricao",
+      "prompt": "O que o modelo usa para decidir **como** chamar uma ferramenta?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "A descrição e os parâmetros que você declarou",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "O código-fonte da função",
+          "correct": false,
+          "why": "Ele nunca vê o código. Só o que foi declarado chega até ele."
+        },
+        {
+          "id": "c",
+          "text": "Os testes automatizados daquela função",
+          "correct": false,
+          "why": "Testes são úteis para quem mantém a ferramenta, e não chegam ao modelo."
+        },
+        {
+          "id": "d",
+          "text": "O histórico de chamadas anteriores de outros usuários",
+          "correct": false,
+          "why": "Ele não tem acesso a execuções de outras pessoas."
+        },
+        {
+          "id": "e",
+          "text": "O nome da função apenas",
+          "correct": false,
+          "why": "O nome ajuda e é pouco. A descrição e os parâmetros é que carregam a informação."
+        }
+      ],
+      "hint": "Pergunte-se o que efetivamente é enviado ao modelo quando você registra uma ferramenta.",
+      "explanation": "**O modelo nunca vê o seu código.** Ele vê nome, descrição e parâmetros — e decide a partir disso.\n\nIsso inverte um hábito: em programação comum a documentação é um extra, porque o código é a verdade. Aqui **a descrição é a única verdade disponível**.\n\nA consequência prática: melhorar a descrição costuma render mais que trocar de modelo. É a intervenção mais barata e mais subestimada em sistema de agente."
+    },
+    {
+      "id": "agentes-beg-0202",
+      "topic": "erro",
+      "prompt": "Uma ferramenta falha e devolve `\"Erro ao validar lição\"`. Qual é o problema dessa mensagem?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ela é longa demais e gasta contexto",
+          "correct": false,
+          "why": "Ela é curta. O problema é o oposto: falta informação."
+        },
+        {
+          "id": "b",
+          "text": "Ela não diz o que fazer, então o agente tenta de novo igual e falha igual",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Ela deveria estar em inglês",
+          "correct": false,
+          "why": "O idioma não muda nada: o modelo lê os dois. Falta conteúdo, e não tradução."
+        },
+        {
+          "id": "d",
+          "text": "Ela expõe detalhes internos do sistema",
+          "correct": false,
+          "why": "Ela não expõe nada — e expor um pouco aqui seria útil, porque o destinatário é o agente."
+        },
+        {
+          "id": "e",
+          "text": "Ela deveria lançar exceção em vez de devolver texto",
+          "correct": false,
+          "why": "O formato é detalhe. O que falta é dizer qual regra reprovou e como corrigir."
+        }
+      ],
+      "hint": "Lembre que esse texto **volta para o modelo**. Pergunte-se o que ele consegue fazer de diferente depois de lê-lo.",
+      "explanation": "A mensagem de erro é **entrada do modelo**, e não registro de log. A pergunta ao escrevê-la muda: não é *\"isso explica o que houve?\"*, é **\"isso diz o que fazer agora?\"**.\n\nSem instrução, o agente tenta de novo do mesmo jeito — e é a fatura da lição 01 acontecendo, uma volta por vez.\n\nCompare com a boa versão: *\"reprovada em 2 regras: nenhum gabarito cai em 'e'; a resposta 'length' já é cobrada em java-beg-0403\"*. Uma volta resolve."
+    },
+    {
+      "id": "agentes-beg-0203",
+      "topic": "parametros",
+      "prompt": "Por que declarar um parâmetro como lista de valores possíveis é melhor que declará-lo como texto livre?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque economiza memória no servidor",
+          "correct": false,
+          "why": "A diferença de memória é irrelevante. O ganho é em voltas do laço."
+        },
+        {
+          "id": "b",
+          "text": "Porque texto livre não é aceito pelo protocolo",
+          "correct": false,
+          "why": "Texto livre é aceito normalmente. Ele é permitido e custa caro."
+        },
+        {
+          "id": "c",
+          "text": "Porque o modelo deixa de adivinhar o formato, e some a rodada de tentativa e erro",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Porque lista de valores torna a ferramenta mais rápida de executar",
+          "correct": false,
+          "why": "A execução leva o mesmo tempo. O que muda é quantas vezes ela é chamada errado antes de acertar."
+        },
+        {
+          "id": "e",
+          "text": "Porque impede que a ferramenta seja usada por engano",
+          "correct": false,
+          "why": "Quem evita uso indevido é a descrição, dizendo quando não usar."
+        }
+      ],
+      "hint": "Pense no que o modelo faz quando não sabe o formato esperado, e no que cada tentativa custa.",
+      "explanation": "Com texto livre, o modelo inventa um formato plausível. Às vezes acerta; quando erra, a ferramenta reclama, ele tenta outro, erra de novo — **e você pagou três voltas** para descobrir que faltava dizer o formato.\n\nA regra geral vale para a declaração inteira: **cada coisa que você não disser vira uma volta do laço.** E volta de laço é dinheiro.\n\nQuando o valor for livre de verdade, dê um exemplo no formato: `\"AAAA-MM-DD, por exemplo 2026-09-11\"` elimina a mesma rodada."
+    },
+    {
+      "id": "agentes-beg-0204",
+      "topic": "granularidade",
+      "prompt": "Por que uma ferramenta genérica como `executar(comando)` é uma má ideia?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque é lenta",
+          "correct": false,
+          "why": "Velocidade não é o problema — ela pode até ser mais rápida que várias chamadas."
+        },
+        {
+          "id": "b",
+          "text": "Porque o modelo não entende comandos de terminal",
+          "correct": false,
+          "why": "Ele entende bem, e é justamente isso que torna a ferramenta perigosa."
+        },
+        {
+          "id": "c",
+          "text": "Porque o protocolo não permite parâmetros de texto longo",
+          "correct": false,
+          "why": "Permite. A limitação não é técnica."
+        },
+        {
+          "id": "d",
+          "text": "Porque ela não tem limite nem validação: toda a segurança passa a depender do julgamento do modelo",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Porque exige mais voltas do laço",
+          "correct": false,
+          "why": "É o contrário: ela tende a resolver em menos voltas, e é isso que a torna tentadora."
+        }
+      ],
+      "hint": "Pergunte-se o que você ainda consegue proibir depois de oferecer essa ferramenta.",
+      "explanation": "Ela parece flexível e **remove a sua capacidade de dizer o que o agente pode fazer**. Sem limite e sem validação, a segurança inteira passa a depender de o modelo escolher bem.\n\nÉ a mesma ideia da lição 01, dita de outro jeito: **toda ferramenta que você dá é um portão que você tira** — e essa tira todos de uma vez.\n\nO tamanho certo é o da operação de negócio: `validar_licao(json)`. Ela tem limite, tem validação, e o que ela não faz continua impossível."
+    },
+    {
+      "id": "agentes-beg-0205",
+      "topic": "descricao",
+      "prompt": "Escreva, em uma palavra sem acento, o que uma boa descrição de ferramenta deve dizer além de **quando usar**.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "quando nao usar",
+        "limites",
+        "limite",
+        "restricoes"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É a metade que quase ninguém escreve, e é a que impede a ferramenta de ser chamada para tudo. Escreva sem acento.",
+      "explanation": "Dizer **quando não usar** é o que impede a ferramenta de ser chamada para tudo. *\"NÃO use para listar jogadores — ela atende um por vez\"* economiza uma volta inteira do laço.\n\nSem isso, o modelo escolhe pela semelhança do nome, e ferramentas com nomes parecidos passam a ser confundidas.\n\nÉ o mesmo raciocínio da mensagem de erro: você está escrevendo **para um leitor que não tem contexto nenhum além do que você escreveu**. Tudo que ficar implícito, ele adivinha — e cada adivinhação custa uma volta."
+    },
+    {
+      "id": "agentes-beg-0206",
+      "topic": "erro",
+      "prompt": "Uma ferramenta recebeu uma trilha que não existe. O que a mensagem de erro precisa deixar claro?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Quanto tempo a operação levou antes de falhar",
+          "correct": false,
+          "why": "Tempo não ajuda o agente a decidir o próximo passo."
+        },
+        {
+          "id": "b",
+          "text": "Qual linha do código falhou",
+          "correct": false,
+          "why": "Isso serve a quem mantém a ferramenta, e não a quem precisa decidir o que fazer agora."
+        },
+        {
+          "id": "c",
+          "text": "Que o problema pode ser de conexão",
+          "correct": false,
+          "why": "Sugerir uma causa que não é a real leva o agente a tentar caminhos inúteis."
+        },
+        {
+          "id": "d",
+          "text": "Que o agente deve tentar novamente em alguns segundos",
+          "correct": false,
+          "why": "Seria uma instrução errada: esperar não faz a trilha passar a existir."
+        },
+        {
+          "id": "e",
+          "text": "Que a falha é **definitiva**, e quais são os valores válidos",
+          "correct": true
+        }
+      ],
+      "hint": "Existem falhas que passam se você tentar de novo, e falhas que nunca passam. Qual é esta, e o agente tem como saber?",
+      "explanation": "Há dois tipos de falha, e o agente **não tem como distinguir** a menos que você diga: a que pode passar numa nova tentativa — rede instável, serviço ocupado — e a que **nunca** vai passar.\n\nSem essa informação, ele insiste educadamente até o teto de voltas, porque do ponto de vista dele ainda pode dar certo.\n\nA boa mensagem fecha as duas pontas: *\"a trilha 'kotlin' não existe. Trilhas válidas: python, javascript, java, selenium. Não tente outra grafia.\"* Ela diz que é definitivo **e** entrega o caminho certo."
+    },
+    {
+      "id": "agentes-beg-0207",
+      "topic": "granularidade",
+      "prompt": "Qual destas é a ferramenta do tamanho certo para um agente que escreve conteúdo do DevLingo?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "`validar_licao(json)`",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "`rodar_comando(linha)`",
+          "correct": false,
+          "why": "É a ferramenta genérica: sem limite, sem validação, e tira a sua capacidade de proibir."
+        },
+        {
+          "id": "c",
+          "text": "`ler_arquivo(caminho)`",
+          "correct": false,
+          "why": "É um passo de máquina, e não uma operação do problema. Exige várias voltas para chegar a algo útil."
+        },
+        {
+          "id": "d",
+          "text": "`abrir_conexao()`",
+          "correct": false,
+          "why": "É detalhe de infraestrutura, que o agente não deveria nem saber que existe."
+        },
+        {
+          "id": "e",
+          "text": "`fazer_tudo(objetivo)`",
+          "correct": false,
+          "why": "Delegar o objetivo inteiro a uma ferramenta é esconder o agente dentro dela, e o problema continua o mesmo um andar abaixo."
+        }
+      ],
+      "hint": "Procure a que fala a língua do **problema** — conteúdo do DevLingo — e não a língua da máquina.",
+      "explanation": "`validar_licao(json)` é uma **operação de negócio**: ela responde uma pergunta do domínio, tem limite claro, e devolve algo que o agente consegue usar.\n\nAs outras são passos de máquina — e para chegar ao mesmo resultado com elas, o agente gastaria três ou quatro voltas montando a sequência sozinho.\n\nRepare que é exatamente o critério do Page Object no curso de Selenium: um método representa uma **ação de negócio**, e não um clique. **A lição se repete porque o princípio é o mesmo: a interface fala a língua do problema.**"
+    },
+    {
+      "id": "agentes-beg-0208",
+      "topic": "parametros",
+      "prompt": "Complete a declaração para que o modelo **não precise adivinhar** qual trilha informar.",
+      "code": {
+        "language": "python",
+        "content": "{\n  \"trilha\": ______,\n  \"nivel\": [\"beginner\", \"intermediate\", \"advanced\"]\n}",
+        "highlightLine": 2
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "[\"python\", \"javascript\", \"java\", \"selenium\"]"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Siga o formato da linha de baixo: uma lista dos valores possíveis, entre colchetes, cada um entre aspas.",
+      "explanation": "Listar os valores possíveis elimina a adivinhação. Sem isso, o modelo escreve `\"Python\"` com maiúscula, ou `\"py\"`, ou `\"python3\"` — e cada tentativa é uma volta paga.\n\nRepare que a linha de baixo já dava a dica de formato, e **isso não é coincidência**: numa declaração bem escrita, os parâmetros se ensinam mutuamente.\n\nA regra que vale para tudo nesta lição: **cada coisa que você não disser vira uma volta do laço.**"
+    },
+    {
+      "id": "agentes-beg-0209",
+      "topic": "descricao",
+      "prompt": "Seu agente está escolhendo a ferramenta errada com frequência. Qual é a primeira coisa a tentar?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Trocar por um modelo maior",
+          "correct": false,
+          "why": "É a reação comum, é a mais cara, e costuma não resolver — o modelo continua sem a informação que falta."
+        },
+        {
+          "id": "b",
+          "text": "Melhorar a descrição das ferramentas, dizendo quando usar e quando não usar",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "Aumentar o teto de voltas",
+          "correct": false,
+          "why": "Deixa o agente errar mais vezes, e mais caro. Não muda a escolha."
+        },
+        {
+          "id": "d",
+          "text": "Reduzir o número de ferramentas até sobrar uma",
+          "correct": false,
+          "why": "Pode ajudar quando há ferramentas demais, e a causa costuma ser descrição ruim, e não quantidade."
+        },
+        {
+          "id": "e",
+          "text": "Reescrever as ferramentas em outra linguagem",
+          "correct": false,
+          "why": "O modelo não vê a linguagem em que a ferramenta foi escrita."
+        }
+      ],
+      "hint": "Lembre do que o modelo realmente enxerga. Se a escolha está errada, o que faltou chegar até ele?",
+      "explanation": "Se o modelo escolhe errado, é quase sempre porque **a informação que distinguiria as ferramentas não chegou até ele**. Melhorar a descrição é a intervenção mais barata e a mais subestimada.\n\nTrocar de modelo é a reação comum, custa mais, e costuma não resolver — o modelo novo continua recebendo a mesma descrição vaga.\n\nEssa é uma boa resposta de entrevista, porque mostra que você **depura o sistema, e não o modelo**. A maioria das pessoas atribui ao modelo tudo que dá errado num agente."
+    },
+    {
+      "id": "agentes-beg-0210",
+      "topic": "erro",
+      "prompt": "Escreva, em uma palavra sem acento, o que a mensagem de erro de uma ferramenta deve fazer com o agente.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "instruir",
+        "ensinar",
+        "orientar"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "Não é constatar nem registrar. É dizer o que fazer agora — o verbo tem oito letras e começa com `i`.",
+      "explanation": "A mensagem de erro é **entrada do modelo**. Ela não é log: é a única informação que ele tem para decidir o próximo passo.\n\nEntão a pergunta ao escrevê-la é **\"isso diz o que fazer agora?\"**, e não \"isso explica o que houve?\".\n\nE repare na simetria com o curso de Selenium: lá, a regra era que **teste bom não é o que reprova, é o que reprova dizendo por quê**. Aqui vale igual, com um leitor diferente. Mensagem de falha é interface — muda só quem a lê."
+    }
+  ]
+}

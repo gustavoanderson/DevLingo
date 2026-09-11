@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "language": "agentes",
+  "level": "beginner",
+  "lessonId": "agentes-beg-01",
+  "lessonTitle": "O laço: o que separa um agente de um chatbot",
+  "aula": {
+    "titulo": "Um agente é um laço, e o resto é engenharia em volta",
+    "secoes": [
+      {
+        "topico": "laco",
+        "titulo": "A ideia inteira cabe em quatro passos",
+        "texto": "Um **agente** é um modelo de linguagem dentro de um laço. Só isso, e o resto do assunto é engenharia em volta dessa ideia.\n\nO ciclo tem quatro passos, e ele se repete:\n\n1. **Pensar** — o modelo recebe o objetivo e o que já aconteceu\n2. **Agir** — ele escolhe uma ferramenta e a chama\n3. **Observar** — o resultado da ferramenta volta para ele\n4. **Repetir** — com o que aprendeu, ele decide o próximo passo\n\nRepare no que **não** está aí: ninguém programou a sequência. O código não diz *\"primeiro leia o arquivo, depois rode o teste\"*. O modelo decide isso a cada volta, olhando o que aconteceu.\n\nÉ essa inversão que assusta e que dá poder. Num programa comum, o caminho está escrito. Aqui, **o caminho é escolhido durante a execução**, e por isso duas execuções do mesmo pedido podem seguir rotas diferentes e chegar ao mesmo lugar.",
+        "code": {
+          "language": "python",
+          "content": "while not terminou:\n    decisao = modelo.pensar(objetivo, historico)\n    if decisao.eh_resposta_final:\n        break\n    resultado = ferramentas.executar(decisao)\n    historico.append(resultado)"
+        }
+      },
+      {
+        "topico": "chatbot",
+        "titulo": "Por que isto não é um chatbot",
+        "texto": "Um **chatbot** recebe uma pergunta e devolve texto. Ele não faz nada no mundo: não abre arquivo, não chama serviço, não muda estado. O ciclo dele é uma volta só.\n\nUm **agente** age, vê o efeito, e ajusta. A diferença não está na inteligência do modelo — pode ser exatamente o mesmo — e sim em **duas coisas que você acrescenta**: o laço e as ferramentas.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado, e você lê. Um agente que erra **apaga um arquivo**, **manda um e-mail**, **gasta dinheiro**.\n\nE muda também a natureza do acerto. Perguntar a um chatbot *\"por que meu teste falha?\"* devolve hipóteses; pedir a um agente devolve **a resposta**, porque ele foi ler o log, rodou o teste e olhou a saída.\n\nA regra que vale guardar: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**",
+        "code": {
+          "language": "text",
+          "content": "CHATBOT   pergunta -> texto\n\nAGENTE    objetivo -> [pensar -> agir -> observar] xN -> resultado\n                        ^                            |\n                        +----------------------------+"
+        }
+      },
+      {
+        "topico": "autonomia",
+        "titulo": "Autonomia é escala, e não interruptor",
+        "texto": "A pergunta *\"o agente pode agir sozinho?\"* está mal formulada. A pergunta certa é: **agir sozinho em quê?**\n\nUm mesmo agente costuma ter permissões diferentes por tipo de ação:\n\n- **ler** qualquer coisa — risco baixo, e reversível\n- **escrever** onde há verificação automática — risco médio, e o portão pega o erro\n- **publicar** para fora — risco alto, e muitas vezes irreversível\n- **gastar** dinheiro — sempre com aprovação\n\nO critério que decide não é \"o que a ferramenta consegue fazer\", e sim **o que é verificável sem uma pessoa olhando**.\n\nSe existe um teste, um validador ou um portão que reprova o erro, o agente pode agir. Se a única forma de saber se ficou bom é alguém olhar, **então alguém precisa olhar** — e nenhum modelo melhor resolve isso.\n\nEssa formulação vale numa entrevista, e ela é o oposto do que a maioria diz. Não é sobre confiar no modelo: é sobre **onde existe uma rede embaixo dele**.",
+        "code": {
+          "language": "text",
+          "content": "VERIFICAVEL AUTOMATICAMENTE  ->  o agente age sozinho\nSO UMA PESSOA SABE JULGAR    ->  o agente propoe, a pessoa decide"
+        }
+      },
+      {
+        "topico": "parada",
+        "titulo": "Quando o laço para — a parte que quase ninguém ensina",
+        "texto": "Um laço precisa terminar. Parece óbvio, e é a causa mais comum de conta alta e de agente pendurado.\n\nQuatro condições de parada, e um sistema sério usa **todas**:\n\n- **A tarefa acabou** — o modelo diz que terminou. É a mais natural e a **menos confiável**: ele pode achar que acabou sem ter acabado, ou continuar quando já resolveu\n- **Teto de voltas** — depois de N ciclos, para. Grosseiro, e é o que impede o laço infinito\n- **Teto de custo** — gastou X, para. Cada volta custa dinheiro\n- **Interrupção humana** — alguém manda parar\n\nA segunda é a que salva. **Um agente sem teto de voltas não é um agente: é uma fatura.** O modo de falha clássico é ele tentar a mesma coisa que não funciona, ver o mesmo erro, e tentar de novo — para sempre.\n\nE vale saber por que a primeira condição é fraca: o modelo julga o próprio trabalho, e ninguém é bom juiz de si mesmo. É por isso que a lição 05 trata de **avaliação por fora**.",
+        "code": {
+          "language": "python",
+          "content": "voltas = 0\nwhile voltas < TETO_DE_VOLTAS and custo < TETO_DE_CUSTO:\n    voltas = voltas + 1\n    decisao = modelo.pensar(objetivo, historico)\n    if decisao.eh_resposta_final:\n        break\n    historico.append(ferramentas.executar(decisao))"
+        }
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "agentes-beg-0101",
+      "topic": "chatbot",
+      "prompt": "O que separa um agente de um chatbot?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O agente tem um laço e ferramentas: ele age, observa o efeito e ajusta",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "O agente foi treinado especificamente para tarefas",
+          "correct": false,
+          "why": "Não há treino diferente: o que muda é o arranjo, e não o modelo."
+        },
+        {
+          "id": "c",
+          "text": "O agente usa um modelo maior e mais capaz",
+          "correct": false,
+          "why": "Pode ser exatamente o mesmo modelo. A diferença está no que existe em volta dele."
+        },
+        {
+          "id": "d",
+          "text": "O agente responde mais rápido",
+          "correct": false,
+          "why": "Ele costuma ser bem mais lento, porque dá várias voltas antes de responder."
+        },
+        {
+          "id": "e",
+          "text": "O agente guarda memória das conversas anteriores",
+          "correct": false,
+          "why": "Memória ajuda e não define: um chatbot pode ter memória e continuar sem agir no mundo."
+        }
+      ],
+      "hint": "Pense em duas coisas que você **acrescenta** em volta do modelo, e não em algo que o modelo tenha de diferente.",
+      "explanation": "Duas coisas, e nenhuma delas está no modelo: **o laço e as ferramentas**.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado e você lê; um agente que erra **apaga um arquivo, manda um e-mail, gasta dinheiro**.\n\nE muda a do acerto: perguntar a um chatbot *\"por que meu teste falha?\"* devolve hipóteses; pedir a um agente devolve a resposta, porque ele foi ler o log e rodar o teste.\n\nA frase que resume: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**"
+    },
+    {
+      "id": "agentes-beg-0102",
+      "topic": "parada",
+      "prompt": "Qual condição de parada é a **menos confiável** para encerrar o laço de um agente?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O teto de voltas",
+          "correct": false,
+          "why": "É grosseiro e é justamente o mais confiável: um contador não erra."
+        },
+        {
+          "id": "b",
+          "text": "O próprio modelo dizer que terminou",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "A interrupção humana",
+          "correct": false,
+          "why": "Depende de alguém estar olhando, e quando acontece é definitiva."
+        },
+        {
+          "id": "d",
+          "text": "O teto de custo",
+          "correct": false,
+          "why": "Também é objetivo: gastou o limite, para."
+        },
+        {
+          "id": "e",
+          "text": "Uma exceção lançada por uma ferramenta",
+          "correct": false,
+          "why": "É objetiva, ainda que muitas vezes o agente deva tentar se recuperar dela em vez de parar."
+        }
+      ],
+      "hint": "Quatro das cinco são medidas por fora. Uma delas é um julgamento feito por quem está fazendo o trabalho.",
+      "explanation": "O modelo **julga o próprio trabalho**, e ninguém é bom juiz de si mesmo. Ele pode achar que terminou sem ter terminado, ou continuar depois de já ter resolvido.\n\nAs outras três são medidas **de fora**: um contador, uma soma de custo, uma pessoa.\n\nÉ por isso que um sistema sério usa as quatro juntas, e é por isso que existe avaliação por fora — assunto da lição 05. **O modelo é o executor, e não o auditor.**"
+    },
+    {
+      "id": "agentes-beg-0103",
+      "topic": "laco",
+      "prompt": "Escreva, em uma palavra sem acento, a estrutura que transforma um modelo de linguagem em agente.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "laco",
+        "loop",
+        "ciclo"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que faz os quatro passos se repetirem: pensar, agir, observar, e voltar ao começo. Escreva sem cedilha.",
+      "explanation": "Sem o laço, uma chamada ao modelo devolve texto e acaba. Com ele, o modelo vê o resultado da própria ação e decide o passo seguinte.\n\nA consequência que assusta: **ninguém programou a sequência**. O código não diz \"leia o arquivo, depois rode o teste\" — o modelo escolhe isso durante a execução, olhando o que aconteceu.\n\nPor isso duas execuções do mesmo pedido podem seguir caminhos diferentes e chegar ao mesmo lugar. E por isso testar um agente é diferente de testar um programa comum, onde o caminho está escrito."
+    },
+    {
+      "id": "agentes-beg-0104",
+      "topic": "autonomia",
+      "prompt": "Qual critério decide se um agente pode executar uma ação sem aprovação humana?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Se a ação é rápida de executar",
+          "correct": false,
+          "why": "Velocidade não tem relação com risco. Apagar um banco é rapidíssimo."
+        },
+        {
+          "id": "b",
+          "text": "Se o modelo tem taxa de acerto alta naquele tipo de tarefa",
+          "correct": false,
+          "why": "Taxa alta ainda deixa erros passando, e sem verificação ninguém descobre quais."
+        },
+        {
+          "id": "c",
+          "text": "Se o erro daquela ação é verificável automaticamente",
+          "correct": true
+        },
+        {
+          "id": "d",
+          "text": "Se o time confia no agente",
+          "correct": false,
+          "why": "Confiança é consequência de haver verificação, e não substituto dela."
+        },
+        {
+          "id": "e",
+          "text": "Se a ação já foi executada com sucesso antes",
+          "correct": false,
+          "why": "Histórico de sucesso não garante o próximo caso, sobretudo com caminho escolhido em execução."
+        }
+      ],
+      "hint": "Pense no que acontece **depois** do erro, e não na probabilidade de ele acontecer.",
+      "explanation": "Se existe um teste, um validador ou um portão que reprova o erro, o agente pode agir — a rede está lá. Se a única forma de saber se ficou bom é alguém olhar, **então alguém precisa olhar**, e nenhum modelo melhor resolve isso.\n\nRepare que o critério não é sobre o modelo: é sobre o **sistema em volta**. Dois agentes idênticos merecem autonomias diferentes em projetos diferentes, conforme os portões que cada um tem.\n\nÉ o oposto do que a maioria responde, e é o que uma pessoa que já operou agente em produção diz."
+    },
+    {
+      "id": "agentes-beg-0105",
+      "topic": "parada",
+      "prompt": "Complete o teto que impede o laço de rodar para sempre.",
+      "code": {
+        "language": "python",
+        "content": "while voltas < ______ and custo < TETO_DE_CUSTO:\n    decisao = modelo.pensar(objetivo, historico)\n    historico.append(ferramentas.executar(decisao))",
+        "highlightLine": 1
+      },
+      "answerType": "fillBlank",
+      "accepted": [
+        "TETO_DE_VOLTAS"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": true
+      },
+      "hint": "Siga o padrão da variável ao lado: a palavra `TETO`, um `DE`, e o que está sendo contado — tudo em maiúsculas, ligado por sublinhado.",
+      "explanation": "O teto de voltas é grosseiro e é o que salva. **Um agente sem ele não é um agente: é uma fatura.**\n\nO modo de falha clássico não é dramático, é monótono: o agente tenta uma coisa que não funciona, vê o mesmo erro, e tenta de novo — com pequenas variações, para sempre. Cada volta custa dinheiro e nenhuma se aproxima da solução.\n\nO valor certo depende da tarefa. Para algo bem delimitado, 10 voltas sobram; para uma investigação longa, 50 podem faltar. O que **não** existe é a opção de não ter teto."
+    },
+    {
+      "id": "agentes-beg-0106",
+      "topic": "laco",
+      "prompt": "Por que duas execuções do mesmo pedido a um agente podem seguir caminhos diferentes?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Porque o modelo é retreinado entre as execuções",
+          "correct": false,
+          "why": "O modelo não muda entre uma chamada e outra."
+        },
+        {
+          "id": "b",
+          "text": "Porque o laço tem duração aleatória",
+          "correct": false,
+          "why": "A duração é consequência do caminho escolhido, e não uma causa independente."
+        },
+        {
+          "id": "c",
+          "text": "Porque as ferramentas mudam de comportamento",
+          "correct": false,
+          "why": "As ferramentas costumam ser determinísticas. A variação vem de quais são escolhidas, e em que ordem."
+        },
+        {
+          "id": "d",
+          "text": "Porque a sequência de passos não está programada: ela é escolhida durante a execução",
+          "correct": true
+        },
+        {
+          "id": "e",
+          "text": "Isso não acontece: o mesmo pedido produz sempre o mesmo caminho",
+          "correct": false,
+          "why": "Acontece com frequência, e é uma das maiores diferenças em relação a um programa comum."
+        }
+      ],
+      "hint": "Num programa comum, quem escreve o caminho é quem programou. Aqui, quem escreve o caminho é outro.",
+      "explanation": "Num programa comum, o caminho está no código. Num agente, **o modelo decide a cada volta**, olhando o que aconteceu — e essa decisão não é determinística.\n\nA consequência prática é grande e é onde a sua experiência de qualidade vale ouro: **não dá para testar um agente comparando a sequência de passos.** Dois caminhos diferentes podem estar os dois certos.\n\nO que se testa é o **resultado** e as **propriedades** — chegou onde devia? respeitou os limites? não tocou no que não devia? É outra forma de pensar teste, e é o assunto da lição 05."
+    },
+    {
+      "id": "agentes-beg-0107",
+      "topic": "chatbot",
+      "prompt": "Um agente recebeu permissão para apagar arquivos. O que isso muda em relação a um chatbot que sugere comandos de apagar?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nada: nos dois casos o arquivo pode ser apagado",
+          "correct": false,
+          "why": "Num deles existe uma pessoa lendo antes de executar, e essa pessoa é o portão."
+        },
+        {
+          "id": "b",
+          "text": "O agente é mais confiável, porque não depende de a pessoa copiar certo",
+          "correct": false,
+          "why": "Elimina o erro de digitação e elimina junto a revisão, que valia bem mais."
+        },
+        {
+          "id": "c",
+          "text": "O chatbot passa a ser inseguro também",
+          "correct": false,
+          "why": "O chatbot continua igual: quem mudou foi o outro lado."
+        },
+        {
+          "id": "d",
+          "text": "O agente precisa de um modelo maior para ter essa permissão",
+          "correct": false,
+          "why": "A permissão é decisão de projeto, e não característica do modelo."
+        },
+        {
+          "id": "e",
+          "text": "O erro deixa de ser um texto errado e passa a ser um efeito real e irreversível",
+          "correct": true
+        }
+      ],
+      "hint": "No caso do chatbot existe um passo entre a sugestão e o efeito. Qual é, e quem o executa?",
+      "explanation": "Entre a sugestão do chatbot e o efeito existe **uma pessoa lendo** — e essa pessoa é um portão, mesmo que ninguém a tenha chamado assim.\n\nDar a ferramenta ao agente **remove esse portão**. Isso é legítimo, e precisa ser uma decisão consciente, com outra rede no lugar: uma pasta restrita, uma confirmação, um registro do que foi apagado.\n\nEsse é o raciocínio central de *guardrails*, e ele aparece de novo na lição 05. **Toda ferramenta que você dá é um portão que você tira.**"
+    },
+    {
+      "id": "agentes-beg-0108",
+      "topic": "autonomia",
+      "prompt": "Escreva, em uma palavra sem acento, o que precisa existir em volta do agente para que ele possa agir sozinho com segurança.",
+      "answerType": "freeWrite",
+      "accepted": [
+        "verificacao",
+        "validacao",
+        "teste"
+      ],
+      "normalize": {
+        "spaces": true,
+        "quotes": true,
+        "trailingSemicolon": false,
+        "caseSensitive": false
+      },
+      "hint": "É o que pega o erro sem uma pessoa olhando. Escreva sem cedilha e sem til.",
+      "explanation": "Autonomia segura não vem de confiar no modelo: vem de **haver algo que reprova o erro** sem uma pessoa olhando.\n\nÉ por isso que o mesmo agente merece autonomias diferentes em projetos diferentes. Num repositório com validador de conteúdo, suíte de testes e integração contínua que barra o commit, ele pode escrever direto. Num projeto sem portão nenhum, ele deveria só propor.\n\nA formulação para uma entrevista: **\"eu decido a autonomia a partir do que é verificável automaticamente, e não do que é tecnicamente possível.\"**"
+    },
+    {
+      "id": "agentes-beg-0109",
+      "topic": "laco",
+      "prompt": "Na ordem correta, quais são os passos do laço de um agente?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pensar, agir, observar o resultado, e repetir",
+          "correct": true
+        },
+        {
+          "id": "b",
+          "text": "Perguntar à pessoa, esperar a resposta, e executar",
+          "correct": false,
+          "why": "Descreve um assistente que só age sob comando, e não um laço autônomo."
+        },
+        {
+          "id": "c",
+          "text": "Planejar tudo, executar o plano inteiro, e relatar no fim",
+          "correct": false,
+          "why": "Isso descreve um programa comum, com o caminho decidido antes de começar."
+        },
+        {
+          "id": "d",
+          "text": "Buscar informação, resumir, e responder",
+          "correct": false,
+          "why": "Descreve um fluxo de busca com resumo, que é uma volta só e não age no mundo."
+        },
+        {
+          "id": "e",
+          "text": "Treinar, avaliar, ajustar os pesos, e repetir",
+          "correct": false,
+          "why": "Isso é o ciclo de treinar um modelo, que acontece bem antes e é outro assunto."
+        }
+      ],
+      "hint": "São quatro passos, e o terceiro é o que alimenta a próxima volta.",
+      "explanation": "**Pensar → agir → observar → repetir.** O terceiro passo é o que fecha o ciclo: o resultado da ferramenta volta para o modelo, e ele decide o próximo passo com essa informação nova.\n\nSem o passo de observar, seria um plano executado às cegas — que é a alternativa descrita na primeira alternativa errada, e é como um programa comum funciona.\n\nÉ um laço curto de escrever e difícil de operar bem. As próximas quatro lições tratam exatamente do que fazer para ele ser confiável: **ferramentas** (02), **um padrão para conectá-las** (03), **coordenação** (04) e **limites** (05)."
+    },
+    {
+      "id": "agentes-beg-0110",
+      "topic": "parada",
+      "prompt": "Um agente rodou a noite inteira e gerou uma conta alta sem terminar a tarefa. Qual é a causa mais provável?",
+      "answerType": "multipleChoice",
+      "options": [
+        {
+          "id": "a",
+          "text": "O modelo escolhido é fraco demais para a tarefa",
+          "correct": false,
+          "why": "Pode contribuir, e um modelo fraco com teto de voltas simplesmente para e avisa."
+        },
+        {
+          "id": "b",
+          "text": "Faltou um teto de voltas, e ele repetiu a mesma tentativa sem sair do lugar",
+          "correct": true
+        },
+        {
+          "id": "c",
+          "text": "As ferramentas estavam lentas",
+          "correct": false,
+          "why": "Lentidão aumenta o tempo, e não faz o laço rodar indefinidamente."
+        },
+        {
+          "id": "d",
+          "text": "A tarefa era grande demais para uma noite",
+          "correct": false,
+          "why": "Tarefa grande termina ou é interrompida por um limite. Sem limite, o tamanho não explica a conta."
+        },
+        {
+          "id": "e",
+          "text": "A conexão caiu no meio",
+          "correct": false,
+          "why": "Queda de conexão interrompe o trabalho, e não o prolonga."
+        }
+      ],
+      "hint": "Pergunte-se o que impediria qualquer uma das outras causas de virar uma noite inteira de execução.",
+      "explanation": "O modo de falha clássico não é dramático, é **monótono**: o agente tenta algo que não funciona, vê o mesmo erro, tenta de novo com pequena variação, e assim por diante. Cada volta custa, e nenhuma se aproxima.\n\nRepare que **um teto de voltas transformaria qualquer uma das outras causas num aviso barato** em vez de uma noite de gastos. É por isso que ele é o limite que mais se paga.\n\nE fica a lição de operação, que vale para a sua carreira: **antes de melhorar o agente, coloque os limites.** Um agente ruim com limites custa pouco e ensina; um agente bom sem limites custa caro uma vez só."
+    }
+  ]
+}

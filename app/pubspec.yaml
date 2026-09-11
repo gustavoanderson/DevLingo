@@ -90,6 +90,7 @@ flutter:
     - assets/content/frameworks/
     - assets/content/java/
     - assets/content/selenium/
+    - assets/content/agentes/
     - assets/mascot/
     - assets/som/
 

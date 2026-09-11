@@ -59,6 +59,17 @@ const Map<String, String> nomeDaLinguagem = {
   /// tela de escolha e nao disputa espaco com tres icones.
   'selenium': 'Selenium',
 
+  /// Agentes de IA: o laco, as ferramentas, a orquestracao e os guardrails.
+  ///
+  /// Quinto curso que nao ensina linguagem. Ele fecha uma lacuna deixada de
+  /// proposito no curso de Backend, onde 18 topicos de IA foram cortados com a
+  /// nota "se um dia entrar, e curso proprio".
+  ///
+  /// "Agentes de IA" tem 13 caracteres, contra os 10 de "JavaScript". Ele
+  /// encolhe um pouco no cabecalho, e cabe -- bem longe dos 21 de "Qualidade
+  /// de Software", que e o teto ja exercitado.
+  'agentes': 'Agentes de IA',
+
   'html': 'HTML',
   'css': 'CSS',
   'sql': 'SQL',
@@ -105,6 +116,8 @@ const Map<String, String> descricaoDaLinguagem = {
   'java': 'A linguagem do mundo corporativo: tipos declarados, classes e arrays',
   'selenium':
       'Localizadores, esperas e Page Object — em Java, melhor depois dele',
+  'agentes':
+      'O laço, as ferramentas, a orquestração e os limites que você impõe',
 };
 
 String? descricaoDe(String chave) => descricaoDaLinguagem[chave];
@@ -143,6 +156,7 @@ const List<String> ordemDasTrilhas = [
   'sql',
   'qa',
   'selenium',
+  'agentes',
   'csharp',
   'golang',
   'cpp',

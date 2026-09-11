@@ -1136,6 +1136,63 @@ Três decisões de produto que ainda são do Gustavo:
 
 E um limite honesto: **arte nova custa tempo real.** Cada pose exige copiar os traços de identidade de `tronikat.svg` — olho preto redondo, orelhas a poucos graus da vertical, verde do visor, costura ciano, `>_` no peito — e converter proporções **por escala, não por olho**, que é a regra que já falhou duas vezes neste projeto. Uma tela por marco significa uma pose por marco.
 
+#### Quatro funcionalidades pedidas em 11 de setembro de 2026
+
+Ideias do Gustavo, registradas com a leitura técnica de cada uma. Nenhuma foi implementada.
+
+##### 1. Leitura em voz alta, para acessibilidade
+
+Um botão em cada questão que lê o enunciado, as alternativas e a explicação. Ele pediu voz feminina ou masculina, à escolha.
+
+**Isto se apoia no trabalho de 10 de setembro, e não o substitui.** Naquele dia a automação com Appium revelou quatro controles sem rótulo na trilha, e eles foram corrigidos com `Semantics`. Com a semântica correta, **o TalkBack do Android já lê a tela inteira** — o botão serve a outro público: quem enxerga e quer ouvir, quem tem dislexia, quem estuda no ônibus.
+
+Ou seja: **a revisão de acessibilidade das outras telas continua sendo o item mais importante**, e ela é pré-requisito, não alternativa.
+
+Três coisas que quem for fazer precisa saber:
+
+- **A voz depende do aparelho.** `flutter_tts` usa o motor instalado no Android, e a existência de voz masculina e feminina em português **não é garantida**. A escolha precisa degradar para "a voz que houver", e não sumir
+- **Ler código em voz alta é o problema difícil**, e é fácil não perceber. `System.out.println` lido letra a letra é inútil, e lido como palavra é incompreensível. Ou o bloco de código fica de fora, ou alguém escreve uma **forma falada** para ele — "sistema ponto out ponto print line". A segunda é trabalho de verdade e provavelmente vale a pena, porque código é metade do conteúdo
+- **A explicação é o que mais importa ler.** O `CLAUDE.md` registra que é nela que o aprendizado acontece, e ela é o texto mais longo da tela
+
+##### 2. Exportar em PDF as questões respondidas
+
+Uma folha de estudo com o que a pessoa já respondeu, para guardar ou rabiscar.
+
+O dado existe: `evento_resposta` guarda o histórico completo, e `resposta` o estado atual. Exportar é ler o banco e desenhar.
+
+Duas decisões de conteúdo que mudam o valor da folha: **inclui a explicação?** (deveria — é o que ensina) e **inclui as alternativas erradas com o `why`?** (provavelmente sim, porque o raciocínio por exclusão é parte do método).
+
+Vale registrar que isso é **coerente com a licença do conteúdo**: uso pessoal de quem estudou. Redistribuir é outra coisa.
+
+##### 3. Selo de conclusão, para publicar em rede social
+
+"Fulano concluiu a trilha de Java."
+
+**Ele respeita a regra já registrada sobre badges**, e isso não é coincidência: celebrar **concluir** premia persistência. O que quebraria a regra seria uma variante do tipo "concluiu sem errar" ou "concluiu em menos de X" — isso transformaria *"errar não termina a questão"* em mentira, porque a medalha que você não ganhou pune.
+
+**O selo não leva número.** Sem taxa de acerto, sem tempo, sem comparação. Nome, trilha e data.
+
+A geração se encaixa no que o projeto já faz: **arte que nasce de código** — o banner, o ícone e os cenários já são gerados por script. Um `CustomPainter` desenha e exporta como imagem.
+
+Um limite honesto: um selo compartilhável **não prova nada** para quem o recebe, porque qualquer pessoa pode desenhar um igual. Verificação exigiria um endereço público que confirme — e isso exige servidor. Para rede social, a imagem basta; para currículo, não.
+
+##### 4. As dez questões da revisão dirigida COLIDEM com a impressão digital
+
+Ele estendeu a ideia da revisão dirigida: em vez de dez questões sobre tópicos diferentes, **dez variações sobre o mesmo tema, em graus de dificuldade diferentes**, para treinar de verdade.
+
+A ideia é boa e **bate de frente com uma regra existente**. A impressão digital reprova duas questões da mesma trilha que cobrem a mesma resposta — e ela foi escrita justamente para pegar "a mesma questão com outra roupagem". Dez variações sobre `equals` cairiam nela em cheio.
+
+Isso **não quer dizer que a ideia está errada.** Quer dizer que revisão e trilha principal têm propósitos diferentes:
+
+| | Trilha principal | Revisão dirigida |
+|---|---|---|
+| Objetivo | cobrir conceitos distintos | **repetir** o mesmo até fixar |
+| Repetir resposta | é defeito | **é a função** |
+
+O caminho provável é a impressão digital passar a ser **escopada por finalidade**, e não só por linguagem — do mesmo jeito que ela já foi escopada por linguagem depois de acusar um falso positivo entre Python e JavaScript. **Quando uma regra barra algo legítimo, conserta-se a regra.**
+
+E os "graus de dificuldade" têm critério pronto: o do `CLAUDE.md` — um fato aplicado direto, dois fatos combinados, ou o caso em que a intuição erra. Não precisa inventar escala nova.
+
 ### iOS: o que fazer quando o assunto voltar
 
 **Combinado em 8 de setembro de 2026: preparar, não publicar.** A pasta `app/ios/` existe e o bundle id já está certo; nada foi compilado, porque compilar exige Mac. Ver a seção "iOS: preparado, e não compilável nesta máquina" para o quadro completo.
