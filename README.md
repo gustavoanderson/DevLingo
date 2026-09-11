@@ -107,7 +107,7 @@ E os achados mais valiosos vieram de alguém **jogando**: uma questão que marca
 
 O projeto é também portfólio de alguém em transição de carreira para engenharia de qualidade de software. Então a qualidade não é um capítulo à parte — é o método.
 
-**345 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
+**348 testes automatizados**, e a maioria nasceu de um defeito real. Cada correção vira teste, e cada teste é verificado **removendo a correção de propósito** para ver se ele falha. Os números ficam nas mensagens de commit: `Actual: 0.0`, `Actual: 111.0`, `Found 0 widgets`.
 
 **Um validador de conteúdo com regras que só existem porque algo passou.** Ele reprova gabarito concentrado numa letra, alternativa que repete texto, dica que entrega a resposta, aula fora de sincronia com as questões, marcador de formatação desbalanceado, e duas questões que cobram a mesma resposta com outra roupagem.
 
@@ -141,7 +141,23 @@ O `google-services.json` **não** vai para o repositório. Quem clonar sem ele n
 
 **O que não existe:** níveis intermediário e avançado, e as demais linguagens previstas — Node, HTML, CSS, SQL, C#, Go, C++, COBOL e Ruby.
 
-E uma limitação assumida: **as trilhas de Backend, Qualidade de Software e Frameworks ainda não foram jogadas por ninguém.** A dificuldade delas é estimativa, não medição — e o projeto tem por princípio não escrever o próximo nível antes de alguém jogar o anterior.
+E uma limitação assumida: **seis das oito trilhas ainda não foram jogadas por ninguém** — Backend, Qualidade de Software, Frameworks, Java, Selenium e Agentes de IA. A dificuldade delas é estimativa, não medição — e o projeto tem por princípio não escrever o próximo nível antes de alguém jogar o anterior.
+
+---
+
+## Licença
+
+O projeto tem **três regimes**, porque as três coisas têm naturezas diferentes. O detalhamento está em **[LICENCAS.md](LICENCAS.md)**.
+
+| O que | Licença | Em uma linha |
+|---|---|---|
+| **Código e documentação** | [MIT](LICENSE) | use, modifique e venda à vontade |
+| **Conteúdo didático** | [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/deed.pt-br) | pode copiar e citar; **não** pode adaptar nem traduzir |
+| **Tr∅nikAt, arte e o nome DevLingo** | reservados | peça antes de usar |
+
+Duas consequências que vale dizer sem rodeio: **traduzir o banco de questões é obra derivada** e precisa de autorização; e **pull request de conteúdo não é aceito** — erro de questão, porém, é muito bem-vindo por issue.
+
+Quer usar de outro jeito? A licença restritiva existe para que o pedido aconteça, não para impedir a resposta: **gustavoanderson.me@gmail.com**
 
 ---
 
