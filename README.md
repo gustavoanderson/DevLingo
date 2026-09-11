@@ -13,7 +13,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-offline--first-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 
 [![CI](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml/badge.svg)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
-[![Testes](https://img.shields.io/badge/testes-345%20passando-39FF14?style=flat-square)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
+[![Testes](https://img.shields.io/badge/testes-348%20passando-39FF14?style=flat-square)](https://github.com/gustavoanderson/DevLingo/actions/workflows/ci.yml)
 [![Questões](https://img.shields.io/badge/questões-404-FFE14D?style=flat-square)](#as-trilhas)
 [![Trilhas](https://img.shields.io/badge/trilhas-8-FF2D95?style=flat-square)](#as-trilhas)
 
