@@ -21,6 +21,43 @@ O `CLAUDE.md` guarda o *porquê* de cada decisão já tomada. Este arquivo guard
 
 ---
 
+## Ordem decidida em 10 de setembro de 2026
+
+O Gustavo aprovou três ideias e definiu a sequência. **Isto é decisão, não sugestão.**
+
+| | O quê | Por quê nesta ordem |
+|---|---|---|
+| **1º** | **Licenças** — MIT para código, CC BY-NC-ND para conteúdo | É a única coisa da lista que fica **mais cara quanto mais espera**, e destrava o servidor público |
+| **2º** | **Servidor MCP** com as ferramentas que já dão para escrever | `validar_licao`, `impressao_digital`, `conferir_ascii`, `topicos_da_trilha`. É o alicerce das três aprovadas |
+
+As três ideias aprovadas, e todas dependem do servidor:
+
+- **Calibrar dificuldade com o progresso real** (4.1 abaixo, item 3.2 da conversa)
+- **Tradução com agente**
+- **Curso sob demanda** — ideia dele, e a melhor justificativa de MCP que apareceu
+
+**Não aprovadas, e não descartadas:** servidor MCP público e sala de aula. Ele não se convenceu do valor delas; ficam registradas para quando o assunto voltar.
+
+### Curso sob demanda: o que já foi medido
+
+O aluno pede um tema qualquer de TI — DELPHI, o que for — e recebe uma aula do Tr∅nikAt mais 10 a 20 questões, no formato do app.
+
+| | |
+|---|---|
+| Saída por lição | ~6.500 tokens (medido nas 5 de Agentes; variam menos de 3%) |
+| Tentativas reais | ~2, porque o validador reprova |
+| Custo por curso de 10 | **~R$ 0,55** com cache de prompt |
+| 50 pessoas, 4 cursos/mês | **~R$ 110/mês** |
+| 500 pessoas, 4 cursos/mês | **~R$ 1.100/mês** |
+
+**E ela resolve um problema em aberto:** o freemium já estava escolhido e não tinha o que vender — o app inteiro dura 1,6 hora. Curso sob demanda é a primeira funcionalidade que custa dinheiro real para entregar.
+
+**O furo, e ele é sério:** as 10 regras do validador checam **estrutura, não verdade**. Uma lição perfeitamente formada dizendo que "em Python o ponto e vírgula é obrigatório" passa em todas as dez. E o risco cresce justo onde a ideia é mais atraente — quanto mais nichado o tema, mais o modelo erra com confiança.
+
+Por isso o **agente revisor deixa de ser opcional e vira pré-requisito**, junto com duas defesas: a tela **diz** que o curso foi gerado por IA e não revisado por pessoa (mesma decisão do painel amarelo de demonstração), e cursos gerados ficam **na conta da pessoa**, nunca no repositório.
+
+---
+
 ## 1. Funcionalidades pedidas
 
 ### 1.1 Traduzir o app para outros idiomas
