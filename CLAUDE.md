@@ -507,6 +507,25 @@ A correção repete o padrão: quem guarda é o `FluxoDaLicao`, que sobrevive à
 
 Vale registrar que eu corrigi o índice de manhã e não pensei no texto — os dois morriam pelo mesmo motivo, e só o segundo relato do Gustavo revelou o par.
 
+#### E a RESPOSTA já dada também sobrevive — o terceiro da família
+
+Terceiro defeito com a mesma causa, encontrado pelo Gustavo em 11 de setembro de 2026: acertar a questão, abrir a aula **sem avançar**, e voltar para a questão zerada, tendo que escolher a alternativa de novo.
+
+Ele relatou como *"não é um bug, é um fluxo"*. **É um bug, e o pior dos três**, porque os outros dois só custavam trabalho repetido — este **corrompe dado**:
+
+- A gravação acontece quando a questão **termina**, e o id do evento é `uid|questão|instante`. Responder de novo carimba outro instante, então não sobrescreve: **acrescenta ao histórico uma partida que nunca houve**
+- Errar na segunda vez reescreveria a tabela `resposta` — o estado atual — para "errou" numa questão que foi acertada
+- E consultar a aula **no meio** de uma questão zerava o contador de tentativas: a gravação final dizia que ela saiu de primeira, perdendo o custo real que alimenta `custoPorTopico`
+
+A correção repete o padrão: a `SessaoQuestao` sobe para o `FluxoDaLicao`. **Guarda o objeto inteiro, e não campo a campo** — ele é mutável e a tela muta a própria referência, então campo novo em `SessaoQuestao` passa a sobreviver sem ninguém lembrar de propagá-lo.
+
+Duas armadilhas que valem para quem mexer nisso:
+
+- **`aoMudarSessao` não pode chamar `setState`.** A tela avisa a sessão nova durante o próprio `build`, e um `setState` ali seria erro. Vale o mesmo já registrado para `aoMudarQuestao`
+- **A sessão herdada é conferida contra o `id` da questão atual.** `sessaoInicial` e `indiceInicial` chegam por caminhos separados; divergindo, a tela começa limpa. Perder o andamento é ruim, mostrar a resposta de outra pergunta é pior
+
+**E o teste da gravação passou na primeira versão, sem a correção.** Ele ia até a aula e voltava, sem responder de novo — e voltar da aula não grava nada sozinho. Foi preciso reescrevê-lo para medir **tentativas**, e aí ele reprovou com `tentativas: 1` onde deviam ser 2. Mais um caso da família já registrada: teste que sai cedo não prova coisa alguma.
+
 #### O bloco de código tem botão de copiar
 
 Na aba da IDE simulada, junto dos três pontinhos. Nasceu de uma tentativa frustrada de selecionar código com o dedo: dentro de um bloco que **rola na horizontal**, o gesto de selecionar disputa com o de rolar.
@@ -1831,6 +1850,50 @@ O curso usa o DevLingo como exemplo corrente, e isso não é enfeite: são os ca
 - A **impressão digital** é o exemplo de ferramenta que o agente precisa consultar antes de escrever — lição 04, campo `ja_cobradas` no estado
 - O validador é o exemplo de caso de avaliação **verificável** na lição 05
 - A regra *"autonomia se concede onde o erro é verificável automaticamente"*, combinada com o Gustavo, é a resposta da questão `agentes-beg-0507`
+
+### A trilha rodou numa release inteira SEM léxico
+
+Achado em 11 de setembro de 2026, depois de o Gustavo estranhar a leitura do curso: `termosDe('agentes')` caía no ramo vazio do `switch`. **As 5 aulas e as 50 questões foram escritas, validadas, testadas e publicadas na v1.5.0 com destaque automático nenhum** — só as 18 passagens em crase apareciam realçadas.
+
+A medição mostra o tamanho do buraco. Contando negrito e crase por mil caracteres de aula:
+
+| Trilha | Negrito | Crase |
+|---|---|---|
+| Java | 74 | **170** |
+| Selenium | 82 | 90 |
+| **Agentes** | **124** | **18** |
+
+O curso tinha o **maior** número de negritos do banco e quase nenhuma crase. Eu compensei à mão, com negrito, o que o léxico deveria ter feito sozinho.
+
+**A regra virou teste:** `toda trilha escrita tem léxico` varre o banco e reprova se alguma trilha cair no ramo vazio. Verificado removendo o despacho — reprovou com `Actual: ['agentes']`, nomeando a trilha.
+
+Ela **não** exige léxico das nove trilhas previstas e inexistentes: o CLAUDE.md já registra, corretamente, que linguagem sem léxico só fica sem cor. A regra vale para trilha que **já tem conteúdo escrito**, onde a ausência não é tolerância, é esquecimento.
+
+### O léxico saiu de medir, e de novo excluiu mais do que incluiu
+
+Terceira vez que esta medição é feita, e terceira vez com o mesmo resultado. Ocorrências **nuas** — fora de crase e negrito, que são as que o léxico veria:
+
+| Palavra | Nuas | Veredito |
+|---|---|---|
+| `agente` | **88** | fora |
+| `modelo` | 54 | fora |
+| `ferramenta` | 27 | fora |
+| `laço` | 23 | fora |
+| `servidor`, `estado`, `sequência`, `paralelo`, `supervisor`, `rastro`, `cliente` | 3–12 | fora |
+| **`MCP`** | **16** | dentro |
+| **`API`** | 5 | dentro |
+
+Destacar `agente` pintaria o texto de ciano **88 vezes**. É a mesma razão de `cache` no backend, `teste` no QA e `tela` em frameworks — e vale repetir que a regra escrita de cabeça teria incluído todas elas.
+
+O que sobrou são siglas e nomes próprios. **`MCP` sozinho responde por 16 das ocorrências que passavam despercebidas.**
+
+### Os diagramas: largura é decisão de desenho
+
+Os oito blocos `text` do curso iam de **40 a 66 colunas**. O bloco de código usa mono de 14px e sobram ~355dp num celular, o que dá **~42 colunas** — ou seja, a maioria **rolava na horizontal**, e fluxograma que precisa ser arrastado não ensina.
+
+Todos foram redesenhados em **32 a 38 colunas**, com caracteres de caixa. E três deles — `autonomia`, `quando`, `porque` — eram **tabela disfarçada de diagrama**; dois viraram decisão com ramos, que é o que o conteúdo dizia desde sempre.
+
+**Pendência honesta:** os caracteres `─ │ ┌ ▶` não foram vistos renderizados em aparelho. Box-drawing é bem suportado, mas `▶` e `▼` têm largura *ambígua* em Unicode e podem cair num fallback que desalinha a coluna. Quem retomar: olhe a aula de Agentes num celular antes de confiar. Se desalinhar, a troca para `>` e `v` é mecânica.
 
 ### A colisão que eu superestimei, e o que ela ensinou
 

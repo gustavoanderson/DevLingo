@@ -211,6 +211,34 @@ const Set<String> _termosSelenium = {
   'sendKeys', 'xpath',
 };
 
+/// Curso de Agentes de IA.
+///
+/// A trilha rodou com 50 questoes escritas e **nenhum lexico**: ela caia no
+/// ramo vazio do `switch`, e so as poucas passagens em crase eram destacadas.
+///
+/// A lista e curta porque a medicao mandou que fosse. Contando so as
+/// ocorrencias NUAS -- fora de crase e de negrito, que sao as que o lexico
+/// automatico veria -- o jargao deste curso e quase todo portugues corrente:
+///
+///   agente 88, modelo 54, ferramenta 27, laco 23, agentes 16,
+///   ferramentas 15, servidor 12, estado 8, sequencia 8, paralelo 7,
+///   supervisor 5, rastro 3, cliente 3
+///
+/// Todas ficaram **fora**. Destacar `agente` pintaria o texto de ciano 88
+/// vezes, que e a mesma razao ja registrada para `cache` no backend e `tela`
+/// em frameworks. Elas entram por crase quando forem o conceito sendo nomeado.
+///
+/// O que sobra sao siglas e nomes proprios, que nao colidem com prosa. `MCP`
+/// sozinho responde por 16 das ocorrencias que passavam despercebidas.
+///
+/// Os nomes com `_` medem zero nus porque hoje estao todos em crase; ficam
+/// aqui para o dia em que alguem esquecer a crase.
+const Set<String> _termosAgentes = {
+  'API', 'AutoGen', 'CrewAI', 'JSON', 'LangGraph', 'MCP', 'ReAct',
+  'duracao_ms', 'grafo', 'impressao_digital', 'ja_cobradas', 'prompt',
+  'token', 'tokens', 'validar_licao',
+};
+
 Set<String> termosDe(String linguagem) => switch (linguagem) {
   'python' => _termosPython,
   'javascript' || 'node' => _termosJs,
@@ -219,6 +247,7 @@ Set<String> termosDe(String linguagem) => switch (linguagem) {
   'frameworks' => _termosFrameworks,
   'java' => _termosJava,
   'selenium' => _termosSelenium,
+  'agentes' => _termosAgentes,
   _ => const {},
 };
 

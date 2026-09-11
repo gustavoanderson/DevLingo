@@ -171,6 +171,49 @@ void main() {
     });
   });
 
+  group('toda trilha escrita tem lexico', () {
+    // Esta regra existe porque o curso de Agentes de IA foi escrito inteiro --
+    // 5 aulas, 50 questoes -- e publicado numa release **sem lexico nenhum**.
+    // A trilha caia no ramo vazio do `switch` de `termosDe`, entao so as
+    // poucas passagens em crase apareciam destacadas, e o resto do jargao saia
+    // como prosa comum. Ninguem percebeu ate o Gustavo estranhar a leitura.
+    //
+    // O CLAUDE.md diz, corretamente, que linguagem sem lexico nao quebra o app
+    // -- o codigo so fica sem cor. Isso vale para as nove trilhas PREVISTAS e
+    // ainda inexistentes. Nao vale para uma trilha que ja tem conteudo escrito:
+    // ali a ausencia nao e tolerancia, e esquecimento.
+    test('nenhuma trilha do banco cai no ramo vazio', () {
+      final pasta = Directory('assets/content');
+      final trilhas = pasta
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.json'))
+          .map(
+            (f) =>
+                (json.decode(f.readAsStringSync()) as Map<String, dynamic>)['language']
+                    as String,
+          )
+          .toSet();
+
+      // Controle: sem isto o teste passaria varrendo uma pasta vazia.
+      expect(
+        trilhas.length,
+        greaterThanOrEqualTo(8),
+        reason: 'o banco tem pelo menos 8 trilhas; achou ${trilhas.length}',
+      );
+
+      final semLexico = trilhas.where((t) => termosDe(t).isEmpty).toList()
+        ..sort();
+      expect(
+        semLexico,
+        isEmpty,
+        reason:
+            'trilha com conteudo escrito e sem lexico nao destaca termo '
+            'nenhum fora de crase',
+      );
+    });
+  });
+
   group('a invariante', () {
     // A mesma regra do realce de sintaxe: um analisador que come um caractere
     // e pior que nenhum, porque o texto passa a mentir e ninguem ve a olho nu.

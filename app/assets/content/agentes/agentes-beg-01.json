@@ -22,7 +22,7 @@
         "texto": "Um **chatbot** recebe uma pergunta e devolve texto. Ele não faz nada no mundo: não abre arquivo, não chama serviço, não muda estado. O ciclo dele é uma volta só.\n\nUm **agente** age, vê o efeito, e ajusta. A diferença não está na inteligência do modelo — pode ser exatamente o mesmo — e sim em **duas coisas que você acrescenta**: o laço e as ferramentas.\n\nIsso muda a natureza do risco. Um chatbot que erra escreve algo errado, e você lê. Um agente que erra **apaga um arquivo**, **manda um e-mail**, **gasta dinheiro**.\n\nE muda também a natureza do acerto. Perguntar a um chatbot *\"por que meu teste falha?\"* devolve hipóteses; pedir a um agente devolve **a resposta**, porque ele foi ler o log, rodou o teste e olhou a saída.\n\nA regra que vale guardar: **o que separa os dois não é o modelo, é o que você deixou ele alcançar.**",
         "code": {
           "language": "text",
-          "content": "CHATBOT   pergunta -> texto\n\nAGENTE    objetivo -> [pensar -> agir -> observar] xN -> resultado\n                        ^                            |\n                        +----------------------------+"
+          "content": "CHATBOT\n   pergunta  ──▶  texto\n   (uma ida e volta, e acabou)\n\nAGENTE\n   objetivo\n      │\n      ▼\n   ┌─ pensar ─▶ agir ─▶ observar ─┐\n   │                              │\n   └──────────  repete  ◀─────────┘\n                   │\n                   ▼  quando resolveu\n               resultado"
         }
       },
       {
@@ -31,7 +31,7 @@
         "texto": "A pergunta *\"o agente pode agir sozinho?\"* está mal formulada. A pergunta certa é: **agir sozinho em quê?**\n\nUm mesmo agente costuma ter permissões diferentes por tipo de ação:\n\n- **ler** qualquer coisa — risco baixo, e reversível\n- **escrever** onde há verificação automática — risco médio, e o portão pega o erro\n- **publicar** para fora — risco alto, e muitas vezes irreversível\n- **gastar** dinheiro — sempre com aprovação\n\nO critério que decide não é \"o que a ferramenta consegue fazer\", e sim **o que é verificável sem uma pessoa olhando**.\n\nSe existe um teste, um validador ou um portão que reprova o erro, o agente pode agir. Se a única forma de saber se ficou bom é alguém olhar, **então alguém precisa olhar** — e nenhum modelo melhor resolve isso.\n\nEssa formulação vale numa entrevista, e ela é o oposto do que a maioria diz. Não é sobre confiar no modelo: é sobre **onde existe uma rede embaixo dele**.",
         "code": {
           "language": "text",
-          "content": "VERIFICAVEL AUTOMATICAMENTE  ->  o agente age sozinho\nSO UMA PESSOA SABE JULGAR    ->  o agente propoe, a pessoa decide"
+          "content": "        a acao que ele quer fazer:\n        o erro dela e verificavel\n           automaticamente?\n                  │\n         ┌────────┴────────┐\n        SIM               NAO\n         │                 │\n         ▼                 ▼\n    age sozinho      propoe, e uma\n                     pessoa decide"
         }
       },
       {
