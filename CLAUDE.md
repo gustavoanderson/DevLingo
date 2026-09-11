@@ -183,6 +183,50 @@ Por isso o banco tem buracos, e eles são corretos. A `javascript-beg-01` pula `
 
 ---
 
+## Licenças: três regimes, e o motivo de cada corte
+
+Publicadas em 11 de setembro de 2026. Até ali o repositório **não tinha licença nenhuma**, o que juridicamente significa "todos os direitos reservados" — e num repositório público isso é pior que restritivo, é **ambíguo**: ninguém sabe o que pode fazer.
+
+| O que | Licença |
+|---|---|
+| Código **e documentação de engenharia** | MIT |
+| Conteúdo didático (`app/assets/content/`) | CC BY-NC-ND 4.0 |
+| Mascote, arte, sons e os nomes DevLingo/Tr∅nikAt | reservados |
+
+O documento canônico é `LICENCAS.md`; o `LICENSE` da raiz existe porque é o arquivo que o GitHub lê.
+
+### Três decisões que não são óbvias
+
+**O `CLAUDE.md` entra no MIT.** São 1.500 linhas de decisões, erros e medições — se forem úteis a alguém, que sejam sem pedir licença. Ele registra *como* o projeto foi construído; não é o produto.
+
+**O mascote fica FORA da Creative Commons**, decisão do Gustavo. A razão é concreta e não é zelo: CC BY-NC-ND **permite redistribuir sem modificar**, então um curso mal traduzido poderia carregar o Tr∅nikAt no cabeçalho e ser lido como sendo daqui. Mascote e nome são marca, e marca não se licencia de graça.
+
+**Contribuição de conteúdo não é aceita**, também decisão dele. O ND torna PR de questão juridicamente confuso, e a coerência entre trilhas depende de uma cabeça só. Erro de conteúdo continua bem-vindo **por issue**; PR de código é bem-vindo normalmente.
+
+### O selo do GitHub foi recusado de propósito
+
+O `LICENSE` traz 16 linhas de escopo antes do texto MIT, e por causa delas o GitHub mostra **"View license"** em vez do selo "MIT License" — o detector dele exige o texto puro.
+
+Tirar o escopo ganharia o selo. **Não vale:** "View license" faz a pessoa abrir e ler, e "MIT" faz ela assumir e seguir. Com três regimes no mesmo repositório, a assunção errada é o risco maior. Fica registrado como escolha, e não como descuido.
+
+### Três afirmações minhas corrigidas por conferência
+
+Escrevi o documento citando caminhos de memória, e **três estavam errados** — todos pegos ao conferir antes de commitar:
+
+- `app/assets/cenarios/` não existe. É `assets/cenarios/`, **na raiz** do repositório, e não dentro de `app/`
+- `tools/icone.py` não existe. **O gerador do ícone nunca entrou no repositório** — ver abaixo
+- Afirmei que o app tem tela de licenças de dependências. **Não tem.** Virou nota: `showLicensePage` precisa entrar antes de publicar em loja, porque algumas licenças exigem que o aviso chegue ao usuário final
+
+### Pendência descoberta: o ícone não tem gerador versionado
+
+O `CLAUDE.md` afirma que o ícone "é gerado por script a partir de `docs/imagens/tronikat.png`, pelo mesmo princípio dos cenários e dos sons: **arte que nasce de código não diverge da fonte**".
+
+**O script não está no repositório.** Ele ficou no scratchpad de uma sessão antiga. Na prática o ícone hoje é arte editada à mão, exatamente o que aquele princípio existe para impedir — e o validador não pega, porque só confere os arquivos que têm gerador declarado (`check_gerados_em_dia`).
+
+Quem retomar: recriar `tools/gerar_icone.py` e pô-lo sob a mesma regra dos outros dois.
+
+---
+
 ## Identidade visual
 
 Paleta e tipografia detalhadas em `docs/paleta.md`. Resumo do que mais importa:
