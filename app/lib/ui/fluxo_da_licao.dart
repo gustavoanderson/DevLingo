@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../answer/sessao_questao.dart';
 import '../data/progresso.dart';
 import '../models/lesson.dart';
 import 'som.dart';
@@ -67,6 +68,22 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
   /// escrever uma linha voltava para um campo vazio.
   String _texto = '';
 
+  /// A sessão da questão atual: tentativas, alternativas eliminadas, se já
+  /// terminou e como.
+  ///
+  /// Terceiro campo desta família, pelo mesmo motivo dos dois de cima — e o
+  /// defeito era o mais grave. Quem acertava e ia consultar a aula **sem
+  /// avançar** voltava para a questão zerada, tendo que responder de novo.
+  ///
+  /// E responder de novo grava de novo: o id do evento carrega o instante,
+  /// então a segunda resposta vira uma **partida a mais no histórico**, e um
+  /// erro nela reescreveria o acerto que já estava salvo.
+  ///
+  /// Guarda a sessão inteira, e não campo a campo: ela é mutável e a tela muta
+  /// o próprio objeto, então esta referência basta. Campo novo em
+  /// `SessaoQuestao` passa a sobreviver sem ninguém lembrar de propagá-lo.
+  SessaoQuestao? _sessao;
+
   void _comecar() {
     if (!_relendo) {
       unawaited(
@@ -106,6 +123,11 @@ class _FluxoDaLicaoState extends State<FluxoDaLicao> {
       aoMudarQuestao: (indice) => _indice = indice,
       textoInicial: _texto,
       aoMudarTexto: (texto) => _texto = texto,
+      sessaoInicial: _sessao,
+      // Sem `setState`, pela mesma razão de `aoMudarQuestao`: nada aqui desenha
+      // a partir dela. E é obrigatório que seja assim — a tela avisa a sessão
+      // nova durante o próprio `build`, e um `setState` ali seria erro.
+      aoMudarSessao: (sessao) => _sessao = sessao,
       sineta: widget.sineta,
       comCenario: widget.comCenario,
     );

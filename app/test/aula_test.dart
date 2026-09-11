@@ -82,13 +82,25 @@ String _questaoNumero(int i) => _questao
 class ProgressoFalso implements RegistroDeProgresso {
   final Set<String> aulasVistas = {};
 
+  /// Uma entrada por gravacao, na ordem em que aconteceram.
+  ///
+  /// E uma LISTA, e nao um conjunto: o que se quer provar e que a mesma questao
+  /// nao e gravada duas vezes, e um conjunto engoliria a repeticao sob teste.
+  ///
+  /// Guarda as tentativas junto porque o resultado sozinho nao denuncia o
+  /// defeito: uma sessao zerada pelo caminho grava "acertou", igual a uma
+  /// inteira -- o que ela perde e **quanto custou**.
+  final List<({String questao, int tentativas})> gravadas = [];
+
   @override
   Future<void> registrar({
     required Lesson licao,
     required Question questao,
     required SessaoQuestao sessao,
     DateTime? quando,
-  }) async {}
+  }) async {
+    gravadas.add((questao: questao.id, tentativas: sessao.tentativas));
+  }
 
   @override
   Future<void> salvarPosicao(String l, int i, {DateTime? quando}) async {}
@@ -333,6 +345,108 @@ void main() {
         find.text('Questao numero 1'),
         findsNothing,
         reason: 'mandar refazer o que ja foi feito e o defeito em si',
+      );
+    });
+
+    testWidgets('consultar a aula nao apaga a resposta ja dada', (
+      tester,
+    ) async {
+      // Terceiro defeito desta familia, relatado pelo Gustavo jogando:
+      // acertar a questao, ir consultar a aula SEM AVANCAR, e voltar para a
+      // questao zerada -- tendo que escolher a alternativa de novo.
+      //
+      // Mesma causa dos dois irmaos acima: a tela e desmontada, e a
+      // `SessaoQuestao` renascia limpa. Quem sobrevive a troca e o
+      // FluxoDaLicao, e e la que a sessao mora agora.
+      await montar(
+        tester,
+        FluxoDaLicao(licao: licao(quantas: 2), aulaJaVista: true),
+      );
+
+      await tester.tap(find.text('print()'));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('acao-verificar')));
+      await tester.pumpAndSettle();
+
+      // Controle: sem esta assercao o teste passaria mesmo se a questao nunca
+      // tivesse terminado, e nao provaria nada.
+      expect(
+        find.byKey(const Key('acao-continuar')),
+        findsOneWidget,
+        reason: 'a questao precisa ter terminado antes de o teste comecar',
+      );
+
+      await tester.tap(find.byKey(const Key('acao-reler-aula')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(TelaAula.chaveComecar));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('acao-continuar')),
+        findsOneWidget,
+        reason: 'o acerto tem que voltar com o aluno',
+      );
+      expect(
+        find.byKey(const Key('acao-verificar')),
+        findsNothing,
+        reason: 'pedir para responder de novo o que ja foi acertado e o defeito',
+      );
+    });
+
+    testWidgets('consultar a aula no meio da questao preserva as tentativas', (
+      tester,
+    ) async {
+      // A parte do defeito que NAO aparece na tela, e e a que corrompe dado.
+      //
+      // Consultar a aula no meio de uma questao zerava a sessao. Quem tinha
+      // errado uma vez voltava com o contador em zero, e a gravacao final
+      // dizia que a questao saiu de primeira. O custo real da questao -- que e
+      // o que alimenta `custoPorTopico` e a revisao dirigida -- era perdido.
+      //
+      // Errar nao grava: a gravacao acontece so quando a questao TERMINA.
+      // Entao o que este teste mede e uma gravacao unica, com o numero certo
+      // dentro dela.
+      final progresso = ProgressoFalso();
+      await montar(
+        tester,
+        FluxoDaLicao(
+          licao: licao(quantas: 2),
+          progresso: progresso,
+          aulaJaVista: true,
+        ),
+      );
+
+      // Erra uma vez. Isso elimina a alternativa e devolve a vez.
+      await tester.tap(find.text('write()'));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('acao-verificar')));
+      await tester.pumpAndSettle();
+
+      // Controle: errar nao pode gravar, senao o resto do teste mede outra
+      // coisa que nao o que ele diz medir.
+      expect(
+        progresso.gravadas,
+        isEmpty,
+        reason: 'errar nao termina a questao, entao nao grava',
+      );
+
+      await tester.tap(find.byKey(const Key('acao-reler-aula')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(TelaAula.chaveComecar));
+      await tester.pumpAndSettle();
+
+      // Acerta, agora na segunda tentativa.
+      await tester.tap(find.text('print()'));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('acao-verificar')));
+      await tester.pumpAndSettle();
+
+      expect(
+        progresso.gravadas,
+        [(questao: 'python-beg-0101', tentativas: 2)],
+        reason:
+            'uma gravacao so, e com as DUAS tentativas -- a sessao zerada '
+            'gravaria 1, dizendo que a questao saiu de primeira',
       );
     });
   });

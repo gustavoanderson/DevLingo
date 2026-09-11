@@ -36,6 +36,8 @@ class TelaExercicio extends StatefulWidget {
     this.aoMudarQuestao,
     this.textoInicial = '',
     this.aoMudarTexto,
+    this.sessaoInicial,
+    this.aoMudarSessao,
     this.sineta,
     this.comCenario = false,
   });
@@ -73,6 +75,28 @@ class TelaExercicio extends StatefulWidget {
   /// troca de tela.
   final ValueChanged<int>? aoMudarQuestao;
 
+  /// A sessao em andamento quando esta tela foi montada, ou nulo para comecar
+  /// uma nova.
+  ///
+  /// Terceiro campo desta familia, e o defeito era o mais grave dos tres: quem
+  /// acertava uma questao, consultava a aula e voltava **sem avancar**
+  /// encontrava a questao zerada, e tinha que responder de novo.
+  ///
+  /// E nao era so incomodo. A gravacao acontece quando a questao TERMINA, e o
+  /// id do evento e `uid|questao|instante` -- responder de novo carimba outro
+  /// instante e grava uma **segunda partida que nunca houve**, inflando as
+  /// estatisticas. Pior: errar na segunda vez reescreve o estado atual daquela
+  /// questao para "errou", apagando um acerto legitimo.
+  ///
+  /// Guardar a sessao inteira, e nao campo a campo, e de proposito: ela e
+  /// mutavel e esta tela muta o proprio objeto, entao o [FluxoDaLicao] so
+  /// precisa da referencia. Um campo novo em [SessaoQuestao] passa a sobreviver
+  /// sozinho, sem ninguem lembrar de propaga-lo.
+  final SessaoQuestao? sessaoInicial;
+
+  /// Avisa que uma sessao nova comecou, para o [FluxoDaLicao] guardar.
+  final ValueChanged<SessaoQuestao>? aoMudarSessao;
+
   /// Toca a fanfarra de acerto. Nulo em teste que nao se importa com som.
   final Sineta? sineta;
 
@@ -101,7 +125,29 @@ class _TelaExercicioState extends State<TelaExercicio>
   final FocusNode _foco = FocusNode();
 
   late int _indice = widget.indiceInicial;
-  late SessaoQuestao _sessao = SessaoQuestao(_questaoAtual);
+  late SessaoQuestao _sessao = _sessaoDeEntrada();
+
+  /// Aproveita a sessao que veio de fora, ou comeca uma.
+  ///
+  /// A conferencia do `id` nao e paranoia: [sessaoInicial] e [indiceInicial]
+  /// chegam por caminhos separados, e uma sessao da questao errada mostraria
+  /// o resultado de uma pergunta sobre o enunciado de outra. Divergiram, esta
+  /// tela comeca limpa -- perder o andamento e ruim, mostrar resposta trocada
+  /// e pior.
+  SessaoQuestao _sessaoDeEntrada() {
+    final herdada = widget.sessaoInicial;
+    if (herdada != null && herdada.questao.id == _questaoAtual.id) {
+      return herdada;
+    }
+    return _sessaoNova();
+  }
+
+  /// Cria a sessao da questao atual e avisa quem a guarda.
+  SessaoQuestao _sessaoNova() {
+    final sessao = SessaoQuestao(_questaoAtual);
+    widget.aoMudarSessao?.call(sessao);
+    return sessao;
+  }
 
   bool _licaoConcluida = false;
 
@@ -189,7 +235,8 @@ class _TelaExercicioState extends State<TelaExercicio>
     widget.aoMudarTexto?.call('');
     setState(() {
       _indice = proximo;
-      _sessao = SessaoQuestao(_questaoAtual);
+      // Depois de `_indice`, senao a sessao nasceria para a questao que saiu.
+      _sessao = _sessaoNova();
       _texto.clear();
       temMaisAbaixo = false;
     });
