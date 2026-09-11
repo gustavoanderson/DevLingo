@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependencias
-        run: pip install jsonschema
+        run: pip install jsonschema mcp
 
       - name: Rodar o validador
         shell: bash
@@ -39,6 +39,20 @@ jobs:
 
       - name: Provar o contrato de normalizacao (lado Python)
         run: python3 tools/test_normalize.py
+
+      # As ferramentas do servidor MCP IMPORTAM o validador em vez de
+      # reimplementar as regras. Isso e o que impede as duas de divergirem --
+      # e e tambem o que faz uma mudanca no validador poder quebrar o servidor
+      # sem ninguem perceber, ja que nada mais o exercita.
+      - name: Provar as ferramentas do servidor MCP
+        run: python3 mcp/test_ferramentas.py
+
+      # Quebra por outro motivo que o teste acima: a logica cai quando uma
+      # regra muda, o embrulho cai quando o SDK muda de API -- e o SDK ja
+      # renomeou `FastMCP` para `MCPServer` na versao 2. Sem isto, nada no CI
+      # carrega o servidor, e ele apodreceria em silencio.
+      - name: Provar que o servidor MCP sobe e anuncia as ferramentas
+        run: python3 mcp/test_servidor.py
 
       # Mesma razao do badge de testes, no outro job: numero de README escrito
       # a mao envelhece em silencio. O de questoes ja errou uma vez -- saiu 214
