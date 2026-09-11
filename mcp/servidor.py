@@ -155,5 +155,40 @@ def topicos_da_trilha(trilha: str) -> dict:
     return ferramentas.topicos_da_trilha(trilha)
 
 
+@servidor.tool(
+    description=(
+        "Devolve os criterios de revisao de conteudo: o que o validador NAO "
+        "consegue julgar. As 10 regras dele checam estrutura; nenhuma checa "
+        "se a afirmacao e verdade, se a dica entrega a resposta, ou se a "
+        "explicacao ensina.\n\n"
+        "Use antes de revisar qualquer licao, e julgue criterio por criterio. "
+        "Cada um traz o que reprova e um exemplo do erro."
+    )
+)
+def criterios_de_revisao() -> dict:
+    """Os oito criterios do que precisa de julgamento humano ou de modelo."""
+    return ferramentas.criterios_de_revisao()
+
+
+@servidor.tool(
+    description=(
+        "Devolve os textos de uma licao organizados para revisao: enunciado, "
+        "dica, explicacao, resposta correta e os distratores com seus 'why', "
+        "agrupados por questao, mais as secoes da aula.\n\n"
+        "Nao e o JSON cru: a dica so pode ser julgada contra o enunciado e a "
+        "resposta, e o 'why' de um distrator so faz sentido sabendo qual e a "
+        "alternativa correta.\n\n"
+        "Use junto com criterios_de_revisao, uma licao por vez."
+    )
+)
+def material_para_revisao(licao_id: str) -> dict:
+    """Traz o texto de uma licao pronto para ser julgado.
+
+    Args:
+        licao_id: o identificador da licao, como 'java-beg-01'.
+    """
+    return ferramentas.material_para_revisao(licao_id)
+
+
 if __name__ == "__main__":
     servidor.run()

@@ -39,6 +39,8 @@ sys.path.insert(0, str(RAIZ / "tools"))
 
 import validate_questions as vq  # noqa: E402
 
+import criterios  # noqa: E402
+
 
 def _relatorio_para_dict(report) -> dict:
     """Traduz o `Report` do validador para algo que o agente consiga usar.
@@ -217,6 +219,97 @@ def conferir_teclado(resposta: str) -> dict:
             f"pedir um termo em ingles, sigla, ou palavra sem acento. A "
             f"restricao vale so para o que o aluno DIGITA: enunciado, dica e "
             f"explicacao continuam com acento normal."
+        ),
+    }
+
+
+def criterios_de_revisao() -> dict:
+    """Os criterios do que o validador NAO consegue julgar.
+
+    Existe como ferramenta, e nao como texto no prompt do agente, por duas
+    razoes. A primeira e a de sempre: o agente que roda na nuvem nao alcanca
+    este repositorio, e um criterio copiado para o prompt dele diverge no dia
+    em que alguem acrescentar o nono.
+
+    A segunda e mais interessante: **criterio escrito e o que faz julgamento
+    repetir**. Sem ele, duas revisoes da mesma licao dao resultados diferentes
+    e nenhuma das duas serve para comparar versoes.
+    """
+    return {
+        "criterios": criterios.CRITERIOS,
+        "proximo_passo": (
+            "Julgue uma licao por vez, criterio por criterio, e cite o texto "
+            "exato que motivou cada apontamento. Apontamento sem citacao nao "
+            "da para conferir nem para corrigir."
+        ),
+    }
+
+
+def material_para_revisao(licao_id: str) -> dict:
+    """Devolve o texto de uma licao organizado para ser julgado.
+
+    Nao e o JSON cru de proposito. O que se revisa aqui sao os textos, e cada
+    questao junta o que precisa ser lido EM CONJUNTO: a dica so pode ser
+    julgada contra o enunciado e a resposta, e o `why` de um distrator so pode
+    ser julgado sabendo qual e a alternativa correta.
+
+    Entregar o arquivo cru obrigaria o agente a remontar isso toda vez -- e
+    remontar toda vez e onde ele esquece um campo.
+    """
+    for arquivo, dados in _carregar_banco():
+        if dados.get("lessonId") != licao_id:
+            continue
+
+        aula = dados.get("aula") or {}
+        questoes = []
+        for q in dados.get("questions", []):
+            correta = next(
+                (o for o in q.get("options", []) if o.get("correct")), None
+            )
+            questoes.append(
+                {
+                    "id": q.get("id"),
+                    "topico": q.get("topic"),
+                    "tipo": q.get("answerType"),
+                    "enunciado": q.get("prompt"),
+                    "codigo": (q.get("code") or {}).get("content"),
+                    "resposta": (
+                        correta.get("text") if correta else q.get("accepted")
+                    ),
+                    "dica": q.get("hint"),
+                    "explicacao": q.get("explanation"),
+                    "distratores": [
+                        {"texto": o.get("text"), "why": o.get("why")}
+                        for o in q.get("options", [])
+                        if not o.get("correct")
+                    ],
+                }
+            )
+
+        return {
+            "existe": True,
+            "arquivo": arquivo,
+            "trilha": dados.get("language"),
+            "titulo": dados.get("lessonTitle"),
+            "aula": [
+                {
+                    "topico": s.get("topico"),
+                    "titulo": s.get("titulo"),
+                    "texto": s.get("texto"),
+                }
+                for s in aula.get("secoes", [])
+            ],
+            "questoes": questoes,
+        }
+
+    disponiveis = sorted(
+        d.get("lessonId") for _, d in _carregar_banco() if d.get("lessonId")
+    )
+    return {
+        "existe": False,
+        "proximo_passo": (
+            f"A licao '{licao_id}' nao existe. Use topicos_da_trilha para ver "
+            f"as trilhas, ou escolha entre: {', '.join(disponiveis[:12])}..."
         ),
     }
 

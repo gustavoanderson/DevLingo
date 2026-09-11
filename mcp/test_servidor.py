@@ -28,6 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import servidor as s  # noqa: E402
 
 ESPERADAS = {
+    "criterios_de_revisao",
+    "material_para_revisao",
     "validar_licao",
     "impressao_digital",
     "conferir_teclado",
@@ -61,11 +63,22 @@ for f in ferramentas:
             f"  {f.name} nao diz QUANDO usar\n"
             f"      a descricao precisa de uma frase começando com 'Use ...'"
         )
-    obrigatorios = (f.input_schema or {}).get("required", [])
-    if not obrigatorios:
+    # Parametro declarado tem que ser obrigatorio -- opcional sem valor padrao
+    # obvio faz o modelo adivinhar o formato, que e o que a licao 02 chama de
+    # parametro frouxo.
+    #
+    # Ferramenta SEM parametro nenhum passa, e isso corrige um falso positivo
+    # que esta regra produziu contra `criterios_de_revisao`: ela nao recebe
+    # nada porque nao ha nada que escolher, e exigir um argumento so para
+    # cumprir a regra seria piorar a ferramenta para satisfazer o teste.
+    esquema = f.input_schema or {}
+    propriedades = esquema.get("properties") or {}
+    obrigatorios = esquema.get("required", [])
+    if propriedades and not obrigatorios:
         falhas.append(
-            f"  {f.name} nao declara parametro obrigatorio\n"
-            f"      parametro frouxo faz o modelo adivinhar o formato"
+            f"  {f.name} declara parametros, e nenhum e obrigatorio\n"
+            f"      parametro frouxo faz o modelo adivinhar o formato: "
+            f"{sorted(propriedades)}"
         )
 
 print(f"\nFerramentas conferidas: {len(ferramentas)}")
