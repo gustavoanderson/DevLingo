@@ -183,6 +183,57 @@ Por isso o banco tem buracos, e eles são corretos. A `javascript-beg-01` pula `
 
 ---
 
+## O canal com o Gustavo: e-mail semanal e Telegram
+
+Montado em 11 de setembro de 2026. **Custo zero** — GitHub Actions é gratuito em repositório público, Telegram é gratuito.
+
+| Peça | Onde | O que faz |
+|---|---|---|
+| `tools/relatorio.py` | — | **produz** o relatório, em texto e HTML |
+| `tools/enviar_relatorio.py` | — | **entrega** por e-mail; `--seco` mostra sem enviar |
+| `tools/telegram.py` | — | responde comandos e guarda recados |
+| `.github/workflows/relatorio.yml` | segunda, 9h BRT | dispara o e-mail |
+| `.github/workflows/telegram.yml` | a cada minuto | lê o bot, responde, commita recado |
+
+Cinco segredos no repositório: `REMETENTE_EMAIL`, `REMETENTE_SENHA_APP`, `DESTINO_EMAIL`, `TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID`. O destino é `gustavoanderson.me+devlingo@gmail.com` — o `+` é do próprio Gmail, chega na mesma caixa e permite filtrar. **Conta dedicada foi adiada**, decisão dele: um e-mail por semana não justifica gerenciar outra caixa; quando o app for publicado, aí faz sentido ter um endereço oficial.
+
+### A divisão que o bot anuncia de si mesmo
+
+`/status`, `/pendencias` e `/relatorio` são respondidos por **um programa**, instantâneo e de graça. Qualquer outra mensagem vira **recado** no `RECADOS.md`, que a sessão seguinte lê.
+
+**Isso é deliberado e está escrito na ajuda do bot.** Responder uma pergunta de verdade com texto genérico seria pior que silêncio: daria a impressão de ter sido lido por alguém que não leu. Resposta de verdade exige chamar um modelo, o que custa dinheiro — e a decisão do Gustavo em 11/09 foi **não gastar por enquanto**.
+
+### PENDENTE, e ele pediu para ser lembrado: medir o atraso do agendamento
+
+O cron do Telegram pede execução **a cada minuto**, e o GitHub **não garante isso** — a documentação dele avisa que tarefas agendadas atrasam em horário de pico.
+
+O que já foi medido em 11/09:
+
+| | |
+|---|---|
+| Execução em si, do início ao fim | **15 segundos** |
+| Atraso do agendamento | **não medido** — o cron ainda não tinha disparado nenhuma vez |
+
+Workflow agendado novo demora a entrar na fila do GitHub, às vezes uma hora. **Medir isso é tarefa da próxima sessão**, e o Gustavo pediu explicitamente para ser lembrado.
+
+Como medir: comparar o horário de uma mensagem no Telegram (`date` do update) com o `createdAt` da execução que a processou.
+
+**Se o atraso incomodar, a saída já está decidida:** rodar `tools/telegram.py` num aparelho próprio — ele tem um tablet parado —, e aí é instantâneo de verdade. O script é o mesmo; muda só onde roda.
+
+### Três cuidados que não são óbvios
+
+- **Sem arquivo de estado.** O Telegram guarda o ponteiro do que já entregou: `getUpdates` sem offset traz o pendente, e com `offset = último + 1` confirma. Um arquivo de controle commitado a cada minuto poluiria o histórico com centenas de commits vazios por dia
+- **`fetch-depth: 0` nos dois fluxos.** O relatório conta commits dos últimos 7 dias, e o checkout raso traz **um** — reportaria uma semana vazia, que é número errado parecendo certo
+- **Só o dono comanda.** Mensagem de outro chat é ignorada; sem isso, qualquer um que achasse o bot leria os números e encheria o `RECADOS.md`
+
+### O relatório já me pegou mentindo
+
+A primeira versão afirmava *"6 trilhas nunca jogadas, incluindo python"* — **duas linhas acima** de "todo número acima foi medido agora". Era palpite: **quais trilhas foram jogadas não é medível daqui**, porque o progresso vive no Firestore e no SQLite do aparelho, e `run-as` não alcança build de release.
+
+Hoje o relatório diz que não sabe, e por quê. Número inventado dentro de um relatório que se vende como medido contamina a confiança em todos os outros.
+
+---
+
 ## Licenças: três regimes, e o motivo de cada corte
 
 Publicadas em 11 de setembro de 2026. Até ali o repositório **não tinha licença nenhuma**, o que juridicamente significa "todos os direitos reservados" — e num repositório público isso é pior que restritivo, é **ambíguo**: ninguém sabe o que pode fazer.
