@@ -108,15 +108,35 @@ PASSO_SEGUNDOS = 0.85
 
 GATO = [
     ("oval", 0, 0, 13, 3, "#000000", 0.4),
-    ("traco", "M8 -14 Q17 -17 16 -26", "#C9CBE0", 2.5),
-    ("disco", 16, -27, 2.5, "#39FF14"),
+    # A cauda sai da base do corpo e sobe ate a altura do PEITO, nao da
+    # cabeca. Ela chegava a y=-26, colada na cabeca (centro em -28), e a luz
+    # verde na ponta ficava do lado do rosto: lia como um terceiro braco
+    # erguido segurando uma bolinha. Na arte canonica ela para na altura do
+    # peito, e e de la que esta medida.
+    ("traco", "M7 -7 Q16 -6 18 -1", "#C9CBE0", 2.5),
+    ("disco", 18.5, -0.5, 2.5, "#39FF14"),
     # Pernas e bracos ficam atras do corpo, entao vem antes dele.
     ("membro", -3, -7, -8, 2, 0, "#F2F0FF", 4),
     ("membro", 3, -7, 2, -8, 0, "#9BA0B8", 4),
     ("membro", -7, -16, -12, -8, -8, "#F2F0FF", 3.5),
     ("membro", 7, -16, 8, 12, -8, "#9BA0B8", 3.5),
-    ("forma", "M-8 -18 L-7 -6 L7 -6 L8 -18 Q0 -21 -8 -18 Z", "#2A1B4D"),
-    ("traco", "M-6 -18 Q0 -15 6 -18", "#FF2D95", 1.8),
+    # O corpo e o proprio Tr∅nikAt, sem roupa: branco de um lado, metalico do
+    # outro, com a costura ciano na divisa -- a MESMA assimetria da cabeca, que
+    # o CLAUDE.md lista como identidade do personagem.
+    #
+    # Antes aqui havia um colete roxo com gola rosa. Ele escondia justamente o
+    # que distingue o personagem, e deixava um gato de camiseta no lugar de um
+    # gato ciberneticamente modificado.
+    ("forma", "M-8 -18 L-7 -6 L7 -6 L8 -18 Q0 -21 -8 -18 Z", "#F2F0FF"),
+    ("forma", "M0 -19.6 L0 -6 L7 -6 L8 -18 Q4 -20.3 0 -19.6 Z", "#C9CBE0"),
+    ("traco", "M0 -19.6 L0 -6", "#00E5FF", 0.9),
+    # Duas juntas na metade metalica, como as do braco na arte canonica.
+    ("disco", 4.5, -15.5, 1.1, "#8A8FA6"),
+    ("disco", 4.5, -10.5, 1.1, "#8A8FA6"),
+    # O `>_` no peito. Miudo, e mesmo assim obrigatorio: e um dos tracos que o
+    # CLAUDE.md nomeia como identidade, ao lado do olho e do visor.
+    ("traco", "M-6 -16 L-4 -14 L-6 -12", "#39FF14", 1.1),
+    ("traco", "M-3 -12 L-1 -12", "#39FF14", 1.1),
     ("forma", "M-9 -34 L-7 -46 L-1 -35 Z", "#F2F0FF"),
     ("forma", "M2 -35 L8 -46 L11 -32 Z", "#C9CBE0"),
     ("disco", 0, -28, 11, "#F2F0FF"),

@@ -259,13 +259,27 @@ class _PintorDaFaixa extends CustomPainter {
     required double fracao,
     bool neons = false,
   }) {
-    // O deslocamento e NEGATIVO: o cenario anda para a esquerda, que e o
-    // sentido oposto ao que o gato aponta. Andar junto com ele o faria parecer
-    // parado, e andar ao contrario o faria parecer de re.
-    final x = -fracao * larguraDaFaixa;
+    // O cenario desliza para a DIREITA, que e o sentido oposto ao lado para
+    // onde o gato aponta -- e ele aponta para a ESQUERDA: o olho, o focinho e
+    // a boca estao todos naquele lado.
+    //
+    // Ate 11 de setembro de 2026 ele deslizava para a esquerda, e o comentario
+    // aqui dizia, corretamente, que o cenario anda no sentido oposto ao que o
+    // gato aponta. A regra estava certa; a leitura de para onde ele aponta e
+    // que estava errada. O resultado e que o gato andava **de re**, e a cauda,
+    // que sai pela direita, ficava na direcao do movimento -- ou seja, na
+    // frente. O Gustavo viu jogando: "parece um terceiro braco".
+    //
+    // Espelhar o gato resolveria o movimento e quebraria o personagem: a
+    // metade metalica fica a DIREITA na arte canonica, e a assimetria
+    // pelo/metal e identidade. Entao quem vira e o cenario.
+    //
+    // O inicio e -larguraDaFaixa para a copia que entra pela esquerda ja estar
+    // posicionada; sem isso sobraria um vao naquele lado a cada volta.
+    final x = (fracao - 1) * larguraDaFaixa;
 
     // Quantas cópias cabem, mais uma para cobrir a que está saindo.
-    final copias = (largura / larguraDaFaixa).ceil() + 1;
+    final copias = (largura / larguraDaFaixa).ceil() + 2;
     final tinta = Paint()..color = cor;
     final predios = _caminho(caminho);
 

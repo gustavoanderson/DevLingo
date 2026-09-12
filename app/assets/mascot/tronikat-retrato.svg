@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="520" viewBox="0 0 400 520" role="img">
 <title>Tr∅nikAt — retrato</title>
-<desc>Close no rosto e ombros do Tr∅nikAt: metade esquerda de pelo branco com olho preto redondo e brilho branco, metade direita de aco escovado com scouter verde aceso. Moletom roxo de capuz, com remendo de terminal no peito.</desc>
+<desc>Close no rosto e ombros do Tr∅nikAt: metade esquerda de pelo branco com olho preto redondo e brilho branco, metade direita de aco escovado com scouter verde aceso. Corpo sem roupa, com a divisa pelo/metal descendo do rosto ao peito e o terminal >_ em verde.</desc>
 
 <defs>
   <!-- Volume do pelo: claro em cima, sombra embaixo. -->
@@ -249,36 +249,43 @@
          Q16 422 104 392
          Q200 372 296 392
          Q384 422 406 456
-         L440 520 Z" fill="url(#moletom)"/>
+         L440 520 Z" fill="#E8E6F5"/>
 
-<!-- Abertura do capuz em volta do pescoco. Chapada e bem mais escura que o
-     moletom: com o gradiente `capuz`, as duas cores ficavam tao proximas que a
-     gola sumia e sobrava so o cordao magenta boiando. -->
-<path d="M108 386 Q200 344 292 386 Q200 418 108 386 Z" fill="#120826"/>
-<path d="M108 386 Q200 344 292 386" stroke="#FF2D95" stroke-width="5.5"
-      fill="none" stroke-linecap="round"/>
-<path d="M108 386 Q200 344 292 386" stroke="#FF9AE4" stroke-width="1.8"
-      fill="none" opacity="0.8"/>
+<!-- A metade metalica desce do rosto para o peito: a divisa nao para no
+     pescoco, porque a assimetria e do personagem inteiro. Ate 11 de setembro
+     de 2026 havia aqui um moletom roxo de capuz, com gola e cordoes magenta.
+     O Gustavo pediu para tirar, e comparando com a arte canonica ele tinha
+     razao por um motivo concreto: a roupa cobria justamente a divisa, que e o
+     que conta a historia do personagem. Debaixo dela era um gato de camiseta. -->
+<path d="M200 376
+         Q296 392 296 392
+         Q384 422 406 456
+         L440 520 L200 520 Z" fill="#9DA2B8"/>
 
-<!-- Cordoes do capuz, saindo de DENTRO da gola, com ponteiras -->
-<path d="M174 410 Q166 450 170 480" stroke="#FF2D95" stroke-width="4.5"
-      fill="none" stroke-linecap="round"/>
-<path d="M228 410 Q238 448 234 474" stroke="#FF2D95" stroke-width="4.5"
-      fill="none" stroke-linecap="round"/>
-<rect x="164" y="478" width="12" height="18" rx="3" fill="#8B92AE"/>
-<rect x="229" y="472" width="12" height="18" rx="3" fill="#8B92AE"/>
+<!-- Chapado, nao gradiente: `linearGradient` em `<path>` ja falhou em silencio
+     neste arquivo, e a regra que sobrou foi empilhar tons chapados. -->
+<path d="M200 376 Q296 392 296 392 Q340 404 372 424 L390 462 L200 462 Z"
+      fill="#B4B8CC" opacity="0.55"/>
 
-<!-- Ombro direito: placas, e a divisa seguindo para baixo -->
-<path d="M208 388 Q320 400 396 452 L424 520 L208 520 Z" fill="#241748" opacity="0.5"/>
-<line x1="200" y1="372" x2="200" y2="520" stroke="#00E5FF" stroke-width="2.5" opacity="0.5"/>
-<circle cx="326" cy="458" r="6" fill="#5C6382"/>
-<circle cx="360" cy="490" r="5" fill="#5C6382"/>
-<path d="M286 442 L372 470" stroke="#5C6382" stroke-width="2.2" opacity="0.7"/>
+<!-- A costura ciano continua do rosto ate a base, sem interrupcao. -->
+<line x1="200" y1="372" x2="200" y2="520" stroke="#00E5FF" stroke-width="3"/>
 
-<!-- Remendo de terminal, no peito esquerdo. Centralizado ele competia com a
-     costura e parecia botao de aparelho, nao remendo de moletom. -->
+<!-- Placas e rebites da metade metalica, como nos bracos da arte canonica. -->
+<circle cx="326" cy="458" r="6" fill="#6E748F"/>
+<circle cx="360" cy="490" r="5" fill="#6E748F"/>
+<path d="M286 442 L372 470" stroke="#6E748F" stroke-width="2.2" opacity="0.7"/>
+<path d="M248 470 L248 520" stroke="#8A8FA6" stroke-width="2" opacity="0.6"/>
+
+<!-- A base do pescoco, alargando para encontrar o ombro. Pescoco que afina
+     para baixo vira balde, porque nao encontra ombro nenhum. -->
+<path d="M156 372 Q200 366 244 372 L250 400 Q200 410 150 400 Z" fill="#D9D7EA"/>
+<path d="M200 368 Q222 367 244 372 L250 400 Q224 406 200 406 Z" fill="#9DA2B8"/>
+
+<!-- O `>_` no peito. O CLAUDE.md o lista como identidade, ao lado do olho e
+     do visor, entao ele fica mesmo sem a roupa que o carregava. Fora do
+     centro de proposito: centralizado ele competia com a costura. -->
 <g transform="rotate(-5 106 472)">
-  <rect x="66" y="450" width="80" height="44" rx="6" fill="#170A31"
+  <rect x="62" y="452" width="80" height="44" rx="6" fill="#170A31"
         stroke="#39FF14" stroke-width="2.5"/>
   <text x="80" y="482" font-family="ui-monospace, monospace" font-size="25"
         font-weight="700" fill="#39FF14">&gt;_</text>

@@ -139,9 +139,11 @@ const Color _pelo = Color(0xFFF2F0FF);
 const Color _metal = Color(0xFFC9CBE0);
 const Color _metalEscuro = Color(0xFF7E8299);
 const Color _escuro = Color(0xFF17092E);
-const Color _moletom = Color(0xFF4A3080);
-const Color _moletomBorda = Color(0xFF7E5FC0);
-const Color _moletomSombra = Color(0xFF2E1C57);
+/// As juntas da metade metalica, como as dos bracos na arte canonica.
+const Color _junta = Color(0xFF8A8FA6);
+
+/// A moldura do arco-iris, que antes emprestava a cor do moletom.
+const Color _molduraDoRastro = Color(0xFF7E5FC0);
 const Color _visorMoldura = Color(0xFF3A3E52);
 const Color _rosaClaro = Color(0xFFFF7AD9);
 const Color _focinho = Color(0xFFFF4FD8);
@@ -284,7 +286,7 @@ class _PintorDaCena extends CustomPainter {
     // --- mesa ---
     canvas.drawRect(
       const Rect.fromLTWH(30, 117, 270, 3),
-      Paint()..color = _moletomBorda,
+      Paint()..color = _molduraDoRastro,
     );
     canvas.drawRect(
       const Rect.fromLTWH(30, 120, 270, 8),
@@ -409,16 +411,22 @@ class _PintorDaCena extends CustomPainter {
     //
     // Na arte de corpo inteiro ela sai pela direita. Aqui sai pela esquerda
     // porque o computador ocupa a direita; e o mesmo desenho espelhado.
+    //
+    // Ela subia ate y=20, que e a altura do ROSTO, e a luz verde na ponta
+    // ficava ao lado da cabeca -- lia como um braco erguido segurando uma
+    // bolinha, e o Gustavo apontou o mesmo efeito na faixa dos exercicios.
+    // Agora ela sai da base e desce, que e o que nao pode ser confundido com
+    // braco nenhum.
     canvas.drawPath(
       Path()
-        ..moveTo(-11, 36)
-        ..quadraticBezierTo(-24, 33, -26, 20 + batida * 2),
+        ..moveTo(-12, 36)
+        ..quadraticBezierTo(-26, 37, -29, 43 + batida * 2),
       traco
         ..color = _metal
         ..strokeWidth = 3.2,
     );
     canvas.drawCircle(
-      Offset(-26.5, 17.5 + batida * 2),
+      Offset(-29.5, 45.5 + batida * 2),
       2.8,
       Paint()..color = Paleta.visor,
     );
@@ -487,9 +495,17 @@ class _PintorDaCena extends CustomPainter {
       ..lineTo(12.7, 39)
       ..lineTo(-12.7, 39)
       ..close();
-    canvas.drawPath(corpo, Paint()..color = _moletom);
-    // A metade metalica continua no corpo: a assimetria e do personagem
-    // inteiro, nao so da cabeca.
+    // O corpo e o proprio personagem: pelo de um lado, metal do outro, com a
+    // MESMA divisa da cabeca. A assimetria pelo/metal e identidade, e o
+    // CLAUDE.md a lista ao lado do olho e do visor.
+    //
+    // Ate 11 de setembro de 2026 havia aqui um moletom roxo com gola rosa. O
+    // Gustavo pediu para tira-lo -- "esta estranha a roupa dele, e se ele
+    // tiver so o corpo branco meio robotizado?" -- e ele tinha razao por um
+    // motivo que so aparece comparando com a arte canonica: a roupa cobria a
+    // divisa, que e justamente o que conta a historia do personagem. Debaixo
+    // dela ele era um gato de camiseta.
+    canvas.drawPath(corpo, Paint()..color = _pelo);
     canvas.drawPath(
       Path()
         ..moveTo(0, 12)
@@ -497,23 +513,12 @@ class _PintorDaCena extends CustomPainter {
         ..lineTo(12.7, 39)
         ..lineTo(0, 39)
         ..close(),
-      Paint()..color = _moletomSombra,
+      Paint()..color = _metal,
     );
-    canvas.drawPath(
-      corpo,
-      traco
-        ..color = _moletomBorda
-        ..strokeWidth = 1.4,
-    );
-    // Gola rosa.
-    canvas.drawPath(
-      Path()
-        ..moveTo(-11, 13.5)
-        ..quadraticBezierTo(0, 19, 11, 13.5),
-      traco
-        ..color = Paleta.acerto
-        ..strokeWidth = 2.4,
-    );
+    // Duas juntas na metade metalica, como as dos bracos na arte canonica.
+    for (final y in const [22.0, 31.0]) {
+      canvas.drawCircle(Offset(6.5, y), 1.6, Paint()..color = _junta);
+    }
     // Remendo de terminal no peito.
     const remendo = Rect.fromLTWH(-5.5, 21, 11, 7);
     canvas.drawRRect(
