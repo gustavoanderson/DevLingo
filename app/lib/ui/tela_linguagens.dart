@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../data/progresso.dart';
 import '../data/question_bank.dart';
 import '../models/lesson.dart';
+import '../versao.dart';
 import 'paleta.dart';
 import 'som.dart';
 import 'tela_trilha.dart';
@@ -44,6 +45,12 @@ class TelaLinguagens extends StatefulWidget {
   final ValueNotifier<int>? chegouDaNuvem;
 
   static const Key chaveVoltarAoTitulo = Key('voltar-ao-titulo');
+
+  /// O `identifier` do Semantics e a `Key` dividem a MESMA string, de
+  /// proposito: o teste de widget procura pela Key, o Appium procura pelo
+  /// `resource-id`, e com dois nomes um dos dois envelhece sozinho.
+  static const String idLicencas = 'linguagens-licencas';
+  static const Key chaveLicencas = Key(idLicencas);
 
   /// As trilhas que existem de verdade, em ordem de linguagem e nível.
   ///
@@ -114,13 +121,19 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
-            if (widget.aoVoltarAoTitulo != null) ...[
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _BotaoTitulo(aoTocar: widget.aoVoltarAoTitulo!),
-              ),
-              const SizedBox(height: 12),
-            ],
+            // A linha existe mesmo sem o botão de título: com uma trilha só no
+            // banco, `aoVoltarAoTitulo` é nulo, e as licenças precisam
+            // continuar alcançáveis — a exigência de exibi-las não depende de
+            // quantas trilhas existem.
+            Row(
+              children: [
+                if (widget.aoVoltarAoTitulo != null)
+                  _BotaoTitulo(aoTocar: widget.aoVoltarAoTitulo!),
+                const Spacer(),
+                const _BotaoLicencas(),
+              ],
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -341,6 +354,58 @@ class _CartaoDaTrilha extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Abre a lista de licenças das bibliotecas de terceiros.
+///
+/// **Não é enfeite legal: é exigência de algumas dependências.** Várias
+/// licenças de código aberto — MIT e BSD entre elas — obrigam a incluir o
+/// aviso de copyright em toda redistribuição, e um app numa loja é
+/// redistribuição. O DevLingo usa sete dependências, e passou quatro meses
+/// sem essa tela.
+///
+/// Quem monta a lista é o `showLicensePage` do próprio Flutter, que lê os
+/// avisos registrados por cada pacote em tempo de build. Escrever a lista à
+/// mão seria assumir o compromisso de atualizá-la a cada `pub get` — e a
+/// primeira vez que alguém esquecesse, o app voltaria a descumprir sem
+/// ninguém notar.
+///
+/// É um ícone sem rótulo, e discreto de propósito: a ação principal desta
+/// tela é escolher uma trilha. Mesmo raciocínio que faz o botão de título ser
+/// contornado em vez de preenchido.
+class _BotaoLicencas extends StatelessWidget {
+  const _BotaoLicencas();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      // `identifier` vira `resource-id` no Android, e é o que o Appium usa.
+      // `label` vira `content-desc`, e é o que o leitor de tela fala — sem
+      // ele o TalkBack anunciaria só "botão", como os quatro controles da
+      // trilha anunciavam antes da correção de 10 de setembro.
+      identifier: TelaLinguagens.idLicencas,
+      label: 'Licenças das bibliotecas',
+      button: true,
+      child: IconButton(
+        key: TelaLinguagens.chaveLicencas,
+        onPressed: () => showLicensePage(
+          context: context,
+          applicationName: 'DevLingo',
+          applicationVersion: versaoDoApp,
+          applicationLegalese:
+              '© 2026 Gustavo Anderson\n\n'
+              'O código do DevLingo é MIT. O conteúdo didático é '
+              'CC BY-NC-ND 4.0. O Tr∅nikAt, a arte e o nome são reservados.\n\n'
+              'As licenças abaixo são das bibliotecas de terceiros.',
+        ),
+        icon: const Icon(Icons.article_outlined, size: 18),
+        color: Paleta.suave,
+        tooltip: 'Licenças',
+        padding: const EdgeInsets.all(12),
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       ),
     );
   }
