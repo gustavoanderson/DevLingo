@@ -67,25 +67,72 @@ Quando um terminar, o próximo começa. Se algo bloquear, pule e registre por qu
 | # | O quê | Por que nesta posição | Tamanho |
 |---|---|---|---|
 | **1** | **Revisar as 40 lições restantes** com os 9 critérios | O revisor achou **6 questões defeituosas olhando uma lição**. Faltam 40. É o item com maior densidade de defeito real por hora gasta | 3–4 h |
-| **2** | **Termos técnicos na explicação** | 129 ocorrências — mais que aula e enunciado somados — e é onde o CLAUDE.md diz que o aprendizado acontece. Uma linha de código muda tudo isso | 1 h |
-| **3** | **Gerador do ícone** | Fecha um princípio quebrado: o CLAUDE.md afirma que a arte nasce de código, e o ícone é o único que não | 30 min |
-| **4** | **Acessibilidade nas demais telas** | Só o cabeçalho da trilha foi revisado. O Appium já provou que o defeito existe e que nenhum teste de widget o vê | 2–3 h |
-| **5** | **Appium no CI** | A suíte existe e ninguém a roda. Sem isso ela apodrece — e ela é o ativo de portfólio mais forte do projeto | 2 h |
-| **6** | **Trocar os sons** | Dívida antiga: ele os acha "genéricos e irritantes", e baixar o volume foi paliativo. O problema é o timbre da onda quadrada | 2 h |
-| **7** | **Playwright no curso de QA** | Buraco identificado na conferência dos 17 temas: 4 deles são de Playwright, e o mapa das 15 lições só cita Cypress | 3–4 lições |
-| **8** | **Telas de marco** a cada 10 questões | A primeira funcionalidade nova da fila. Reusa `_tronikat`, `resumoDoJogador`, a tabela `preferencia` e a fanfarra — quase nada é código novo | 3 h |
-| **9** | **Selo de conclusão de trilha** | Arte que nasce de código, como os cenários e os sons. Compartilhável, e respeita a regra de não premiar desempenho | 2 h |
-| **10** | **Exportar em PDF** as questões respondidas | O dado já existe em `evento_resposta`. É leitura e desenho | 3 h |
+| **2** | **Leitura em voz alta** — decidida em 11/09 | Curta, custo zero, e entrega acessibilidade de verdade. Ver a seção A abaixo | 3–4 h |
+| **3** | **O site jogável, com o Tr∅nikAt** — decidido em 11/09 | O maior da lista, e o de maior peso de portfólio. Em partes, semanas. Ver a seção B | semanas |
+| **4** | **Tradução** — decidida em 11/09 | Infraestrutura primeiro, depois UMA trilha em inglês. Ver a seção C | semanas |
+| **5** | **Termos técnicos na explicação** | 129 ocorrências — mais que aula e enunciado somados — e é onde o CLAUDE.md diz que o aprendizado acontece. Uma linha de código muda tudo isso | 1 h |
+| **6** | **Gerador do ícone** | Fecha um princípio quebrado: o CLAUDE.md afirma que a arte nasce de código, e o ícone é o único que não | 30 min |
+| **7** | **Acessibilidade nas demais telas** | Só o cabeçalho da trilha foi revisado. O Appium já provou que o defeito existe e que nenhum teste de widget o vê | 2–3 h |
+| **8** | **Appium no CI** | A suíte existe e ninguém a roda. Sem isso ela apodrece — e ela é o ativo de portfólio mais forte do projeto | 2 h |
+| **9** | **Trocar os sons** | Dívida antiga: ele os acha "genéricos e irritantes", e baixar o volume foi paliativo. O problema é o timbre da onda quadrada | 2 h |
+| **10** | **Playwright no curso de QA** | Buraco identificado na conferência dos 17 temas: 4 deles são de Playwright, e o mapa das 15 lições só cita Cypress | 3–4 lições |
+| **11** | **Telas de marco** a cada 10 questões | A primeira funcionalidade nova da fila. Reusa `_tronikat`, `resumoDoJogador`, a tabela `preferencia` e a fanfarra — quase nada é código novo | 3 h |
+| **12** | **Selo de conclusão de trilha** | Arte que nasce de código, como os cenários e os sons. Compartilhável, e respeita a regra de não premiar desempenho | 2 h |
+| **13** | **Exportar em PDF** as questões respondidas | O dado já existe em `evento_resposta`. É leitura e desenho | 3 h |
+
+## Três frentes novas, decididas em 11 de setembro de 2026
+
+A ordem escolhida por ele: **revisão → voz alta → site → tradução.**
+
+### A. Leitura em voz alta
+
+Botão em cada questão que lê enunciado, alternativas e explicação. **Custo zero** — `flutter_tts` usa o motor de voz do próprio Android.
+
+Eu havia registrado isto como dependente da revisão de acessibilidade, e **estava errado**: `flutter_tts` e `Semantics` são mecanismos independentes, e um não espera o outro.
+
+O problema difícil é **ler código em voz alta**. `System.out.println` soletrado é inútil e lido como palavra é incompreensível. Ou o bloco de código fica de fora, ou alguém escreve uma **forma falada** para ele — e a segunda provavelmente vale a pena, porque código é metade do conteúdo.
+
+A voz depende do aparelho: a existência de voz masculina e feminina em português **não é garantida**, e a escolha precisa degradar para "a que houver".
+
+### B. O site: portfólio jogável, com o Tr∅nikAt
+
+Pedido dele, com o **bruno-simon.com** como referência.
+
+**A expectativa precisa ficar calibrada, e está escrita aqui de propósito:** aquele site é referência mundial — Three.js com física e um carro dirigível, feito por um especialista em WebGL ao longo de meses. Prometer aquilo seria mentir.
+
+O que cabe: um site 3D interativo, com o Tr∅nikAt navegável, seções sobre o app e sobre o Gustavo como idealizador. **GitHub Pages, custo zero de hospedagem.** Em semanas, por partes.
+
+#### O agente conversável, e a decisão de dinheiro
+
+Ele escolheu **IA de verdade, com teto rígido** — e recusou tanto o roteiro sem IA quanto a IA aberta.
+
+Três coisas que isso exige, e que não são óbvias:
+
+- **A chave NÃO pode ficar no site.** Página estática que chama a API carrega a chave no JavaScript, e qualquer visitante a lê. Precisa de uma função no meio — Cloudflare Workers ou similar, camada gratuita
+- **Teto por visitante e teto diário.** Sem os dois, uma pessoa em laço gasta o crédito do mês numa tarde
+- **O agente só fala do DevLingo.** Isso é limite de ferramenta e de instrução, e a parte que funciona é a ferramenta: ele não tem acesso a nada além do conteúdo do projeto
+
+Custo estimado por conversa, com os preços de setembro de 2026: **~R$ 0,05 com Sonnet, ~R$ 0,12 com Opus**. Cem conversas por mês ficam entre R$ 5 e R$ 12 — barato. **O risco não é o preço unitário, é o abuso**, e é por isso que o teto vem antes do agente.
+
+### C. Tradução
+
+**A infraestrutura vem primeiro, e não dá para pular:** seletor de idioma, chave de trilha por idioma, impressão digital escopada por idioma, léxico medido por idioma, e as strings da UI extraídas dos widgets.
+
+Depois, **uma trilha só**, em inglês, para medir o custo real. Traduzir as oito antes de medir repetiria o erro de escrever o nível intermediário no escuro.
+
+Os números já medidos: **417.420 caracteres** em 3.688 campos, e **109 das 168 respostas escritas são palavras portuguesas** — nas trilhas conceituais, traduzir significa reescrever a questão, não trocar a string.
+
+---
 
 ### O que ficou fora da fila, e por quê
 
 | O quê | Motivo |
 |---|---|
 | **Curso sob demanda** | Custa dinheiro por uso. Decisão dele: só quando o lançamento puder gerar receita |
-| **Tradução** | Um livro de 70 mil palavras por idioma. Precisa de decisão de escopo antes |
+
 | **iOS, inclusive o build no CI** | **Fora.** Decisão dele, repetida |
 | **Play Store** | US$ 25 e um teste fechado de 14 dias com 12 pessoas. Decisão dele |
-| **Leitura em voz alta** | Depende do item 4 (acessibilidade) estar pronto |
+
 | **Nível intermediário** | Calibrado por dados de uso, que se acumulam sozinhos |
 
 ---
