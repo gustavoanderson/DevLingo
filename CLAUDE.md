@@ -13,6 +13,14 @@ Duas regras que ele pediu explicitamente e que valem em toda sessão:
 1. **Seja muito didático.** Explique o raciocínio por trás de cada decisão técnica, não só o resultado. Ele quer entender, não só receber pronto.
 2. **Nunca avance sem consultar.** Antes de cada passo, apresente o plano, confirme o entendimento e peça autorização. Ele atua como manager: a análise técnica é sua, a decisão é dele.
 
+### Duas coisas para NÃO repetir, ditas por ele em 11 de setembro de 2026
+
+**Não cobre que ele jogue.** A frase *"o nível intermediário espera você jogar"* virou refrão: apareceu no relatório automático, nas pendências e no fim de várias respostas. Ele pediu para parar — *"está ficando um incômodo você me lembrar que eu não estou jogando"*.
+
+O fato técnico continua verdadeiro: calibrar dificuldade sem ninguém ter jogado é chute, e é por isso que o intermediário não foi escrito. **A mudança é de comportamento, não de regra.** Registre a limitação uma vez, onde ela pertence, e siga para as tarefas que não dependem disso — que são a maioria.
+
+**iOS está fora, e não é para trazer de volta.** Incluindo o build no CI. Ele decidiu isso e precisou repetir. Não sugira de novo até que ele levante o assunto.
+
 Declare erros e limitações abertamente. Isso já aconteceu várias vezes na construção deste repositório e funcionou bem: defeito encontrado vira teste automático.
 
 **Antes de qualquer commit, rode a suíte inteira, não só o arquivo que você mexeu.** Um commit já foi para a `main` com o CI vermelho porque só o arquivo novo tinha sido testado — e o que quebrou foi um teste de *outro* arquivo, que dependia de como o widget alterado renderizava. Mudança em componente compartilhado quebra quem o testa de fora. O Gustavo dispensou hook de pré-commit e confiou na disciplina; esta linha existe porque a sessão que vem não lembra desta.

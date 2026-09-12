@@ -58,6 +58,38 @@ Por isso o **agente revisor deixa de ser opcional e vira pré-requisito**, junto
 
 ---
 
+## A fila de trabalho, em ordem
+
+Definida em 11 de setembro de 2026. **Nenhum destes itens precisa de autorização nova** — o critério para entrar aqui é: melhora o app ou o repositório, não gasta dinheiro, e não depende de decisão que ainda não foi tomada.
+
+Quando um terminar, o próximo começa. Se algo bloquear, pule e registre por quê.
+
+| # | O quê | Por que nesta posição | Tamanho |
+|---|---|---|---|
+| **1** | **Revisar as 40 lições restantes** com os 9 critérios | O revisor achou **6 questões defeituosas olhando uma lição**. Faltam 40. É o item com maior densidade de defeito real por hora gasta | 3–4 h |
+| **2** | **Termos técnicos na explicação** | 129 ocorrências — mais que aula e enunciado somados — e é onde o CLAUDE.md diz que o aprendizado acontece. Uma linha de código muda tudo isso | 1 h |
+| **3** | **Gerador do ícone** | Fecha um princípio quebrado: o CLAUDE.md afirma que a arte nasce de código, e o ícone é o único que não | 30 min |
+| **4** | **Acessibilidade nas demais telas** | Só o cabeçalho da trilha foi revisado. O Appium já provou que o defeito existe e que nenhum teste de widget o vê | 2–3 h |
+| **5** | **Appium no CI** | A suíte existe e ninguém a roda. Sem isso ela apodrece — e ela é o ativo de portfólio mais forte do projeto | 2 h |
+| **6** | **Trocar os sons** | Dívida antiga: ele os acha "genéricos e irritantes", e baixar o volume foi paliativo. O problema é o timbre da onda quadrada | 2 h |
+| **7** | **Playwright no curso de QA** | Buraco identificado na conferência dos 17 temas: 4 deles são de Playwright, e o mapa das 15 lições só cita Cypress | 3–4 lições |
+| **8** | **Telas de marco** a cada 10 questões | A primeira funcionalidade nova da fila. Reusa `_tronikat`, `resumoDoJogador`, a tabela `preferencia` e a fanfarra — quase nada é código novo | 3 h |
+| **9** | **Selo de conclusão de trilha** | Arte que nasce de código, como os cenários e os sons. Compartilhável, e respeita a regra de não premiar desempenho | 2 h |
+| **10** | **Exportar em PDF** as questões respondidas | O dado já existe em `evento_resposta`. É leitura e desenho | 3 h |
+
+### O que ficou fora da fila, e por quê
+
+| O quê | Motivo |
+|---|---|
+| **Curso sob demanda** | Custa dinheiro por uso. Decisão dele: só quando o lançamento puder gerar receita |
+| **Tradução** | Um livro de 70 mil palavras por idioma. Precisa de decisão de escopo antes |
+| **iOS, inclusive o build no CI** | **Fora.** Decisão dele, repetida |
+| **Play Store** | US$ 25 e um teste fechado de 14 dias com 12 pessoas. Decisão dele |
+| **Leitura em voz alta** | Depende do item 4 (acessibilidade) estar pronto |
+| **Nível intermediário** | Calibrado por dados de uso, que se acumulam sozinhos |
+
+---
+
 ## 1. Funcionalidades pedidas
 
 ### 1.1 Traduzir o app para outros idiomas
@@ -190,7 +222,7 @@ Quebraria a regra se o app sugerisse o modo desafio, comparasse seu tempo com o 
 | 2.2 | **Acessibilidade nas outras telas** | Só o cabeçalho da trilha foi revisado. É pré-requisito da leitura em voz alta |
 | 2.3 | **Termos técnicos na explicação** | 129 ocorrências — mais que aula e enunciado somados, e é onde o aprendizado acontece |
 | 2.4 | **E2E cobre uma tela e não roda em CI** | A suíte Appium tem 3 testes, todos da trilha |
-| 2.5 | **LICENSE separadas** | MIT para código, CC BY-NC-ND para conteúdo, com reserva do nome DevLingo e do Tr∅nikAt |
+| ~~2.5~~ | ~~**LICENSE separadas**~~ | **feito em 11/09/2026** — `LICENSE` e `LICENCAS.md` |
 
 ---
 
@@ -205,7 +237,7 @@ Quebraria a regra se o app sugerisse o modo desafio, comparasse seu tempo com o 
 | 3.5 | Trilhas previstas e inexistentes: HTML, CSS, SQL, C#, Go, C++, Ruby, COBOL, Node | 50 questões cada |
 | 3.6 | Mutação com Jest e Stryker | 1 lição, nível avançado |
 
-**Nada disso deve ser escrito antes de ele jogar o iniciante.** Calibrar no escuro é chute — a regra que já fez o Python intermediário esperar.
+O **intermediário** (3.1) é o único item desta seção que depende de dados de quem jogou: calibrar dificuldade no escuro é chute. Os outros cinco são níveis novos de assunto, e podem ser escritos a qualquer momento.
 
 ---
 
@@ -213,10 +245,10 @@ Quebraria a regra se o app sugerisse o modo desafio, comparasse seu tempo com o 
 
 | | O quê | Estado |
 |---|---|---|
-| 4.1 | **Servidor MCP** expondo os portões de qualidade | planejado; ver a seção de ideias ousadas |
-| 4.2 | **Ponte do Telegram** para aprovações | planejada — `getUpdates`, sem servidor público |
+| ~~4.1~~ | ~~**Servidor MCP**~~ | **feito em 11/09/2026** — 6 ferramentas, testado ponta a ponta |
+| ~~4.2~~ | ~~**Ponte do Telegram**~~ | **feita em 11/09/2026** — comandos e caixa de recados |
 | 4.3 | **Rotina autônoma** de manutenção | depende de 4.1 e 4.2 |
-| 4.4 | **Build iOS no GitHub Actions** | runner macOS é grátis para repositório público. Meia hora, custo zero |
+| ~~4.4~~ | ~~**Build iOS no CI**~~ | **FORA.** Decisão dele, repetida em 11/09/2026: iOS não entra por ora, nem o build no CI. Não trazer de volta até ele levantar |
 
 ---
 
@@ -234,8 +266,8 @@ Duas ressalvas já medidas: **o app inteiro dura 1,6 hora** com a média real de
 
 ---
 
-## 6. O que só depende dele
+## 6. O que depende de dados de uso
 
-**Jogar.** Seis das oito trilhas nunca foram jogadas por ninguém — Backend, Qualidade, Frameworks, Java, Selenium e Agentes. Ele está em 20 de 50 no JavaScript.
+O **nível intermediário** (3.1) é calibrado pelo custo real de cada questão — tentativas, reveladas, tempo. Esses dados se acumulam sozinhos conforme o app for usado.
 
-A dificuldade dessas seis é **estimativa minha**, e o intermediário de cada uma espera isso. É o item mais barato da lista inteira e o que destrava mais coisa.
+**Isto não é cobrança e não deve virar uma**, e está aqui só para explicar por que 3.1 está no fim da fila enquanto 3.2 a 3.6 não estão. Ver o CLAUDE.md, "Duas coisas para NÃO repetir".
