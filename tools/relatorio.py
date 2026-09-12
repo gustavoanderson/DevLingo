@@ -132,10 +132,25 @@ def pendencias(d: dict) -> list[str]:
         "O gerador do icone nunca foi versionado: hoje o icone e arte editada "
         "a mao, contra o principio de que arte nasce de codigo."
     )
-    itens.append(
-        "O app nao tem tela de licencas das dependencias (`showLicensePage`). "
-        "Algumas exigem esse aviso antes de publicar em loja."
+    # Pendencia so entra aqui se for VERIFICAVEL. A anterior -- "o app nao tem
+    # tela de licencas" -- ficou listada depois de resolvida, e relatorio que
+    # cobra o que ja foi feito perde a confianca de quem o le.
+    tem_licencas = any(
+        "showLicensePage" in a.read_text(encoding="utf-8")
+        for a in (RAIZ / "app" / "lib").rglob("*.dart")
     )
+    if not tem_licencas:
+        itens.append(
+            "O app nao tem tela de licencas das dependencias. Algumas exigem "
+            "esse aviso antes de publicar em loja."
+        )
+    if not (RAIZ / "e2e" / ".github").exists() and "appium" not in (
+        RAIZ / ".github" / "workflows" / "ci.yml"
+    ).read_text(encoding="utf-8").lower():
+        itens.append(
+            "A suite Appium existe e NAO roda no CI: ela cobre uma tela e "
+            "so roda quando alguem a chama a mao."
+        )
     return itens
 
 
