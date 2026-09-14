@@ -1,0 +1,1633 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fale com o Tr∅nikAt</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  /* A paleta e a do proprio DevLingo, em docs/paleta.md. O site nao inventa
+     identidade: ele usa a que o app ja tem. */
+  :root{
+    --fundo:#170A31; --fundo2:#0E0520; --painel:#1E0F3D;
+    --magenta:#FF2D95; --ciano:#00E5FF; --visor:#39FF14;
+    --telemetria:#FFE14D; --texto:#F2F0FF; --suave:#9A92C4; --linha:#33245E;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --hud:"Barlow Condensed",system-ui,sans-serif;
+  }
+  /* Um mundo visual so, de proposito: e uma tela de fliperama. A regra de
+     tema duplo nao se aplica a um cenario noturno -- mas tudo e pintado
+     explicitamente, para a pagina nao pegar emprestado o fundo do host. */
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fundo);color:var(--texto);font-family:var(--mono);
+       overflow-x:hidden}
+  #ceu{position:fixed;inset:0;z-index:0;display:block}
+  /* O tunel fica no mesmo lugar do ceu e troca por opacidade conforme a
+     rolagem. Dois canvas fixos custam menos que um so redesenhando duas
+     cenas, e a troca por opacidade e a propria transicao da rua para o
+     subsolo. */
+  #metro{position:fixed;inset:0;z-index:0;display:block;opacity:0}
+  .capa{position:relative;z-index:1;min-height:auto;padding:28px 20px 0;
+        max-width:1180px;margin:0 auto}
+
+  .marca{font-family:var(--mono);font-weight:700;font-size:clamp(34px,7vw,62px);
+         letter-spacing:-1px;line-height:1;
+         text-shadow:-2px 0 var(--ciano), 2px 0 var(--magenta)}
+  .sub{font-family:var(--hud);font-size:clamp(14px,2.4vw,19px);letter-spacing:3px;
+       text-transform:uppercase;color:var(--suave);margin-top:10px}
+
+  .palco{display:grid;grid-template-columns:minmax(0,268px) minmax(0,1fr);
+         gap:20px;align-items:stretch;margin-top:20px}
+  @media (max-width:760px){.palco{grid-template-columns:1fr}}
+
+  /* A cabeca e o chat ocupavam metade da tela cada e empurravam a cidade para
+     fora do quadro. Agora sao uma faixa: ele a esquerda, a conversa ao lado,
+     e a cidade continua sendo o que se ve. */
+  #cabeca{width:100%;aspect-ratio:1/1;max-height:268px;border:1px solid var(--linha);
+          border-radius:14px;background:rgba(14,5,32,.55);display:block}
+
+  /* O painel estava com cara de morto: um retangulo escuro com duas bolhas.
+     Agora ele e uma TELA -- chuva de caracteres atras, vidro esverdeado por
+     cima, e o texto numa camada propria para continuar legivel. A chuva vai a
+     35% de opacidade justamente para nao disputar com a leitura. */
+  .terminal{position:relative;border:1px solid rgba(57,255,20,.34);border-radius:14px;
+            background:rgba(3,13,6,.95);display:flex;flex-direction:column;
+            min-height:268px;max-height:268px;overflow:hidden;
+            box-shadow:inset 0 0 60px rgba(57,255,20,.10)}
+  #chuva{position:absolute;inset:0;width:100%;height:100%;opacity:.42;
+         pointer-events:none;z-index:0}
+  .terminal > *:not(#chuva){position:relative;z-index:1}
+  /* Linhas de varredura: e o que faz ler como monitor, e nao como caixa. */
+  .terminal::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:repeating-linear-gradient(rgba(0,0,0,.22) 0 1px, transparent 1px 3px)}
+  .barra{display:flex;align-items:center;gap:7px;padding:10px 13px;
+         border-bottom:1px solid rgba(57,255,20,.22)}
+  .bolinha{width:10px;height:10px;border-radius:50%}
+  .nome{font-family:var(--hud);letter-spacing:2px;text-transform:uppercase;
+        font-size:13px;color:#7BE08A;margin-left:6px}
+  .fala{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;
+        flex-direction:column;gap:11px;font-size:13.5px;line-height:1.6}
+  .msg{padding:9px 12px;border-radius:10px;max-width:88%;white-space:pre-wrap;
+       overflow-wrap:anywhere}
+  .dele{background:rgba(2,17,7,.92);border:1px solid rgba(57,255,20,.38);
+        color:#DFF7E2;align-self:flex-start}
+  .meu{background:rgba(24,3,20,.92);border:1px solid rgba(255,45,149,.40);
+       color:#FFE6F4;align-self:flex-end}
+  .entrada{display:flex;gap:8px;padding:11px;border-top:1px solid rgba(57,255,20,.22)}
+  .entrada input{flex:1;min-width:0;background:rgba(2,14,6,.9);color:#DFF7E2;
+                 border:1px solid rgba(57,255,20,.30);border-radius:9px;padding:10px 12px;
+                 font-family:var(--mono);font-size:13.5px}
+  .entrada input::placeholder{color:#5C8F66}
+  .entrada input:focus,button:focus-visible{outline:2px solid var(--ciano);outline-offset:2px}
+  .entrada button{background:var(--magenta);color:#fff;border:0;border-radius:9px;
+                  padding:10px 17px;font-family:var(--hud);font-weight:600;
+                  letter-spacing:1.4px;text-transform:uppercase;cursor:pointer;font-size:13px}
+  .entrada button:disabled{opacity:.45;cursor:default}
+  .atalhos{display:flex;flex-wrap:wrap;gap:6px;padding:0 11px 11px}
+  .atalho{background:rgba(2,14,6,.72);color:#8FCF97;border:1px solid rgba(57,255,20,.26);
+          border-radius:20px;padding:5px 11px;font-family:var(--mono);font-size:11.5px;
+          cursor:pointer}
+  .atalho:hover{color:var(--visor);border-color:var(--visor)}
+
+  .chao{position:relative}
+  .chao::before{content:"";position:absolute;left:-50vw;right:-50vw;top:-40px;
+                bottom:-400px;z-index:-1;
+                background:linear-gradient(to bottom,
+                  rgba(10,5,24,0) 0, rgba(8,6,20,.62) 90px,
+                  rgba(5,7,14,.55) 300px, rgba(5,7,14,.55) 100%)}
+  .placar{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+          gap:12px;margin:150px 0 0}
+  .cela{border:1px solid var(--linha);border-radius:11px;padding:13px 15px;
+        background:rgba(12,6,28,.82)}
+  .num{font-size:27px;font-weight:700;font-variant-numeric:tabular-nums;
+       color:var(--visor)}
+  .rot{font-family:var(--hud);font-size:12.5px;letter-spacing:1.6px;
+       text-transform:uppercase;color:var(--suave);margin-top:3px}
+
+  /* Os textos ficavam numa coluna de 66 caracteres encostada a esquerda, com
+     metade da largura vazia ao lado -- tres blocos soltos em tres cantos. A
+     secao passa a ser um painel: titulo num trilho proprio a esquerda, prosa
+     em duas colunas ocupando o resto. A medida de leitura continua curta (e
+     preciso que continue), mas agora ela nao deixa buraco: sao duas. */
+  .secao{display:grid;grid-template-columns:minmax(0,226px) minmax(0,1fr);
+         gap:24px;align-items:start;margin:34px 0;padding:24px 26px;
+         border:1px solid var(--linha);border-radius:16px;
+         background:rgba(9,5,22,.80)}
+  .secao h2{margin:0}
+  h2{font-family:var(--hud);font-size:clamp(20px,3vw,27px);letter-spacing:2.4px;
+     text-transform:uppercase;text-wrap:balance;
+     border-left:3px solid var(--magenta);padding-left:12px}
+  .prosa.duas{columns:2;column-gap:30px}
+  .prosa p{line-height:1.75;color:#DCD6F2;max-width:none;font-size:14.5px;
+           margin:0 0 15px;break-inside:avoid}
+  .prosa p:last-child{margin-bottom:0}
+  @media (max-width:880px){
+    .secao{grid-template-columns:1fr;gap:14px;padding:18px}
+    .prosa.duas{columns:1}
+  }
+  .trilhas{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));
+           gap:11px}
+  .trilha{border:1px solid var(--linha);border-radius:11px;padding:13px 15px;
+          background:rgba(16,8,36,.7)}
+  .trilha b{color:var(--ciano);font-size:14.5px}
+  .trilha span{display:block;color:var(--suave);font-size:12.5px;margin-top:5px;
+               line-height:1.55}
+  .rodape{border:1px solid var(--linha);border-radius:16px;margin:34px 0 46px;
+          padding:20px 24px;background:rgba(9,5,22,.80);
+          color:var(--suave);font-size:12.5px;line-height:1.8}
+  a{color:var(--ciano)}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="ceu"></canvas>
+<canvas id="metro" aria-hidden="true"></canvas>
+
+<div class="capa">
+  <div class="marca">DevLingo</div>
+  <div class="sub">Aprenda a programar · 404 questões · 8 trilhas</div>
+
+  <div class="palco">
+    <canvas id="cabeca" aria-label="Cabeça do Tr∅nikAt em 3D, que se move enquanto fala"></canvas>
+
+    <div class="terminal">
+      <canvas id="chuva" aria-hidden="true"></canvas>
+      <div class="barra">
+        <span class="bolinha" style="background:#FF5F57"></span>
+        <span class="bolinha" style="background:#FFBD2E"></span>
+        <span class="bolinha" style="background:#28CA42"></span>
+        <span class="nome" id="estado">Tr∅nikAt · online</span>
+      </div>
+      <div class="fala" id="fala" role="log" aria-live="polite"></div>
+      <div class="atalhos">
+        <button class="atalho" data-p="O que é o DevLingo?">o que é isso?</button>
+        <button class="atalho" data-p="Quais trilhas existem?">trilhas</button>
+        <button class="atalho" data-p="Quem construiu o DevLingo?">quem fez</button>
+        <button class="atalho" data-p="Como vocês garantem a qualidade das questões?">qualidade</button>
+      </div>
+      <form class="entrada" id="form">
+        <input id="txt" placeholder="Pergunte ao Tr∅nikAt…" autocomplete="off"
+               aria-label="Sua pergunta">
+        <button id="env">Falar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="chao">
+  <div class="placar">
+    <div class="cela"><div class="num">404</div><div class="rot">questões</div></div>
+    <div class="cela"><div class="num">8</div><div class="rot">trilhas</div></div>
+    <div class="cela"><div class="num">349</div><div class="rot">testes</div></div>
+    <div class="cela"><div class="num">95,6%</div><div class="rot">cobertura</div></div>
+  </div>
+
+  <section class="secao">
+    <h2>As trilhas</h2>
+    <div class="prosa">
+      <div class="trilhas">
+        <div class="trilha"><b>Python</b><span>Exibir valores, contas, decidir, strings e listas</span></div>
+        <div class="trilha"><b>JavaScript</b><span>Variáveis, comparação, funções e arrays no navegador</span></div>
+        <div class="trilha"><b>Java</b><span>A classe, o main, tipos primitivos e igualdade</span></div>
+        <div class="trilha"><b>Frameworks</b><span>React, Vue, Svelte, Next, Nuxt e Astro — e qual é mais fácil</span></div>
+        <div class="trilha"><b>Backend</b><span>Cliente e servidor, HTTP, REST, bancos e autenticação</span></div>
+        <div class="trilha"><b>Qualidade de Software</b><span>Princípios, níveis, ciclo do bug e técnicas de teste</span></div>
+        <div class="trilha"><b>Selenium</b><span>Localizadores, esperas, Page Object e teste instável</span></div>
+        <div class="trilha"><b>Agentes de IA</b><span>O laço, ferramentas, MCP, orquestração e os limites</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2>Por que ele existe</h2>
+    <div class="prosa duas">
+      <p>O DevLingo é um app Android para aprender programação no formato Duolingo,
+        escrito em português — <b>não traduzido</b>. Detalhes como não exigir acento no
+        que o aluno digita existem porque digitar <code>ç</code> em teclado de celular é
+        toque longo, e ninguém deveria errar uma questão de programação por causa do
+        teclado.</p>
+      <p>O princípio que ordena o app inteiro: <b>o objetivo é a pessoa aprender, não ser
+        punida.</b> A tela nunca diz <i>errado</i> — diz <b>ainda não</b>, e ao revelar a
+        resposta diz <b>vamos juntos</b>. A alternativa errada é riscada, não apagada,
+        porque ver o que já foi descartado faz parte do raciocínio.</p>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2>Quem construiu</h2>
+    <div class="prosa duas">
+      <p><b>Gustavo Anderson</b> é <b>QA e desenvolvedor</b>, especializado em levar IA
+        para o dia a dia de quem programa: <b>LLMs aplicados a agentes</b> e
+        <b>servidores MCP</b> que automatizam atividades de desenvolvimento.</p>
+      <p>O DevLingo é onde as duas coisas se encontram — um app real, com portões de
+        qualidade automatizados, e um servidor MCP que expõe esses portões como
+        ferramentas para um agente consultar antes de escrever.</p>
+      <p>Ele encontrou <b>nove defeitos jogando o próprio app</b>, todos documentados com
+        a causa raiz — e consegue dizer quais a automação pegaria e quais não, que é a
+        pergunta que separa quem decorou a ferramenta de quem entende teste.</p>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2>Como a qualidade é garantida</h2>
+    <div class="prosa duas">
+      <p>Cada regra do validador nasceu de um defeito real, e nenhuma é preventiva por
+        princípio: gabarito concentrado numa letra, a mesma resposta cobrada duas vezes,
+        marcação aninhada que aparecia crua na tela.</p>
+      <p><b>Toda regra é verificada reprovando de propósito</b> — um portão que só sabe
+        aprovar não é portão. São 349 testes automatizados, e a cobertura é publicada
+        junto com o denominador: 95,6% de 28 dos 32 arquivos, e não "95,6% do app".</p>
+    </div>
+  </section>
+
+  <div class="rodape">
+    <b>Tr∅nikAt</b> · gato branco bípede ciberneticamente modificado, com visor verde.<br>
+    Código sob licença MIT · conteúdo sob CC BY-NC-ND 4.0 · o mascote e o nome são reservados.<br>
+    <a href="https://github.com/gustavoanderson/DevLingo">github.com/gustavoanderson/DevLingo</a>
+  </div>
+  </div>
+</div>
+
+<script>
+/* O canion da rua: a cidade vista de DENTRO dela.
+ *
+ * A versao de cima morreu na referencia que o Gustavo mandou. Ela mostra o
+ * que faltava, e nao era quantidade: e o PONTO DE VISTA. De cima a cidade e
+ * uma maquete -- telhados, grade, transito de formiga. Do chao ela e um
+ * canion: as fachadas sobem dos dois lados e saem pelo alto do quadro, os
+ * letreiros avancam sobre a rua um por cima do outro, os cabos cruzam a
+ * cabeca de quem anda, e o asfalto molhado devolve tudo em faixas de luz.
+ *
+ * A projecao continua sendo uma perspectiva de um ponto, calculada e nao
+ * desenhada:
+ *
+ *     e     = FOCO / z
+ *     telaX = centro    + xMundo * e
+ *     telaY = horizonte + (OLHO - altura) * e
+ *
+ * Duas consequencias que este arquivo usa o tempo todo:
+ *
+ * 1. Como x e y dividem a MESMA escala `e`, uma placa presa num unico `z`
+ *    projeta um retangulo alinhado aos eixos da tela. Da para escrever texto
+ *    nela sem transformacao nenhuma.
+ * 2. O reflexo no asfalto e a mesma conta com a altura NEGADA. A agua nao
+ *    precisa de codigo proprio: passar `espelho` troca `h` por `-h` e o
+ *    reflexo converge sozinho, na perspectiva certa.
+ */
+function montarVista(canvas) {
+  const g = canvas.getContext('2d');
+  let L = 0, A = 0, t = 0;
+  const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function rng(s0) {
+    let s = s0 >>> 0;
+    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  }
+  const esc = (a, b, k) => a + (b - a) * k;
+  // O reflexo precisa de alpha DENTRO do gradiente, e uma cor '#RRGGBB' nao
+  // carrega alpha: sem esta conversao, o degrade sai chapado ate o meio e o
+  // rastro le como bloco de azulejo em vez de luz na agua.
+  function rgba(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+  }
+  function mistura(c1, c2, k) {
+    return `rgb(${Math.round(esc(c1[0], c2[0], k))},${Math.round(esc(c1[1], c2[1], k))},${Math.round(esc(c1[2], c2[2], k))})`;
+  }
+
+  const OLHO = 285;            // altura da camera sobre o asfalto
+  const RUA = 570;             // meia-largura da rua ate a fachada
+  const Z0 = 200, Z1 = 3800;   // do primeiro predio ao fundo da avenida
+
+  const PAREDE = [11, 16, 29], NEVOA = [50, 72, 106];
+  const NEONS = ['#FF2D95', '#00E5FF', '#39FF14', '#FFE14D', '#FF6B3D', '#B14DFF',
+                 '#FF3B3B', '#7DF9FF'];
+  // Nomes SEM REPETICAO. Antes o sorteio podia dar 'JAVA' em tres predios da
+  // mesma quadra, e letreiro repetido denuncia gerador, nao cidade. A lista e
+  // embaralhada uma vez e distribuida; quando acaba, as placas seguintes
+  // viram caixa de luz sem texto -- que e o que se ve de longe mesmo.
+  const LETREIROS = ['DEVLINGO', 'PYTHON', 'JAVASCRIPT', 'JAVA', 'NODE', 'SQL',
+                     'REACT', 'VUE', 'SVELTE', 'NEXT', 'ASTRO', 'GO', 'RUBY',
+                     'KOTLIN', 'SWIFT', 'RUST', 'HTML', 'CSS', 'API', 'QA',
+                     'MCP', 'AGENTES', 'SELENIUM', 'CYPRESS', 'DOCKER', 'LINUX',
+                     'GIT', 'BUG', 'RAMEN', 'h00man', 'KARAOKE', 'DADOS',
+                     'NEON', '24H', 'SUSHI', 'CAFE'];
+
+  /* Faixas de altura. Duas placas no mesmo predio so se sobrepoem na tela se
+     ocuparem a MESMA faixa -- a diferenca de profundidade quase nao separa,
+     porque as duas estao na mesma parede. Entao cada placa recebe uma faixa
+     exclusiva, e as faixas usadas pelo predio anterior sao evitadas, para nao
+     empilhar letreiro de predios vizinhos na mesma linha do olho. */
+  const FAIXAS = [[70, 250], [300, 480], [530, 710], [760, 940], [990, 1170]];
+
+  let FOCO = 330, horizonte = 0, centro = 0;
+  function medir() {
+    L = canvas.width = innerWidth; A = canvas.height = innerHeight;
+    // Horizonte baixo: sobra rua molhada embaixo, que e metade da imagem.
+    horizonte = A * 0.55; centro = L * 0.5;
+    // A distancia focal sai da altura util, e nao de um numero escolhido a
+    // mao: assim a fileira de asfalto mais proxima encosta na borda de baixo
+    // em qualquer tela, sem deixar tarja preta.
+    FOCO = 170 * (A - horizonte) / OLHO;
+  }
+  addEventListener('resize', medir); medir();
+
+  function proj(x, z, h = 0) {
+    const e = FOCO / Math.max(1, z);
+    return { x: centro + x * e, y: horizonte + (OLHO - h) * e, e };
+  }
+
+  /* ---------------- as duas fileiras de fachada ---------------- */
+
+  const rand = rng(20260912);
+  const PREDIOS = [];
+  const nomes = LETREIROS.slice().sort(() => rand() - .5);   // fila de nomes
+  for (const lado of [-1, 1]) {
+    let z = Z0 + rand() * 90;
+    while (z < Z1) {
+      const prof = 150 + rand() * 200;
+      // O recuo desalinha as fachadas. Sem ele os dois lados sao duas reguas,
+      // e regua nao tem vida -- foi a queixa do "predio replicado".
+      const recuo = Math.pow(rand(), 1.7) * 95;
+      const alto = 900 + Math.pow(rand(), 1.3) * 2700;
+      const x = lado * (RUA + recuo);
+
+      const cols = 3 + Math.floor(rand() * 6);
+      const lin = Math.min(24, Math.max(3, Math.floor(alto / 110)));
+      const janelas = [];
+      for (let i = 0; i < cols; i++)
+        for (let j = 0; j < lin; j++) {
+          if (rand() < .42) continue;
+          const r = rand();
+          janelas.push({
+            u: i / cols, v: j / lin, du: 1 / cols, dv: 1 / lin,
+            cor: r < .14 ? NEONS[Math.floor(rand() * NEONS.length)]
+               : r < .56 ? '#E8B072' : '#6FB6D8',
+            b: .18 + rand() * .52,
+          });
+        }
+
+      PREDIOS.push({ lado, x, zA: z, zB: z + prof, prof, alto, tom: rand(), janelas, placas: [] });
+      z += prof + rand() * 14;     // o vao entre dois predios e um beco estreito
+    }
+  }
+  /* As placas, numa passada propria.
+   *
+   * Elas SAEM da parede para dentro da rua: e isso que produz a leitura de
+   * cidade viva, com o olho encontrando letreiro em varios andares e varias
+   * distancias. Duas regras que este bloco existe para cumprir:
+   *
+   * 1. NOME NAO REPETE. A fila de nomes e embaralhada uma vez e distribuida.
+   * 2. A distribuicao e por DISTANCIA, e nao por lado. Na primeira versao o
+   *    lado esquerdo inteiro era gerado antes do direito, entao ele ficava
+   *    com todos os nomes e o direito so com caixas de luz -- uma calcada
+   *    escrita e a outra muda, que foi exatamente o defeito na tela.
+   */
+  const porDistancia = PREDIOS.slice().sort((p, q) => p.zA - q.zA);
+  const ocupadas = { '-1': new Set(), '1': new Set() };
+  for (const p of porDistancia) {
+    const quantas = 2 + Math.floor(rand() * 3);
+    // Faixa de altura exclusiva por placa: duas placas na mesma parede so se
+    // sobrepoem se dividirem a faixa, porque a profundidade quase nao separa.
+    // E evita-se a faixa que o vizinho de calcada acabou de usar.
+    const anterior = ocupadas[p.lado];
+    const livres = FAIXAS.map((f, i) => i).filter(i => !anterior.has(i));
+    const sorteio = (livres.length >= quantas ? livres : FAIXAS.map((f, i) => i))
+      .sort(() => rand() - .5).slice(0, quantas);
+    ocupadas[p.lado] = new Set(sorteio);
+
+    const fatia = (p.prof - 28) / quantas;
+    sorteio.forEach((iFaixa, k) => {
+      const faixa = FAIXAS[iFaixa];
+      const vaoFaixa = faixa[1] - faixa[0];
+      const temNome = nomes.length > 0 && rand() < .78;
+      const txt = temNome ? nomes.pop() : '';
+      const tipo = temNome ? (rand() < .5 ? 'vertical' : 'faixa')
+                 : (rand() < .5 ? 'caixa' : 'painel');
+      const alt = tipo === 'vertical' ? Math.min(vaoFaixa - 12, 110 + txt.length * 15)
+                : tipo === 'faixa' ? 48 + rand() * 26
+                : tipo === 'caixa' ? 36 + rand() * 32
+                : 110 + rand() * Math.max(20, vaoFaixa - 130);
+      p.placas.push({
+        tipo, cor: NEONS[Math.floor(rand() * NEONS.length)], txt,
+        h: faixa[0] + rand() * Math.max(1, vaoFaixa - alt),
+        z: p.zA + 14 + fatia * (k + .12 + rand() * .55),
+        prof: tipo === 'vertical' ? 54 + rand() * 30
+            : tipo === 'faixa' ? Math.max(130, txt.length * 32)
+            : tipo === 'caixa' ? 40 + rand() * 45 : 0,
+        alt,
+        larguraPainel: Math.min(p.prof - 30, 80 + rand() * 130),
+        pulso: rand() < .20 ? 1.6 + rand() * 2.4 : 0,
+        fase: rand() * 6.28,
+      });
+    });
+  }
+
+  PREDIOS.sort((p, q) => q.zA - p.zA);   // longe primeiro
+
+  /* Cabos cruzando a rua. Na referencia sao eles que dizem "isto e um lugar
+     onde se mora", e nao um render: infraestrutura remendada por cima. */
+  const randC = rng(99);
+  const CABOS = Array.from({ length: 9 }, () => ({
+    z: 320 + randC() * 2200,
+    h1: 520 + randC() * 620,
+    h2: 520 + randC() * 620,
+    barriga: 90 + randC() * 130,
+    lampada: randC() < .45,
+  })).sort((a, b) => b.z - a.z);
+
+  const CARROS = Array.from({ length: 26 }, () => {
+    const indo = randC() < .55;
+    return {
+      x: (indo ? 1 : -1) * (95 + randC() * 120),
+      z: 210 + randC() * (Z1 - 210),
+      v: 150 + randC() * 200, indo,
+    };
+  });
+
+  const randE = rng(31337);
+  const ESTRELAS = Array.from({ length: 90 }, () => ({
+    x: randE(), y: randE() * .30, r: .5 + randE() * .9,
+    b: .2 + randE() * .5, f: randE() * 6.28, v: .6 + randE() * 1.6,
+  }));
+
+  /* ---------------- desenho ---------------- */
+
+  function nevoaDe(z) { return Math.min(.92, Math.pow((z - Z0) / (Z1 - Z0), .72) * 1.12); }
+
+  // A parede que da para a rua, recuando com a profundidade do lote.
+  function fachada(p, espelho) {
+    const s = espelho ? -1 : 1;
+    const a0 = proj(p.x, p.zA, 0), a1 = proj(p.x, p.zA, p.alto * s);
+    const b0 = proj(p.x, p.zB, 0), b1 = proj(p.x, p.zB, p.alto * s);
+    const n = nevoaDe(p.zA);
+
+    g.globalAlpha = espelho ? .26 * (1 - n) : 1;
+    g.fillStyle = mistura(PAREDE.map(v => v + p.tom * 16), NEVOA, n);
+    g.beginPath();
+    g.moveTo(a0.x, a0.y); g.lineTo(a1.x, a1.y);
+    g.lineTo(b1.x, b1.y); g.lineTo(b0.x, b0.y);
+    g.closePath(); g.fill();
+
+    // Janelas: so onde a parede ainda e larga o bastante para elas lerem.
+    if (Math.abs(b0.x - a0.x) > 10) {
+      for (const j of p.janelas) {
+        const z1 = esc(p.zA, p.zB, j.u), z2 = esc(p.zA, p.zB, j.u + j.du * .52);
+        const q1 = proj(p.x, z1, p.alto * j.v * s);
+        const q2 = proj(p.x, z2, p.alto * (j.v + j.dv * .55) * s);
+        const w = Math.abs(q2.x - q1.x), hh = Math.abs(q2.y - q1.y);
+        if (w < .7 || hh < .7) continue;
+        if (espelho && (w > 13 || hh > 13)) continue;
+        g.globalAlpha = (espelho ? .14 : 1) * j.b * (1 - n);
+        const jx = Math.min(q1.x, q2.x), jy = Math.min(q1.y, q2.y);
+        g.fillStyle = j.cor;
+        g.fillRect(jx, jy, w, hh);
+        if (!espelho && w > 7 && hh > 7) {
+          g.globalAlpha *= .8; g.fillStyle = '#05080F';
+          g.fillRect(jx + w * .44, jy, Math.max(1, w * .10), hh);   // caixilho
+          g.fillRect(jx, jy + hh * .5, w, Math.max(1, hh * .07));
+        }
+      }
+    }
+    g.globalAlpha = 1;
+  }
+
+  // O retangulo que uma placa ocupa na tela. Como ela vive num unico z, sai
+  // alinhada aos eixos -- ver o comentario do topo.
+  function caixaDaPlaca(p, pl, espelho) {
+    const s = espelho ? -1 : 1;
+    const xFora = p.lado * (Math.abs(p.x) - pl.prof);
+    const c1 = proj(p.x, pl.z, pl.h * s);
+    const c2 = proj(xFora, pl.z, (pl.h + pl.alt) * s);
+    return {
+      x: Math.min(c1.x, c2.x), y: Math.min(c1.y, c2.y),
+      w: Math.abs(c2.x - c1.x), h: Math.abs(c2.y - c1.y), e: c1.e,
+    };
+  }
+
+  function placa(p, pl) {
+    const n = nevoaDe(pl.z);
+    const brilho = pl.pulso ? .55 + Math.abs(Math.sin(t * pl.pulso + pl.fase)) * .45 : 1;
+
+    if (pl.tipo === 'painel') {
+      // Chapado na propria parede: e o outdoor, nao o letreiro de balanco.
+      const zA = pl.z, zB = Math.min(p.zB - 4, pl.z + pl.larguraPainel);
+      const q1 = proj(p.x, zA, pl.h), q2 = proj(p.x, zA, pl.h + pl.alt);
+      const q3 = proj(p.x, zB, pl.h + pl.alt), q4 = proj(p.x, zB, pl.h);
+      if (Math.abs(q4.x - q1.x) < 2 || Math.abs(q4.x - q1.x) > L * .21) return;
+      const caminho = () => {
+        g.beginPath(); g.moveTo(q1.x, q1.y); g.lineTo(q2.x, q2.y);
+        g.lineTo(q3.x, q3.y); g.lineTo(q4.x, q4.y); g.closePath();
+      };
+      g.globalAlpha = (1 - n) * brilho;
+      g.fillStyle = 'rgba(6,10,20,.85)'; caminho(); g.fill();
+      g.globalAlpha = .20 * (1 - n) * brilho;
+      g.fillStyle = pl.cor; caminho(); g.fill();
+      g.globalAlpha = (1 - n) * brilho;
+      g.strokeStyle = pl.cor; g.lineWidth = Math.max(.8, 1.6 * q1.e);
+      g.shadowColor = pl.cor; g.shadowBlur = 10;
+      caminho(); g.stroke(); g.shadowBlur = 0;
+      g.globalAlpha = 1;
+      return;
+    }
+
+    const r = caixaDaPlaca(p, pl, false);
+    if (r.w < 1.2 || r.h < 1.2 || r.w > L * .21 || r.h > A * .32) return;
+    const a = (1 - n) * brilho;
+
+    // A haste. Letreiro sem sustentacao flutua, e flutuar e o que fazia o
+    // conjunto parecer adesivo colado na parede.
+    if (r.e > .12) {
+      const topo = proj(p.x, pl.z, pl.h + pl.alt * 1.45);
+      g.globalAlpha = a * .55; g.strokeStyle = '#080D18';
+      g.lineWidth = Math.max(.6, 1.5 * r.e);
+      g.beginPath(); g.moveTo(topo.x, topo.y);
+      g.lineTo(p.lado > 0 ? r.x : r.x + r.w, r.y); g.stroke();
+    }
+
+    g.globalAlpha = a;
+    g.fillStyle = 'rgba(5,9,18,.9)';
+    g.fillRect(r.x, r.y, r.w, r.h);
+    g.strokeStyle = pl.cor;
+    g.lineWidth = Math.max(.7, 1.5 * r.e);
+    g.shadowColor = pl.cor; g.shadowBlur = 13 * Math.min(1.4, r.e);
+    g.strokeRect(r.x, r.y, r.w, r.h);
+    g.shadowBlur = 0;
+
+    if (pl.tipo === 'caixa') {
+      g.globalAlpha = a * .62; g.fillStyle = pl.cor;
+      g.fillRect(r.x + r.w * .18, r.y + r.h * .22, r.w * .64, r.h * .56);
+      g.globalAlpha = 1; return;
+    }
+
+    g.fillStyle = pl.cor;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.shadowColor = pl.cor; g.shadowBlur = 8;
+    if (pl.tipo === 'vertical') {
+      const qtd = pl.txt.length;
+      const tam = Math.min(r.w * .76, r.h / (qtd * 1.1));
+      if (tam >= 5) {
+        g.font = `700 ${tam}px ui-monospace, monospace`;
+        [...pl.txt].forEach((ch, i) =>
+          g.fillText(ch, r.x + r.w / 2, r.y + r.h * .06 + tam * (.62 + i * 1.1)));
+      }
+    } else {
+      const tam = Math.min(r.h * .64, r.w / (pl.txt.length * .70));
+      if (tam >= 5) {
+        g.font = `700 ${tam}px ui-monospace, monospace`;
+        g.fillText(pl.txt, r.x + r.w / 2, r.y + r.h / 2);
+      }
+    }
+    g.shadowBlur = 0; g.textBaseline = 'alphabetic';
+    g.globalAlpha = 1;
+  }
+
+  // O rastro que a placa deixa na agua: nao e uma copia, e um borrao vertical
+  // que desce e treme. Copia exata le como espelho de banheiro, nao asfalto.
+  function rastroNaAgua(p, pl) {
+    if (pl.tipo === 'painel') return;
+    const r = caixaDaPlaca(p, pl, true);
+    if (r.w < 1 || r.w > L * .21 || r.y > A || r.y + r.h < horizonte) return;
+    const n = nevoaDe(pl.z);
+    const brilho = pl.pulso ? .5 + Math.abs(Math.sin(t * pl.pulso + pl.fase)) * .5 : 1;
+    const altura = Math.min(r.h * 3.1, (A - horizonte) * .8);
+    const grd = g.createLinearGradient(0, r.y, 0, r.y + altura);
+    grd.addColorStop(0, rgba(pl.cor, .48));
+    grd.addColorStop(.30, rgba(pl.cor, .22));
+    grd.addColorStop(1, rgba(pl.cor, 0));
+    g.globalAlpha = (1 - n) * brilho;
+    g.fillStyle = grd;
+    // Tres tiras estreitas, cada uma tremendo no seu tempo. Um retangulo so,
+    // por mais transparente que seja, continua tendo aresta -- e aresta e o
+    // que denuncia que aquilo nao e agua.
+    const cx = r.x + r.w / 2;
+    for (let i = 0; i < 3; i++) {
+      const onda = Math.sin(t * (.7 + i * .35) + pl.fase + i);
+      const larg = r.w * (.13 + i * .09) * (1 + onda * .25);
+      g.fillRect(cx + onda * r.w * (.16 + i * .1) - larg / 2, r.y, larg, altura);
+    }
+    g.globalAlpha = 1;
+  }
+
+  // Quanto de opacidade um movel tem, dado onde ele esta no trecho que
+  // percorre. Zero nas duas pontas: e isto que impede o "sumiu do nada".
+  function desvanece(z, z0, z1) {
+    return Math.max(0, Math.min(1, (z - z0) / 260, (z1 - z) / 900));
+  }
+
+  function carro(c) {
+    const dir = c.indo ? 1 : -1;
+    const vao = Z1 - 210;
+    const z = ((c.z + dir * t * c.v - 210) % vao + vao) % vao + 210;
+    const chao = proj(c.x, z, 0), teto = proj(c.x, z, 50);
+    if (chao.y < horizonte || chao.y > A + 80) return;
+    const f = desvanece(z, 210, Z1);
+    if (f <= 0) return;
+    const alt = chao.y - teto.y, larg = alt * 2.1, x = chao.x;
+    g.globalAlpha = f * (1 - nevoaDe(z) * .7);
+
+    // Corpo: base larga, teto estreito. E a silhueta que diz "carro" mesmo
+    // com doze pixels de altura -- e doze pixels e o que ele tem la no fundo.
+    g.fillStyle = '#090D18';
+    g.beginPath();
+    g.moveTo(x - larg / 2, chao.y);
+    g.lineTo(x - larg * .40, teto.y + alt * .30);
+    g.lineTo(x - larg * .26, teto.y);
+    g.lineTo(x + larg * .26, teto.y);
+    g.lineTo(x + larg * .40, teto.y + alt * .30);
+    g.lineTo(x + larg / 2, chao.y);
+    g.closePath(); g.fill();
+
+    g.fillStyle = c.indo ? '#FF3B3B' : '#FFF4D0';
+    const lw = Math.max(.8, larg * .13), lh = Math.max(.7, alt * .16);
+    g.fillRect(x - larg * .40, chao.y - alt * .42, lw, lh);
+    g.fillRect(x + larg * .40 - lw, chao.y - alt * .42, lw, lh);
+
+    const grd = g.createLinearGradient(0, chao.y, 0, chao.y + alt * 2.2);
+    grd.addColorStop(0, c.indo ? 'rgba(255,59,59,.45)' : 'rgba(255,244,208,.40)');
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grd; g.fillRect(x - larg * .5, chao.y, larg, alt * 2.2);
+    g.globalAlpha = 1;
+  }
+
+  function quadro() {
+    if (parseFloat(canvas.style.opacity || '1') < .02) {
+      requestAnimationFrame(quadro); return;
+    }
+    // --- ceu, visto so pela fresta entre as duas fileiras ---
+    const ceu = g.createLinearGradient(0, 0, 0, horizonte);
+    ceu.addColorStop(0, '#05010F'); ceu.addColorStop(.40, '#160A2E');
+    ceu.addColorStop(.76, '#2E2B5C'); ceu.addColorStop(1, '#4A5E86');
+    g.fillStyle = ceu; g.fillRect(0, 0, L, horizonte);
+
+    for (const e of ESTRELAS) {
+      g.globalAlpha = e.b * (.6 + Math.sin(t * e.v + e.f) * .4);
+      g.fillStyle = '#DDE8FF';
+      g.beginPath(); g.arc(e.x * L, e.y * A, e.r, 0, 7); g.fill();
+    }
+    g.globalAlpha = 1;
+
+    // --- asfalto ---
+    const chao = g.createLinearGradient(0, horizonte, 0, A);
+    chao.addColorStop(0, '#243149'); chao.addColorStop(.35, '#101A2C');
+    chao.addColorStop(1, '#070B15');
+    g.fillStyle = chao; g.fillRect(0, horizonte, L, A - horizonte);
+
+    // --- fachadas e letreiros, do fundo para a frente ---
+    for (const p of PREDIOS) {
+      fachada(p, false);
+      for (const pl of p.placas) placa(p, pl);
+    }
+
+    // --- a agua: os rastros somam luz, e por isso entram em 'lighter' ---
+    g.save();
+    g.beginPath(); g.rect(0, horizonte, L, A - horizonte); g.clip();
+    g.globalCompositeOperation = 'lighter';
+    for (const p of PREDIOS) {
+      fachada(p, true);
+      for (const pl of p.placas) rastroNaAgua(p, pl);
+    }
+    g.globalCompositeOperation = 'source-over';
+
+    // Ondulacao: linhas em perspectiva cortando o reflexo. Sem elas o chao
+    // vira espelho, e espelho nao e rua molhada.
+    for (let z = 210; z < 3000; z *= 1.055) {
+      const p = proj(0, z);
+      const k = 1 - (z - 210) / 2800;
+      g.globalAlpha = .16 * k * (.6 + Math.sin(t * 1.4 + z * .01) * .4);
+      g.fillStyle = '#070B15';
+      g.fillRect(0, p.y, L, Math.max(.6, 1.6 * p.e));
+    }
+    g.globalAlpha = 1;
+
+    // Meio-fio dos dois lados: e ele que diz onde a calcada comeca.
+    for (const lado of [-1, 1]) {
+      const a = proj(lado * (RUA - 130), 205), b = proj(lado * (RUA - 130), Z1);
+      g.strokeStyle = 'rgba(0,229,255,.22)'; g.lineWidth = 1.2;
+      g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+    }
+    // Faixa central tracejada, encolhendo com a distancia.
+    for (let z = 230; z < 2600; z += 150) {
+      const p1 = proj(0, z), p2 = proj(0, z + 78);
+      g.strokeStyle = 'rgba(255,225,77,.16)';
+      g.lineWidth = Math.max(.7, 5 * p1.e);
+      g.beginPath(); g.moveTo(p1.x, p1.y); g.lineTo(p2.x, p2.y); g.stroke();
+    }
+    g.restore();
+
+    for (const c of CARROS) carro(c);
+
+    // --- cabos: infraestrutura remendada por cima da rua ---
+    for (const cb of CABOS) {
+      const e1 = proj(-RUA, cb.z, cb.h1), d1 = proj(RUA, cb.z, cb.h2);
+      const meio = proj(0, cb.z, (cb.h1 + cb.h2) / 2 - cb.barriga);
+      g.globalAlpha = (1 - nevoaDe(cb.z)) * .8;
+      g.strokeStyle = '#080D18'; g.lineWidth = Math.max(.7, 2.1 * e1.e);
+      g.beginPath(); g.moveTo(e1.x, e1.y);
+      g.quadraticCurveTo(meio.x, meio.y, d1.x, d1.y); g.stroke();
+      if (cb.lampada) {
+        const lz = proj(0, cb.z, (cb.h1 + cb.h2) / 2 - cb.barriga * .92);
+        const rr = Math.max(1.5, 26 * lz.e);
+        const h = g.createRadialGradient(lz.x, lz.y, 0, lz.x, lz.y, rr);
+        h.addColorStop(0, 'rgba(255,236,180,.55)');
+        h.addColorStop(1, 'rgba(255,236,180,0)');
+        g.fillStyle = h; g.beginPath(); g.arc(lz.x, lz.y, rr, 0, 7); g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+
+    // --- nevoa no ponto de fuga: a rua tem que dissolver, nunca terminar ---
+    const nv = g.createRadialGradient(centro, horizonte, 0, centro, horizonte,
+                                      Math.max(L, A) * .42);
+    nv.addColorStop(0, 'rgba(96,132,178,.52)');
+    nv.addColorStop(.45, 'rgba(76,100,150,.22)');
+    nv.addColorStop(1, 'rgba(60,80,130,0)');
+    g.fillStyle = nv; g.fillRect(0, 0, L, A);
+
+    // --- chuva ---
+    g.strokeStyle = 'rgba(170,205,255,.16)'; g.lineWidth = 1;
+    for (let i = 0; i < 90; i++) {
+      const rx = (i * 137 + t * 380) % (L + 80) - 40;
+      const ry = (i * 71 + t * 1120) % A;
+      g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx - 2.5, ry + 17); g.stroke();
+    }
+
+    const v = g.createRadialGradient(centro, A * .48, Math.min(L, A) * .30,
+                                     centro, A * .52, Math.max(L, A) * .82);
+    v.addColorStop(0, 'rgba(4,2,12,0)'); v.addColorStop(1, 'rgba(4,2,12,.72)');
+    g.fillStyle = v; g.fillRect(0, 0, L, A);
+
+    if (!parado) t += 0.016;
+    requestAnimationFrame(quadro);
+  }
+  quadro();
+}
+
+montarVista(document.getElementById('ceu'));
+
+/* O subterraneo: a metade de baixo da pagina.
+ *
+ * O Gustavo: "parece que o site morre depois da animacao da cidade". Estava
+ * certo -- abaixo do heroi havia chapado liso, e pagina que nao muda enquanto
+ * se rola nao da sinal de vida nenhum.
+ *
+ * A saida e descer. A rua acaba, o quadro entra no bueiro, e o que continua e
+ * um tunel de metro: plataformas dos dois lados, colunas ritmadas, luz fria
+ * no teto e os trilhos correndo para o escuro. O avanco da camera e o proprio
+ * SCROLL -- rolar a pagina anda no tunel. E o unico jeito de a rolagem
+ * significar alguma coisa aqui em vez de so mover pixels.
+ *
+ * Mesma perspectiva de um ponto da rua la de cima, com outra secao:
+ *
+ *     e     = FOCO / z
+ *     telaX = centro    + xMundo * e
+ *     telaY = horizonte + (OLHO - altura) * e
+ */
+function montarMetro(canvas, avancoDaCamera) {
+  const g = canvas.getContext('2d');
+  let L = 0, A = 0, t = 0;
+  const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function rng(s0) {
+    let s = s0 >>> 0;
+    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  }
+
+  const PAREDE_X = 330;     // meia-largura do tunel
+  const TETO = 360;         // altura do teto
+  const PLAT_X = 165;       // onde a plataforma comeca
+  const PLAT_H = 52;        // altura da plataforma sobre o leito
+  const OLHO = 165;
+  const CICLO = 3400;       // o tunel se repete: e o que o torna sem fim
+  const Z_PERTO = 120;
+
+  const CARTAZES = ['DEVLINGO', 'SAIDA', 'LINHA 4', 'NAO PISE', 'MCP', 'QA',
+                    'PROXIMA', 'CUIDADO', 'AGENTES', 'TRILHA 8'];
+
+  let FOCO = 300, horizonte = 0, centro = 0;
+  function medir() {
+    L = canvas.width = innerWidth; A = canvas.height = innerHeight;
+    horizonte = A * 0.50; centro = L * 0.5;
+    // Mesma amarra da rua: o piso mais proximo encosta na borda de baixo.
+    FOCO = Z_PERTO * (A - horizonte) / OLHO;
+  }
+  addEventListener('resize', medir); medir();
+
+  const proj = (x, z, h = 0) => {
+    const e = FOCO / Math.max(1, z);
+    return { x: centro + x * e, y: horizonte + (OLHO - h) * e, e };
+  };
+
+  // Os elementos ritmados. Eles nao se movem: quem se move e a camera, e o
+  // resto do arquivo so subtrai `zCam` antes de projetar.
+  const rand = rng(7311);
+  const COLUNAS = [];
+  for (let z = 0; z < CICLO; z += 250) COLUNAS.push({ z, tom: rand() });
+  const LAMPADAS = [];
+  for (let z = 125; z < CICLO; z += 250)
+    LAMPADAS.push({ z, pisca: rand() < .18 ? 6 + rand() * 9 : 0, fase: rand() * 6.3 });
+  const PAINEIS = [];
+  for (let z = 60; z < CICLO; z += 190)
+    PAINEIS.push({
+      z, lado: rand() < .5 ? -1 : 1,
+      h: 90 + rand() * 130, alt: 70 + rand() * 60, larg: 90 + rand() * 70,
+      txt: CARTAZES[Math.floor(rand() * CARTAZES.length)],
+      cor: ['#FF2D95', '#00E5FF', '#39FF14', '#FFE14D'][Math.floor(rand() * 4)],
+    });
+
+  // A chuva de codigo, a mesma do terminal, agora no ar do tunel: e o fio que
+  // liga as duas metades da pagina em vez de serem dois sites colados.
+  const GLIFOS = [...'アカサタナハマヤラワ0123456789{}[]<>/=+-*;:_$#@!?'];
+  const CODIGO = Array.from({ length: 34 }, () => ({
+    x: (rand() - .5) * 620, z: rand() * CICLO, h: 60 + rand() * 280,
+    v: 26 + rand() * 40, ch: GLIFOS[Math.floor(rand() * GLIFOS.length)],
+  }));
+
+  let zCam = 0, trem = CICLO * .8;
+
+  function faixa(x1, x2, h1, h2, zA, zB, cor, alpha) {
+    const a = proj(x1, zA, h1), b = proj(x2, zA, h2);
+    const c = proj(x2, zB, h2), d = proj(x1, zB, h1);
+    g.globalAlpha = alpha;
+    g.fillStyle = cor;
+    g.beginPath();
+    g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.lineTo(c.x, c.y); g.lineTo(d.x, d.y);
+    g.closePath(); g.fill();
+    g.globalAlpha = 1;
+  }
+
+  function quadro() {
+    if (parseFloat(canvas.style.opacity || '1') < .02) {
+      requestAnimationFrame(quadro); return;
+    }
+    zCam = avancoDaCamera();
+    const zLonge = CICLO * .95;
+
+    g.fillStyle = '#04070A';
+    g.fillRect(0, 0, L, A);
+
+    // O fundo do tunel: nao e parede, e o escuro para onde tudo converge.
+    const fundo = g.createRadialGradient(centro, horizonte, 4, centro, horizonte,
+                                         Math.min(L, A) * .42);
+    fundo.addColorStop(0, '#123024'); fundo.addColorStop(.5, '#08151A');
+    fundo.addColorStop(1, '#04070A');
+    g.fillStyle = fundo; g.fillRect(0, 0, L, A);
+
+    // Teto, paredes, plataformas e leito -- uma peca so, do fundo ate a lente.
+    faixa(-PAREDE_X, PAREDE_X, TETO, TETO, Z_PERTO, zLonge, '#0A1218', 1);
+    faixa(-PAREDE_X, -PAREDE_X, 0, TETO, Z_PERTO, zLonge, '#0D1A1E', 1);
+    faixa(PAREDE_X, PAREDE_X, 0, TETO, Z_PERTO, zLonge, '#0D1A1E', 1);
+    faixa(-PLAT_X, PLAT_X, 0, 0, Z_PERTO, zLonge, '#070C10', 1);            // leito
+    for (const s of [-1, 1]) {
+      faixa(s * PLAT_X, s * PAREDE_X, PLAT_H, PLAT_H, Z_PERTO, zLonge, '#131F26', 1);
+      faixa(s * PLAT_X, s * PLAT_X, 0, PLAT_H, Z_PERTO, zLonge, '#1B2B33', 1);
+      // Faixa de seguranca amarela na beira: e o detalhe que diz "estacao".
+      faixa(s * (PLAT_X + 14), s * (PLAT_X + 30), PLAT_H + 1, PLAT_H + 1,
+            Z_PERTO, zLonge, '#FFE14D', .16);
+    }
+
+    // Azulejo das paredes: so linhas horizontais, que e o que se ve de fato a
+    // esta distancia. Desenhar cada peca seria gastar quadro com nada.
+    for (let h = 70; h < TETO; h += 46)
+      for (const s of [-1, 1]) {
+        const a = proj(s * (PAREDE_X - 2), Z_PERTO, h);
+        const b = proj(s * (PAREDE_X - 2), zLonge, h);
+        g.globalAlpha = .30; g.strokeStyle = '#22343C'; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+      }
+    g.globalAlpha = 1;
+
+    // Dormentes e trilhos.
+    const passo = 46;
+    const z0 = passo - (zCam % passo);
+    for (let z = z0 + Z_PERTO; z < zLonge; z += passo) {
+      const p = proj(0, z, 6);
+      if (p.e < .04) continue;
+      g.globalAlpha = Math.min(.5, p.e * .7);
+      g.fillStyle = '#151E22';
+      g.fillRect(p.x - 95 * p.e, p.y, 190 * p.e, Math.max(.8, 9 * p.e));
+    }
+    g.globalAlpha = 1;
+    for (const x of [-62, 62]) {
+      const a = proj(x, Z_PERTO, 12), b = proj(x, zLonge, 12);
+      g.strokeStyle = 'rgba(150,200,190,.32)'; g.lineWidth = 1.6;
+      g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+    }
+
+    // Colunas, lampadas e cartazes: do fundo para a frente, com o avanco da
+    // camera aplicado por resto -- o tunel nao termina nunca.
+    const emOrdem = [];
+    const mover = (z) => ((z - zCam) % CICLO + CICLO) % CICLO + Z_PERTO;
+    for (const c of COLUNAS) emOrdem.push({ z: mover(c.z), tipo: 'col', d: c });
+    for (const l of LAMPADAS) emOrdem.push({ z: mover(l.z), tipo: 'luz', d: l });
+    for (const p of PAINEIS) emOrdem.push({ z: mover(p.z), tipo: 'cartaz', d: p });
+    emOrdem.sort((a, b) => b.z - a.z);
+
+    for (const it of emOrdem) {
+      const z = it.z, prof = Math.min(1, 1 - z / (CICLO * .8));
+      if (prof <= .02) continue;
+
+      if (it.tipo === 'col') {
+        for (const s of [-1, 1]) {
+          const base = proj(s * 236, z, PLAT_H), topo = proj(s * 236, z, TETO);
+          const larg = Math.max(1.2, 26 * base.e);
+          g.globalAlpha = .55 + prof * .45;
+          g.fillStyle = '#1A282F';
+          g.fillRect(base.x - larg / 2, topo.y, larg, base.y - topo.y);
+          g.fillStyle = '#263941';
+          g.fillRect(base.x - larg * .62, topo.y, larg * .24, base.y - topo.y);
+        }
+        g.globalAlpha = 1;
+      } else if (it.tipo === 'luz') {
+        const l = it.d;
+        const brilho = l.pisca
+          ? (Math.sin(t * l.pisca + l.fase) > -.2 ? 1 : .12) : 1;
+        const e1 = proj(-105, z, TETO - 12), d1 = proj(105, z, TETO - 12);
+        const alt = Math.max(1.2, 12 * e1.e);
+        g.globalAlpha = (.5 + prof * .5) * brilho;
+        g.fillStyle = '#CFF6E4';
+        g.fillRect(e1.x, e1.y, d1.x - e1.x, alt);
+        const rr = Math.max(6, 150 * e1.e);
+        const h = g.createRadialGradient((e1.x + d1.x) / 2, e1.y, 0,
+                                         (e1.x + d1.x) / 2, e1.y, rr);
+        h.addColorStop(0, 'rgba(120,255,190,.22)');
+        h.addColorStop(1, 'rgba(120,255,190,0)');
+        g.fillStyle = h;
+        g.beginPath(); g.arc((e1.x + d1.x) / 2, e1.y, rr, 0, 7); g.fill();
+        g.globalAlpha = 1;
+      } else {
+        const c = it.d;
+        const a = proj(c.lado * (PAREDE_X - 3), z, c.h);
+        const b = proj(c.lado * (PAREDE_X - 3), z + c.larg, c.h + c.alt);
+        const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+        const w = Math.abs(b.x - a.x), hh = Math.abs(b.y - a.y);
+        if (w < 2 || hh < 2) continue;
+        g.globalAlpha = (.35 + prof * .65);
+        g.fillStyle = 'rgba(5,10,14,.9)'; g.fillRect(x, y, w, hh);
+        g.strokeStyle = c.cor; g.lineWidth = Math.max(.7, 1.4 * a.e);
+        g.shadowColor = c.cor; g.shadowBlur = 9; g.strokeRect(x, y, w, hh);
+        g.shadowBlur = 0;
+        const tam = Math.min(hh * .5, w / (c.txt.length * .68));
+        if (tam >= 5) {
+          g.fillStyle = c.cor; g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.font = `700 ${tam}px ui-monospace, monospace`;
+          g.fillText(c.txt, x + w / 2, y + hh / 2);
+          g.textBaseline = 'alphabetic';
+        }
+        g.globalAlpha = 1;
+      }
+    }
+
+    // O trem: vem do fundo, cresce, passa. Sem ele o tunel e cenario; com ele
+    // e um lugar onde alguma coisa acontece.
+    trem -= parado ? 0 : 7.5;
+    if (trem < 60) trem = CICLO * (.75 + Math.random() * .25);
+    const tz = trem;
+    if (tz < CICLO * .9) {
+      const base = proj(0, tz, 10), topo = proj(0, tz, 230);
+      const larg = 150 * base.e;
+      g.globalAlpha = Math.min(1, (CICLO * .9 - tz) / (CICLO * .35));
+      g.fillStyle = '#0B1418';
+      g.fillRect(base.x - larg, topo.y, larg * 2, base.y - topo.y);
+      g.fillStyle = '#FFF6D8';
+      const fr = Math.max(1.2, 13 * base.e);
+      for (const s of [-1, 1]) {
+        g.beginPath(); g.arc(base.x + s * larg * .58, topo.y + (base.y - topo.y) * .62,
+                             fr, 0, 7); g.fill();
+        const hh = g.createRadialGradient(base.x + s * larg * .58,
+                                          topo.y + (base.y - topo.y) * .62, 0,
+                                          base.x + s * larg * .58,
+                                          topo.y + (base.y - topo.y) * .62, fr * 9);
+        hh.addColorStop(0, 'rgba(255,246,216,.35)');
+        hh.addColorStop(1, 'rgba(255,246,216,0)');
+        g.fillStyle = hh;
+        g.beginPath(); g.arc(base.x + s * larg * .58,
+                             topo.y + (base.y - topo.y) * .62, fr * 9, 0, 7); g.fill();
+        g.fillStyle = '#FFF6D8';
+      }
+      g.globalAlpha = 1;
+    }
+
+    // Codigo caindo no ar do tunel.
+    g.textAlign = 'center';
+    for (const c of CODIGO) {
+      const z = mover(c.z);
+      const h = ((c.h - t * c.v) % 340 + 340) % 340;
+      const p = proj(c.x, z, h);
+      if (p.e < .05 || p.e > 2.4) continue;
+      g.globalAlpha = Math.min(.5, p.e * .35);
+      g.fillStyle = '#5BFF9E';
+      g.font = `${Math.max(7, 16 * p.e)}px ui-monospace, monospace`;
+      g.fillText(c.ch, p.x, p.y);
+    }
+    g.globalAlpha = 1;
+
+    // Vinheta: o tunel tem que fechar nas bordas, senao le como corredor
+    // iluminado, e nao como subsolo.
+    const v = g.createRadialGradient(centro, A * .5, Math.min(L, A) * .22,
+                                     centro, A * .5, Math.max(L, A) * .78);
+    v.addColorStop(0, 'rgba(2,5,8,0)'); v.addColorStop(1, 'rgba(2,5,8,.9)');
+    g.fillStyle = v; g.fillRect(0, 0, L, A);
+
+    if (!parado) t += 0.016;
+    requestAnimationFrame(quadro);
+  }
+  quadro();
+}
+
+/* A costura das duas metades.
+ *
+ * Rolar a pagina desce da rua para o subsolo: o ceu apaga, o tunel acende, e
+ * o avanco da camera do tunel E a propria posicao da rolagem. Sem isso a
+ * metade de baixo era fundo chapado -- "parece que o site morre depois da
+ * cidade", que foi a queixa exata.
+ */
+(function descerAoSubsolo() {
+  const oCeu = document.getElementById('ceu');
+  const oMetro = document.getElementById('metro');
+  let avanco = 0;
+
+  function aoRolar() {
+    const vh = innerHeight;
+    const comeca = vh * .50, acaba = vh * 1.15;
+    const k = Math.max(0, Math.min(1, (scrollY - comeca) / (acaba - comeca)));
+    oCeu.style.opacity = String(1 - k);
+    oMetro.style.opacity = String(k);
+    // Andar no tunel mais rapido que a pagina: a rolagem vira deslocamento,
+    // e nao um simples empurrao de pixels.
+    avanco = Math.max(0, scrollY - comeca) * 1.9;
+  }
+  addEventListener('scroll', aoRolar, { passive: true });
+  addEventListener('resize', aoRolar);
+  aoRolar();
+  montarMetro(oMetro, () => avanco);
+})();
+
+
+/* A chuva de caracteres do terminal.
+ *
+ * Ela nao e enfeite solto: o painel do chat estava com "aparencia morta", e o
+ * que mata um painel e ele nao ter movimento proprio nenhum enquanto espera.
+ *
+ * Duas decisoes de legibilidade, que sao o ponto todo:
+ *   - a chuva fica num canvas ATRAS, a 35% de opacidade, e os baloes de
+ *     mensagem tem fundo quase opaco por cima. Texto sobre animacao treme, e
+ *     texto que treme nao se le;
+ *   - ela roda a ~24 quadros por segundo, e nao a 60. A pagina ja sustenta a
+ *     cidade e a cabeca em 3D; gastar quadro com fundo decorativo seria tirar
+ *     de quem precisa.
+ */
+(function chuvaDoTerminal() {
+  const c = document.getElementById('chuva');
+  if (!c) return;
+  const g = c.getContext('2d');
+  const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const GLIFOS = [...'アカサタナハマヤラワンイキシチニヒミリ0123456789{}[]<>/\|=+-*;:_$#@!?'];
+  const PASSO = 14;
+  let colunas = [], L = 0, A = 0, ultimo = 0;
+
+  function medir() {
+    const r = c.getBoundingClientRect();
+    L = c.width = Math.max(1, Math.round(r.width));
+    A = c.height = Math.max(1, Math.round(r.height));
+    colunas = Array.from({ length: Math.ceil(L / PASSO) },
+                         () => Math.random() * (A / PASSO) * 1.3 - 4);
+    g.fillStyle = '#020C05'; g.fillRect(0, 0, L, A);
+  }
+  if (window.ResizeObserver) new ResizeObserver(medir).observe(c);
+  medir();
+
+  function quadro(agora) {
+    requestAnimationFrame(quadro);
+    if (agora - ultimo < 42) return;      // ~24 qps
+    ultimo = agora;
+
+    // Em vez de limpar, pinta um veu: e ele que deixa o rastro da coluna
+    // desbotando atras da cabeca, que e a imagem inteira do efeito.
+    g.fillStyle = 'rgba(2,12,5,.14)';
+    g.fillRect(0, 0, L, A);
+    g.font = (PASSO - 2) + 'px ui-monospace, monospace';
+
+    for (let i = 0; i < colunas.length; i++) {
+      const x = i * PASSO, y = colunas[i] * PASSO;
+      g.fillStyle = '#D6FFDD';                       // a cabeca e quase branca
+      g.fillText(GLIFOS[(Math.random() * GLIFOS.length) | 0], x, y);
+      g.fillStyle = 'rgba(57,255,20,.62)';
+      g.fillText(GLIFOS[(Math.random() * GLIFOS.length) | 0], x, y - PASSO);
+      g.fillStyle = 'rgba(57,255,20,.26)';
+      g.fillText(GLIFOS[(Math.random() * GLIFOS.length) | 0], x, y - PASSO * 2);
+      colunas[i]++;
+      if (y > A + PASSO * 3 && Math.random() > .972) colunas[i] = 0;
+    }
+  }
+  if (parado) { g.fillStyle = 'rgba(57,255,20,.20)'; g.font = '12px ui-monospace, monospace';
+                for (let i = 0; i < L / PASSO; i++)
+                  for (let j = 0; j < A / PASSO; j++)
+                    if (Math.random() < .2) g.fillText(GLIFOS[(Math.random()*GLIFOS.length)|0],
+                                                       i * PASSO, j * PASSO); }
+  else requestAnimationFrame(quadro);
+})();
+
+
+/* A cabeca do Tr∅nikAt em 3D.
+ *
+ * Reescrita depois de olhar a primeira versao renderizada, que errava dez
+ * coisas -- entre elas os LADOS TROCADOS: metal e visor a esquerda, olho a
+ * direita. Na arte canonica e o contrario, e a assimetria pelo/metal e
+ * identidade do personagem.
+ *
+ * As proporcoes saem de `tronikat.svg`, medidas e nao estimadas:
+ *   cabeca rx 52, ry 46  ->  ela e ~12% mais LARGA que alta
+ *   orelhas a 8 graus da vertical, coladas na cabeca
+ *
+ * Desenhar a olho ja falhou tres vezes neste projeto, todas medidas depois.
+ */
+const Fala = (function () {
+  const c = document.getElementById('cabeca');
+  const cena = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  cam.position.set(0, 0, 10.8);
+  const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
+  function medir() {
+    const l = c.clientWidth || 440;
+    r.setPixelRatio(Math.min(devicePixelRatio, 2));
+    r.setSize(l, l, false); cam.aspect = 1; cam.updateProjectionMatrix();
+  }
+  addEventListener('resize', medir);
+
+  const PELO = 0xF4F2FF, PELO_SOMBRA = 0xD6D2EC, METAL = 0x777F9C,
+        CIANO = 0x00E5FF, VISOR = 0x39FF14, ROSA = 0xFF7FD0,
+        ROSA_FORTE = 0xFF2D95, ESCURO = 0x17092E, JUNTA = 0x8A8FA6;
+
+  const R = 2;                 // raio da cabeca
+  const ACHATA = 0.885;         // ry/rx medido na arte: ela e mais larga que alta
+  const cabeca = new THREE.Group(); cena.add(cabeca);
+
+  // Na superficie, e nao boiando na frente: cada peca do rosto e posta no
+  // ponto da esfera naquela direcao. A primeira versao chutava z e as pecas
+  // ficavam soltas no ar.
+  function naSuperficie(obj, x, y, folga = 0) {
+    const d = new THREE.Vector3(x, y * ACHATA, Math.sqrt(
+      Math.max(0.04, 1 - x * x - y * y))).normalize();
+    obj.position.set(d.x * (R + folga), d.y * (R + folga) * ACHATA,
+                     d.z * (R + folga));
+    obj.lookAt(obj.position.clone().multiplyScalar(2.2));
+    return obj;
+  }
+
+
+  /* TEXTURA.
+   *
+   * O Gustavo: "esta muito liso". Estava -- duas esferas de cor chapada nao
+   * tem pele, tem plastico. As duas metades do personagem ganham textura
+   * gerada em canvas, e cada uma pede um tipo diferente:
+   *
+   *   - o pelo e ALTO-RELEVO: milhares de riscos curtos, usados ao mesmo
+   *     tempo como cor e como `bumpMap`. E o bump que faz a luz raspar o
+   *     volume e produzir a sensacao de pelagem curta;
+   *   - o metal e BRILHO VARIAVEL: escovado na horizontal, com costura de
+   *     placa e rebite, usado como `roughnessMap`. Metal nao muda de cor, ele
+   *     muda de onde reflete -- pintar risco escuro nele daria sujeira, nao
+   *     usinagem.
+   *
+   * Tudo procedural, sem imagem externa: a CSP do artefato so aceita script
+   * de CDN, e nenhuma imagem vinda de fora. Textura que nasce de codigo
+   * tambem nao diverge da fonte, que e a regra dos cenarios do app.
+   */
+  function texturaDePelo() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 512;
+    const x = c.getContext('2d');
+    x.fillStyle = '#F7F5FD'; x.fillRect(0, 0, 512, 512);
+    x.lineCap = 'round';
+    // Sem a borda macia, cada fio vira risco de lapis. E a falta disso que
+    // fazia a pelagem ler como escova em vez de penugem.
+    if ('filter' in x) x.filter = 'blur(0.5px)';
+
+    // Tres passadas: penugem curta por baixo, pelo medio, e uns poucos fios
+    // longos por cima. Uma passada so da tapete; tres dao volume.
+    const camadas = [
+      { n: 20000, comp: [3, 5], larg: [.35, .5], a: .10 },
+      { n: 11000, comp: [7, 9], larg: [.45, .7], a: .13 },
+      { n: 3000, comp: [13, 12], larg: [.5, .8], a: .10 },
+    ];
+    for (const cam of camadas)
+      for (let i = 0; i < cam.n; i++) {
+        const px = Math.random() * 512, py = Math.random() * 512;
+        const comp = cam.comp[0] + Math.random() * cam.comp[1];
+        // Pouca abertura: pelo assentado cai numa direcao so. Angulo solto
+        // daria feltro, que e o oposto de sedoso.
+        const ang = Math.PI / 2 + (Math.random() - .5) * .45;
+        const tom = Math.random();
+        x.strokeStyle = tom < .30 ? `rgba(206,202,232,${cam.a})`
+                      : tom < .88 ? `rgba(255,255,255,${cam.a * 1.5})`
+                                  : `rgba(178,174,214,${cam.a * .8})`;
+        x.lineWidth = cam.larg[0] + Math.random() * cam.larg[1];
+        x.beginPath(); x.moveTo(px, py);
+        x.lineTo(px + Math.cos(ang) * comp, py + Math.sin(ang) * comp);
+        x.stroke();
+      }
+
+    // Manchas claras muito suaves: pelagem de verdade nao tem tom uniforme,
+    // e e essa variacao larga que o olho le como maciez.
+    x.filter = 'blur(11px)';
+    for (let i = 0; i < 60; i++) {
+      x.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,.14)'
+                                       : 'rgba(196,192,226,.10)';
+      x.beginPath();
+      x.arc(Math.random() * 512, Math.random() * 512, 16 + Math.random() * 40, 0, 7);
+      x.fill();
+    }
+    x.filter = 'none';
+
+    const tx = new THREE.CanvasTexture(c);
+    tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+    tx.repeat.set(2.4, 1.6);
+    return tx;
+  }
+
+  function texturaDeMetal() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 512;
+    const x = c.getContext('2d');
+    x.fillStyle = '#A9B0C8'; x.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 2600; i++) {             // escovado na horizontal
+      const py = Math.random() * 512;
+      const larg = 30 + Math.random() * 240;
+      x.strokeStyle = Math.random() < .5 ? 'rgba(255,255,255,.20)'
+                                         : 'rgba(60,66,88,.22)';
+      x.lineWidth = .5 + Math.random() * 1.3;
+      x.beginPath(); x.moveTo(Math.random() * 512, py);
+      x.lineTo(Math.random() * 512 + larg, py + (Math.random() - .5) * 1.5);
+      x.stroke();
+    }
+    for (let i = 0; i < 5; i++) {                // costura de placa
+      const py = 60 + i * 95 + Math.random() * 20;
+      x.strokeStyle = 'rgba(40,44,62,.75)'; x.lineWidth = 2.4;
+      x.beginPath(); x.moveTo(0, py); x.lineTo(512, py); x.stroke();
+      x.strokeStyle = 'rgba(226,230,248,.34)'; x.lineWidth = 1;
+      x.beginPath(); x.moveTo(0, py + 2.4); x.lineTo(512, py + 2.4); x.stroke();
+      for (let r = 18; r < 512; r += 58) {       // rebites na costura
+        x.fillStyle = 'rgba(228,232,250,.55)';
+        x.beginPath(); x.arc(r, py - 7, 2.6, 0, 7); x.fill();
+        x.fillStyle = 'rgba(46,50,70,.6)';
+        x.beginPath(); x.arc(r, py - 6, 1.2, 0, 7); x.fill();
+      }
+    }
+    const tx = new THREE.CanvasTexture(c);
+    tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+    tx.repeat.set(2, 1);
+    return tx;
+  }
+
+  const PELAGEM = texturaDePelo(), CHAPA = texturaDeMetal();
+
+  const craneo = new THREE.Mesh(
+    new THREE.SphereGeometry(R, 64, 48),
+    new THREE.MeshStandardMaterial({
+      color: PELO, roughness: .74, metalness: 0,
+      map: PELAGEM, bumpMap: PELAGEM, bumpScale: .03 }));
+  craneo.scale.y = ACHATA; cabeca.add(craneo);
+
+  /* A penugem da silhueta.
+   *
+   * Textura resolve a SUPERFICIE, e superficie sozinha nao da fofo: o que o
+   * olho usa para julgar maciez e a BORDA. Um contorno duro le como bola
+   * pintada, por melhor que seja o pelo desenhado nela.
+   *
+   * Duas cascas concentricas, um pouco maiores que o cranio, viradas do
+   * avesso (`BackSide`) e quase transparentes. Como so as faces de tras
+   * sobrevivem ao teste de profundidade, o que aparece e um anel macio em
+   * volta da cabeca -- exatamente a penugem que escapa do contorno.
+   *
+   * `depthWrite: false` e obrigatorio: sem isso as cascas gravam profundidade
+   * e recortam as orelhas e os bigodes que passam por elas.
+   *
+   * So na metade de pelo. A metade de metal tem que ter aresta seca -- e a
+   * assimetria pelo/metal e identidade do personagem, nao decoracao.
+   */
+  for (const [fator, opacidade] of [[1.035, .34], [1.085, .16]]) {
+    const penugem = new THREE.Mesh(
+      new THREE.SphereGeometry(R * fator, 48, 32, -Math.PI / 2, Math.PI),
+      new THREE.MeshStandardMaterial({
+        color: 0xFFFFFF, roughness: 1, metalness: 0,
+        transparent: true, opacity: opacidade,
+        side: THREE.BackSide, depthWrite: false }));
+    penugem.scale.y = ACHATA;
+    cabeca.add(penugem);
+  }
+
+
+  // A metade METALICA fica a DIREITA (x positivo). Era o erro mais grave da
+  // primeira versao: `rotation.y = -PI/2` jogava a meia esfera para o lado
+  // do pelo, e o gato saia espelhado.
+  // ATENCAO ao `phiStart`: a formula do Three.js leva um sinal NEGATIVO no x
+  // (`x = -r * cos(phi) * sin(theta)`), entao phi=0 aponta para a ESQUERDA e
+  // phi=PI/2 para a frente. A metade com x>0 e `PI/2 -> 3PI/2`.
+  //
+  // Isso custou tres renderizacoes. Com `0 -> PI` a meia esfera cobria a
+  // frente INTEIRA e o gato saia cinza dos dois lados; a sonda vermelha
+  // provou que ela estava sendo desenhada, e so entao o angulo virou suspeito.
+  const metade = new THREE.Mesh(
+    new THREE.SphereGeometry(R * 1.004, 64, 48, Math.PI / 2, Math.PI),
+    new THREE.MeshStandardMaterial({
+      color: 0xFFFFFF, roughness: .40, metalness: .55,
+      map: CHAPA, roughnessMap: CHAPA, bumpMap: CHAPA, bumpScale: .02 }));
+  metade.scale.y = ACHATA; cabeca.add(metade);
+
+  // Divisa ciano: um anel FINO seguindo o meridiano, e nao a barra grossa de
+  // antes, que lia como um poste na frente do rosto.
+  const divisa = new THREE.Mesh(
+    new THREE.TorusGeometry(R * 1.008, .022, 10, 96),
+    new THREE.MeshBasicMaterial({ color: CIANO }));
+  divisa.rotation.y = Math.PI / 2; divisa.scale.y = ACHATA; cabeca.add(divisa);
+
+  // --- orelhas: triangulos afiados, COLADOS no craneo, a 8 graus ---
+  function orelha(lado, cor) {
+    const g = new THREE.Group();
+    const forma = new THREE.Shape();
+    forma.moveTo(-.60, 0); forma.lineTo(-.04, 1.85); forma.lineTo(.52, 0);
+    forma.closePath();
+    const casca = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(forma, { depth: .42, bevelEnabled: true,
+        bevelThickness: .07, bevelSize: .07, bevelSegments: 3 }),
+      new THREE.MeshStandardMaterial({
+        color: cor === METAL ? 0xFFFFFF : cor, roughness: cor === METAL ? .45 : .9,
+        metalness: cor === METAL ? .55 : .02,
+        map: cor === METAL ? CHAPA : PELAGEM,
+        bumpMap: cor === METAL ? CHAPA : PELAGEM,
+        bumpScale: cor === METAL ? .015 : .022 }));
+    casca.position.z = -.21; g.add(casca);
+
+    const dentro = new THREE.Shape();
+    dentro.moveTo(-.30, .14); dentro.lineTo(-.03, 1.28); dentro.lineTo(.26, .14);
+    dentro.closePath();
+    const rosa = new THREE.Mesh(new THREE.ShapeGeometry(dentro),
+      new THREE.MeshBasicMaterial({ color: ROSA, side: THREE.DoubleSide }));
+    rosa.position.z = .23; g.add(rosa);
+
+    // A base da orelha vai NA superficie, e nao numa altura chutada. Antes ela
+    // ficava em `R*ACHATA - .28`, um valor fixo: no ponto onde a orelha nasce
+    // a esfera ja desceu, e a base sobrava no ar de um lado e afundava do
+    // outro. A altura sai da equacao da elipse, e a orelha ainda entra .22
+    // para dentro, para a juncao nao aparecer.
+    const bx = lado * 0.86;
+    const by = Math.sqrt(Math.max(0, 1 - (bx / R) * (bx / R))) * R * ACHATA;
+    g.position.set(bx, by - .34, -.04);
+
+    // Ela tambem INCLINA junto com a superficie: uma orelha vertical num
+    // ponto inclinado do craneo le como colada por cima. O giro combina a
+    // normal daquele ponto com os 8 graus da arte canonica -- orelha de gato
+    // e quase reta, e alguns graus a mais ja leem como orelha caida.
+    // 8 graus da vertical, e SO isso. Somar a inclinacao da normal dava 24
+    // graus, e a orelha lia como caida -- que e outro bicho. A arte canonica
+    // e a medida: 8,1 graus na esquerda, 9,9 na direita.
+    g.rotation.z = lado * -0.145;
+    cabeca.add(g);
+  }
+  orelha(-1, PELO); orelha(1, METAL);
+
+  // --- olho: no lado do PELO, que e a esquerda ---
+  const olho = new THREE.Mesh(new THREE.SphereGeometry(.4, 32, 24),
+    new THREE.MeshStandardMaterial({ color: ESCURO, roughness: .15 }));
+  naSuperficie(olho, -.42, .12, -.16); cabeca.add(olho);
+  const brilho = new THREE.Mesh(new THREE.SphereGeometry(.115, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0xFFFFFF }));
+  naSuperficie(brilho, -.50, .21, .06); cabeca.add(brilho);
+
+  // --- visor: no lado do METAL, curvado junto com a cabeca ---
+  const visor = new THREE.Group();
+  const moldura = new THREE.Mesh(
+    new THREE.BoxGeometry(1.30, .60, .20),
+    new THREE.MeshStandardMaterial({ color: 0x3A3E52, roughness: .35, metalness: .5 }));
+  visor.add(moldura);
+  const tela = new THREE.Mesh(new THREE.BoxGeometry(1.06, .36, .04),
+    new THREE.MeshBasicMaterial({ color: VISOR }));
+  tela.position.z = .12; visor.add(tela);
+  const alca = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, .5, 16),
+    new THREE.MeshStandardMaterial({ color: 0x3A3E52, roughness: .4, metalness: .5 }));
+  alca.rotation.z = Math.PI / 2; alca.position.set(.80, 0, -.02); visor.add(alca);
+  naSuperficie(visor, .40, .12, -.08); cabeca.add(visor);
+
+  // --- focinho, boca e queixo ---
+  const focinho = new THREE.Mesh(new THREE.ConeGeometry(.19, .2, 3),
+    new THREE.MeshBasicMaterial({ color: ROSA_FORTE }));
+  naSuperficie(focinho, 0, -.20, .02);
+  focinho.rotateX(Math.PI / 2); focinho.rotateZ(Math.PI); cabeca.add(focinho);
+
+  // A BOCA: uma caixa arredondada que ESCALA. A primeira versao usava uma
+  // esfera achatada e lia como um risco preto no meio do rosto.
+  const boca = new THREE.Mesh(new THREE.SphereGeometry(.3, 28, 20),
+    new THREE.MeshStandardMaterial({ color: ESCURO, roughness: .3 }));
+  naSuperficie(boca, 0, -.44, -.03);
+  boca.scale.set(1.42, .26, .55); cabeca.add(boca);
+  const bocaEscalaBase = boca.scale.clone();
+
+  // --- bigodes: saem das BOCHECHAS para fora, sem atravessar o rosto ---
+  function bigode(lado, y, giro) {
+    const g = new THREE.Mesh(
+      new THREE.CylinderGeometry(.015, .008, 1.02, 8),
+      new THREE.MeshStandardMaterial({ color: lado < 0 ? PELO : METAL, roughness: .6 }));
+    g.rotation.z = Math.PI / 2 + giro * lado;
+    const p = new THREE.Vector3(lado * .68, y, .62).normalize()
+      .multiplyScalar(R * 0.98);
+    g.position.set(p.x + lado * .40, p.y * ACHATA, p.z * .55);
+    cabeca.add(g);
+  }
+  for (const l of [-1, 1]) { bigode(l, -.1, .17); bigode(l, -.22, 0); bigode(l, -.34, -.17); }
+
+  // Marcas de calibragem no lado metalico, como na arte canonica.
+  for (const [x, y] of [[.72, -.16], [.80, -.30]]) {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(.07, .016, 6, 4),
+      new THREE.MeshBasicMaterial({ color: JUNTA }));
+    naSuperficie(m, x, y, .01); cabeca.add(m);
+  }
+
+  // --- luz: NEUTRA na frente, e a cor so nas bordas ---
+  // A primeira versao tinha um ponto ciano e um rosa apontados para o rosto,
+  // e o metal saia AZUL. Cor de cena nao pode reescrever a cor do personagem.
+  cena.add(new THREE.AmbientLight(0xFFFFFF, .80));
+  const chave = new THREE.DirectionalLight(0xFFFFFF, .85);
+  chave.position.set(2.5, 3.5, 6); cena.add(chave);
+  const preenche = new THREE.DirectionalLight(0xFFFFFF, .42);
+  preenche.position.set(-4, 1, 5); cena.add(preenche);
+  const borda1 = new THREE.PointLight(CIANO, .85, 26);
+  borda1.position.set(-6.5, 1.5, -2); cena.add(borda1);
+  const borda2 = new THREE.PointLight(ROSA_FORTE, .7, 26);
+  borda2.position.set(6.5, -2, -2); cena.add(borda2);
+
+  let abertura = 0, alvo = 0, mira = { x: 0, y: 0 }, piscar = 0;
+  addEventListener('pointermove', e => {
+    mira.x = (e.clientX / innerWidth - .5) * .52;
+    mira.y = (e.clientY / innerHeight - .5) * .30;
+  });
+
+  medir();
+  (function anima() {
+    const t = performance.now() / 1000;
+    cabeca.rotation.y += (mira.x - cabeca.rotation.y) * .06;
+    cabeca.rotation.x += (mira.y - cabeca.rotation.x) * .06;
+    cabeca.position.y = Math.sin(t * 1.4) * .06;
+
+    // Piscar: seco, sem transicao, como na tela de titulo do app.
+    piscar = (t % 4.6) > 4.45 ? 1 : 0;
+    olho.scale.y = piscar ? .08 : 1;
+    brilho.visible = !piscar;
+
+    abertura += (alvo - abertura) * .38;
+    const tremor = alvo > .04 ? Math.sin(t * 40) * .1 * alvo : 0;
+    const a = Math.max(0, abertura + tremor);
+    boca.scale.set(bocaEscalaBase.x * (1 - a * .22),
+                   bocaEscalaBase.y + a * 1.15,
+                   bocaEscalaBase.z * (1 + a * .5));
+    tela.material.color.setHex(alvo > .04 ? 0x9CFF7A : VISOR);
+    r.render(cena, cam);
+    requestAnimationFrame(anima);
+  })();
+
+  return { abrir: v => { alvo = v; } };
+})();
+
+/* ------------------------------------------------------------- lip sync
+   A sincronia sai do evento `boundary` da sintese de voz do navegador, que
+   dispara a cada palavra com o indice do caractere. Entre uma palavra e a
+   seguinte, a boca e movida pelas VOGAIS daquela palavra -- vogal abre,
+   consoante fecha. E aproximacao, e nao fonema de verdade; fonema exigiria
+   analisar o audio, e a sintese do navegador nao entrega o audio.
+
+   Sem voz instalada, o texto ainda aparece: a fala e um extra, nunca o
+   unico caminho da informacao. */
+const Voz = (function () {
+  const temVoz = 'speechSynthesis' in window;
+  let vozPt = null;
+  function escolher() {
+    if (!temVoz) return;
+    const vs = speechSynthesis.getVoices();
+    vozPt = vs.find(v => /pt[-_]BR/i.test(v.lang)) || vs.find(v => /^pt/i.test(v.lang)) || null;
+  }
+  if (temVoz) { escolher(); speechSynthesis.onvoiceschanged = escolher; }
+
+  let timers = [];
+  function limpar() { timers.forEach(clearTimeout); timers = []; }
+
+  return function falar(texto) {
+    if (!temVoz) return;
+    limpar(); speechSynthesis.cancel();
+    // Marcacao e endereco nao se leem em voz alta.
+    const limpo = texto.replace(/[*`_#]/g, '').replace(/https?:\/\/\S+/g, 'o link');
+    const u = new SpeechSynthesisUtterance(limpo);
+    if (vozPt) u.voice = vozPt;
+    u.lang = 'pt-BR'; u.rate = 1.04; u.pitch = 1.22;
+
+    u.onboundary = ev => {
+      const resto = limpo.slice(ev.charIndex);
+      const palavra = (resto.match(/^\S+/) || [''])[0];
+      limpar();
+      // Cada letra vira um movimento: vogal abre bastante, consoante quase
+      // nada. O passo sai da duracao media de silaba na velocidade usada.
+      const passo = Math.max(42, 300 / Math.max(1, palavra.length));
+      [...palavra].forEach((ch, i) => {
+        const v = /[aeiouáéíóúâêôãõà]/i.test(ch) ? .5 + Math.random() * .22
+                : /[mbpvfsz]/i.test(ch) ? .05 : .2;
+        timers.push(setTimeout(() => Fala.abrir(v), i * passo));
+      });
+      timers.push(setTimeout(() => Fala.abrir(0), palavra.length * passo));
+    };
+    u.onend = u.onerror = () => { limpar(); Fala.abrir(0); };
+    speechSynthesis.speak(u);
+  };
+})();
+
+/* ------------------------------------------------------------- conversa */
+const fala = document.getElementById('fala'), form = document.getElementById('form'),
+      txt = document.getElementById('txt'), env = document.getElementById('env'),
+      estado = document.getElementById('estado');
+let claudePronto = null, ocupado = false;
+
+function dizer(texto, meu) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + (meu ? 'meu' : 'dele');
+  d.textContent = texto;
+  fala.appendChild(d); fala.scrollTop = fala.scrollHeight;
+  return d;
+}
+
+/* O recorte "so fala do DevLingo" vai no contexto, e o contexto vai INTEIRO
+   em toda pergunta: este modelo nao tem memoria entre chamadas. */
+const CONTEXTO = `Voce e o Tr∅nikAt, mascote do DevLingo: um gato branco bipede
+ciberneticamente modificado, com visor verde. Fala em portugues do Brasil, em
+primeira pessoa, com no maximo 3 frases curtas. Direto, com humor seco, nunca
+bajulador.
+
+SO fale do DevLingo. Se perguntarem outra coisa, diga que so sabe falar daqui e
+ofereca um assunto do app.
+
+O QUE VOCE SABE:
+- DevLingo e um app Android para aprender programacao no formato Duolingo, em
+  portugues, escrito do zero em portugues e nao traduzido.
+- 404 questoes em 8 trilhas: Python, JavaScript, Java, Frameworks, Backend,
+  Qualidade de Software, Selenium e Agentes de IA.
+- 349 testes automatizados, 95,6% de cobertura. Cada regra do validador nasceu
+  de um defeito real, e toda regra e verificada reprovando de proposito.
+- O principio: o objetivo e a pessoa aprender, nao ser punida. A tela nunca diz
+  "errado" -- diz "ainda nao", e ao revelar diz "vamos juntos". A alternativa
+  errada e riscada, nao apagada.
+- Errar nao termina a questao. Na multipla escolha, errar elimina a alternativa
+  e devolve a vez; no quarto erro, revela.
+- O criador e o Gustavo Anderson: QA e desenvolvedor, especializado em levar IA
+  para o dia a dia de desenvolvimento -- LLMs aplicados a agentes de IA e
+  servidores MCP para automatizar atividades de quem programa. Ele achou nove
+  defeitos jogando o proprio app, e documentou todos com a causa raiz.
+- Escreva SEMPRE com acentuacao correta do portugues.
+- Respostas escritas nao exigem acento, porque digitar c-cedilha em teclado de
+  celular e toque longo -- o aluno erraria pelo teclado, nao pela linguagem.
+- O codigo e MIT; o conteudo e CC BY-NC-ND; o Tr∅nikAt e o nome sao reservados.
+- Ha um servidor MCP que expoe os portoes de qualidade como ferramentas.`;
+
+const RESERVA = {
+  'o que é o devlingo?': 'Um app para aprender programação no formato Duolingo, em português de verdade — escrito assim, não traduzido. São 404 questões em 8 trilhas, e eu de guia.',
+  'quais trilhas existem?': 'Python, JavaScript, Java, Frameworks, Backend, Qualidade de Software, Selenium e Agentes de IA. Oito, todas no nível iniciante por enquanto.',
+  'quem construiu o devlingo?': 'O Gustavo Anderson — QA e desenvolvedor, especializado em levar IA para o dia a dia de quem programa: LLMs aplicados a agentes e servidores MCP para automação. Ele achou nove defeitos jogando o próprio app, e documentou todos com a causa raiz.',
+  'como vocês garantem a qualidade das questões?': 'Cada regra do validador nasceu de um defeito real. E toda regra é verificada reprovando de propósito: portão que só sabe aprovar não é portão.',
+};
+
+async function responder(pergunta) {
+  if (ocupado) return;
+  ocupado = true; env.disabled = true;
+  dizer(pergunta, true);
+  const balao = dizer('…', false);
+
+  const pronta = RESERVA[pergunta.toLowerCase().trim()];
+  try {
+    const sample = await claudePronto;
+    if (!sample) throw new Error('sem claude');
+    estado.textContent = 'Tr∅nikAt · pensando';
+    const r = await sample(
+      [{ role: 'user', content: CONTEXTO + '\n\nPERGUNTA: ' + pergunta }],
+      { onText: ({ text }) => { balao.textContent = text; fala.scrollTop = fala.scrollHeight; } }
+    );
+    balao.textContent = r.text; Voz(r.text);
+  } catch (e) {
+    // Sem o Claude, o roteiro responde o que der -- e quando nao souber, diz
+    // que nao sabe. Inventar aqui seria pior que calar.
+    const t = pronta || 'Aqui neste modo eu so respondo o basico. Toque num dos atalhos acima que eu conto direitinho.';
+    balao.textContent = t; Voz(t);
+  } finally {
+    estado.textContent = 'Tr∅nikAt · online';
+    ocupado = false; env.disabled = false; txt.focus();
+  }
+}
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const p = txt.value.trim(); if (!p) return;
+  txt.value = ''; responder(p);
+});
+document.querySelectorAll('.atalho').forEach(b =>
+  b.addEventListener('click', () => responder(b.dataset.p)));
+
+dizer('Oi. Sou o Tr∅nikAt — gato ciborgue, visor verde, guia deste lugar.\nO DevLingo ensina a programar em português de verdade. Pergunte o que quiser: eu respondo falando.', false);
+
+claudePronto = (window.claude?.use ? claude.use('sample') : Promise.resolve(null))
+  .catch(() => null);
+</script>
+</html>
