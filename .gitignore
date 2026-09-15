@@ -55,3 +55,7 @@ estudio/resultado_calibracao.json
 
 # Ambiente Python isolado do estudio (piper-tts, onnxruntime): recriavel, e pesado
 estudio/.venv/
+
+# Worker da Cloudflare: dependencias e estado local do wrangler
+hospedagem/cloudflare/node_modules/
+hospedagem/cloudflare/.wrangler/

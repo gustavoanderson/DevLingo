@@ -1,0 +1,296 @@
+{
+ "piso": 0.7,
+ "fichas": [
+  {
+   "id": "o-que-e",
+   "perguntas": [
+    "O que é o DevLingo?",
+    "Que app é esse?",
+    "Pra que serve isso aqui?",
+    "Me explica o DevLingo"
+   ]
+  },
+  {
+   "id": "trilhas",
+   "perguntas": [
+    "Quais trilhas existem?",
+    "O que dá pra aprender no app?",
+    "Quais linguagens tem?",
+    "Tem curso de quê?"
+   ]
+  },
+  {
+   "id": "tamanho",
+   "perguntas": [
+    "Quantas questões tem?",
+    "Quantas lições são?",
+    "O app é grande?",
+    "Quanto conteúdo tem no DevLingo?"
+   ]
+  },
+  {
+   "id": "para-quem",
+   "perguntas": [
+    "Serve pra quem nunca programou?",
+    "Preciso saber programar antes?",
+    "É para iniciante?",
+    "Qual o nível do app?"
+   ]
+  },
+  {
+   "id": "errar",
+   "perguntas": [
+    "O que acontece se eu errar?",
+    "Errei, e agora?",
+    "Perco vida quando erro?",
+    "O app pune erro?"
+   ]
+  },
+  {
+   "id": "aula",
+   "perguntas": [
+    "Tem teoria ou é só questão?",
+    "O app explica antes de perguntar?",
+    "Onde fica o conteúdo das lições?",
+    "Como eu estudo antes das questões?"
+   ]
+  },
+  {
+   "id": "acento",
+   "perguntas": [
+    "Preciso digitar acento nas respostas?",
+    "E se eu escrever sem acento?",
+    "O teclado do celular atrapalha?",
+    "Por que as respostas não têm acento?"
+   ]
+  },
+  {
+   "id": "offline",
+   "perguntas": [
+    "Funciona sem internet?",
+    "Precisa estar conectado?",
+    "Dá pra usar offline?",
+    "Preciso de conta?"
+   ]
+  },
+  {
+   "id": "progresso",
+   "perguntas": [
+    "Meu progresso fica salvo?",
+    "Se eu trocar de celular perco tudo?",
+    "Dá pra jogar em dois aparelhos?",
+    "Onde fica guardado o que eu fiz?"
+   ]
+  },
+  {
+   "id": "estatisticas",
+   "perguntas": [
+    "Tem estatística do meu desempenho?",
+    "Consigo ver como estou indo?",
+    "O app mostra meus acertos?",
+    "Tem ranking?"
+   ]
+  },
+  {
+   "id": "plataforma",
+   "perguntas": [
+    "Tem para iPhone?",
+    "Roda no meu celular?",
+    "Em que sistema funciona?",
+    "Tem versão web?"
+   ]
+  },
+  {
+   "id": "baixar",
+   "perguntas": [
+    "Como eu baixo o app?",
+    "Onde instalo o DevLingo?",
+    "Tá na Play Store?",
+    "Tem link pra download?"
+   ]
+  },
+  {
+   "id": "preco",
+   "perguntas": [
+    "Quanto custa?",
+    "O app é pago?",
+    "É de graça?",
+    "Tem assinatura?",
+    "Cobra alguma coisa?",
+    "Tem que pagar pra jogar?",
+    "Tem versão free?",
+    "Preciso pagar pra usar?"
+   ]
+  },
+  {
+   "id": "licenca",
+   "perguntas": [
+    "O código é aberto?",
+    "Posso usar o código do DevLingo?",
+    "Qual a licença?",
+    "Posso copiar as questões?"
+   ]
+  },
+  {
+   "id": "tronikat",
+   "perguntas": [
+    "Quem é você?",
+    "Quem é o Tr∅nikAt?",
+    "Você é um gato?",
+    "Qual é o seu nome?"
+   ]
+  },
+  {
+   "id": "linguagens",
+   "perguntas": [
+    "Você sabe programar?",
+    "Você conhece Rust?",
+    "Vai ter curso de C#?",
+    "Quais linguagens ainda vão entrar?",
+    "Você manja de todas as linguagens?",
+    "Você entende de Ruby?",
+    "Vão adicionar PHP no app?",
+    "Você programa em Elixir?"
+   ]
+  },
+  {
+   "id": "voce-e-ia",
+   "perguntas": [
+    "Você é uma inteligência artificial?",
+    "Tô falando com um robô?",
+    "Você pode errar?",
+    "Como você funciona?"
+   ]
+  },
+  {
+   "id": "como-o-tronikat-roda",
+   "perguntas": [
+    "Você usa o ChatGPT?",
+    "Qual modelo de IA você usa?",
+    "Isso gasta API paga?",
+    "Você roda na nuvem?"
+   ]
+  },
+  {
+   "id": "testes",
+   "perguntas": [
+    "O app tem testes?",
+    "Como vocês testam o DevLingo?",
+    "Qual a cobertura de testes?",
+    "O código é bem testado?"
+   ]
+  },
+  {
+   "id": "validador",
+   "perguntas": [
+    "Como vocês garantem que as questões estão certas?",
+    "Quem revisa o conteúdo?",
+    "As questões podem ter erro?",
+    "Como é o controle de qualidade?"
+   ]
+  },
+  {
+   "id": "mcp",
+   "perguntas": [
+    "O que é o servidor MCP do projeto?",
+    "O DevLingo tem MCP?",
+    "Um agente de IA consegue usar o DevLingo?",
+    "Para que serve o MCP aqui?"
+   ]
+  },
+  {
+   "id": "stack",
+   "perguntas": [
+    "Com que tecnologia foi feito?",
+    "Qual linguagem o app usa?",
+    "É Flutter?",
+    "Qual o banco de dados?"
+   ]
+  },
+  {
+   "id": "quem-construiu",
+   "perguntas": [
+    "Quem fez o DevLingo?",
+    "Quem é o criador?",
+    "Quem é o Gustavo?",
+    "Quem desenvolveu esse app?"
+   ]
+  },
+  {
+   "id": "defeitos",
+   "perguntas": [
+    "O Gustavo testou o app?",
+    "Ele achou bugs?",
+    "Como foi o processo de teste?",
+    "O app já teve defeito?"
+   ]
+  },
+  {
+   "id": "feito-com-ia",
+   "perguntas": [
+    "O app foi feito com IA?",
+    "Usaram inteligência artificial para programar?",
+    "Foi o ChatGPT que fez o código?",
+    "Qual o papel da IA no projeto?"
+   ]
+  },
+  {
+   "id": "contato",
+   "perguntas": [
+    "Como falo com o Gustavo?",
+    "Tem o contato dele?",
+    "Onde acho o autor?",
+    "Ele tem GitHub?",
+    "Qual o e-mail do criador?",
+    "Tem LinkedIn do autor?"
+   ]
+  },
+  {
+   "id": "contribuir",
+   "perguntas": [
+    "Posso contribuir?",
+    "Achei um erro numa questão, onde aviso?",
+    "Aceitam pull request?",
+    "Como ajudo o projeto?"
+   ]
+  },
+  {
+   "id": "proximos-passos",
+   "perguntas": [
+    "O que vem por aí?",
+    "Vai ter nível intermediário?",
+    "Quais as próximas novidades?",
+    "Tem planos para o app?"
+   ]
+  },
+  {
+   "id": "idioma",
+   "perguntas": [
+    "Tem em inglês?",
+    "O app é só em português?",
+    "Vai ter tradução?",
+    "Is it available in English?"
+   ]
+  },
+  {
+   "id": "privacidade",
+   "perguntas": [
+    "Vocês vendem meus dados?",
+    "Quem vê o meu progresso?",
+    "Meus dados ficam seguros?",
+    "O que vocês guardam de mim?"
+   ]
+  },
+  {
+   "id": "som",
+   "perguntas": [
+    "Dá pra tirar o som?",
+    "O app tem música?",
+    "Como eu desligo o barulho?",
+    "Tem som quando acerto?",
+    "Tem como silenciar?",
+    "Consigo jogar sem áudio?"
+   ]
+  }
+ ]
+}

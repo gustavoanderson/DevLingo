@@ -82,6 +82,7 @@ DENTRO = [
     ("tem na google play?", "baixar"),
     ("precisa pagar alguma coisa?", "preco"),
     ("é gratuito mesmo?", "preco"),
+    ("vou precisar gastar dinheiro?", "preco"),     # 15/09: "precisar" caia em offline
     ("o projeto é open source?", "licenca"),
     ("posso reutilizar o código?", "licenca"),
     ("qual o nome do gatinho?", "tronikat"),

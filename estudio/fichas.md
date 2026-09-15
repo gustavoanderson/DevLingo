@@ -163,6 +163,10 @@ perguntas:
 - O app é pago?
 - É de graça?
 - Tem assinatura?
+- Cobra alguma coisa?
+- Tem que pagar pra jogar?
+- Tem versão free?
+- Preciso pagar pra usar?
 
 resposta:
 Hoje o DevLingo é gratuito, sem anúncio e sem assinatura.
@@ -217,11 +221,11 @@ perguntas:
 - Como você funciona?
 
 resposta:
-Sou uma IA, sim, e posso errar. Por isso eu só respondo a partir de fichas escritas e conferidas pelo Gustavo. Se a pergunta não estiver nelas, eu digo que não sei em vez de inventar.
+Sou uma IA, sim, e posso errar. Por isso eu só respondo a partir de fichas escritas e conferidas pelo Gustavo. Se a pergunta fugir delas, eu aviso em vez de inventar.
 
 ## como-o-tronikat-roda
 
-fonte: estudio/avaliar_modelos.py
+fonte: estudio/avaliar_modelos.py; hospedagem/cloudflare -- reescrita em 15/09: dizia que nenhuma pergunta sai da maquina, falso no site publico
 perguntas:
 - Você usa o ChatGPT?
 - Qual modelo de IA você usa?
@@ -229,7 +233,7 @@ perguntas:
 - Você roda na nuvem?
 
 resposta:
-Eu rodo num modelo aberto, o Qwen3 de 4 bilhões de parâmetros, dentro de uma placa de vídeo no computador do Gustavo. Nada de API paga: nenhuma pergunta sai da máquina.
+Depende de onde você me encontra. No computador do Gustavo, eu rodo num modelo aberto, o Qwen3 de 4 bilhões de parâmetros, numa placa de vídeo e sem API paga. Aqui no site, a sua pergunta vai para um servidor da Cloudflare, que só escolhe qual resposta revisada pelo Gustavo eu vou falar.
 
 ## testes
 
@@ -327,6 +331,8 @@ perguntas:
 - Tem o contato dele?
 - Onde acho o autor?
 - Ele tem GitHub?
+- Qual o e-mail do criador?
+- Tem LinkedIn do autor?
 
 resposta:
 O caminho público é o GitHub: github.com/gustavoanderson.
@@ -388,6 +394,8 @@ perguntas:
 - O app tem música?
 - Como eu desligo o barulho?
 - Tem som quando acerto?
+- Tem como silenciar?
+- Consigo jogar sem áudio?
 
 resposta:
 Só o acerto tem som; errar é silencioso, de propósito. Dá para desligar pelo ícone de som, tanto na trilha quanto dentro da lição.

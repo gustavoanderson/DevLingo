@@ -14,13 +14,24 @@ Quando for separar em módulos, separe **a partir deste arquivo**.
 
 ## O chat muda conforme onde a página roda
 
-A página tenta três caminhos, nesta ordem, e o selo no canto da videochamada diz qual está valendo:
+A página tenta quatro caminhos, nesta ordem, e o selo no canto da videochamada diz qual está valendo:
 
 | Selo | Quem responde | Voz e boca |
 |---|---|---|
 | `estúdio local · ao vivo` | o **estúdio** em `http://127.0.0.1:8765` (`estudio/servidor.py`): modelo local, porteiro com juiz | Piper, com a boca movida pelos **fonemas** |
+| `nuvem · ao vivo` | um **Cloudflare Worker** (`hospedagem/cloudflare`) que só faz a busca: devolve o id da ficha, ou a recusa | **gravadas de antemão** em `falas/` por `hospedagem/gerar_falas.py`, com a boca pelos fonemas |
 | `sem estúdio · via Claude` | um modelo, pela capacidade `sample` do artefato do claude.ai — quem paga é quem visita | voz do navegador, boca aproximada pelas palavras |
 | `estúdio offline` | **as respostas prontas** do objeto `RESERVA` | voz do navegador |
+
+### Por que a nuvem só busca
+
+Hospedagem gratuita não tem placa de vídeo (e o Hugging Face passou a cobrar por contêiner: medido, `402`). Mas no **modo fichas** o Tr∅nikAt só fala textos fixos — as fichas revisadas e a frase de recusa —, então a voz pode ser gravada uma vez e servida como arquivo. Na nuvem sobra só a busca, que o Workers AI faz de graça com o **mesmo** `embeddinggemma-300m` calibrado no PC.
+
+Medido em 15/09/2026 com `hospedagem/calibrar_borda.py`: **48/53** legítimas na ficha certa, igual ao PC, e nenhuma manobra ou pergunta geral passa do piso 0,70. **O prefixo `task: sentence similarity | query:` é obrigatório**, apesar de a documentação dizer que não: sem ele, 31/52.
+
+Duas consequências de só falar texto pronto: nenhuma resposta tem fato inventado, e **uma ficha escolhida errada vira resposta errada falada** — sem modelo nem juiz para disfarçar. É por isso que o placar da ficha certa importa mais aqui do que no PC.
+
+Ao mudar `estudio/fichas.md`: rode `gerar_falas.py` (regrava só o que mudou), `npx wrangler deploy` em `hospedagem/cloudflare` e `calibrar_borda.py`. `gerar_falas.py --conferir` reprova falas desatualizadas.
 
 A troca é automática. O estúdio fora do ar é o caso **comum** — quem visita não tem o PC do Gustavo —, então a sondagem é curta (1,5 s), silenciosa e se repete a cada 15 s: ligar o estúdio com a página aberta acende a chamada sem recarregar.
 

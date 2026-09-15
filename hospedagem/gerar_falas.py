@@ -1,0 +1,119 @@
+"""Gera o que o Tr∅nikAt publico precisa, a partir de estudio/fichas.md.
+
+No modo fichas ele so fala textos FIXOS (as fichas e a frase de recusa). Entao
+a voz nao precisa de servidor: e gravada aqui, uma vez, e vira arquivo do site.
+Na borda (Cloudflare Worker) sobra so a busca.
+
+Tres saidas, do MESMO script, pela regra que ja vale para os cenarios do app:
+arquivo gerado que passa a ser editado a mao diverge da fonte, e ninguem
+descobre qual dos dois esta certo.
+
+  hospedagem/cloudflare/src/fichas.json   perguntas-exemplo e piso (o Worker compara)
+  site/falas/indice.json                  texto, duracao e boca de cada fala
+  site/falas/<id>.wav                     o audio
+
+O Worker recebe SO as perguntas, nunca as respostas: o que ele devolve e um id.
+Os textos moram no site, que ja e publico.
+
+A voz do Piper tem aleatoriedade: gerar duas vezes nao da os mesmos bytes. Por
+isso "em dia" compara a IMPRESSAO de cada fala (texto + voz + tom), e nao o WAV.
+
+Uso (com o Python do estudio):
+    estudio/.venv/Scripts/python.exe hospedagem/gerar_falas.py             # gera tudo
+    estudio/.venv/Scripts/python.exe hospedagem/gerar_falas.py --conferir  # so confere, sem voz
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(RAIZ / "estudio"))
+
+from base import ler_fichas                     # noqa: E402
+from busca import PISO                          # noqa: E402
+from porteiro import FRASE_FIXA                 # noqa: E402
+
+FICHAS_JSON = RAIZ / "hospedagem" / "cloudflare" / "src" / "fichas.json"
+FALAS = RAIZ / "site" / "falas"
+INDICE = FALAS / "indice.json"
+RECUSA = "_recusa"          # id da frase fixa; o sublinhado nunca colide com ficha
+
+
+def textos() -> dict[str, str]:
+    t = {f.id: f.resposta for f in ler_fichas()}
+    t[RECUSA] = FRASE_FIXA
+    return t
+
+
+def impressao(texto: str) -> str:
+    import voz
+    base = f"{texto}|{Path(voz.MODELO).name}|{voz.TOM}|{voz.PRONUNCIA}"
+    return hashlib.sha1(base.encode("utf-8")).hexdigest()[:16]
+
+
+def json_do_worker() -> str:
+    fichas = [{"id": f.id, "perguntas": f.perguntas} for f in ler_fichas()]
+    return json.dumps({"piso": PISO, "fichas": fichas}, ensure_ascii=False, indent=1) + "\n"
+
+
+def conferir() -> list[str]:
+    erros = []
+    if not FICHAS_JSON.exists() or FICHAS_JSON.read_text(encoding="utf-8") != json_do_worker():
+        erros.append(f"{FICHAS_JSON.relative_to(RAIZ)} difere de fichas.md")
+    indice = json.loads(INDICE.read_text(encoding="utf-8")) if INDICE.exists() else {}
+    esperado = textos()
+    for fid, texto in esperado.items():
+        fala = indice.get(fid)
+        if not fala:
+            erros.append(f"fala faltando: {fid}")
+        elif fala["impressao"] != impressao(texto):
+            erros.append(f"fala desatualizada: {fid}")
+        elif not (FALAS / fala["audio"]).exists():
+            erros.append(f"audio faltando: {fala['audio']}")
+    for fid in set(indice) - set(esperado):
+        erros.append(f"fala sobrando (ficha removida?): {fid}")
+    return erros
+
+
+def gerar() -> None:
+    from voz import Voz
+    FICHAS_JSON.write_text(json_do_worker(), encoding="utf-8", newline="\n")
+    FALAS.mkdir(parents=True, exist_ok=True)
+    antigo = json.loads(INDICE.read_text(encoding="utf-8")) if INDICE.exists() else {}
+    v = Voz()
+    indice = {}
+    for fid, texto in textos().items():
+        imp = impressao(texto)
+        # So regrava o que mudou: cada regravacao troca os bytes do WAV e poluiria o historico.
+        if antigo.get(fid, {}).get("impressao") == imp and (FALAS / antigo[fid]["audio"]).exists():
+            indice[fid] = antigo[fid]
+            continue
+        fala = v.falar(texto)
+        (FALAS / f"{fid}.wav").write_bytes(fala.wav)
+        indice[fid] = {"texto": texto, "duracao": round(fala.duracao, 3),
+                       "bocas": fala.bocas, "audio": f"{fid}.wav", "impressao": imp}
+        print(f"  gravada {fid:22s} {fala.duracao:5.1f} s")
+    for fid in set(antigo) - set(indice):
+        (FALAS / antigo[fid]["audio"]).unlink(missing_ok=True)
+        print(f"  removida {fid}")
+    INDICE.write_text(json.dumps(indice, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+
+
+def main() -> int:
+    if "--conferir" in sys.argv:
+        erros = conferir()
+        for e in erros:
+            print(f"  [ERRO] {e}")
+        print("FALAS EM DIA" if not erros else f"FALAS DESATUALIZADAS: {len(erros)}")
+        return 1 if erros else 0
+    gerar()
+    erros = conferir()
+    print("FALAS EM DIA" if not erros else f"ainda com erro: {erros}")
+    return 1 if erros else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

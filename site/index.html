@@ -1764,17 +1764,24 @@ const Voz = (function () {
    127.0.0.1, e nunca localhost: no Windows o navegador tenta o IPv6 primeiro
    e perde 2 s a cada chamada -- medido no estudio.
 
-   Estudio fora do ar e o caso COMUM (quem visita o site nao tem o PC dele),
-   entao a sondagem e barata, curta e silenciosa, e repete de tempos em tempos:
-   ligar o estudio com a pagina aberta acende a chamada sem recarregar. */
+   Estudio fora do ar e o caso COMUM (quem visita o site nao tem o PC dele).
+   Para esse visitante existe a NUVEM: um Cloudflare Worker (hospedagem/
+   cloudflare) faz so a busca da ficha, e a voz ja esta gravada em falas/,
+   gerada por hospedagem/gerar_falas.py. Sem modelo gerador: so texto revisado.
+
+   Ordem: estudio local (mais completo) > nuvem > Claude > respostas prontas.
+   A sondagem do estudio local e barata e se repete: ligar o PC com a pagina
+   aberta troca a nuvem pelo local sem recarregar. */
 const Estudio = (function () {
-  const BASE = 'http://127.0.0.1:8765';
+  const LOCAL = 'http://127.0.0.1:8765';
+  const NUVEM = 'https://tronikat.tronikat-busca.workers.dev';
   const sinal = document.getElementById('sinal');
-  let vivo = false, temClaude = false;
+  let modo = null, temClaude = false, falas = null;   // modo: 'local' | 'nuvem' | null
 
   function marcar() {
-    sinal.classList.toggle('vivo', vivo);
-    sinal.textContent = vivo ? 'estúdio local · ao vivo'
+    sinal.classList.toggle('vivo', !!modo);
+    sinal.textContent = modo === 'local' ? 'estúdio local · ao vivo'
+                      : modo === 'nuvem' ? 'nuvem · ao vivo'
                       : temClaude ? 'sem estúdio · via Claude' : 'estúdio offline';
   }
 
@@ -1784,22 +1791,47 @@ const Estudio = (function () {
     finally { clearTimeout(t); }
   }
 
-  async function sondar() {
+  async function responde(base, ms) {
     try {
-      const r = await comPrazo(BASE + '/saude', {}, 1500);
-      vivo = r.ok && (await r.json()).ok === true;
-    } catch { vivo = false; }
+      const r = await comPrazo(base + '/saude', {}, ms);
+      return r.ok && (await r.json()).ok === true;
+    } catch { return false; }
+  }
+
+  // A nuvem so e sondada enquanto nao estiver em uso: com ela ativa, uma
+  // falha aparece na propria pergunta, e cada aba aberta nao fica batendo no
+  // Worker a cada 15 s a toa.
+  async function sondar() {
+    if (await responde(LOCAL, 1500)) modo = 'local';
+    else if (modo === 'nuvem' || await responde(NUVEM, 5000)) modo = 'nuvem';
+    else modo = null;
     marcar();
+  }
+
+  async function indiceDasFalas() {
+    if (!falas) {
+      falas = fetch('falas/indice.json').then(r => {
+        if (!r.ok) throw new Error('sem falas');
+        return r.json();
+      }).catch(e => { falas = null; throw e; });
+    }
+    return falas;
   }
 
   // Toca o WAV e move a boca pela linha do tempo que veio junto. A boca le
   // `audio.currentTime` a cada quadro, e nao um cronometro proprio: se o
   // audio engasgar, a boca espera junto, em vez de seguir falando sozinha.
+  // O audio chega de dois jeitos: em base64 do estudio local, ou como arquivo
+  // ja gravado (a nuvem), em `r.arquivo`.
   function tocar(r) {
     return new Promise(resolve => {
-      const bin = atob(r.audio), bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+      let url = r.arquivo, temporaria = false;
+      if (!url) {
+        const bin = atob(r.audio), bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        url = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+        temporaria = true;
+      }
       const audio = new Audio(url);
       let i = 0, fim = false;
       Legenda.preparar(r.texto);
@@ -1814,7 +1846,9 @@ const Estudio = (function () {
       }
       function acabar() {
         if (fim) return;
-        fim = true; Fala.abrir(0); Legenda.limpar(); URL.revokeObjectURL(url); resolve();
+        fim = true; Fala.abrir(0); Legenda.limpar();
+        if (temporaria) URL.revokeObjectURL(url);
+        resolve();
       }
       audio.onended = audio.onerror = acabar;
       audio.onplay = () => requestAnimationFrame(quadro);
@@ -1823,18 +1857,27 @@ const Estudio = (function () {
   }
 
   async function perguntar(pergunta) {
-    const r = await comPrazo(BASE + '/perguntar', {
+    const base = modo === 'local' ? LOCAL : NUVEM;
+    const r = await comPrazo(base + '/perguntar', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pergunta }),
-    }, 60000);
-    if (!r.ok) throw new Error('estudio respondeu ' + r.status);
-    return r.json();
+    }, modo === 'local' ? 60000 : 15000);
+    if (!r.ok) throw new Error(modo + ' respondeu ' + r.status);
+    const corpo = await r.json();
+    if (modo === 'local') return corpo;
+    // A nuvem devolve so o id da ficha; texto, voz e boca vem do indice.
+    const indice = await indiceDasFalas();
+    const fala = indice[corpo.ficha || '_recusa'];
+    if (!fala) throw new Error('fala desconhecida: ' + corpo.ficha);
+    return { texto: fala.texto, duracao: fala.duracao, bocas: fala.bocas,
+             arquivo: 'falas/' + fala.audio, caminho: corpo.caminho, ficha: corpo.ficha };
   }
 
   sondar();
   setInterval(() => { if (!document.hidden) sondar(); }, 15000);
   return {
-    get vivo() { return vivo; },
+    get vivo() { return !!modo; },
+    falhou() { if (modo === 'nuvem') modo = null; sondar(); },
     comClaude(sim) { temClaude = sim; marcar(); },
     sondar, perguntar, tocar,
   };
@@ -1915,7 +1958,7 @@ async function responder(pergunta) {
       ocupado = false; env.disabled = false; txt.focus();
       return;
     } catch (e) {
-      Estudio.sondar();
+      Estudio.falhou();
     }
   }
 

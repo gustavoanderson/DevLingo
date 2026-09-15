@@ -1,0 +1,12 @@
+{
+  "name": "tronikat-busca",
+  "private": true,
+  "description": "A busca do Tr∅nikAt na borda: pergunta -> ficha, com o embeddinggemma do Workers AI",
+  "scripts": {
+    "dev": "wrangler dev --remote",
+    "publicar": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.132.0"
+  }
+}

@@ -1,0 +1,12 @@
+name = "tronikat"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# O Workers AI entra como "binding": o Worker chama env.AI.run(...) e a conta
+# nunca expoe chave nenhuma no codigo.
+[ai]
+binding = "AI"
+
+# Medido: com prefixo 44/52, sem 31/52 (ver src/index.js). Nao troque sem remedir.
+[vars]
+FORMATO = "gemma"
