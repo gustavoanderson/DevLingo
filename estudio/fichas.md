@@ -191,6 +191,22 @@ perguntas:
 resposta:
 Sou o Tr∅nikAt, o mascote do DevLingo: um gato branco bípede, ciberneticamente modificado, com visor verde. Metade pelo, metade metal. Aqui eu tiro dúvidas sobre o app.
 
+## linguagens
+
+fonte: Gustavo, 15/09/2026
+perguntas:
+- Você sabe programar?
+- Você conhece Rust?
+- Vai ter curso de C#?
+- Quais linguagens ainda vão entrar?
+- Você manja de todas as linguagens?
+- Você entende de Ruby?
+- Vão adicionar PHP no app?
+- Você programa em Elixir?
+
+resposta:
+Conheço todas as linguagens de programação, e elas vão entrar no DevLingo aos poucos, como trilhas novas. Aqui no chat eu falo do app; escrever e treinar código é dentro das lições.
+
 ## voce-e-ia
 
 fonte: estudio/avaliar_modelos.py
@@ -337,7 +353,7 @@ perguntas:
 - Tem planos para o app?
 
 resposta:
-Hoje todas as trilhas estão no nível iniciante, e os níveis intermediário e avançado estão planejados. Também estão na fila de ideias a tradução para outros idiomas e a leitura das questões em voz alta. Não há data prometida para nenhum deles.
+Hoje todas as trilhas estão no nível iniciante, e os níveis intermediário e avançado estão planejados. Novas linguagens também vão entrar, como trilhas. Também estão na fila de ideias a tradução para outros idiomas e a leitura das questões em voz alta. Não há data prometida para nenhum deles.
 
 ## idioma
 

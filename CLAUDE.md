@@ -41,6 +41,8 @@ Linguagens previstas: Python, JavaScript e Node primeiro; depois HTML, CSS, SQL,
 
 Mascote: **Tr∅nikAt**, gato branco bípede ciberneticamente modificado, com visor verde no estilo scouter do Vegeta.
 
+**Ele conhece todas as linguagens de programação**, que vão entrando no DevLingo como trilhas — definido pelo Gustavo em 15 de setembro de 2026. No chat do site ele **fala do DevLingo**: não dá aula nem escreve código, que se treina dentro das lições. Isso não é timidez do personagem, é o que mantém o porteiro do estúdio seguro: ele só diz o que está nas fichas (`estudio/fichas.md`), e `testar_porteiro.py` reprova se uma pergunta de programação gerar código.
+
 ---
 
 ## Decisões de stack, e o motivo de cada uma

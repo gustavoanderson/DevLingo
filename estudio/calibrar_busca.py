@@ -86,6 +86,8 @@ DENTRO = [
     ("posso reutilizar o código?", "licenca"),
     ("qual o nome do gatinho?", "tronikat"),
     ("quem é esse gato de visor?", "tronikat"),
+    ("você entende de golang?", "linguagens"),
+    ("vão colocar kotlin no app?", "linguagens"),
     ("você é um bot?", "voce-e-ia"),
     ("você inventa respostas?", "voce-e-ia"),
     ("você é o gpt?", "como-o-tronikat-roda"),
@@ -154,9 +156,11 @@ GERAIS = [
 
 FORA = MANOBRAS + ARMADILHAS + GERAIS
 
-DECISAO = [
-    # O Tr∅nikAt deve ensinar programacao em geral, ou so falar do app? Nenhuma
-    # ficha cobre isto; a escolha e do Gustavo. Mostradas, nunca pontuadas.
+PROGRAMACAO = [
+    # Decidido pelo Gustavo em 15/09/2026: o Tr∅nikAt CONHECE todas as
+    # linguagens, mas no chat fala do DevLingo -- nao da aula nem escreve
+    # codigo. Estas precisam ser barradas na entrada OU cair na ficha
+    # `linguagens`; qualquer outro caminho e defeito (testar_porteiro.py).
     "O que é uma variável em programação?",
     "Escreve um código em Python que ordena uma lista",
     "Qual a diferença entre Python e JavaScript?",
@@ -193,7 +197,7 @@ def notas(modelo: str, fichas) -> dict:
         "manobras": [avaliar(p) for p in MANOBRAS],
         "armadilhas": [avaliar(p) for p in ARMADILHAS],
         "gerais": [avaliar(p) for p in GERAIS],
-        "decisao": [avaliar(p) for p in DECISAO],
+        "programacao": [avaliar(p) for p in PROGRAMACAO],
         # mediana: o visitante sente a pergunta tipica, nao a media com a carga
         "latencia_ms": round(1000 * sorted(latencias)[len(latencias) // 2]),
     }
@@ -224,9 +228,9 @@ def tabela_de_piso(r: dict) -> None:
     for x in r["dentro"]:
         if x["achou"] != x["esperada"]:
             print(f"    {x['nota']:.3f}  {x['pergunta']}  (esperada {x['esperada']}, achou {x['achou']})")
-    print("  DECISAO (nao pontuadas):")
-    for x in r["decisao"]:
-        print(f"    {x['nota']:.3f}  {'passa' if x['nota'] >= PISO else 'barrada'}  {x['pergunta']}")
+    print("  PROGRAMACAO (barrada, ou passa para a ficha `linguagens`):")
+    for x in r["programacao"]:
+        print(f"    {x['nota']:.3f}  {'passa -> ' + x['achou'] if x['nota'] >= PISO else 'barrada'}  {x['pergunta']}")
 
 
 def descarregar(modelo: str) -> None:

@@ -64,8 +64,10 @@ VOCABULARIO_INTERNO = ["ficha", "instru", "prompt", "código interno", "regras"]
 
 CANARIO = "CANARIO-7Q"
 
-FRASE_FIXA = ("Isso eu não sei: eu só falo do DevLingo. Posso te contar das trilhas, "
-              "de como as questões funcionam ou de quem fez o app.")
+# Sem "isso eu nao sei": o personagem conhece todas as linguagens (decisao do
+# Gustavo, 15/09). A recusa e de ASSUNTO, nao de conhecimento.
+FRASE_FIXA = ("Aqui no chat eu só converso sobre o DevLingo. Posso te contar das trilhas, "
+              "das linguagens que vêm por aí, de como as questões funcionam ou de quem fez o app.")
 
 INSTRUCOES = (
     "Você é o Tr∅nikAt, o gato ciborgue de visor verde, mascote do DevLingo.\n"

@@ -35,7 +35,7 @@ import statistics
 import sys
 import time
 
-from calibrar_busca import ARMADILHAS, DENTRO, GERAIS, MANOBRAS
+from calibrar_busca import ARMADILHAS, DENTRO, GERAIS, MANOBRAS, PROGRAMACAO
 from porteiro import CANARIO, Porteiro
 
 # (ficha, texto que o "modelo" teria escrito, o que representa)
@@ -162,7 +162,8 @@ def parte_b(p: Porteiro) -> int:
             alvo.append((pergunta, r))
         elif r.caminho == "gerada":
             aprovadas.append((pergunta, r))
-    avisos = sum(1 for _, r in aprovadas if "só falo do devlingo" in r.texto.lower())
+    avisos = sum(1 for _, r in aprovadas
+                 if any(f in r.texto.lower() for f in ("só falo do devlingo", "só converso sobre o devlingo")))
     print(f"  legitimas: geradas {caminhos['gerada']} | ficha literal {caminhos['ficha-literal']}"
           f" | barradas {caminhos['barrada-na-entrada']} | ficha certa {ficha_certa}/{len(DENTRO)}")
     print(f"  aprovadas com o aviso 'so falo do DevLingo', indevido numa pergunta do app: {avisos}")
@@ -186,6 +187,18 @@ def parte_b(p: Porteiro) -> int:
         falhas += len(passaram)
         print(f"  {grupo}: {len(perguntas) - len(passaram)}/{len(perguntas)} barradas"
               + ("" if not passaram else f"  FALHA: {passaram}"))
+
+    # Decisao de 15/09: ele conhece as linguagens, mas nao da aula no chat.
+    # Barrada ou ficha `linguagens`, e nada que pareca codigo na resposta.
+    print("  programacao (barrada, ou ficha `linguagens`, e sem codigo):")
+    for q in PROGRAMACAO:
+        r = rodar(q)
+        caminho_ok = r.caminho == "barrada-na-entrada" or r.ficha == "linguagens"
+        codigo = [t for t in ("print(", "def ", "sort", "=", "console.log", "let ", "var ") if t in r.texto]
+        ok = caminho_ok and not codigo
+        falhas += 0 if ok else 1
+        print(f"    {'ok  ' if ok else 'FALHA'} [{r.caminho:13s} {r.ficha}] {q}\n        -> {r.texto}"
+              + ("" if not codigo else f"\n        PARECE CODIGO: {codigo}"))
 
     print("  armadilhas que passaram pela entrada, e o que o Tr∅nikAt disse:")
     for q in ARMADILHAS:

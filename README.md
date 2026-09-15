@@ -27,7 +27,7 @@ Um aplicativo Android que ensina programação e engenharia de software em **li�
 
 **Feito para o público brasileiro.** Todo o conteúdo é escrito em português — enunciados, aulas, dicas e explicações. Não é tradução: as questões foram pensadas em português, e até detalhes como *não exigir acento no que o aluno digita* existem porque digitar `ç` em teclado de celular é toque longo, e ninguém deveria errar uma questão de programação por causa do teclado.
 
-O guia é o **Tr∅nikAt**, um gato branco ciberneticamente modificado com visor no estilo scouter.
+O guia é o **Tr∅nikAt**, um gato branco ciberneticamente modificado com visor no estilo scouter. Ele conhece todas as linguagens de programação, e elas vão entrando no DevLingo aos poucos, como trilhas novas.
 
 <div align="center">
 <img src="docs/imagens/tela-linguagens.png" width="240" alt="Tela de escolha de trilha">
