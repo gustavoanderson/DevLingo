@@ -10,11 +10,12 @@ Duas protecoes que custariam caro se faltassem:
 - FIM DE LINHA LF. Este repositorio usa core.autocrlf=true; um iniciar.sh com
   CRLF quebra no Linux com "set: Illegal option -" e nada aponta o motivo
 
-O token NUNCA vai em arquivo: vem da variavel HF_TOKEN, digitada no terminal.
+O token NUNCA vai em arquivo do repositorio: vem da variavel HF_TOKEN ou do
+login salvo por `hf auth login` (fica no perfil do usuario, fora daqui).
 
-Uso:
-    python hospedagem/publicar_space.py                          # so monta e lista
-    python hospedagem/publicar_space.py --publicar USUARIO/tronikat
+Uso (com o Python do estudio, que tem o huggingface_hub):
+    estudio/.venv/Scripts/python.exe hospedagem/publicar_space.py            # so monta e lista
+    estudio/.venv/Scripts/python.exe hospedagem/publicar_space.py --publicar USUARIO/tronikat
 """
 from __future__ import annotations
 
@@ -62,12 +63,14 @@ def main() -> int:
             print("\nso montado. Para publicar: --publicar USUARIO/tronikat, com HF_TOKEN definido")
             return 0
         repo = sys.argv[sys.argv.index("--publicar") + 1]
-        token = os.environ.get("HF_TOKEN")
+        from huggingface_hub import HfApi, get_token
+        # HF_TOKEN no terminal, ou o login salvo por "hf auth login". Nunca arquivo do repo.
+        token = os.environ.get("HF_TOKEN") or get_token()
         if not token:
-            print("defina HF_TOKEN no terminal antes (token com permissao de escrita)")
+            print("faca login antes: estudio/.venv/Scripts/hf.exe auth login (token com permissao de escrita)")
             return 1
-        from huggingface_hub import HfApi
         api = HfApi(token=token)
+        print(f"publicando como: {api.whoami()['name']}")
         api.create_repo(repo, repo_type="space", space_sdk="docker", exist_ok=True)
         api.upload_folder(folder_path=str(montagem), repo_id=repo, repo_type="space",
                           commit_message="Publica o Tr∅nikAt a partir do repositorio DevLingo",
