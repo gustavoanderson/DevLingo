@@ -51,3 +51,4 @@ venv/
 # Saida do teste comparativo de modelos: muda a cada rodada, e depende dos
 # modelos baixados em cada maquina. O que se versiona e o teste, nao o placar.
 estudio/resultado_avaliacao.json
+estudio/resultado_calibracao.json

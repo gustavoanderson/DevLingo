@@ -26,7 +26,12 @@ import unicodedata
 import urllib.request
 from pathlib import Path
 
-OLLAMA = "http://localhost:11434"
+# 127.0.0.1, e NUNCA "localhost". No Windows, localhost resolve primeiro para o
+# IPv6 (::1); o Ollama escuta so no IPv4; o cliente espera a tentativa IPv6
+# desistir e so entao tenta de novo. Medido em 14/09: 2.168 ms com localhost,
+# 108 ms com 127.0.0.1 -- os 2 segundos sumiam FORA do Ollama, antes de a
+# requisicao chegar nele, e por isso nao apareciam em nenhuma duracao dele.
+OLLAMA = "http://127.0.0.1:11434"
 
 MODELOS = ["hermes3-gpu", "qwen2.5:3b", "qwen3:4b-instruct"]
 
