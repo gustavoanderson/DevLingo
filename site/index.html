@@ -37,15 +37,46 @@
   .sub{font-family:var(--hud);font-size:clamp(14px,2.4vw,19px);letter-spacing:3px;
        text-transform:uppercase;color:var(--suave);margin-top:10px}
 
-  .palco{display:grid;grid-template-columns:minmax(0,268px) minmax(0,1fr);
+  .palco{display:grid;grid-template-columns:minmax(0,358px) minmax(0,1fr);
          gap:20px;align-items:stretch;margin-top:20px}
   @media (max-width:760px){.palco{grid-template-columns:1fr}}
 
-  /* A cabeca e o chat ocupavam metade da tela cada e empurravam a cidade para
-     fora do quadro. Agora sao uma faixa: ele a esquerda, a conversa ao lado,
-     e a cidade continua sendo o que se ve. */
-  #cabeca{width:100%;aspect-ratio:1/1;max-height:268px;border:1px solid var(--linha);
-          border-radius:14px;background:rgba(14,5,32,.55);display:block}
+  /* A VIDEOCHAMADA. O quadrado com a cabeca flutuando virou uma chamada 4:3:
+     o quarto desfocado atras (e o desfoque que diz "webcam"), o busto em foco,
+     o selo REC, o cracha e a legenda. A altura continua 268 px -- a cabeca e o
+     chat ja tinham sido acusados de ocupar a tela demais; muda a proporcao,
+     nao o tamanho. */
+  .chamada{position:relative;width:100%;aspect-ratio:4/3;max-height:268px;
+           border-radius:14px;overflow:hidden;border:1px solid rgba(0,229,255,.30);
+           background:#0B0618}
+  .chamada canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  /* O scale esconde a borda: blur puxa o preto de fora do canvas para dentro. */
+  #quarto{filter:blur(2.5px);transform:scale(1.06)}
+  @media (prefers-reduced-motion: reduce){.rec i{animation:none}}
+  /* Vinheta de lente: webcam barata escurece nas bordas. */
+  .chamada::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(ellipse at 50% 42%,transparent 58%,rgba(0,0,0,.5) 100%)}
+  .hud{position:absolute;top:8px;left:9px;right:9px;z-index:2;display:flex;
+       justify-content:space-between;align-items:center;gap:6px;font-family:var(--hud);
+       letter-spacing:1.3px;text-transform:uppercase;font-size:11.5px}
+  .hud > span{background:rgba(0,0,0,.52);padding:3px 8px;border-radius:6px}
+  .rec{display:flex;align-items:center;gap:6px;color:#fff}
+  .rec i{width:8px;height:8px;border-radius:50%;background:#FF3B3B;
+         animation:piscaRec 1.2s steps(1) infinite}
+  .rec b{font-variant-numeric:tabular-nums;font-weight:600}
+  @keyframes piscaRec{50%{opacity:.15}}
+  .sinal{color:var(--suave)}
+  .sinal.vivo{color:var(--visor)}
+  .cracha{position:absolute;left:9px;bottom:9px;z-index:2;background:rgba(10,4,22,.78);
+          border-left:3px solid var(--magenta);padding:4px 9px 5px;font-family:var(--hud);
+          font-weight:600;letter-spacing:.8px;font-size:15px;line-height:1.05}
+  .cracha small{display:block;color:var(--suave);font-weight:500;font-size:10px;
+                letter-spacing:1.6px;text-transform:uppercase;margin-top:2px}
+  /* A legenda mora ACIMA do cracha, e nao em cima do rosto. */
+  .legenda{position:absolute;left:8%;right:8%;bottom:46px;z-index:2;text-align:center;
+           font-size:12.5px;line-height:1.5;color:#fff}
+  .legenda span{background:rgba(0,0,0,.66);padding:2px 7px;border-radius:4px;
+                -webkit-box-decoration-break:clone;box-decoration-break:clone}
 
   /* O painel estava com cara de morto: um retangulo escuro com duas bolhas.
      Agora ele e uma TELA -- chuva de caracteres atras, vidro esverdeado por
@@ -148,7 +179,18 @@
   <div class="sub">Aprenda a programar · 404 questões · 8 trilhas</div>
 
   <div class="palco">
-    <canvas id="cabeca" aria-label="Cabeça do Tr∅nikAt em 3D, que se move enquanto fala"></canvas>
+    <div class="chamada" id="chamada">
+      <canvas id="quarto" aria-hidden="true"></canvas>
+      <canvas id="cabeca" aria-label="O Tr∅nikAt em videochamada, em 3D, com a boca sincronizada à voz"></canvas>
+      <div class="hud">
+        <span class="rec"><i></i>REC <b id="cronometro">00:00</b></span>
+        <span class="sinal" id="sinal">procurando o estúdio…</span>
+      </div>
+      <!-- aria-hidden: o mesmo texto ja e anunciado pelo registro do chat, e
+           anunciar duas vezes atrapalha quem usa leitor de tela. -->
+      <div class="legenda" id="legenda" aria-hidden="true"></div>
+      <div class="cracha">Tr∅nikAt<small>DevLingo · guia</small></div>
+    </div>
 
     <div class="terminal">
       <canvas id="chuva" aria-hidden="true"></canvas>
@@ -167,7 +209,7 @@
       </div>
       <form class="entrada" id="form">
         <input id="txt" placeholder="Pergunte ao Tr∅nikAt…" autocomplete="off"
-               aria-label="Sua pergunta">
+               maxlength="300" aria-label="Sua pergunta">
         <button id="env">Falar</button>
       </form>
     </div>
@@ -1141,16 +1183,112 @@ function montarMetro(canvas, avancoDaCamera) {
  *
  * Desenhar a olho ja falhou tres vezes neste projeto, todas medidas depois.
  */
+/* ------------------------------------------------------------- o quarto
+   O fundo da videochamada. Desenhado PEQUENO (240x180) e esticado com blur:
+   e o desfoque que diz "webcam", e em baixa resolucao ele sai de graca --
+   detalhe fino seria desenhado para ser apagado.
+
+   Pela janela, a mesma cidade do topo da pagina: o Tr∅nikAt mora nela. */
+(function quarto() {
+  const c = document.getElementById('quarto');
+  c.width = 240; c.height = 180;
+  const x = c.getContext('2d');
+  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Semente fixa: o quarto nao pode trocar de moveis a cada visita.
+  let s = 7; const acaso = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const predios = Array.from({ length: 9 }, (_, i) => ({
+    x: 14 + i * 11 + acaso() * 4, l: 7 + acaso() * 6, a: 30 + acaso() * 50,
+    cor: ['#FF2D95', '#00E5FF', '#FFE14D', '#39FF14'][Math.floor(acaso() * 4)],
+    fase: acaso() * 6 }));
+
+  function desenhar(t) {
+    // parede: roxo do app, mais escura embaixo
+    const g = x.createLinearGradient(0, 0, 0, 180);
+    g.addColorStop(0, '#2B1552'); g.addColorStop(1, '#0E0620');
+    x.fillStyle = g; x.fillRect(0, 0, 240, 180);
+
+    // janela a esquerda, com a cidade la fora
+    x.fillStyle = '#07030F'; x.fillRect(8, 22, 104, 92);
+    const ceu = x.createLinearGradient(0, 22, 0, 114);
+    ceu.addColorStop(0, '#1A0B3A'); ceu.addColorStop(1, '#4A1450');
+    x.fillStyle = ceu; x.fillRect(12, 26, 96, 84);
+    for (const p of predios) {
+      x.fillStyle = '#12082A'; x.fillRect(p.x, 110 - p.a, p.l, p.a);
+      // o letreiro de cada predio: pisca devagar, nunca todos juntos
+      const aceso = calmo || Math.sin(t * 1.3 + p.fase) > -.7;
+      x.globalAlpha = aceso ? .95 : .25;
+      x.fillStyle = p.cor; x.fillRect(p.x + 1, 112 - p.a + 6, 2, p.a * .35);
+      x.globalAlpha = 1;
+    }
+    // caixilho em cruz
+    x.fillStyle = '#07030F'; x.fillRect(58, 26, 4, 84); x.fillRect(12, 66, 96, 3);
+
+    // prateleira a direita, com livros e uma luz verde de roteador
+    x.fillStyle = '#1A0E33'; x.fillRect(150, 58, 84, 5);
+    [['#5B3FA0', 9, 22], ['#FF2D95', 6, 18], ['#2F6F8F', 8, 25], ['#8A6BD1', 5, 16]]
+      .reduce((px, [cor, l, a]) => { x.fillStyle = cor; x.fillRect(px, 58 - a, l, a); return px + l + 2; }, 162);
+    x.fillStyle = (calmo || (t * 2) % 3 > .4) ? '#39FF14' : '#0D3A08';
+    x.fillRect(212, 52, 3, 3);
+
+    // abajur quente no canto: a unica luz que nao e neon
+    const halo = x.createRadialGradient(222, 120, 2, 222, 120, 60);
+    halo.addColorStop(0, 'rgba(255,190,110,.55)'); halo.addColorStop(1, 'rgba(255,190,110,0)');
+    x.fillStyle = halo; x.fillRect(150, 60, 90, 120);
+    x.fillStyle = '#FFD39A'; x.beginPath(); x.moveTo(212, 112); x.lineTo(232, 112);
+    x.lineTo(228, 100); x.lineTo(216, 100); x.fill();
+  }
+  desenhar(0);
+  if (!calmo) setInterval(() => desenhar(performance.now() / 1000), 200);
+
+  // Cronometro do REC: conta desde a abertura da pagina.
+  const cron = document.getElementById('cronometro'), t0 = Date.now();
+  setInterval(() => {
+    const seg = Math.floor((Date.now() - t0) / 1000);
+    cron.textContent = String(Math.floor(seg / 60) % 100).padStart(2, '0') + ':' +
+                       String(seg % 60).padStart(2, '0');
+  }, 1000);
+})();
+
+/* Legenda: mostra a FRASE da vez, e nao o texto inteiro, que cobriria o rosto.
+   `acompanhar` recebe a fracao do texto ja falada (0 a 1). */
+const Legenda = (function () {
+  const el = document.getElementById('legenda');
+  let frases = [], atual = -1;
+  return {
+    preparar(texto) {
+      frases = texto.match(/[^.!?…]+[.!?…]*\s*/g) || [texto];
+      atual = -1; el.textContent = '';
+    },
+    acompanhar(fracao) {
+      if (!frases.length) return;
+      const total = frases.reduce((n, f) => n + f.length, 0);
+      let alvo = fracao * total, i = 0;
+      while (i < frases.length - 1 && alvo > frases[i].length) { alvo -= frases[i].length; i++; }
+      if (i === atual) return;
+      atual = i;
+      const s = document.createElement('span'); s.textContent = frases[i].trim();
+      el.replaceChildren(s);
+    },
+    limpar() { frases = []; atual = -1; el.textContent = ''; },
+  };
+})();
+
 const Fala = (function () {
   const c = document.getElementById('cabeca');
   const cena = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-  cam.position.set(0, 0, 10.8);
+  // Enquadramento de WEBCAM: a camera recua e desce o centro para caber o
+  // busto. Visivel de y=-4,9 (o moletom SANGRA pela borda de baixo, que e o
+  // que faz ler como gente sentada na frente do computador, e nao boneco
+  // inteiro) ate y=4,0. A ponta da orelha fica em 3,1: com z=13,4 ela
+  // encostava na borda de cima (medido no print: 32 px por unidade, ponta no
+  // pixel da moldura), e a folga agora e de ~26 px.
+  const cam = new THREE.PerspectiveCamera(34, 4 / 3, 0.1, 100);
+  cam.position.set(0, -.45, 14.5);
   const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
   function medir() {
-    const l = c.clientWidth || 440;
+    const l = c.clientWidth || 358, a = c.clientHeight || Math.round(l * 3 / 4);
     r.setPixelRatio(Math.min(devicePixelRatio, 2));
-    r.setSize(l, l, false); cam.aspect = 1; cam.updateProjectionMatrix();
+    r.setSize(l, a, false); cam.aspect = l / a; cam.updateProjectionMatrix();
   }
   addEventListener('resize', medir);
 
@@ -1442,6 +1580,74 @@ const Fala = (function () {
     naSuperficie(m, x, y, .01); cabeca.add(m);
   }
 
+  /* --- o BUSTO, copiado de assets/mascot/tronikat.svg por escala ---
+   * O plano era dividir o corpo em pelo e metal, como a cabeca. A arte
+   * canonica diz outra coisa: o corpo e um MOLETOM roxo (#2A1B4D) com gola
+   * rosa, e a telinha com `>_` verde no centro do peito. A assimetria pelo/
+   * metal aparece nos BRACOS -- o esquerdo branco, o direito de aco com rebite.
+   *
+   * Escala: a cabeca tem 104 de largura na arte e 2R = 4 aqui, entao cada
+   * unidade da arte vale 4/104. Moletom: 76 em cima, 88 embaixo, 92 de altura
+   * (as razoes 0,73 / 0,85 / 0,88 ja medidas no CLAUDE.md). */
+  const ARTE = (2 * R) / 104;
+  const corpo = new THREE.Group(); cena.add(corpo);
+  const TOPO = -1.55;                       // enfiado sob o queixo, como na arte
+  const ALTURA = 92 * ARTE, R_TOPO = 38 * ARTE, R_BASE = 44 * ARTE;
+  const FUNDO = .62;                        // moletom e achatado de frente, nao um tubo
+  const MOLETOM = new THREE.MeshStandardMaterial({ color: 0x2A1B4D, roughness: .95 });
+  const tronco = new THREE.Mesh(
+    new THREE.CylinderGeometry(R_TOPO, R_BASE, ALTURA, 48, 1), MOLETOM);
+  tronco.scale.z = FUNDO; tronco.position.y = TOPO - ALTURA / 2; corpo.add(tronco);
+  // Ombro tem quina; a esfera so a suaviza (a colina de ombro ja foi um erro).
+  const ombros = new THREE.Mesh(new THREE.SphereGeometry(R_TOPO, 36, 18, 0, Math.PI * 2, 0, Math.PI / 2),
+    MOLETOM);
+  ombros.scale.set(1, .30, FUNDO); ombros.position.y = TOPO; corpo.add(ombros);
+
+  // Gola rosa: meia elipse na frente, logo abaixo do queixo.
+  const gola = new THREE.Mesh(new THREE.TorusGeometry(R_TOPO * .82, .075, 8, 40, Math.PI),
+    new THREE.MeshBasicMaterial({ color: ROSA_FORTE }));
+  gola.rotation.x = Math.PI / 2; gola.rotation.z = Math.PI;
+  gola.scale.set(1, FUNDO * 1.05, 1); gola.position.set(0, TOPO + .02, 0); corpo.add(gola);
+
+  // A telinha do peito: 38x24 na arte, 42 abaixo do topo do moletom.
+  const peito = document.createElement('canvas'); peito.width = 152; peito.height = 96;
+  { const x = peito.getContext('2d');
+    x.fillStyle = '#170A31'; x.fillRect(0, 0, 152, 96);
+    x.strokeStyle = '#39FF14'; x.lineWidth = 6; x.strokeRect(3, 3, 146, 90);
+    x.fillStyle = '#39FF14'; x.font = 'bold 50px ui-monospace, Consolas, monospace';
+    x.textBaseline = 'middle'; x.fillText('>_', 34, 52); }
+  const tela_peito = new THREE.Mesh(new THREE.PlaneGeometry(38 * ARTE, 24 * ARTE),
+    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(peito) }));
+  const yPeito = TOPO - 42 * ARTE;
+  // Na superficie do cone achatado: o raio naquela altura, vezes o FUNDO.
+  const rPeito = R_TOPO + (R_BASE - R_TOPO) * (42 / 92);
+  tela_peito.position.set(0, yPeito, rPeito * FUNDO + .02); corpo.add(tela_peito);
+
+  // Bracos: 14 de espessura, esquerdo de pelo, direito de aco #9BA0B8 com o
+  // rebite. Na arte eles pendem ao lado do corpo; num busto isso deixava as
+  // patas BOIANDO no quadro e os tubos lendo como bexiga. Aqui eles descem
+  // para a FRENTE e saem pela borda de baixo -- quem esta numa chamada tem as
+  // maos no teclado, fora de cena -- e a ponta do tubo nunca aparece.
+  function braco(lado) {
+    const ombro = new THREE.Vector3(lado * 38 * ARTE, TOPO - 10 * ARTE, 0);
+    const meio = new THREE.Vector3(lado * 50 * ARTE, TOPO - 55 * ARTE, .5);
+    const fim = new THREE.Vector3(lado * 40 * ARTE, TOPO - 120 * ARTE, 2.2);
+    const metal = lado > 0;
+    const mat = new THREE.MeshStandardMaterial(metal
+      ? { color: 0xB4B8CC, roughness: .42, metalness: .55, map: CHAPA, bumpMap: CHAPA, bumpScale: .015 }
+      : { color: 0xFFFFFF, roughness: .9, map: PELAGEM, bumpMap: PELAGEM, bumpScale: .022 });
+    corpo.add(new THREE.Mesh(new THREE.TubeGeometry(
+      new THREE.QuadraticBezierCurve3(ombro, meio, fim), 24, 7 * ARTE, 12), mat));
+    if (metal) {
+      // O rebite vai NA curva do braco, e nao numa posicao chutada.
+      const p = new THREE.QuadraticBezierCurve3(ombro, meio, fim).getPoint(.28);
+      const rebite = new THREE.Mesh(new THREE.SphereGeometry(5 * ARTE, 12, 8),
+        new THREE.MeshStandardMaterial({ color: 0x5C6178, roughness: .4, metalness: .6 }));
+      rebite.position.set(p.x, p.y, p.z + 6.5 * ARTE); corpo.add(rebite);
+    }
+  }
+  braco(-1); braco(1);
+
   // --- luz: NEUTRA na frente, e a cor so nas bordas ---
   // A primeira versao tinha um ponto ciano e um rosa apontados para o rosto,
   // e o metal saia AZUL. Cor de cena nao pode reescrever a cor do personagem.
@@ -1455,7 +1661,8 @@ const Fala = (function () {
   const borda2 = new THREE.PointLight(ROSA_FORTE, .7, 26);
   borda2.position.set(6.5, -2, -2); cena.add(borda2);
 
-  let abertura = 0, alvo = 0, mira = { x: 0, y: 0 }, piscar = 0;
+  let abertura = 0, alvo = 0, arredonda = 0, alvoArred = 0, preciso = false,
+      mira = { x: 0, y: 0 }, piscar = 0;
   addEventListener('pointermove', e => {
     mira.x = (e.clientX / innerWidth - .5) * .52;
     mira.y = (e.clientY / innerHeight - .5) * .30;
@@ -1467,24 +1674,35 @@ const Fala = (function () {
     cabeca.rotation.y += (mira.x - cabeca.rotation.y) * .06;
     cabeca.rotation.x += (mira.y - cabeca.rotation.x) * .06;
     cabeca.position.y = Math.sin(t * 1.4) * .06;
+    // O corpo segue a cabeca a um terco: pescoco gira, tronco quase nao.
+    corpo.rotation.y = cabeca.rotation.y * .3;
+    corpo.position.y = Math.sin(t * 1.4 - .5) * .025;
 
     // Piscar: seco, sem transicao, como na tela de titulo do app.
     piscar = (t % 4.6) > 4.45 ? 1 : 0;
     olho.scale.y = piscar ? .08 : 1;
     brilho.visible = !piscar;
 
-    abertura += (alvo - abertura) * .38;
-    const tremor = alvo > .04 ? Math.sin(t * 40) * .1 * alvo : 0;
+    // Duas fontes movem a boca. A voz do NAVEGADOR so da o limite das
+    // palavras, e o tremor disfarca a aproximacao. O ESTUDIO manda o fonema
+    // de verdade, com hora marcada: ali tremor seria ruido, e a suavizacao
+    // tem que ser curta, senao a boca chega atrasada ao fonema seguinte.
+    abertura += (alvo - abertura) * (preciso ? .6 : .38);
+    arredonda += (alvoArred - arredonda) * .5;
+    const tremor = !preciso && alvo > .04 ? Math.sin(t * 40) * .1 * alvo : 0;
     const a = Math.max(0, abertura + tremor);
-    boca.scale.set(bocaEscalaBase.x * (1 - a * .22),
+    // "o" e "u" fecham os cantos e projetam o labio: menos largura, mais fundo.
+    boca.scale.set(bocaEscalaBase.x * (1 - a * .22) * (1 - arredonda * .38),
                    bocaEscalaBase.y + a * 1.15,
-                   bocaEscalaBase.z * (1 + a * .5));
+                   bocaEscalaBase.z * (1 + a * .5) * (1 + arredonda * .35));
     tela.material.color.setHex(alvo > .04 ? 0x9CFF7A : VISOR);
     r.render(cena, cam);
     requestAnimationFrame(anima);
   })();
 
-  return { abrir: v => { alvo = v; } };
+  return {
+    abrir: (v, arred = 0, exato = false) => { alvo = v; alvoArred = arred; preciso = exato; },
+  };
 })();
 
 /* ------------------------------------------------------------- lip sync
@@ -1517,8 +1735,10 @@ const Voz = (function () {
     const u = new SpeechSynthesisUtterance(limpo);
     if (vozPt) u.voice = vozPt;
     u.lang = 'pt-BR'; u.rate = 1.04; u.pitch = 1.22;
+    Legenda.preparar(limpo); Legenda.acompanhar(0);
 
     u.onboundary = ev => {
+      Legenda.acompanhar(ev.charIndex / limpo.length);
       const resto = limpo.slice(ev.charIndex);
       const palavra = (resto.match(/^\S+/) || [''])[0];
       limpar();
@@ -1532,8 +1752,91 @@ const Voz = (function () {
       });
       timers.push(setTimeout(() => Fala.abrir(0), palavra.length * passo));
     };
-    u.onend = u.onerror = () => { limpar(); Fala.abrir(0); };
+    u.onend = u.onerror = () => { limpar(); Fala.abrir(0); Legenda.limpar(); };
     speechSynthesis.speak(u);
+  };
+})();
+
+/* ------------------------------------------------------------- o estudio
+   O Tr∅nikAt de verdade roda no PC do Gustavo (estudio/servidor.py): modelo
+   local, porteiro com juiz, e a voz do Piper com a boca pelos FONEMAS.
+
+   127.0.0.1, e nunca localhost: no Windows o navegador tenta o IPv6 primeiro
+   e perde 2 s a cada chamada -- medido no estudio.
+
+   Estudio fora do ar e o caso COMUM (quem visita o site nao tem o PC dele),
+   entao a sondagem e barata, curta e silenciosa, e repete de tempos em tempos:
+   ligar o estudio com a pagina aberta acende a chamada sem recarregar. */
+const Estudio = (function () {
+  const BASE = 'http://127.0.0.1:8765';
+  const sinal = document.getElementById('sinal');
+  let vivo = false, temClaude = false;
+
+  function marcar() {
+    sinal.classList.toggle('vivo', vivo);
+    sinal.textContent = vivo ? 'estúdio local · ao vivo'
+                      : temClaude ? 'sem estúdio · via Claude' : 'estúdio offline';
+  }
+
+  async function comPrazo(url, opcoes, ms) {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+    try { return await fetch(url, { ...opcoes, signal: ctl.signal }); }
+    finally { clearTimeout(t); }
+  }
+
+  async function sondar() {
+    try {
+      const r = await comPrazo(BASE + '/saude', {}, 1500);
+      vivo = r.ok && (await r.json()).ok === true;
+    } catch { vivo = false; }
+    marcar();
+  }
+
+  // Toca o WAV e move a boca pela linha do tempo que veio junto. A boca le
+  // `audio.currentTime` a cada quadro, e nao um cronometro proprio: se o
+  // audio engasgar, a boca espera junto, em vez de seguir falando sozinha.
+  function tocar(r) {
+    return new Promise(resolve => {
+      const bin = atob(r.audio), bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+      const audio = new Audio(url);
+      let i = 0, fim = false;
+      Legenda.preparar(r.texto);
+      function quadro() {
+        if (fim) return;
+        const t = audio.currentTime;
+        while (i < r.bocas.length && r.bocas[i][1] <= t) i++;
+        const b = r.bocas[i];
+        if (b && b[0] <= t) Fala.abrir(b[2], b[3], true); else Fala.abrir(0, 0, true);
+        Legenda.acompanhar(r.duracao ? t / r.duracao : 0);
+        requestAnimationFrame(quadro);
+      }
+      function acabar() {
+        if (fim) return;
+        fim = true; Fala.abrir(0); Legenda.limpar(); URL.revokeObjectURL(url); resolve();
+      }
+      audio.onended = audio.onerror = acabar;
+      audio.onplay = () => requestAnimationFrame(quadro);
+      audio.play().catch(acabar);
+    });
+  }
+
+  async function perguntar(pergunta) {
+    const r = await comPrazo(BASE + '/perguntar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pergunta }),
+    }, 60000);
+    if (!r.ok) throw new Error('estudio respondeu ' + r.status);
+    return r.json();
+  }
+
+  sondar();
+  setInterval(() => { if (!document.hidden) sondar(); }, 15000);
+  return {
+    get vivo() { return vivo; },
+    comClaude(sim) { temClaude = sim; marcar(); },
+    sondar, perguntar, tocar,
   };
 })();
 
@@ -1597,6 +1900,23 @@ async function responder(pergunta) {
   const balao = dizer('…', false);
 
   const pronta = RESERVA[pergunta.toLowerCase().trim()];
+
+  // 1. O estudio local, quando ligado. Falhar aqui NAO e erro para quem
+  //    visita: cai para os caminhos de baixo, e a sondagem marca offline.
+  if (Estudio.vivo) {
+    try {
+      estado.textContent = 'Tr∅nikAt · pensando';
+      const r = await Estudio.perguntar(pergunta);
+      balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
+      await Estudio.tocar(r);
+      estado.textContent = 'Tr∅nikAt · online';
+      ocupado = false; env.disabled = false; txt.focus();
+      return;
+    } catch (e) {
+      Estudio.sondar();
+    }
+  }
+
   try {
     const sample = await claudePronto;
     if (!sample) throw new Error('sem claude');
@@ -1629,5 +1949,6 @@ dizer('Oi. Sou o Tr∅nikAt — gato ciborgue, visor verde, guia deste lugar.\nO
 
 claudePronto = (window.claude?.use ? claude.use('sample') : Promise.resolve(null))
   .catch(() => null);
+claudePronto.then(s => Estudio.comClaude(!!s));
 </script>
 </html>

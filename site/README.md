@@ -1,6 +1,6 @@
 # O site do DevLingo
 
-Uma página só, `index.html`: a rua cyberpunk que desce para o túnel do metrô ao rolar, e o Tr∅nikAt em 3D respondendo num terminal.
+Uma página só, `index.html`: a rua cyberpunk que desce para o túnel do metrô ao rolar, e o Tr∅nikAt em 3D numa videochamada, respondendo num terminal.
 
 Para ver, abra o arquivo no navegador. Não há build.
 
@@ -14,12 +14,33 @@ Quando for separar em módulos, separe **a partir deste arquivo**.
 
 ## O chat muda conforme onde a página roda
 
-| Onde | Quem responde |
-|---|---|
-| Artefato do claude.ai | um modelo, pela capacidade `sample` — quem paga é quem visita |
-| Qualquer outro lugar (GitHub Pages, arquivo local) | **as respostas prontas** do objeto `RESERVA` |
+A página tenta três caminhos, nesta ordem, e o selo no canto da videochamada diz qual está valendo:
 
-A troca é automática: sem `window.claude`, a página cai nas respostas prontas em vez de quebrar. Dar IA de verdade fora do claude.ai é o trabalho do estúdio local com o Hermes, planejado em `docs/IDEIAS.md`.
+| Selo | Quem responde | Voz e boca |
+|---|---|---|
+| `estúdio local · ao vivo` | o **estúdio** em `http://127.0.0.1:8765` (`estudio/servidor.py`): modelo local, porteiro com juiz | Piper, com a boca movida pelos **fonemas** |
+| `sem estúdio · via Claude` | um modelo, pela capacidade `sample` do artefato do claude.ai — quem paga é quem visita | voz do navegador, boca aproximada pelas palavras |
+| `estúdio offline` | **as respostas prontas** do objeto `RESERVA` | voz do navegador |
+
+A troca é automática. O estúdio fora do ar é o caso **comum** — quem visita não tem o PC do Gustavo —, então a sondagem é curta (1,5 s), silenciosa e se repete a cada 15 s: ligar o estúdio com a página aberta acende a chamada sem recarregar.
+
+Para a demonstração local:
+
+```bash
+estudio/.venv/Scripts/python.exe estudio/servidor.py     # espere "estudio pronto"
+python -m http.server 8000 --bind 127.0.0.1 --directory site
+# abra http://127.0.0.1:8000
+```
+
+A porta 8000 não é arbitrária: é uma das origens que o servidor libera (`ORIGENS` em `servidor.py`). Servida de outra porta, a página enxerga o estúdio como offline.
+
+### Como testar a volta inteira, e o instrumento que NÃO serve
+
+A captura `--screenshot` com `--timeout` do Chrome headless **não mede tempo real**: numa rodada, o cronômetro da página marcava 605 ms quando o print saiu, e uma chamada ao estúdio aparecia como `Failed to fetch` — com o servidor registrando `200` para ela. Parecia CORS, e não era: os cabeçalhos estavam certos, e **a mesma chamada, pelo CDP, passou em 20 ms**. A causa exata dentro do modo de captura não foi isolada — o que se sabe é que ele não serve para medir rede. `--dump-dom` também engana: ele fotografa o DOM no carregamento, e não depois da espera.
+
+O que funciona é controlar o Chrome pelo **protocolo de depuração** (CDP), com esperas de verdade e o console real. Por ele, a volta completa foi medida: pré-verificação `204`, `POST` `200`, 193 quadros de boca vindos dos fonemas, legenda e chat destravado no fim.
+
+E nesta máquina o Chrome headless só desenha WebGL com `--use-gl=angle --use-angle=d3d11`: com o swiftshader, o processo de GPU morre — inclusive na versão já commitada, que serviu de controle.
 
 ## Três lições que custaram rodadas
 
