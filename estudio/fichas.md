@@ -169,7 +169,7 @@ Hoje o DevLingo é gratuito, sem anúncio e sem assinatura.
 
 ## licenca
 
-fonte: LICENCAS.md
+fonte: LICENCAS.md -- reescrita em 15/09: a versão anterior juntava as duas licenças, e modelo e juiz leram a restrição do conteúdo como se fosse do código
 perguntas:
 - O código é aberto?
 - Posso usar o código do DevLingo?
@@ -177,7 +177,7 @@ perguntas:
 - Posso copiar as questões?
 
 resposta:
-O código é aberto, com licença MIT. O conteúdo das questões é CC BY-NC-ND: dá para compartilhar sem modificar e sem uso comercial. O Tr∅nikAt, a arte e o nome DevLingo são reservados.
+São duas licenças diferentes. O código do app é MIT: você pode usar, modificar e até vender, desde que mantenha o aviso de copyright. O conteúdo das questões é outra coisa, CC BY-NC-ND: dá para compartilhar, mas sem modificar e sem uso comercial. O Tr∅nikAt, a arte e o nome DevLingo são reservados.
 
 ## tronikat
 
@@ -329,7 +329,7 @@ Erro de conteúdo é muito bem-vindo por issue no GitHub. Pull request de códig
 
 ## proximos-passos
 
-fonte: docs/IDEIAS.md
+fonte: docs/IDEIAS.md; CLAUDE.md, "Os níveis seguintes, planejados e não escritos" -- reescrita em 15/09: sem citar o avançado, o modelo afirmou que ele não estava planejado
 perguntas:
 - O que vem por aí?
 - Vai ter nível intermediário?
@@ -337,7 +337,7 @@ perguntas:
 - Tem planos para o app?
 
 resposta:
-Estão na fila de ideias a tradução para outros idiomas e a leitura das questões em voz alta. Os níveis intermediários também estão planejados. Não há data prometida para nenhum deles.
+Hoje todas as trilhas estão no nível iniciante, e os níveis intermediário e avançado estão planejados. Também estão na fila de ideias a tradução para outros idiomas e a leitura das questões em voz alta. Não há data prometida para nenhum deles.
 
 ## idioma
 

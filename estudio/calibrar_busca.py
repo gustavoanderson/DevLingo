@@ -44,42 +44,16 @@ Uso:
 from __future__ import annotations
 
 import json
-import math
 import sys
 import time
-import urllib.request
 from pathlib import Path
 
 from base import ler_fichas
+from busca import FORMATOS, MODELO_EMBEDDING as ESCOLHIDO, PISO, chamar, cosseno, ranking
 
-# 127.0.0.1, e NUNCA "localhost". No Windows, localhost resolve primeiro para o
-# IPv6 (::1); o Ollama escuta so no IPv4; o cliente espera a tentativa IPv6
-# desistir e so entao tenta de novo. Medido em 14/09: 2.168 ms com localhost,
-# 108 ms com 127.0.0.1 -- os 2 segundos sumiam FORA do Ollama, antes de a
-# requisicao chegar nele, e por isso nao apareciam em nenhuma duracao dele.
-OLLAMA = "http://127.0.0.1:11434"
-
-ESCOLHIDO = "embeddinggemma:300m"
-PISO = 0.70
-
-# Cada modelo tem o formato de entrada usado no treino dele. Usar o formato
-# errado nao da erro nenhum -- so piora a busca em silencio.
-MODELOS = {
-    "embeddinggemma:300m": {
-        # Formato de similaridade documentado no cartao do modelo.
-        "pergunta": lambda t: f"task: sentence similarity | query: {t}",
-        "exemplo": lambda t: f"task: sentence similarity | query: {t}",
-    },
-    "qwen3-embedding:0.6b": {
-        # SEM instrucao dos dois lados. A primeira versao seguiu o padrao da
-        # Qwen para buscar DOCUMENTOS -- instrucao so na pergunta -- e acertou
-        # a ficha em 22 de 50, quase tudo caindo em "licenca". Aqui a pergunta e
-        # comparada com outras PERGUNTAS, uma tarefa simetrica. Medido: instrucao
-        # so na pergunta 22/50; dos dois lados 42/50; sem instrucao 42/50.
-        "pergunta": lambda t: t,
-        "exemplo": lambda t: t,
-    },
-}
+# Os formatos de entrada de cada modelo moram em busca.py (FORMATOS), com a
+# medicao que os justificou.
+MODELOS = list(FORMATOS)
 
 # Nenhuma destas perguntas esta copiada das fichas: elas medem se a busca
 # GENERALIZA, e nao se reconhece o texto que ja viu.
@@ -189,54 +163,26 @@ DECISAO = [
 ]
 
 
-def embed(modelo: str, textos: list[str]) -> list[list[float]]:
-    corpo = {
-        "model": modelo, "input": textos, "keep_alive": "5m",
-        # num_gpu 0 = CPU. A placa e do Qwen3 (3,2 GB de 4 GB); o porteiro nao
-        # pode tirar da placa o modelo que fala para conseguir enxergar.
-        "options": {"num_gpu": 0},
-    }
-    req = urllib.request.Request(OLLAMA + "/api/embed", data=json.dumps(corpo).encode(),
-                                 headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=900) as r:
-        return json.loads(r.read().decode("utf-8"))["embeddings"]
-
-
-def cosseno(a: list[float], b: list[float]) -> float:
-    pa = math.sqrt(sum(x * x for x in a)) or 1
-    pb = math.sqrt(sum(x * x for x in b)) or 1
-    return sum(x * y for x, y in zip(a, b)) / (pa * pb)
-
-
-def melhor_ficha(vetor, exemplos) -> tuple[str, float, float]:
-    """A ficha mais parecida, a nota dela e a nota da SEGUNDA mais parecida.
-
-    A nota de uma ficha e a da sua pergunta-exemplo mais parecida.
-    """
-    por_ficha: dict[str, float] = {}
-    for fid, v in exemplos:
-        s = cosseno(vetor, v)
-        if s > por_ficha.get(fid, -1):
-            por_ficha[fid] = s
-    ordem = sorted(por_ficha.items(), key=lambda kv: kv[1], reverse=True)
-    return ordem[0][0], ordem[0][1], (ordem[1][1] if len(ordem) > 1 else 0.0)
+def embed_com(modelo: str, textos: list[str]) -> list[list[float]]:
+    return chamar("/api/embed", {"model": modelo, "keep_alive": "5m", "options": {"num_gpu": 0},
+                                 "input": [FORMATOS[modelo](t) for t in textos]}, tempo=900)["embeddings"]
 
 
 def notas(modelo: str, fichas) -> dict:
     """Embedding das fichas uma vez; depois, a melhor ficha de cada pergunta."""
-    fmt = MODELOS[modelo]
     textos_ex = [(f.id, p) for f in fichas for p in f.perguntas]
     t0 = time.time()
-    vex = embed(modelo, [fmt["exemplo"](p) for _, p in textos_ex])
+    vex = embed_com(modelo, [p for _, p in textos_ex])
     carga = time.time() - t0
     exemplos = [(fid, v) for (fid, _), v in zip(textos_ex, vex)]
 
     latencias = []
     def avaliar(p: str) -> dict:
         t = time.time()
-        v = embed(modelo, [fmt["pergunta"](p)])[0]
+        v = embed_com(modelo, [p])[0]
         latencias.append(time.time() - t)
-        fid, nota, segunda = melhor_ficha(v, exemplos)
+        ordem = ranking(v, exemplos)
+        fid, nota, segunda = ordem[0][0], ordem[0][1], ordem[1][1]
         return {"pergunta": p, "achou": fid, "nota": round(nota, 3),
                 "folga": round(nota - segunda, 3)}
 
@@ -284,18 +230,15 @@ def tabela_de_piso(r: dict) -> None:
 
 
 def descarregar(modelo: str) -> None:
-    corpo = json.dumps({"model": modelo, "input": [""], "keep_alive": 0}).encode()
     try:
-        urllib.request.urlopen(urllib.request.Request(
-            OLLAMA + "/api/embed", data=corpo, headers={"Content-Type": "application/json"}),
-            timeout=60).read()
+        chamar("/api/embed", {"model": modelo, "input": [""], "keep_alive": 0}, tempo=60)
     except Exception:
         pass
 
 
 def main() -> int:
     fichas = ler_fichas()
-    modelos = list(MODELOS) if sys.argv[1:2] == ["--comparar"] else [ESCOLHIDO]
+    modelos = MODELOS if sys.argv[1:2] == ["--comparar"] else [ESCOLHIDO]
     resultados = []
     for modelo in modelos:
         r = notas(modelo, fichas)
