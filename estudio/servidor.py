@@ -24,13 +24,21 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-HOST = "127.0.0.1"
-PORTA = 8765
+# Os padroes sao os do PC do Gustavo. A hospedagem muda tres coisas, e so por
+# variavel de ambiente, para que o codigo seja o mesmo nos dois lugares:
+# - ESTUDIO_HOST=0.0.0.0: dentro do conteiner, 127.0.0.1 so seria alcancavel
+#   de dentro dele mesmo. Quem expoe a porta ao mundo e a plataforma, de proposito
+# - ESTUDIO_PORTA=7860: a porta que o Hugging Face Spaces espera
+# - ESTUDIO_GERAR=0: modo fichas, sem modelo gerador (ver Porteiro)
+HOST = os.environ.get("ESTUDIO_HOST", "127.0.0.1")
+PORTA = int(os.environ.get("ESTUDIO_PORTA", "8765"))
+GERAR = os.environ.get("ESTUDIO_GERAR", "1") != "0"
 LIMITE_DA_PERGUNTA = 300
 
 # Quem pode chamar o estudio pelo navegador. "null" e a pagina aberta como
@@ -50,7 +58,8 @@ class Estudio:
         from porteiro import Porteiro      # import tardio: o teste pode trocar
         from voz import Voz
         t = time.time()
-        self.porteiro = Porteiro()
+        self.porteiro = Porteiro(gerar=GERAR)
+        self.modo = "gerar" if GERAR else "fichas"
         self.voz = Voz()
         self.trava = threading.Lock()
         # Aquece o modelo, o juiz e a voz: a primeira pergunta de verdade nao
@@ -107,7 +116,8 @@ def criar_manipulador(estudio):
 
         def do_GET(self) -> None:
             if self.path == "/saude":
-                self._json(200, {"ok": True, "pronto_em_s": estudio.pronto_em})
+                self._json(200, {"ok": True, "pronto_em_s": estudio.pronto_em,
+                                 "modo": getattr(estudio, "modo", "gerar")})
             else:
                 self._json(404, {"erro": "caminho desconhecido"})
 

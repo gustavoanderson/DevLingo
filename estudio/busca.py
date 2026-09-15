@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import urllib.request
 
 # 127.0.0.1, e NUNCA "localhost". No Windows, localhost resolve primeiro para o
@@ -18,7 +19,10 @@ import urllib.request
 # desistir e so entao tenta de novo. Medido: 2.168 ms com localhost, 108 ms
 # com 127.0.0.1 -- os 2 segundos sumiam FORA do Ollama, antes de a requisicao
 # chegar nele, e por isso nao apareciam em nenhuma duracao registrada por ele.
-OLLAMA = "http://127.0.0.1:11434"
+OLLAMA = os.environ.get("ESTUDIO_OLLAMA", "http://127.0.0.1:11434")
+# Na hospedagem o embedding e o UNICO modelo, e descarrega-lo apos 30 min
+# faria o visitante seguinte pagar a carga de novo: la ele fica carregado.
+MANTER_CARREGADO = os.environ.get("ESTUDIO_KEEP_ALIVE", "30m")
 
 MODELO_EMBEDDING = "embeddinggemma:300m"   # 45/50 fichas certas, carga em ~10 s
 PISO = 0.70                                # manobras 0/5, gerais 0/12, legitimas 43/50
@@ -43,7 +47,7 @@ def embed(textos: list[str], modelo: str = MODELO_EMBEDDING) -> list[list[float]
     return chamar("/api/embed", {
         "model": modelo,
         "input": [FORMATOS[modelo](t) for t in textos],
-        "keep_alive": "30m",
+        "keep_alive": MANTER_CARREGADO,
         # num_gpu 0 = CPU. A placa e do modelo que fala (3,2 GB de 4 GB); o
         # porteiro nao pode tira-lo de la para conseguir enxergar. Na CPU a
         # busca leva ~120 ms.

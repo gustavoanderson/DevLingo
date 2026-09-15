@@ -166,15 +166,25 @@ def ler_laudo(bruto: str, quantas: int) -> tuple[dict[int, str], list[str]]:
 
 
 class Porteiro:
-    def __init__(self) -> None:
+    """`gerar=False` e o MODO FICHAS: a entrada escolhe a ficha e o texto dela
+    e dito como esta, sem modelo gerador e sem juiz.
+
+    Existe para a hospedagem gratuita, que nao tem placa de video: um modelo de
+    4B no processador levaria dezenas de segundos por resposta. O que se perde
+    e a variacao do texto; o que se ganha e que erro de fato fica impossivel --
+    so sai o que o Gustavo revisou. A entrada (piso e frase fixa) e a mesma."""
+
+    def __init__(self, gerar: bool = True) -> None:
+        self.gerar = gerar
         self.fichas: dict[str, Ficha] = {f.id: f for f in ler_fichas()}
         # As perguntas-exemplo e as respostas das fichas viram vetores UMA vez.
         exemplos = [(f.id, p) for f in self.fichas.values() for p in f.perguntas]
         self.vet_exemplos = list(zip([fid for fid, _ in exemplos],
                                      embed([p for _, p in exemplos])))
-        respostas = [(f.id, f.resposta) for f in self.fichas.values()]
+        # Os vetores das respostas so servem a saida, que o modo fichas nao usa.
+        respostas = [(f.id, f.resposta) for f in self.fichas.values()] if gerar else []
         self.vet_respostas = list(zip([fid for fid, _ in respostas],
-                                      embed([r for _, r in respostas])))
+                                      embed([r for _, r in respostas]) if respostas else []))
 
     def julgar(self, texto: str, fid: str) -> tuple[list[str], list[dict]]:
         """O laudo do juiz, frase por frase, e os motivos de recusa que o CODIGO tira dele."""
@@ -252,6 +262,9 @@ class Porteiro:
             return Resposta(FRASE_FIXA, None, "barrada-na-entrada",
                             [f"nota {nota:.3f} abaixo do piso {PISO}"], nota, "", tempos)
         ficha = self.fichas[fid]
+        if not self.gerar:
+            tempos["total"] = tempos["entrada"]
+            return Resposta(ficha.resposta, fid, "modo-fichas", [], nota, "", tempos)
 
         # ---- MODELO ----
         t1 = time.time()

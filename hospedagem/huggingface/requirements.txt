@@ -1,0 +1,5 @@
+# As mesmas versoes do estudio/.venv onde a voz foi testada (testar_voz.py 14/14).
+piper-tts[alignment]==1.8.0
+onnxruntime==1.30.0
+onnx==1.22.0
+numpy==2.5.3

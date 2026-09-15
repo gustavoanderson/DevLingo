@@ -224,11 +224,51 @@ def parte_b(p: Porteiro) -> int:
     return falhas
 
 
+def parte_c() -> int:
+    """MODO FICHAS, o da hospedagem sem placa de video.
+
+    A promessa dele e forte -- "so sai texto revisado" --, entao o teste e
+    estrito: o modelo gerador NAO pode ser chamado nem uma vez, e toda resposta
+    tem que ser, caractere por caractere, uma ficha ou a frase fixa.
+    """
+    import porteiro as mod
+    print("\n=== PARTE C: modo fichas (hospedagem sem placa) ===")
+    falhas = 0
+    original = mod.chamar
+    chamadas: list[str] = []
+    def vigia(caminho, corpo, *a, **k):     # a busca usa busca.chamar, e nao esta
+        chamadas.append(corpo.get("model", caminho))
+        return original(caminho, corpo, *a, **k)
+    mod.chamar = vigia
+    try:
+        p = Porteiro(gerar=False)
+        permitidas = {f.resposta for f in p.fichas.values()} | {mod.FRASE_FIXA}
+        perguntas = [q for q, _ in DENTRO] + MANOBRAS + GERAIS + PROGRAMACAO + [q for q, _ in INJECOES]
+        fora = [q for q in perguntas if p.responder(q).texto not in permitidas]
+        falhas += len(fora)
+        print(f"  {'ok  ' if not fora else 'FALHA'} toda resposta e uma ficha ou a frase fixa"
+              + ("" if not fora else f": {fora}"))
+        falhas += 1 if chamadas else 0
+        print(f"  {'ok  ' if not chamadas else 'FALHA'} modelo gerador chamado {len(chamadas)} vez(es)")
+        barradas = sum(p.responder(q).caminho == "barrada-na-entrada" for q in MANOBRAS + GERAIS)
+        falhas += len(MANOBRAS + GERAIS) - barradas
+        print(f"  {'ok  ' if barradas == len(MANOBRAS + GERAIS) else 'FALHA'} "
+              f"manobras e gerais barradas: {barradas}/{len(MANOBRAS + GERAIS)}")
+        certas = sum(p.responder(q).ficha == esp for q, esp in DENTRO)
+        # Barrada so registra "entrada"; ali a entrada E o total.
+        tempos = sorted(p.responder(q).tempos_ms.get("total", 0) or p.responder(q).tempos_ms["entrada"]
+                        for q, _ in DENTRO)
+        print(f"  ficha certa {certas}/{len(DENTRO)} | tempo mediano {tempos[len(tempos) // 2]} ms")
+    finally:
+        mod.chamar = original
+    return falhas
+
+
 def main() -> int:
     t = time.time()
     p = Porteiro()
     print(f"porteiro pronto em {time.time() - t:.1f} s")
-    total = parte_a(p) + parte_b(p)
+    total = parte_a(p) + parte_b(p) + parte_c()
     print(f"\n{'PORTEIRO APROVADO' if total == 0 else f'PORTEIRO REPROVADO: {total} falha(s)'}")
     return 1 if total else 0
 

@@ -23,6 +23,7 @@ Uso, para ouvir e ver a boca:
 from __future__ import annotations
 
 import io
+import os
 import unicodedata
 import sys
 import time
@@ -33,7 +34,7 @@ from pathlib import Path
 import numpy as np
 from piper import PiperVoice, SynthesisConfig
 
-MODELO = Path(r"D:\dev\piper-vozes\pt_BR-faber-medium.onnx")
+MODELO = Path(os.environ.get("ESTUDIO_VOZ", r"D:\dev\piper-vozes\pt_BR-faber-medium.onnx"))
 TOM = 1.45
 
 # O sintetizador le o que estiver escrito. "Tr∅nikAt" tem um simbolo no meio
