@@ -52,3 +52,6 @@ venv/
 # modelos baixados em cada maquina. O que se versiona e o teste, nao o placar.
 estudio/resultado_avaliacao.json
 estudio/resultado_calibracao.json
+
+# Ambiente Python isolado do estudio (piper-tts, onnxruntime): recriavel, e pesado
+estudio/.venv/
