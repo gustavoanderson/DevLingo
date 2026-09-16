@@ -1274,6 +1274,16 @@ const Legenda = (function () {
 })();
 
 const Fala = (function () {
+ // A cena 3D inteira vai num try. Sem isto, UMA falha ao criar o contexto
+ // WebGL derruba o script todo -- e o chat, a voz e o Estudio ficam
+ // undefined, porque sao definidos DEPOIS daqui. O site vira uma pagina
+ // morta com o cabecalho. Medido: com a GPU indisponivel, `typeof Voz`
+ // e `typeof Estudio` davam 'undefined'.
+ //
+ // WebGL falta mais do que parece: GPU sem memoria (a placa desta maquina
+ // roda modelos de IA), aceleracao desligada, driver antigo, navegador em
+ // modo de economia. A conversa e o que importa; o 3D e enfeite.
+ try {
   const c = document.getElementById('cabeca');
   const cena = new THREE.Scene();
   // Enquadramento de WEBCAM: a camera recua e desce o centro para caber o
@@ -1703,6 +1713,13 @@ const Fala = (function () {
   return {
     abrir: (v, arred = 0, exato = false) => { alvo = v; alvoArred = arred; preciso = exato; },
   };
+ } catch (e) {
+  // Sem cena, a boca nao move -- e so isso. O resto do site segue inteiro.
+  console.warn('cena 3D indisponivel, o chat continua:', e && e.message);
+  const c = document.getElementById('cabeca');
+  if (c) c.style.display = 'none';
+  return { abrir: () => {} };
+ }
 })();
 
 /* ------------------------------------------------------------- lip sync
