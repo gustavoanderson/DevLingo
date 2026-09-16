@@ -1209,6 +1209,72 @@ Os perfis de Chrome de teste vão para o `D:`, não para o scratchpad: o `C:` j�
 
 ---
 
+## O servidor MCP, e o agente local que o usa
+
+`mcp/` expõe os **portões de qualidade do projeto** como ferramentas que um agente pode chamar. Não é demonstração: são as mesmas regras que reprovam no CI, disponíveis para quem escreve conteúdo **antes** de ele virar arquivo. O CI roda `mcp/test_ferramentas.py` e `mcp/test_servidor.py` a cada push.
+
+São **seis** ferramentas, e **todas são somente leitura**: `validar_licao`, `impressao_digital`, `conferir_teclado`, `topicos_da_trilha`, `criterios_de_revisao` e `material_para_revisao`.
+
+**A ausência de ferramenta de escrita é a defesa, e ela não depende do modelo julgar bem.** Com `validar_licao` exposta e nada que grave, publicar é impossível para o agente — não importa o que ele decida, nem o que tenha lido num texto que processou. É a regra que o próprio curso de Agentes ensina: *um limite só vale quando não depende do modelo julgar bem.*
+
+### O Hermes Agent não cabe nesta máquina, e isso é física
+
+Ele era o cliente previsto. **Medido em 16 de setembro de 2026:** o Hermes exige **piso de 64.000 tokens** de contexto, e recusa qualquer modelo abaixo disso com todas as letras.
+
+O custo em VRAM foi medido em dois pontos:
+
+| Contexto | VRAM do `qwen3` 4B |
+|---|---|
+| 4.096 (padrão do Ollama) | 3,18 GB |
+| 8.192 | 3,79 GB |
+
+São **~0,61 GB a cada 4.096 tokens**. Os 64.000 exigidos pediriam **cerca de 12 GB** — numa **GTX 1650 de 4 GB**. Não é ajuste de configuração; não cabe.
+
+**Isso explica um mistério que estava aberto:** o perfil `tronikat` do Hermes foi montado em 14/09 e nunca mais rodou. A causa não era desleixo — **ele nunca poderia ter funcionado ali.**
+
+### Quatro armadilhas do Hermes que custaram uma tarde
+
+Todas medidas, e todas com a informação certa disponível em algum lugar que eu não olhei primeiro:
+
+- **`HERMES_PROFILE` não seleciona perfil.** A flag é **`-p`**, que é o que o `~/.local/bin/tronikat.bat` faz por dentro. Com a variável, o modelo resolvido continua sendo o do perfil `default` — e ali é **Claude**. Confiar nela para "testar o modelo local" gastaria cota paga para provar o contrário
+- **Perfis não herdam o `mcp_servers` global.** Um `mcp add` sem `-p` grava no `default`, e o `mcp list` sem `-p` confirma alegremente que está tudo certo — no perfil errado
+- **`provider: custom` é o valor correto.** Um comentário da documentação sugere que `ollama` é alias dele; **`ollama` não está na lista aceita**, e quem tem a lista de verdade é o `hermes doctor`
+- **`hermes mcp add` reescreve o `config.yaml` global**, encolhendo-o de ~1.440 para 215 linhas. Os valores sobrevivem; o gabarito comentado, não. Tire um `hermes backup -q` antes
+
+E uma que não é do Hermes, e sim nossa: **o Hermes lê o `CLAUDE.md` da pasta atual.** Rodá-lo de dentro deste repositório injeta 184 KB no prompt e estoura qualquer contexto. Rode sempre a partir de `~`.
+
+### `mcp/agente.py`: o cliente que cabe
+
+O piso de 64k é exigência **do Hermes**, não do MCP nem do modelo. O servidor funciona (6 ferramentas, conexão em 3,6 s) e o `qwen3-gpu` responde bem — faltava um arcabouço do tamanho certo.
+
+`mcp/agente.py` é um laço de ferramentas em ~150 linhas, e roda em 8k folgado. **Provado:** perguntado *"quantas questões tem o tópico igualdade na trilha java?"*, ele chamou `topicos_da_trilha({"trilha": "java"})`, leu o banco e respondeu **3** — que é o número certo.
+
+As quatro decisões do cliente saem do **próprio curso de Agentes de IA** deste repositório, o que não é coincidência: o curso foi escrito a partir do que este projeto já fazia.
+
+| Decisão | De onde vem |
+|---|---|
+| **Teto de voltas**, e estourar reprova em voz alta | lição 01, *condição de parada*. Agente que para calado parece ter respondido |
+| **Rastro de cada chamada**, impresso | lição 05: o caminho é escolhido durante a execução, então sem rastro não há como saber o que houve |
+| **O agente propõe, o código decide** | lição 03. Ferramenta inventada é recusada aqui, e o erro **instrui** (lição 02): devolve a lista do que existe |
+| **Só leitura**, herdado do servidor | *autonomia se concede onde o erro é verificável automaticamente* |
+
+Dois detalhes que custaram execução:
+
+- **`127.0.0.1`, nunca `localhost`** — medido em 16/09: **2.035 ms contra 9 ms** por chamada
+- **O campo do esquema é `input_schema`, em snake_case.** O pacote `mcp` 2.2.0 renomeou o `inputSchema` da API clássica, e escrever de cabeça dá `AttributeError` na primeira execução
+
+### O modelo `qwen3-gpu-ctx8k`
+
+O padrão do Ollama é **4.096 tokens**, e os esquemas das seis ferramentas não cabem lá — o agente aborta antes de chamar qualquer coisa. Existe por isso um `qwen3-gpu-ctx8k`, criado com `PARAMETER num_ctx 8192`, que **cabe inteiro na GPU** (3,79 de 3,79 GB, nada na CPU).
+
+**O `qwen3-gpu` original não foi tocado**, de propósito: é ele que o estúdio usa, e trocar o contexto dele mexeria no porteiro sem necessidade.
+
+### O que o CI não cobre aqui
+
+`mcp/agente.py` **não roda no CI**, e não tem como: ele precisa do Ollama com o modelo carregado, que não existe no runner. O servidor continua coberto pelos dois testes; o cliente é verificado à mão, rodando a pergunta de gabarito acima.
+
+---
+
 ## Estado e próximos passos
 
 Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e **Python iniciante inteiro**.

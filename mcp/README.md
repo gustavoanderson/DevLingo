@@ -6,7 +6,7 @@ Não é demonstração: são as mesmas regras que reprovam no CI, disponíveis p
 
 ---
 
-## As quatro ferramentas
+## As seis ferramentas
 
 | Ferramenta | Responde |
 |---|---|
@@ -14,6 +14,8 @@ Não é demonstração: são as mesmas regras que reprovam no CI, disponíveis p
 | `impressao_digital(resposta, trilha)` | esta resposta já é cobrada, e por qual questão? |
 | `conferir_teclado(resposta)` | dá para digitar isso num teclado de celular? |
 | `topicos_da_trilha(trilha)` | que tópicos existem, e com quantas questões? |
+| `criterios_de_revisao()` | o que o validador exige, e o que ele apenas avisa? |
+| `material_para_revisao(licao_id)` | os textos de uma lição, organizados para revisão |
 
 **Todas são somente leitura.** Nenhuma grava, publica ou apaga.
 
