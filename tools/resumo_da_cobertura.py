@@ -91,8 +91,10 @@ def main():
             "",
             "### Fora da conta",
             "",
-            "Arquivos que nenhum teste importa, e que por isso **nao entram na "
-            "porcentagem acima**:",
+            "Arquivos sem registro no lcov, e que por isso **nao entram na "
+            "porcentagem acima**. Um arquivo cai aqui por nao ser importado por "
+            "teste nenhum, OU por nao ter linha executavel para instrumentar: "
+            "`versao.dart` e importado, inclusive por um teste, e so declara `const`.",
             "",
         ]
         linhas += [f"- `{nome}`" for nome in ausentes]

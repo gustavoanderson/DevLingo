@@ -237,7 +237,7 @@ Depende de onde você me encontra. No computador do Gustavo, eu rodo num modelo 
 
 ## testes
 
-fonte: testes contados em 14/09/2026; cobertura medida em 10/09/2026 (CLAUDE.md, "Cobertura: 95,6%") -- remedir antes de publicar
+fonte: testes e cobertura remedidos em 16/09/2026 (2.390 de 2.501 linhas, 28 de 33 arquivos). tools/conferir_numeros.py reprova se o 349 divergir da suite
 perguntas:
 - O app tem testes?
 - Como vocês testam o DevLingo?
@@ -245,7 +245,7 @@ perguntas:
 - O código é bem testado?
 
 resposta:
-São 349 testes automatizados no app, rodando no GitHub Actions a cada envio. A cobertura publicada é de 95,6%, e ela vem junto com o denominador: 28 dos 32 arquivos, e não "95,6% do app inteiro".
+São 349 testes automatizados no app, rodando no GitHub Actions a cada envio. A cobertura publicada é de 95,6%, medida em setembro de 2026, e ela vem junto com o denominador: 28 dos 33 arquivos, e não "95,6% do app inteiro".
 
 ## validador
 

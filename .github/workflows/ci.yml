@@ -151,6 +151,17 @@ jobs:
             exit 1
           fi
 
+      # O site publico e as fichas do Tr∅nikAt tambem anunciam contagens, e
+      # ninguem conferia. Nas fichas e pior que no README: ficha vira AUDIO
+      # GRAVADO, entao numero velho e FALADO para quem abre o site, e corrigir
+      # exige regravar a voz.
+      #
+      # Roda aqui, e nao no job de conteudo, porque o total de testes so existe
+      # depois de a suite rodar -- e e o unico ponto onde TODOS os insumos
+      # (banco, site, fichas, suite) estao disponiveis ao mesmo tempo.
+      - name: Os numeros do site e das fichas nao podem mentir
+        run: python3 tools/conferir_numeros.py --testes "${{ steps.testes.outputs.total }}"
+
       # Cobertura vai para o resumo da execucao, e nao para um badge no README.
       # O numero muda a cada commit: fixa-lo no README faria o passo do badge
       # reprovar o tempo todo, e portao que reprova sem motivo ensina a

@@ -1154,6 +1154,15 @@ estudio/.venv/Scripts/python.exe hospedagem/calibrar_borda.py # 3. confere o pis
 
 **Pular o passo 1 é a falha silenciosa da vez:** o Worker passa a apontar para uma ficha cuja voz ainda é a antiga, e o site responde a pergunta certa com o áudio errado. Nada quebra, nada avisa. É a mesma armadilha que este arquivo já registra para os assets do `pubspec` e para os arquivos gerados.
 
+**E os três passos nem sempre são necessários — medido em 16/09/2026.** O `fichas.json` do Worker carrega **só `id` e `perguntas`**, nunca as respostas. Então:
+
+| O que mudou na ficha | O que rodar |
+|---|---|
+| só a `resposta` | **apenas `gerar_falas.py`** — o Worker não viu diferença |
+| `perguntas`, `id`, ou o piso | os três passos, na ordem |
+
+Confirmado na prática ao corrigir o denominador da cobertura: mudou o texto de uma resposta, `git status` mostrou **um** WAV regravado e o `fichas.json` do Worker **intacto**. E `gerar_falas.py --conferir` diz quais falas estão desatualizadas **sem sintetizar voz** — ele compara a impressão (texto + voz + tom), e não os bytes do WAV, porque o Piper tem aleatoriedade e gerar duas vezes nunca dá os mesmos bytes.
+
 ### Armadilhas medidas, que custaram tempo
 
 - **`127.0.0.1`, nunca `localhost`.** No Windows o `localhost` resolve primeiro para IPv6 (`::1`), o Ollama escuta só no IPv4, e o cliente espera a tentativa IPv6 desistir antes de tentar de novo. Medido em 14/09: **2.168 ms com `localhost` contra 108 ms com `127.0.0.1`**. E o pior é onde os 2 segundos sumiam: **fora** do Ollama, antes de a requisição chegar nele — então não apareciam em nenhuma duração que ele reportasse
@@ -1351,6 +1360,24 @@ Hoje o CI **reprova quando qualquer um dos três diverge do real**. A alternativ
 
 **A cobertura não entra nessa lista, de propósito.** Ela muda a cada commit; fixá-la no README faria o portão reprovar o tempo todo, e portão que reprova sem motivo ensina a contorná-lo.
 
+#### A mesma regra vale para o site e para as fichas, e lá ela pesa mais
+
+`tools/conferir_numeros.py`, rodando no CI. Os badges do README eram o único lugar guardado, e o site público anunciava as mesmas contagens sem ninguém conferir.
+
+**Nas fichas o risco é maior que no README, e a razão é o desenho do estúdio: ficha vira áudio gravado.** Um número velho não fica só escrito — ele é **falado** para quem abre o site. E corrigir não é editar uma linha: exige regravar a voz.
+
+Isso não é hipótese. Ao escrever a regra, em 16/09/2026, o site **já estava mentindo**: ele publicava *"28 dos 32 arquivos"* como denominador da cobertura, e `app/lib/` tinha **33**. O `versao.dart` entrou depois da medição de 10/09 e ninguém percebeu. O mesmo número errado estava no `CLAUDE.md` e nas fichas.
+
+Três decisões que a implementação exigiu:
+
+- **`404` e `400` são ambos certos, e a regra precisa saber a diferença.** O site anuncia o total; as fichas falam do jogável, que exclui as 4 questões da lição de referência. Uma regra que só procurasse "o número de questões" acusaria a ficha de mentir quando ela está sendo **mais** precisa que a capa
+- **Cada número é ancorado na frase que o cerca, nunca procurado solto.** O site tem `bottom:-400px` no CSS e `CICLO = 3400` no JavaScript; um conferidor que varresse dígitos leria os dois como contagem
+- **Afirmação que não casa nenhuma vez REPROVA.** Se alguém reescrever a frase, a expressão para de casar e o portão passa a guardar nada — calado. É o mesmo falso verde que faz `tools/resumo_dos_testes.py` reprovar suíte vazia. Verificado: reescrevi *"São 349 testes automatizados no app"* mantendo o número **certo**, e o script reprovou dizendo qual número deixaria de ser conferido
+
+**A cobertura continua fora do portão**, pela razão já registrada acima — e agora com o número medido: com **2.501 linhas**, uma única linha sem teste já move a casa decimal. Em vez disso, o site e as fichas passaram a publicar uma **afirmação datada** (*"95,6% em 16/09/2026"*), que continua verdadeira para sempre e não precisa de portão nenhum.
+
+**A alternativa era criar um piso de cobertura, e ela foi recusada.** "Acima de 95%, e o CI reprova abaixo disso" seria tecnicamente mais elegante — só reprovaria quando a afirmação virasse mentira. Mas transformaria em piso o que este arquivo registra como decisão de **não ter piso**, e isso é mudança de política, não detalhe de implementação. Fica registrado como escolha consciente.
+
 #### Contar testes por expressão regular quebra, e foi medido
 
 A saída do `flutter test` **muda de formato conforme o ambiente**:
@@ -1370,7 +1397,7 @@ O script foi verificado com duas sondas: um `testDone` trocado para `failure` (n
 
 `tools/resumo_da_cobertura.py` escreve no resumo da execução. Ele diz a porcentagem **e quantos arquivos estão dentro dela**, porque o `flutter test --coverage` só instrumenta arquivo que algum teste **importa** — o que ninguém importa não entra na conta.
 
-Medido em 10 de setembro de 2026: **2.366 de 2.476 linhas, em 28 dos 32 arquivos de `lib/`**. Os quatro de fora, e por que estão certos assim:
+Medido em 16 de setembro de 2026: **2.390 de 2.501 linhas, em 28 dos 33 arquivos de `lib/`**. Os cinco de fora, e por que estão certos assim:
 
 | Arquivo | Por quê |
 |---|---|
@@ -1378,6 +1405,7 @@ Medido em 10 de setembro de 2026: **2.366 de 2.476 linhas, em 28 dos 32 arquivos
 | `data/nuvem_firestore.dart` | idem |
 | `main.dart` | fiação do app |
 | `ui/paleta.dart` | constantes de cor, sem lógica |
+| `versao.dart` | **é importado**, inclusive por um teste; só não tem linha executável para instrumentar. O lcov não registra arquivo que só declara `const` |
 
 Publicar só "95,6%" seria deixar ler como "95,6% do app". Num repositório que é portfólio de qualidade, esse tipo de número é pior que número nenhum: quem avalia reconhece a diferença entre uma métrica honesta e uma escolhida por ser bonita.
 
