@@ -1056,6 +1056,150 @@ O Gustavo caiu no defeito da posição perdida **justamente ao voltar ao menu pa
 
 Corrigir uma coisa costuma expor a seguinte. Vale terminar a investigação em vez de parar no primeiro achado.
 
+## O estúdio do Tr∅nikAt, e o site público
+
+O site em **https://gustavoanderson.github.io/DevLingo/** deixa qualquer pessoa conversar com o Tr∅nikAt. Ele é o portfólio do projeto: quem avalia o Gustavo abre o repositório, e o site é a porta dele.
+
+**Decisão do Gustavo: IA local, sem token pago.** Isto contraria o que o `docs/IDEIAS.md` previa — lá estava orçada uma API paga com teto de gastos. Fica registrado que **é escolha, e não esquecimento**: o modelo que fala e julga é `qwen3-gpu` (`qwen3:4b-instruct` com `num_gpu 99`) na GTX 1650 dele, e o de embedding é `embeddinggemma:300m` na CPU. Hermes 3 perdeu no teste comparativo — português ruim, e recitava o prompt.
+
+### O porteiro, e por que ele existe
+
+O Tr∅nikAt **conhece todas as linguagens de programação**, que vão entrando no DevLingo como trilhas. Mas no chat do site ele **fala do DevLingo**: não dá aula nem escreve código, que é o que se treina dentro das lições.
+
+Isso não é timidez do personagem, é o que mantém o estúdio seguro. Ele só diz o que está nas fichas (`estudio/fichas.md`), e `estudio/testar_porteiro.py` reprova se uma pergunta de programação gerar código.
+
+O caminho de uma pergunta tem três passos:
+
+1. **Busca** — a pergunta vira vetor e é comparada com as perguntas-exemplo de cada ficha. A maior nota vence, **se passar do piso**
+2. **Geração** — abaixo do piso, `barrada-na-entrada`, e o Tr∅nikAt desconversa. Acima, o modelo escreve a resposta a partir da ficha
+3. **Juiz** — um segundo passe confere a saída antes de ela virar fala
+
+O Gustavo escolheu a **opção C** — geração livre com juiz na saída — contra a B, que era escolher entre variantes prontas. Palavras dele: *"gosto de desafios"*.
+
+### O juiz é desenhado para não virar uma segunda porta
+
+Este é o pedaço mais sutil do estúdio, e vale ler antes de mexer. Um juiz ingênuo é **outra superfície de injeção**: se a resposta gerada carregar uma instrução escondida, e o juiz ler essa resposta, a instrução fala com ele também.
+
+Quatro defesas, e cada uma fecha um buraco concreto:
+
+- **O juiz nunca vê a pergunta do visitante** — só a ficha e a resposta
+- **Ele não dá veredito, faz LAUDO.** O código numera as frases, o juiz classifica **cada número**, e **quem decide é o código**. Uma palavra de veredito geral ("aprovado") poderia ser ditada por uma injeção escondida na resposta; um número solto, não
+- **Cobertura exata:** um veredito para cada número. Sem isso, um juiz manipulado poderia simplesmente **pular** a frase falsa. Faltando um número, reprova
+- **Na dúvida, fecha:** número faltando, veredito repetido ou laudo vazio reprovam
+
+`MODELO_FALA` e `MODELO_JUIZ` são **o mesmo** `qwen3-gpu`, e não por economia de código: um segundo modelo não caberia na placa junto com as 29 camadas deste.
+
+#### Por que o laudo é `numero=veredito` e não JSON
+
+Medido em 14/09/2026, e a resposta é que **a saída estruturada do Ollama não funciona com este modelo**:
+
+| Tentativa | O que aconteceu |
+|---|---|
+| Esquema JSON | gerava **tokens vazios até o limite** — laudo ilegível, e **13 s** por chamada |
+| `format: "json"` | ignorava o pedido |
+| Sem trava | repetia a ficha inteira antes de julgar |
+
+O protocolo de uma linha por frase custa **~5 tokens por frase**. E ele é seguro por construção: linha fora do formato é ignorada sem risco, porque **como a completude é exigida, ignorar nunca aprova nada** — só pode reprovar.
+
+### Duas montagens, e a publicada é de propósito mais burra
+
+| | Estúdio local | Borda publicada |
+|---|---|---|
+| Quem escreve a resposta | `qwen3-gpu`, ao vivo | **ninguém** — o texto já está gravado |
+| Voz | Piper, sintetizada na hora | **33 falas** prontas em `site/falas/` |
+| Busca | embedding local | **Cloudflare Worker** |
+| Precisa do PC dele ligado | sim | **não** |
+
+**O site público não gera texto nenhum**, e essa é a decisão central. Cada ficha tem seu texto e sua voz gravados antes, por `hospedagem/gerar_falas.py`. O Worker recebe a pergunta e devolve só **qual ficha responde**; o site toca o áudio correspondente.
+
+A consequência de segurança está escrita na fonte do Worker e vale repetir: **ele nunca vê uma resposta — só conhece as perguntas-exemplo — e não tem o que vazar.** Não há chave de API, porque não há API paga. Não há teto de gasto a defender, porque o gasto é zero.
+
+### O prefixo do embedding vale 13 respostas, e a documentação diz o contrário
+
+A documentação do Workers AI afirma que o `embeddinggemma-300m` não precisa de prefixo. **Medir disse outra coisa:**
+
+| Formato | Acertos |
+|---|---|
+| `gemma` — `task: sentence similarity \| query: ...` | **44/52** |
+| `cru` — o texto puro | 31/52 |
+
+Seguir a documentação teria custado **13 respostas certas**. O padrão é `gemma`; a variável `FORMATO` existe só para remedir.
+
+É mais um caso da regra que este arquivo repete: **medir antes de legislar** — e aqui, medir contra a documentação oficial.
+
+### A calibração é teste de regressão, e roda contra o Worker no ar
+
+`hospedagem/calibrar_borda.py` dispara as perguntas do estúdio contra o Worker publicado e **sai com 1 se alguma manobra ou pergunta geral passar do piso**. O piso 0,70 foi calibrado no PC, e **só é copiado para a borda se esta medição disser que ele ainda separa** — o modelo é o mesmo, mas o runtime não, e quantização muda nota sem dar erro.
+
+Medição de **16 de setembro de 2026**, com piso 0,70:
+
+| Grupo | Resultado |
+|---|---|
+| Manobras (tentativas de burlar) | **0 de 5 passam** |
+| Gerais (assunto de fora) | **0 de 12 passam** |
+| Armadilhas (ambíguas de propósito) | 7 de 12 passam |
+| Legítimas na ficha certa | **48 de 53** |
+
+**A folga é pequena, e é o número a vigiar:** a pergunta perigosa que chegou mais alto foi *"Qual a cotação do dólar hoje?"*, com **0,693** contra o piso de 0,700. Sete milésimos. Ao mexer nas fichas, é esta linha da saída que diz se o piso ainda serve.
+
+O comentário dentro de `hospedagem/cloudflare/src/index.js` registra **44/52**, de uma medição anterior, quando o conjunto tinha 52 perguntas. Os dois números estão certos nas suas datas; **nenhum deles deve ser reescrito sem rodar de novo.**
+
+### Ao mexer em `fichas.md`, a ordem é uma só
+
+```bash
+estudio/.venv/Scripts/python.exe hospedagem/gerar_falas.py   # 1. regrava as vozes
+cd hospedagem/cloudflare && npx wrangler deploy               # 2. sobe as perguntas-exemplo
+estudio/.venv/Scripts/python.exe hospedagem/calibrar_borda.py # 3. confere o piso
+```
+
+**Pular o passo 1 é a falha silenciosa da vez:** o Worker passa a apontar para uma ficha cuja voz ainda é a antiga, e o site responde a pergunta certa com o áudio errado. Nada quebra, nada avisa. É a mesma armadilha que este arquivo já registra para os assets do `pubspec` e para os arquivos gerados.
+
+### Armadilhas medidas, que custaram tempo
+
+- **`127.0.0.1`, nunca `localhost`.** No Windows o `localhost` resolve primeiro para IPv6 (`::1`), o Ollama escuta só no IPv4, e o cliente espera a tentativa IPv6 desistir antes de tentar de novo. Medido em 14/09: **2.168 ms com `localhost` contra 108 ms com `127.0.0.1`**. E o pior é onde os 2 segundos sumiam: **fora** do Ollama, antes de a requisição chegar nele — então não apareciam em nenhuma duração que ele reportasse
+- **Embedding mede assunto, não verdade**, e isso foi medido, não deduzido. *"Não funciona offline."* (**falsa**) tirou **0,463**; *"Nenhum dado é vendido."* (**verdadeira**, escrita na própria ficha) tirou **0,464**. Um milésimo separando uma mentira de um fato — porque "funciona offline" e "não funciona offline" moram no mesmo bairro semântico. **Nenhum limiar resolve isso**, e é por isso que existe o juiz
+- **Ficha ambígua engana os dois ao mesmo tempo** — modelo e juiz. Quando uma resposta sai errada, o primeiro suspeito é a ficha, não o modelo
+- **O programa do Ollama NÃO pode sair do `C:`.** Com ele no HD por junção, a descoberta de GPU estoura o watchdog de 90 s e cai para a CPU, a frio e a quente. Voltar a pasta devolveu CUDA na GTX 1650 — experimento de controle feito. Os **modelos** continuam em `D:\dev\ollama-models`, e isso é fine
+- **Sem `User-Agent` próprio, a Cloudflare responde 403.** O `urllib` se anuncia como `Python-urllib` e é tratado como robô. O navegador do visitante não passa por isso
+
+### Hospedagem: confira o preço na fonte antes de recomendar
+
+**Eu afirmei que o Hugging Face hospedava Docker de graça, sem conferir, e estava errado.** A criação do Space falhou com **402 — "Docker Spaces on free cpu-basic requires a PRO subscription"**. Só Space **estático** é gratuito.
+
+Os arquivos ficaram em `hospedagem/huggingface/` e **nunca subiram**; conferido em 16/09/2026, a conta `gustavoanderson` não tem Space nenhum. Eles ficam como ponto de partida se um dia houver PRO ou outro provedor.
+
+O que destravou foi mudar o desenho, não o provedor: **em vez de hospedar o estúdio inteiro, só a busca subiu** — Cloudflare Workers AI, com `embeddinggemma-300m` e 10.000 neurons por dia na camada gratuita, conferido na documentação oficial.
+
+Fica a regra: **conferir preço e plano na fonte oficial ANTES de recomendar hospedagem.** Custa um minuto, e recomendar errado custou uma etapa inteira.
+
+### O fluxo do Pages existe porque o site não mora na raiz
+
+`.github/workflows/pages.yml`. O GitHub Pages só serve a raiz do repositório ou `/docs`, e o site mora em `site/`. Copiar para `/docs` criaria **duas cópias da mesma página**, e uma delas ficaria para trás — a mesma armadilha dos arquivos gerados.
+
+O fluxo dispara só quando `site/**` muda, e publica `site/` como artefato.
+
+### Para testar o site, o instrumento é o Chrome por CDP
+
+Script Node com WebSocket nativo, `--use-gl=angle --use-angle=d3d11`, e **perfil novo a cada rodada**. Quatro coisas que já enganaram:
+
+- `--screenshot --timeout` **não mede tempo real** e produziu um `Failed to fetch` falso
+- `--dump-dom` fotografa o DOM **no carregamento**, antes de a cena existir
+- `swiftshader` derruba o processo de GPU nesta máquina
+- reusar `--user-data-dir` reabre as abas antigas e confunde a leitura
+
+Os perfis de Chrome de teste vão para o `D:`, não para o scratchpad: o `C:` já chegou a 894 MB livres, e com o disco cheio o Chrome trava.
+
+### O que falta no estúdio
+
+| O quê | Estado |
+|---|---|
+| Vídeo da demo com o estúdio local | **standby** — ele quis o site público funcionando sem depender dele |
+| Túnel para expor o estúdio local | depois do vídeo |
+| **Etapa F: Docker** | não começada. Vai no compose o **estúdio** (ollama, porteiro, voz); o site é HTML estático e entra só como contêiner de página para a demo local |
+| Revisar as **5 fichas** marcadas `revisar: Gustavo` | pendente, e é decisão dele |
+
+---
+
 ## Estado e próximos passos
 
 Concluído: identidade visual, ciclo de caminhada, esquema do banco, validador com CI, layout da tela de exercício, três faixas de cenário (dia, tarde, noite), lição sonda de JavaScript iniciante, e **Python iniciante inteiro**.

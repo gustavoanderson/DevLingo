@@ -82,7 +82,7 @@ Quando um terminar, o próximo começa. Se algo bloquear, pule e registre por qu
 
 ## Três frentes novas, decididas em 11 de setembro de 2026
 
-A ordem escolhida por ele: **revisão → voz alta → site → tradução.**
+A ordem escolhida por ele: **revisão → voz alta → ~~site~~ → tradução.** O site foi **entregue em 15/09/2026** e está no ar; o resto da fila segue de pé.
 
 ### A. Leitura em voz alta
 
@@ -94,25 +94,38 @@ O problema difícil é **ler código em voz alta**. `System.out.println` soletra
 
 A voz depende do aparelho: a existência de voz masculina e feminina em português **não é garantida**, e a escolha precisa degradar para "a que houver".
 
-### B. O site: portfólio jogável, com o Tr∅nikAt
+### B. O site: portfólio jogável, com o Tr∅nikAt — **ENTREGUE em 15 de setembro de 2026**
 
-Pedido dele, com o **bruno-simon.com** como referência.
+No ar em **https://gustavoanderson.github.io/DevLingo/**, por GitHub Pages, custo zero de hospedagem. Esta seção continua aqui como registro do que foi previsto e do que mudou no caminho; o *porquê* de como o site funciona hoje mora no `CLAUDE.md`, na seção "O estúdio do Tr∅nikAt".
 
-**A expectativa precisa ficar calibrada, e está escrita aqui de propósito:** aquele site é referência mundial — Three.js com física e um carro dirigível, feito por um especialista em WebGL ao longo de meses. Prometer aquilo seria mentir.
+Pedido dele, com o **bruno-simon.com** como referência, e escopo reduzido por ele em 11/09: um site **inspirado num jogo**, com **cenário cyberpunk ao fundo**, as informações do app, e **o Tr∅nikAt falando**.
 
-O que cabe: um site 3D interativo, com o Tr∅nikAt navegável, seções sobre o app e sobre o Gustavo como idealizador. **GitHub Pages, custo zero de hospedagem.** Em semanas, por partes.
+Quase tudo veio de peça que já existia — `tools/gerar_faixas.py` para o cenário, `tronikat.svg` para o personagem, `docs/paleta.md` para cor e tipografia, e os números medidos do banco para o conteúdo. Foi por isso que "semanas" virou dias.
 
-#### O agente conversável, e a decisão de dinheiro
+#### Duas coisas que este arquivo previu errado
 
-Ele escolheu **IA de verdade, com teto rígido** — e recusou tanto o roteiro sem IA quanto a IA aberta.
+**1. "Não há Three.js nem física."** Eu escrevi isso aqui ao reduzir o escopo, e o site entregue usa **Three.js de verdade**: `WebGLRenderer` e 75 chamadas a `THREE.`. A previsão de que o parallax em 2D bastaria não sobreviveu ao contato com a tela — a "sensação de jogo" que ele pediu depende de profundidade, e profundidade desenhada em camadas planas lê como slide, não como cena.
 
-Três coisas que isso exige, e que não são óbvias:
+Fica registrado como **mudança de decisão, e não como descuido.** Quem ler só a previsão e for mexer no site encontra um motor 3D onde o texto prometia não haver nenhum.
 
-- **A chave NÃO pode ficar no site.** Página estática que chama a API carrega a chave no JavaScript, e qualquer visitante a lê. Precisa de uma função no meio — Cloudflare Workers ou similar, camada gratuita
-- **Teto por visitante e teto diário.** Sem os dois, uma pessoa em laço gasta o crédito do mês numa tarde
-- **O agente só fala do DevLingo.** Isso é limite de ferramenta e de instrução, e a parte que funciona é a ferramenta: ele não tem acesso a nada além do conteúdo do projeto
+**2. A decisão de dinheiro virou outra coisa.** O texto anterior afirmava que ele havia escolhido *"IA de verdade, com teto rígido"* e orçava **~R$ 0,05 por conversa com Sonnet**. **Nada disso aconteceu.**
 
-Custo estimado por conversa, com os preços de setembro de 2026: **~R$ 0,05 com Sonnet, ~R$ 0,12 com Opus**. Cem conversas por mês ficam entre R$ 5 e R$ 12 — barato. **O risco não é o preço unitário, é o abuso**, e é por isso que o teto vem antes do agente.
+| O que este arquivo previa | O que foi feito |
+|---|---|
+| API paga, com teto por visitante e teto diário | **IA local**: `qwen3-gpu` na GTX 1650, e nenhuma chave |
+| Cloudflare Worker para **esconder a chave** | Cloudflare Worker para **fazer a busca** — não há chave a esconder |
+| ~R$ 0,05 a R$ 0,12 por conversa | **zero** |
+
+Dos três cuidados previstos, **só o terceiro se confirmou**: o agente só fala do DevLingo. E a parte que funciona é mesmo a ferramenta, não a instrução — quem garante isso é o piso de similaridade do porteiro, que é número medido, e não um pedido escrito em português.
+
+#### O que ficou para depois
+
+| O quê | Estado |
+|---|---|
+| O vídeo da demo com o estúdio local | **standby** — ele quis o site público funcionando *sem* depender dele |
+| Túnel para expor o estúdio local | depois do vídeo |
+| **Etapa F: Docker** do estúdio | não começada |
+| Revisar as **5 fichas** marcadas `revisar: Gustavo` | pendente, e é decisão dele |
 
 ### C. Tradução
 
