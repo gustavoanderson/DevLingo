@@ -1737,7 +1737,25 @@ const Voz = (function () {
     u.lang = 'pt-BR'; u.rate = 1.04; u.pitch = 1.22;
     Legenda.preparar(limpo); Legenda.acompanhar(0);
 
+    // O `boundary` NAO dispara no Chrome do Android -- defeito conhecido, e o
+    // Android e justamente o alvo. Sem isto a voz sairia e a boca ficaria
+    // PARADA. Entao a boca comeca generica no `start`, e so cede a vez se o
+    // `boundary` aparecer (desktop), onde a sincronia por palavra e melhor.
+    let porPalavra = false;
+    u.onstart = () => {
+      // ~14 caracteres por segundo na velocidade usada; serve so para a
+      // legenda avancar, e errar um pouco nao atrapalha a leitura.
+      const t0 = Date.now(), dur = Math.max(1200, limpo.length / 14 * 1000);
+      const tique = setInterval(() => {
+        if (porPalavra) return clearInterval(tique);
+        Legenda.acompanhar(Math.min(1, (Date.now() - t0) / dur));
+        Fala.abrir(.18 + Math.random() * .38);
+      }, 90);
+      timers.push(tique);
+    };
+
     u.onboundary = ev => {
+      porPalavra = true;
       Legenda.acompanhar(ev.charIndex / limpo.length);
       const resto = limpo.slice(ev.charIndex);
       const palavra = (resto.match(/^\S+/) || [''])[0];
@@ -1865,7 +1883,10 @@ const Estudio = (function () {
     if (!r.ok) throw new Error(modo + ' respondeu ' + r.status);
     const corpo = await r.json();
     if (modo === 'local') return corpo;
-    // A nuvem devolve so o id da ficha; texto, voz e boca vem do indice.
+    // Resposta GERADA na borda: nao existe audio gravado dela, entao ela sai
+    // pela voz do navegador. Sem `arquivo`, quem chama sabe qual caminho usar.
+    if (corpo.texto) return { texto: corpo.texto, caminho: corpo.caminho, ficha: corpo.ficha };
+    // Ficha conhecida: texto, voz e boca vem do indice.
     const indice = await indiceDasFalas();
     const fala = indice[corpo.ficha || '_recusa'];
     if (!fala) throw new Error('fala desconhecida: ' + corpo.ficha);
@@ -1953,7 +1974,7 @@ async function responder(pergunta) {
       estado.textContent = 'Tr∅nikAt · pensando';
       const r = await Estudio.perguntar(pergunta);
       balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
-      await Estudio.tocar(r);
+      if (r.arquivo) await Estudio.tocar(r); else Voz(r.texto);
       estado.textContent = 'Tr∅nikAt · online';
       ocupado = false; env.disabled = false; txt.focus();
       return;

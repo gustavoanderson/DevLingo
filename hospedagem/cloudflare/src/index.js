@@ -5,6 +5,7 @@
 // por hospedagem/gerar_falas.py. Por isso este Worker nunca ve uma resposta --
 // ele so conhece as perguntas-exemplo -- e nao tem o que vazar.
 import FICHAS from "./fichas.json";
+import { gerar, conferirSaida } from "./porteiro.js";
 
 const MODELO = "@cf/google/embeddinggemma-300m";
 const LIMITE_DA_PERGUNTA = 300;
@@ -99,12 +100,43 @@ export default {
       let melhor = ["", -1];
       for (const [id, v] of base) { const n = cosseno(vetor, v); if (n > melhor[1]) melhor = [id, n]; }
       const passou = melhor[1] >= FICHAS.piso;
-      return json(request, 200, {
+      const resposta = {
         ficha: passou ? melhor[0] : null,
         caminho: passou ? "ficha" : "barrada-na-entrada",
         nota: Math.round(melhor[1] * 1000) / 1000,
         ms: Date.now() - t0,
-      });
+      };
+
+      // FASE 1: passando o piso, o Tr∅nikAt REESCREVE a ficha com a voz dele,
+      // e o juiz confere antes de a fala sair. Falhar aqui NAO quebra nada: sem
+      // o campo `texto`, o site toca o audio gravado, que e o que ele ja fazia.
+      // Por isso a geracao inteira mora dentro de um try -- ela e melhoria, nao
+      // requisito, e o teto de neurons do plano gratuito e duro.
+      if (passou && env.GERAR !== "nao") {
+        try {
+          const ficha = FICHAS.fichas.find(f => f.id === melhor[0]);
+          const gerado = await gerar(env, ficha, pergunta.trim());
+          const { motivos } = await conferirSaida(env, gerado, ficha);
+          if (motivos.length === 0) {
+            resposta.texto = gerado;
+            resposta.caminho = "gerada";
+          } else {
+            // Reprovada: cai para a ficha literal, que tem audio gravado.
+            resposta.caminho = "ficha-literal";
+            resposta.motivos = motivos;
+            // O que o modelo escreveu, MESMO descartado: sem isto, depurar uma
+            // recusa exige adivinhar o que ele disse. Espelha o campo `gerado`
+            // do estudio/porteiro.py.
+            resposta.gerado = gerado;
+          }
+          resposta.ms_total = Date.now() - t0;
+        } catch (e) {
+          resposta.caminho = "ficha-literal";
+          resposta.motivos = [`geracao indisponivel: ${e.message || e}`];
+        }
+      }
+
+      return json(request, 200, resposta);
     } catch (e) {
       // Sem a busca, o site cai para as respostas prontas: falha aqui nao pode
       // virar tela quebrada la.

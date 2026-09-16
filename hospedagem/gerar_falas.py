@@ -12,7 +12,9 @@ descobre qual dos dois esta certo.
   site/falas/indice.json                  texto, duracao e boca de cada fala
   site/falas/<id>.wav                     o audio
 
-O Worker recebe SO as perguntas, nunca as respostas: o que ele devolve e um id.
+Ate a fase 1 o Worker recebia SO as perguntas. Com a geracao na borda ele passou a
+receber tambem a `resposta` de cada ficha, que e o material que ele reescreve --
+e que ja era publico em site/falas/indice.json. Nao ha chave nem segredo ali.
 Os textos moram no site, que ja e publico.
 
 A voz do Piper tem aleatoriedade: gerar duas vezes nao da os mesmos bytes. Por
@@ -55,7 +57,11 @@ def impressao(texto: str) -> str:
 
 
 def json_do_worker() -> str:
-    fichas = [{"id": f.id, "perguntas": f.perguntas} for f in ler_fichas()]
+    # A `resposta` entrou na FASE 1 (geracao na borda): sem ela o Worker nao tem
+    # o que reescrever. Isso NAO expoe nada novo -- os mesmos textos ja sao
+    # publicos em site/falas/indice.json, servido em HTTP 200 com 346 KB.
+    fichas = [{"id": f.id, "perguntas": f.perguntas, "resposta": f.resposta}
+              for f in ler_fichas()]
     return json.dumps({"piso": PISO, "fichas": fichas}, ensure_ascii=False, indent=1) + "\n"
 
 

@@ -31,6 +31,29 @@ python3 tools/test_normalize.py                            # contrato
 cd app && flutter analyze && flutter test                   # app
 ```
 
+### As quatro regras, adotadas em 16 de setembro de 2026
+
+O Gustavo mandou adotar o [`CLAUDE.md` do `multica-ai/andrej-karpathy-skills`](https://github.com/multica-ai/andrej-karpathy-skills), com a frase que explica o porquê: *"vejo que você está se perdendo na função às vezes"*. Elas valem junto com as duas regras acima, não no lugar delas.
+
+**1. Pense antes de codar.** Não presuma, não esconda confusão, exponha as alternativas em vez de escolher calado. Se estiver incerto, pergunte.
+
+**2. Simplicidade primeiro.** O mínimo de código que resolve. Nada especulativo, nada de abstração para uso único, nada de flexibilidade que ninguém pediu. Se escreveu 200 linhas e cabiam 50, reescreva.
+
+**3. Mudança cirúrgica.** Toque só no que precisa. Não "melhore" código vizinho, não reformate, não refatore o que não está quebrado. Código morto não relacionado se **menciona**, não se apaga. O teste: toda linha mudada rastreia direto ao pedido.
+
+**4. Critério de sucesso antes.** Defina o que contaria como "funcionou", em forma verificável, e itere até passar. *"Adicionar validação"* vira *"escrever o teste da entrada inválida e fazê-lo passar"*.
+
+**O que faz essas regras pegarem aqui não é o texto, são os casos.** Todos do mesmo dia em que elas foram adotadas:
+
+| Regra | Como eu a quebrei |
+|---|---|
+| 1 | Presumi que `HERMES_PROFILE` selecionava perfil — **o wrapper dizia `-p`**. Presumi `provider: ollama` válido — **o `doctor` tinha a lista, e `ollama` não estava nela**. Rodei o Hermes de dentro do repositório — **a memória dizia "sempre a partir de `~`"**. Afirmei que o Docker Desktop não estava instalado tendo conferido **um** caminho. Nos quatro, a resposta certa já existia onde eu não olhei primeiro |
+| 2 | Propus baixar **63 MB** de modelo de voz no navegador, com esquema híbrido de gravado-mais-sintetizado. A resposta dele foi *"63 MB é coisa de maluco"* — e a saída simples estava na mesa desde o começo |
+| 3 | Encerrei **todos** os processos `node.exe`, e depois **todos** os PowerShell ocultos, querendo encerrar **um** de cada |
+| 4 | No Hermes foram quatro tentativas às cegas. Com o critério escrito antes — *"sucesso é o agente responder 3, e o log provar que ele chamou a ferramenta"* — teria levado metade do tempo |
+
+A regra 2 tem um corolário que custou um mal-entendido no mesmo dia: **analogia obscura é complexidade também.** Escrevi que dar voz genérica ao mascote seria *"o equivalente sonoro do olho âmbar"* — uma referência a uma história deste arquivo que exigia reconstruir contexto. Ele respondeu *"não entendi nada"*, e estava certo.
+
 ---
 
 ## O que é o DevLingo
