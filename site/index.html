@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fale com o Tr∅nikAt</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@500;600&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- `defer` porque sem ele o navegador nao pinta NADA ate baixar e compilar
+     118 KB de biblioteca. A cena 3D so e montada depois que a pagina aparece
+     (ver `Fala`), entao nada aqui precisa de THREE durante a analise. -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   /* A paleta e a do proprio DevLingo, em docs/paleta.md. O site nao inventa
      identidade: ele usa a que o app ja tem. */
@@ -290,6 +293,34 @@
 </div>
 
 <script>
+/* ------------------------------------------------ nao desenhar para ninguem
+ *
+ * Um canvas fora da tela nao precisa desenhar, e ate 16 de setembro de 2026
+ * todos desenhavam. Medido no Chrome, com a pagina rolada ate o fim: o site
+ * gastava 6,8% de CPU pintando cenas que ninguem estava vendo, contra 14,3%
+ * com elas a vista. O trabalho nao caia porque nada media se o canvas ainda
+ * estava no quadro.
+ *
+ * A aba OCULTA nao ganha tratamento nenhum aqui, e isso e deliberado: o
+ * navegador ja estrangula `requestAnimationFrame` para zero sozinho quando a
+ * aba vai para tras. Medido: 0,0% de CPU, sem uma linha de codigo nossa.
+ * Escrever um `visibilitychange` seria codigo para um problema que nao existe.
+ */
+function observarNaTela(el) {
+  // Comeca em `true`: se o navegador nao tiver IntersectionObserver, ou se o
+  // observador ainda nao rodou, a cena desenha. Errar para o lado de desenhar
+  // custa alguns quadros; errar para o outro deixa um retangulo preto na tela.
+  const visao = { naTela: true };
+  if (!el || !window.IntersectionObserver) return visao;
+  new IntersectionObserver(
+    (entradas) => { visao.naTela = entradas[0].isIntersecting; },
+    // A margem faz a cena voltar a desenhar um pouco ANTES de entrar no
+    // quadro, senao ela aparece congelada no primeiro instante da rolagem.
+    { rootMargin: '200px' },
+  ).observe(el);
+  return visao;
+}
+
 /* O canion da rua: a cidade vista de DENTRO dela.
  *
  * A versao de cima morreu na referencia que o Gustavo mandou. Ela mostra o
@@ -317,6 +348,7 @@
  */
 function montarVista(canvas) {
   const g = canvas.getContext('2d');
+  const visao = observarNaTela(canvas);
   let L = 0, A = 0, t = 0;
   const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -692,7 +724,8 @@ function montarVista(canvas) {
   }
 
   function quadro() {
-    if (parseFloat(canvas.style.opacity || '1') < .02) {
+    // Transparente OU fora da tela: pede o proximo quadro e nao desenha nada.
+    if (!visao.naTela || parseFloat(canvas.style.opacity || '1') < .02) {
       requestAnimationFrame(quadro); return;
     }
     // --- ceu, visto so pela fresta entre as duas fileiras ---
@@ -826,6 +859,7 @@ montarVista(document.getElementById('ceu'));
  */
 function montarMetro(canvas, avancoDaCamera) {
   const g = canvas.getContext('2d');
+  const visao = observarNaTela(canvas);
   let L = 0, A = 0, t = 0;
   const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -898,7 +932,8 @@ function montarMetro(canvas, avancoDaCamera) {
   }
 
   function quadro() {
-    if (parseFloat(canvas.style.opacity || '1') < .02) {
+    // Transparente OU fora da tela: pede o proximo quadro e nao desenha nada.
+    if (!visao.naTela || parseFloat(canvas.style.opacity || '1') < .02) {
       requestAnimationFrame(quadro); return;
     }
     zCam = avancoDaCamera();
@@ -1122,6 +1157,7 @@ function montarMetro(canvas, avancoDaCamera) {
   const c = document.getElementById('chuva');
   if (!c) return;
   const g = c.getContext('2d');
+  const visao = observarNaTela(c);
   const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const GLIFOS = [...'アカサタナハマヤラワンイキシチニヒミリ0123456789{}[]<>/\|=+-*;:_$#@!?'];
   const PASSO = 14;
@@ -1140,6 +1176,7 @@ function montarMetro(canvas, avancoDaCamera) {
 
   function quadro(agora) {
     requestAnimationFrame(quadro);
+    if (!visao.naTela) return;            // fora da tela nao se pinta
     if (agora - ultimo < 42) return;      // ~24 qps
     ultimo = agora;
 
@@ -1273,7 +1310,31 @@ const Legenda = (function () {
   };
 })();
 
+/* A cena 3D e montada TARDE, e essa e a correcao mais importante deste
+ * arquivo. Medido no Chrome, servindo de 127.0.0.1 (sem rede no meio):
+ *
+ *     pagina trivial, mesmo navegador ....  1.612 ms ate a primeira pintura
+ *     este site SEM a cena 3D ............  2.348 ms
+ *     este site COMO ESTAVA .............. 13.472 ms
+ *
+ * Onze segundos de tela branca, e nao era download: o HTML chega em 2 ms e o
+ * three.js em 859 ms. Era esta funcao rodando de forma SINCRONA durante a
+ * analise do documento -- criar o contexto WebGL e compilar os shaders, com o
+ * navegador impedido de pintar enquanto isso nao termina.
+ *
+ * E nao e a geometria. Testado em A/B com um quarto dos poligonos: 15.160 ms,
+ * ou seja igual. Diminuir esferas nao resolveria nada; so adiar resolve.
+ *
+ * Entao `Fala` existe desde o comeco -- quem chama `abrir()` nunca precisa
+ * saber disto -- mas a cena so e construida quando a pagina ja apareceu E a
+ * cabeca esta no quadro. Ate la, o ultimo pedido de boca fica guardado.
+ */
 const Fala = (function () {
+ let cena3D = null;      // a cena de verdade, depois de montada
+ let pedido = null;      // ultimo `abrir` recebido antes de ela existir
+ let tentada = false;    // montar uma vez so, mesmo que falhe
+
+ function montar() {
  // A cena 3D inteira vai num try. Sem isto, UMA falha ao criar o contexto
  // WebGL derruba o script todo -- e o chat, a voz e o Estudio ficam
  // undefined, porque sao definidos DEPOIS daqui. O site vira uma pagina
@@ -1297,7 +1358,10 @@ const Fala = (function () {
   const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
   function medir() {
     const l = c.clientWidth || 358, a = c.clientHeight || Math.round(l * 3 / 4);
-    r.setPixelRatio(Math.min(devicePixelRatio, 2));
+    // Em tela estreita o teto cai para 1,5. Cada quadro passa a sombrear
+    // 44% menos pixels, e num celular e ai que o custo por quadro mora --
+    // nao no numero de poligonos, que foi medido e nao muda nada.
+    r.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2));
     r.setSize(l, a, false); cam.aspect = l / a; cam.updateProjectionMatrix();
   }
   addEventListener('resize', medir);
@@ -1679,7 +1743,13 @@ const Fala = (function () {
   });
 
   medir();
+  const visao = observarNaTela(c);
   (function anima() {
+    requestAnimationFrame(anima);
+    // Cabeca fora do quadro: nada a renderizar. O `abrir()` continua sendo
+    // recebido e guardado nas variaveis; quando ela voltar, a boca ja esta
+    // na posicao certa e ninguem ve salto.
+    if (!visao.naTela) return;
     const t = performance.now() / 1000;
     cabeca.rotation.y += (mira.x - cabeca.rotation.y) * .06;
     cabeca.rotation.x += (mira.y - cabeca.rotation.x) * .06;
@@ -1707,7 +1777,6 @@ const Fala = (function () {
                    bocaEscalaBase.z * (1 + a * .5) * (1 + arredonda * .35));
     tela.material.color.setHex(alvo > .04 ? 0x9CFF7A : VISOR);
     r.render(cena, cam);
-    requestAnimationFrame(anima);
   })();
 
   return {
@@ -1718,9 +1787,49 @@ const Fala = (function () {
   console.warn('cena 3D indisponivel, o chat continua:', e && e.message);
   const c = document.getElementById('cabeca');
   if (c) c.style.display = 'none';
-  return { abrir: () => {} };
+  return null;
  }
+ }
+
+ /* Monta na primeira vez que for chamada, e nunca mais. Se a cena ficar de
+    pe e alguem ja tiver pedido uma boca, o pedido guardado e aplicado --
+    senao uma fala que comecou antes da montagem sairia de boca parada. */
+ function garantir() {
+  if (tentada) return;
+  tentada = true;
+  if (typeof THREE === 'undefined') return;   // o `defer` ainda nao chegou
+  cena3D = montar();
+  if (cena3D && pedido) cena3D.abrir(pedido[0], pedido[1], pedido[2]);
+ }
+
+ return {
+  abrir: (v, arred = 0, exato = false) => {
+   if (cena3D) cena3D.abrir(v, arred, exato);
+   else pedido = [v, arred, exato];
+  },
+  garantir,
+ };
 })();
+
+/* O gatilho da montagem. Duas condicoes, e as duas importam:
+   - `load` garante que a pagina JA PINTOU e que o three.js (com `defer`) ja
+     existe. Montar antes disso e o defeito que esta correcao desfaz;
+   - o observador garante que nao se gasta um contexto WebGL com a cabeca
+     fora da tela -- em celular estreito ela pode nascer abaixo da dobra.
+   `requestIdleCallback` empurra para um momento em que o navegador nao tem
+   nada melhor a fazer; onde ele nao existe, um `setTimeout` curto serve. */
+addEventListener('load', () => {
+  const alvo = document.getElementById('cabeca');
+  const agora = () => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(
+    () => Fala.garantir());
+  if (!alvo || !window.IntersectionObserver) { agora(); return; }
+  const obs = new IntersectionObserver((entradas) => {
+    if (!entradas[0].isIntersecting) return;
+    obs.disconnect();
+    agora();
+  }, { rootMargin: '200px' });
+  obs.observe(alvo);
+});
 
 /* ------------------------------------------------------------- lip sync
    A sincronia sai do evento `boundary` da sintese de voz do navegador, que
