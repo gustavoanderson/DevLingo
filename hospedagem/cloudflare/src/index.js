@@ -79,6 +79,49 @@ export default {
     if (request.method === "GET" && url.pathname === "/saude") {
       return json(request, 200, { ok: true, modo: "borda", formato: env.FORMATO || "gemma" });
     }
+    // A PONTE ATE A VOZ.
+    //
+    // O navegador NAO busca em HTTP puro -- conteudo misto --, mas um Worker
+    // busca. Entao a voz do Tr∅nikAt pode morar numa maquina sem dominio e sem
+    // certificado, e quem fala HTTPS com o site e este Worker aqui, que ja
+    // tinha CORS montado para o proprio /perguntar.
+    //
+    // Isso apagou tres coisas do roteiro de hospedagem: comprar dominio,
+    // emitir certificado e instalar tunel. O preco e uma porta aberta na
+    // maquina, defendida pela chave que vai no cabecalho abaixo.
+    if (request.method === "POST" && url.pathname === "/falar") {
+      if (!env.VOZ_ORIGEM) {
+        // Ainda nao ha maquina no ar. O site ja trata isto como "sem voz" e
+        // mostra so o texto: voz e conveniencia, nao requisito.
+        return json(request, 503, { erro: "voz nao configurada" });
+      }
+      let texto;
+      try { texto = (await request.json()).texto; }
+      catch { return json(request, 400, { erro: "corpo precisa ser JSON com o campo 'texto'" }); }
+      if (typeof texto !== "string" || !texto.trim()) {
+        return json(request, 400, { erro: "texto vazio" });
+      }
+      // O limite vive nos DOIS lados de proposito. Sem ele aqui, este Worker
+      // seria um relay aberto para gastar a CPU da maquina de la -- e ela tem
+      // dois nucleos gratuitos.
+      if (texto.length > 700) return json(request, 413, { erro: "texto grande demais" });
+      try {
+        const r = await fetch(env.VOZ_ORIGEM.replace(/\/$/, "") + "/falar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Voz-Chave": env.VOZ_CHAVE || "",
+          },
+          body: JSON.stringify({ texto: texto.trim() }),
+        });
+        return json(request, r.status, await r.json());
+      } catch (e) {
+        // Maquina desligada, reiniciando ou sem rede: o site fica mudo e
+        // segue inteiro. Mesma degradacao que a geracao ja tinha.
+        return json(request, 503, { erro: "voz indisponivel" });
+      }
+    }
+
     if (request.method !== "POST" || url.pathname !== "/perguntar") {
       return json(request, 404, { erro: "caminho desconhecido" });
     }

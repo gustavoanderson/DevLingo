@@ -692,11 +692,15 @@ const Fala = (function () {
    gerado toca pelo MESMO tocador das fichas -- boca e legenda inclusas. Nao
    ha um segundo caminho de audio para divergir do primeiro.
 
-   ENQUANTO `VOZ_URL` ESTIVER VAZIO, a voz do texto gerado simplesmente nao
-   sai, e isso e deliberado: melhor mudo que com a voz de outro personagem.
-   Hoje isso nao aparece, porque a geracao esta desligada no Worker
-   (ver wrangler.toml) justamente para o site ter uma voz so desde ja. */
-const VOZ_URL = '';   // ex.: 'https://voz.exemplo.workers.dev' -- ver hospedagem/ORACLE.md
+   QUEM SERVE A VOZ E O PROPRIO WORKER, e nao a maquina direto. O navegador
+   nao busca em HTTP puro, mas um Worker busca -- entao o Worker vira ponte, e
+   a maquina da voz nao precisa de dominio nem de certificado. Ver ORACLE.md.
+
+   O endereco ja fica preenchido aqui, e nao ha nada a editar quando a maquina
+   subir: enquanto o Worker nao tiver `VOZ_ORIGEM`, ele devolve 503 e o site
+   mostra so o texto. Voz e conveniencia, nao requisito -- a mesma regra que o
+   CLAUDE.md ja da ao som do app. */
+const VOZ_URL = 'https://tronikat.tronikat-busca.workers.dev';
 
 const Voz = (function () {
   return async function falar(texto) {

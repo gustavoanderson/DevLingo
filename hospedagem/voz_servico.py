@@ -56,6 +56,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "estudio"))
 
 PORTA = int(os.environ.get("VOZ_PORTA", "8770"))
 
+# A CHAVE, e o motivo de o padrão ser fechado em vez de aberto.
+#
+# Quem chama este serviço em produção não é o navegador: é o Worker da
+# Cloudflare, que já é HTTPS e já tem o CORS do site. Ele é a ponte, porque
+# navegador não busca em HTTP puro mas Worker busca -- e isso apaga do roteiro
+# o domínio, o certificado e o túnel.
+#
+# O preço é uma porta aberta na máquina. A chave é o que a defende: o Worker a
+# manda em `X-Voz-Chave`, e quem não a tiver leva 401.
+#
+# SEM CHAVE DEFINIDA, SÓ LOCALHOST RESPONDE. É deliberado: a falha provável não
+# é alguém adivinhar a chave, é alguém ESQUECER de defini-la ao subir. Nesse
+# caso o serviço fica inacessível de fora -- que é chato e visível -- em vez de
+# ficar aberto, que é cômodo e silencioso.
+CHAVE = os.environ.get("VOZ_CHAVE", "").strip()
+LOCAIS = {"127.0.0.1", "::1", "localhost"}
+
 # De onde o navegador pode chamar. Origem que não estiver aqui não recebe
 # cabeçalho de CORS e o navegador recusa sozinho. Não é segurança de verdade
 # -- qualquer cliente fora do navegador ignora CORS --, é o que impede outro
@@ -183,15 +200,26 @@ def criar_manipulador(estudio: Estudio, limitador: Limitador):
             if self.path != "/saude":
                 return self._json(404, {"erro": "caminho desconhecido"})
             self._json(200, {
-                "ok": True, "voz": estudio.modelo,
+                # Diz SE ha chave, nunca qual. Sem isto, conferir a configuracao
+                # de fora exigiria entrar na maquina por SSH.
+                "ok": True, "voz": estudio.modelo, "com_chave": bool(CHAVE),
                 "carga_s": round(estudio.carga_s, 2),
                 "sintetizadas": estudio.sintetizadas, "do_cache": estudio.do_cache,
                 "em_cache": len(estudio.cache),
             })
 
+        def _autorizado(self) -> bool:
+            if CHAVE:
+                return self.headers.get("X-Voz-Chave", "") == CHAVE
+            # Sem chave: só quem está na própria máquina. Ver o comentário de
+            # CHAVE -- fechado é o padrão seguro para o erro que de fato acontece.
+            return self.client_address[0] in LOCAIS
+
         def do_POST(self) -> None:
             if self.path != "/falar":
                 return self._json(404, {"erro": "caminho desconhecido"})
+            if not self._autorizado():
+                return self._json(401, {"erro": "sem chave"})
             # Quem está atrás de um túnel ou proxy chega sempre do mesmo IP;
             # o cabeçalho diz o endereço de verdade. Só é confiável porque
             # quem o escreve é o túnel, e não o visitante.
@@ -228,6 +256,12 @@ def main() -> int:
     print("carregando a voz...", flush=True)
     estudio = Estudio()
     print(f"voz {estudio.modelo} carregada em {estudio.carga_s:.1f} s", flush=True)
+    if CHAVE:
+        print(f"chave definida ({len(CHAVE)} caracteres): aceita de qualquer lugar "
+              "quem mandar X-Voz-Chave", flush=True)
+    else:
+        print("SEM CHAVE: so localhost responde. Defina VOZ_CHAVE para o Worker "
+              "poder chamar. Ver hospedagem/ORACLE.md", flush=True)
     servidor = ThreadingHTTPServer(("0.0.0.0", PORTA), criar_manipulador(estudio, Limitador()))
     print(f"ouvindo em http://0.0.0.0:{PORTA}  (POST /falar, GET /saude)", flush=True)
     try:
