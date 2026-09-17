@@ -887,8 +887,13 @@ const Estudio = (function () {
      3. Nenhuma se repete na mesma espera, e quando as dez acabam ela para. Duas
         seguidas soam como quem ainda esta pensando; a mesma duas vezes soa como
         disco riscado */
-  const ESPERA_PARA_ENROLAR = 600;
+  /* 250 ms, e nao 600. O guarda existia para nao atrasar resposta rapida, mas
+     com a geracao ligada NAO HA resposta rapida: o Worker leva ~2 s no minimo.
+     O que sobrava era um quarto de segundo de silencio no comeco de toda
+     conversa, cobrando por um caso que nao acontece mais. */
+  const ESPERA_PARA_ENROLAR = 250;
   let escolhidas = null;        // sorteadas e pre-carregadas ANTES do envio
+  let moldura = null;           // a abertura gravada do eco
 
   /* ESCOLHE E PRE-CARREGA antes de o visitante apertar FALAR.
 
@@ -903,15 +908,38 @@ const Estudio = (function () {
     if (escolhidas) return;
     let indice;
     try { indice = await indiceDasFalas(); } catch { return; }
-    const sorteia = (p) => {
+    const sorteia = (p, quantas) => {
       const ids = Object.keys(indice).filter(k => k.startsWith(p));
-      return ids.length ? ids[Math.floor(Math.random() * ids.length)] : null;
+      const fora = [];
+      for (let i = 0; i < quantas && ids.length; i++) {
+        fora.push(ids.splice(Math.floor(Math.random() * ids.length), 1)[0]);
+      }
+      return fora;
     };
-    const abrir = sorteia('_abrir'), pensar = sorteia('_pensar');
-    if (!abrir || !pensar) return;
-    escolhidas = { abrir, pensar };
+    /* QUATRO pecas, e nao duas. Com duas, a fila acabava antes da resposta e o
+       resto da espera ficava mudo -- que foi a queixa. Intercaladas
+       abertura/pensando para nao sair "hmmm" atras de "hmmm". */
+    /* TODAS as gravadas entram na fila, intercaladas. Com quatro ela acabava
+       antes da resposta e o resto da espera ficava mudo -- medido, 2,9 s de
+       silencio no fim. As quatro primeiras sao pre-carregadas; as outras o
+       navegador busca durante a conversa, e ate la ja houve tempo de sobra. */
+    const abrir = sorteia('_abrir', 9), pensar = sorteia('_pensar', 9);
+    const molduras = sorteia('_eco', 1);
+    if (!abrir.length || !pensar.length) return;
+    escolhidas = [];
+    for (let i = 0; i < Math.max(abrir.length, pensar.length); i++) {
+      if (abrir[i]) escolhidas.push(abrir[i]);
+      if (pensar[i]) escolhidas.push(pensar[i]);
+    }
+    // A moldura do eco fica a parte: ela nao entra na fila, e tocada COLADA no
+    // assunto quando ele fica pronto.
+    moldura = molduras[0] || null;
     // Basta PEDIR: o navegador guarda, e o `new Audio` de depois acha pronto.
-    for (const id of [abrir, pensar]) fetch('falas/' + indice[id].audio).catch(() => {});
+    // So as quatro primeiras, mais a moldura: o conjunto inteiro passa de
+    // 900 KB, e baixar isso de uma vez desfaria o trabalho de abrir em 2,5 s.
+    for (const id of escolhidas.slice(0, 4).concat(moldura ? [moldura] : [])) {
+      fetch('falas/' + indice[id].audio).catch(() => {});
+    }
   }
 
   /* Toca uma fala do indice. Devolve false quando o audio nao esta tocando de
@@ -938,34 +966,45 @@ const Estudio = (function () {
     let pronto = false;
     trabalho.then(() => { pronto = true; }, () => { pronto = true; });
     await new Promise(r => setTimeout(r, ESPERA_PARA_ENROLAR));
+    /* O ECO NAO E ESPERADO, e esta linha e a correcao do silencio que mais
+       incomodou. Antes havia um `await eco` no meio da sequencia: a abertura
+       acabava em ~1,5 s e o codigo FICAVA PARADO ate a sintese do eco
+       terminar, o que leva ~4 s. Dois segundos e meio de nada, toda vez.
+
+       Agora o eco so e ANOTADO quando fica pronto, e entra na primeira brecha.
+       Enquanto ele nao chega, tocam as gravadas -- que sao instantaneas. */
+    let falaDoEco = null, ecoTocado = false;
+    Promise.resolve(eco).then(f => { falaDoEco = f; }, () => {});
+
     if (pronto) return;
     let indice = null;
     try { indice = await indiceDasFalas(); } catch { return; }
     await prepararEnrolacao();
-    const plano = escolhidas;
+    const fila = (escolhidas || []).slice();
     escolhidas = null;            // a proxima pergunta sorteia de novo
-    if (!plano) return;
+    if (!fila.length) return;
 
-    /* A SEQUENCIA, e ela tem TRES PAPEIS, na ordem que o Gustavo desenhou:
+    /* A FILA, e ela nao para enquanto a resposta nao vier.
 
-         1. ABERTURA  "Bom, vamos la."            reconhece que ouviu
-         2. ECO       a pergunta dele de volta    ganha tempo, e cresce com ela
-         3. PENSANDO  "Hmmm, entao..."            ainda trabalhando
+       Os papeis continuam: ABERTURA reconhece que ouviu, ECO devolve a
+       pergunta, PENSANDO diz que ainda trabalha. O que mudou e que ela nao
+       tem mais tamanho fixo de tres -- parava e deixava o resto mudo.
 
-       A primeira versao sorteava as duas pontas do MESMO saco, e o que ele
-       ouviu foi "deixa eu processar a informacao" ... eco ... "deixa eu
-       processar". Duas vezes a mesma ideia. Papel separado resolve na origem,
-       em vez de tentar evitar repeticao por sorteio.
-
-       Depois das tres, silencio: tagarelar mais nao convence, cansa. */
-    if (!await tocarDoIndice(indice, plano.abrir)) return;
-    if (pronto) return;
-
-    const falaDoEco = await eco;
-    if (falaDoEco && !pronto) await tocar(falaDoEco);
-    if (pronto) return;
-
-    await tocarDoIndice(indice, plano.pensar);
+       O eco entra na PRIMEIRA brecha depois de ficar pronto, e nao num lugar
+       fixo da sequencia: assim ele nunca e esperado, so aproveitado. */
+    while (!pronto) {
+      if (falaDoEco && !ecoTocado) {
+        ecoTocado = true;
+        // Moldura gravada primeiro, assunto sintetizado em seguida. As duas
+        // coladas soam como uma frase so, e so a segunda custou CPU.
+        if (moldura) await tocarDoIndice(indice, moldura);
+        if (!pronto) await tocar(falaDoEco);
+        continue;
+      }
+      const id = fila.shift();
+      if (!id) break;             // acabaram as gravadas; o resto e silencio
+      if (!await tocarDoIndice(indice, id)) return;
+    }
   }
 
   return {
@@ -1135,12 +1174,26 @@ async function responder(pergunta) {
 
          Guardar o texto ate a fala comecar custa nada e devolve a imersao: o
          balao continua dizendo "pensando" enquanto ele pensa, que e a verdade. */
+      /* A RESPOSTA E FALADA EM PARTES, e isso corta a maior espera de todas.
+         Medido: uma resposta inteira levava 12 s para sintetizar. A PRIMEIRA
+         FRASE fica pronta em uma fracao disso, e enquanto ela toca o resto
+         sintetiza por baixo -- sem emenda audivel, porque o segundo pedido sai
+         antes de o primeiro comecar a tocar.
+
+         `trabalho` resolve quando a PRIMEIRA parte esta pronta, e nao quando a
+         resposta inteira esta: e esse o instante em que a enrolacao pode
+         parar. */
+      /* A RESPOSTA VAI NUMA PECA SO, e isto foi DESFEITO depois de medido.
+         Eu tinha partido a fala em duas para comecar antes. Nao funciona: a
+         sintese roda a 1,0x tempo real, entao cada pedaco demora tanto quanto
+         dura, e nunca da para ficar a frente. O resultado foi um vao de 1,6 s
+         no meio da resposta -- trocar espera no comeco por gagueira no meio e
+         piorar. */
       const trabalho = (async () => {
         const r = await Estudio.perguntar(pergunta);
-        if (r.arquivo) return r;
-        // Sem voz disponivel, o objeto vai so com o texto -- e o chat revela
-        // assim mesmo. Voz e conveniencia; texto e requisito.
-        return (await Voz.buscar(r.texto)) || { texto: r.texto };
+        if (r.arquivo) return { texto: r.texto, fala: r };
+        // Sem voz disponivel o texto aparece assim mesmo: voz e conveniencia.
+        return { texto: r.texto, fala: await Voz.buscar(r.texto) };
       })();
       /* O ECO DA PERGUNTA, ideia do Gustavo, e ele ganha mais tempo que
          qualquer frase pronta -- porque CRESCE com a pergunta. E soa como
@@ -1169,8 +1222,11 @@ async function responder(pergunta) {
          O "me fale sobre" e um PEDIDO, nao o assunto -- e repetido dentro de
          "voce ta querendo saber" vira frase torta. Tirando o pedido, sobra o
          assunto: "...como fazer a sequencia de fibonacci em python". */
-      const eco = Voz.buscar('Então você tá querendo saber... '
-                             + soAssunto(pergunta).slice(0, 140));
+      /* So o ASSUNTO vai para a sintese: a moldura ("Entao voce ta querendo
+         saber...") e gravada e custa zero. E o corte caiu de 140 para 60
+         caracteres, porque cada segundo de eco e um segundo a MAIS de espera
+         pela resposta -- as duas sinteses disputam o unico nucleo da maquina. */
+      const eco = Voz.buscar(soAssunto(pergunta).slice(0, 60));
       await Estudio.enrolarAte(trabalho, eco);
       const pronta = await trabalho;
       // A REVELACAO. `textContent` derruba os <i> do "pensando" junto, mas a
@@ -1178,7 +1234,7 @@ async function responder(pergunta) {
       balao.className = balao.className.replace(' pensa', '');
       balao.textContent = pronta.texto;
       fala.scrollTop = fala.scrollHeight;
-      if (pronta.audio || pronta.arquivo) await Estudio.tocar(pronta);
+      if (pronta.fala) await Estudio.tocar(pronta.fala);
       estado.textContent = 'Tr∅nikAt · online';
       ocupado = false; env.disabled = false; txt.focus();
       return;

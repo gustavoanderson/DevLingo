@@ -80,6 +80,25 @@ ABERTURA = [
     "Ah, boa. Vamos la.",
 ]
 
+# A MOLDURA DO ECO, gravada -- e a razao e medida, nao estetica.
+#
+# O eco era sintetizado inteiro, moldura mais pergunta. Medido em 17/09/2026,
+# com a maquina de UM nucleo:
+#
+#   a resposta sozinha .................. 6,15 s de sintese
+#   a resposta com o eco em paralelo .... 11,54 s
+#
+# O eco ATRASAVA a resposta em 5,4 s. A peca que existia para cobrir a espera
+# causava quase metade dela, porque as duas sinteses disputam o mesmo nucleo.
+#
+# A moldura e texto FIXO, entao pode ser gravada e custa zero. So o assunto --
+# tres a seis palavras, depois da limpeza -- precisa de CPU.
+ECO = [
+    "Entao voce ta querendo saber...",
+    "Ah, entendi. Voce quer saber sobre...",
+    "Certo. Voce ta perguntando sobre...",
+]
+
 PENSANDO = [
     "Hmmm, entao...",
     "Hmmm. Deixa eu processar isso.",
@@ -97,6 +116,8 @@ def textos() -> dict[str, str]:
         t[f"_abrir-{i:02d}"] = frase
     for i, frase in enumerate(PENSANDO, 1):
         t[f"_pensar-{i:02d}"] = frase
+    for i, frase in enumerate(ECO, 1):
+        t[f"_eco-{i:02d}"] = frase
     return t
 
 
