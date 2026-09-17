@@ -875,35 +875,65 @@ const Estudio = (function () {
      3. Nenhuma se repete na mesma espera, e quando as dez acabam ela para. Duas
         seguidas soam como quem ainda esta pensando; a mesma duas vezes soa como
         disco riscado */
-  const ESPERA_PARA_ENROLAR = 1000;
+  const ESPERA_PARA_ENROLAR = 600;
+  let ultimaEnrolacao = null;   // para nao repetir de uma pergunta para a outra
 
-  async function enrolarAte(trabalho) {
+  /* Toca UMA enrolacao sorteada. Devolve false quando o audio nao esta
+     tocando de verdade -- ver a trava la embaixo. */
+  async function umaEnrolacao(indice, sobrando) {
+    if (!indice || !sobrando.length) return false;
+    const [id] = sobrando.splice(Math.floor(Math.random() * sobrando.length), 1);
+    ultimaEnrolacao = id;
+    const f = indice[id];
+    const comecou = performance.now();
+    await tocar({ texto: f.texto, duracao: f.duracao, bocas: f.bocas,
+                  arquivo: 'falas/' + f.audio });
+    /* SE O AUDIO NAO ESTIVER TOCANDO, PARE.
+
+       `tocar` resolve no fim do audio OU no erro. Quando o som nao sai --
+       autoplay bloqueado, aba sem dispositivo, arquivo faltando -- ele resolve
+       na hora, e sem esta trava o laco gastaria as dez falas num piscar,
+       deixando o RESTO da espera em silencio. Pior que nao enrolar.
+
+       Visto no teste: as dez dispararam entre 1018 e 1019 ms. Era artefato do
+       Chrome sem cabeca, mas o mesmo aconteceria numa aba com o som bloqueado. */
+    return performance.now() - comecou >= f.duracao * 500;
+  }
+
+  async function enrolarAte(trabalho, eco) {
     let pronto = false;
     trabalho.then(() => { pronto = true; }, () => { pronto = true; });
     await new Promise(r => setTimeout(r, ESPERA_PARA_ENROLAR));
     if (pronto) return;
-    let indice;
-    try { indice = await indiceDasFalas(); } catch { return; }
-    const sobrando = Object.keys(indice).filter(k => k.startsWith('_enrolar'));
-    while (!pronto && sobrando.length) {
-      const [id] = sobrando.splice(Math.floor(Math.random() * sobrando.length), 1);
-      const f = indice[id];
-      const comecou = performance.now();
-      // Tocada inteira de proposito: ver o cuidado 2 acima.
-      await tocar({ texto: f.texto, duracao: f.duracao, bocas: f.bocas,
-                    arquivo: 'falas/' + f.audio });
-      // 4. SE O AUDIO NAO ESTIVER TOCANDO, PARE.
-      //
-      // `tocar` resolve no fim do audio OU no erro. Quando o som nao sai --
-      // autoplay bloqueado, aba sem dispositivo, arquivo faltando -- ele
-      // resolve na hora, e sem esta trava o laco gastaria as dez falas num
-      // piscar e deixaria o RESTO da espera em silencio. Pior que nao enrolar.
-      //
-      // Visto no teste: as dez dispararam no mesmo milissegundo, 1018 a 1019.
-      // Era artefato do Chrome sem cabeca, mas o mesmo aconteceria numa aba de
-      // verdade com o som bloqueado.
-      if (performance.now() - comecou < f.duracao * 500) return;
+    let indice = null;
+    try { indice = await indiceDasFalas(); } catch { /* segue sem enrolar */ }
+    let sobrando = indice
+      ? Object.keys(indice).filter(k => k.startsWith('_enrolar')) : [];
+    /* NAO repetir a ultima da pergunta anterior. O sorteio ja evita repeticao
+       DENTRO de uma espera; isto evita entre uma pergunta e a seguinte, que e
+       onde a repeticao mais chama atencao. */
+    if (sobrando.length > 1 && sobrando.includes(ultimaEnrolacao)) {
+      sobrando = sobrando.filter(k => k !== ultimaEnrolacao);
     }
+
+    /* A SEQUENCIA, e ela tem no maximo TRES peças.
+
+       A primeira versao tocava enrolacao ate a resposta chegar, e com 11 s de
+       espera isso dava CINCO seguidas. O Gustavo ouviu e resumiu: "o Tr∅nikAt
+       repete varias frases seguidas". Ouvindo metade do baralho toda vez, o
+       sorteio deixa de parecer sorteio.
+
+       Hoje: uma enrolacao (instantanea, cobre a sintese do eco), o ECO da
+       pergunta, e no maximo mais uma. Depois disso, silencio -- que e melhor
+       que tagarelice. */
+    if (!await umaEnrolacao(indice, sobrando)) return;
+    if (pronto) return;
+
+    const falaDoEco = await eco;
+    if (falaDoEco && !pronto) await tocar(falaDoEco);
+    if (pronto) return;
+
+    await umaEnrolacao(indice, sobrando);
   }
 
   return {
@@ -991,7 +1021,23 @@ async function responder(pergunta) {
         balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
         return r.arquivo ? r : await Voz.buscar(r.texto);
       })();
-      await Estudio.enrolarAte(trabalho);
+      /* O ECO DA PERGUNTA, ideia do Gustavo, e ele ganha mais tempo que
+         qualquer frase pronta -- porque CRESCE com a pergunta. E soa como
+         quem entendeu, nao como quem esta empurrando com a barriga.
+
+         Ele sai em paralelo com o trabalho, entao a sintese dele (~2 s) roda
+         DENTRO dos ~7,4 s em que o Worker esta pensando, e nao depois.
+
+         A frase cita a pergunta ao pe da letra de proposito: qualquer molde
+         que reescreva ("voce quer saber COMO FAZER...") erra a gramatica em
+         metade das perguntas. Citar sempre cai bem.
+
+         O corte em 140 caracteres nao e so ritmo: o site passa a FALAR, na voz
+         do mascote, um texto que o visitante escreveu. Eco curto limita o que
+         da para pendurar ali. */
+      const eco = Voz.buscar('Deixa eu ver se entendi. Você perguntou: '
+                             + pergunta.slice(0, 140));
+      await Estudio.enrolarAte(trabalho, eco);
       const pronta = await trabalho;
       if (pronta) await Estudio.tocar(pronta);
       estado.textContent = 'Tr∅nikAt · online';

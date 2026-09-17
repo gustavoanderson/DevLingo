@@ -40,7 +40,19 @@ TOM = 1.45
 # O sintetizador le o que estiver escrito. "Tr∅nikAt" tem um simbolo no meio
 # que seria lido como simbolo ou pulado. Grafado so para a VOZ; a tela continua
 # mostrando Tr∅nikAt. Pronuncias aprovadas pelo Gustavo na prova de vozes.
-PRONUNCIA = {"Tr∅nikAt": "Trônicat", "DevLingo": "Dév Língo"}
+# ORDEM IMPORTA: a substituicao e sequencial, entao o mais LONGO vem antes.
+# Com "Hmm" primeiro, "Hmmmm" viraria "Ããmm".
+#
+# O "Hmm" existe aqui porque o espeak le uma palavra sem vogal SOLETRANDO:
+# medido, "Hmmmm" vira 18 fonemas -- "a-ga e-me e-me e-me e-mi" -- e foi
+# exatamente assim que saiu na primeira versao das falas de enrolar. O Gustavo
+# ouviu e apontou. Com o mapeamento, a TELA continua mostrando "Hmmm", que se
+# le naturalmente, e a VOZ diz o som certo.
+PRONUNCIA = {
+    "Tr∅nikAt": "Trônicat",
+    "DevLingo": "Dév Língo",
+    "Hmmmm": "Ãããã", "Hmmm": "Ããã", "Hmm": "Ãã",
+}
 
 # Quanto a boca abre em cada fonema (IPA do espeak-ng), de 0 a 1, e se os labios
 # arredondam. O desenho do Tr∅nikAt nao tem dentes nem lingua: abertura e
