@@ -85,7 +85,9 @@ def textos() -> dict[str, str]:
 
 def impressao(texto: str) -> str:
     import voz
-    base = f"{texto}|{Path(voz.MODELO).name}|{voz.TOM}|{voz.PRONUNCIA}"
+    # LENTIDAO entra aqui senao mexer nela nao regrava nada, e os WAVs
+    # ficariam na velocidade antiga sem ninguem perceber.
+    base = f"{texto}|{Path(voz.MODELO).name}|{voz.TOM}|{voz.LENTIDAO}|{voz.PRONUNCIA}"
     return hashlib.sha1(base.encode("utf-8")).hexdigest()[:16]
 
 

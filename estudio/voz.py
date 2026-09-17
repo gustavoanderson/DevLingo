@@ -37,6 +37,25 @@ from piper import PiperVoice, SynthesisConfig
 MODELO = Path(os.environ.get("ESTUDIO_VOZ", r"D:\dev\piper-vozes\pt_BR-faber-medium.onnx"))
 TOM = 1.45
 
+# QUANTO MAIS DEVAGAR ELE FALA, sem mexer no timbre.
+#
+# O TOM acima e usado DUAS vezes, com papeis diferentes: primeiro como
+# `length_scale` (sintetiza mais devagar) e depois como fator de reamostragem
+# (encolhe o audio, o que devolve a velocidade E sobe o tom). Os dois se
+# cancelam na VELOCIDADE e se somam no TIMBRE -- e por isso a voz sai aguda em
+# ritmo normal.
+#
+# Como sao dois papeis, eles se separam. Multiplicando so o primeiro, a fala
+# fica mais longa e o tom nao muda:
+#
+#     duracao final = original * LENTIDAO
+#     tom final     = original * TOM        (inalterado)
+#
+# 1,0 e a velocidade de sempre. O Gustavo pediu "levemente mais lento" em
+# 17/09/2026, para a fala ficar mais facil de acompanhar e de quebra ocupar
+# mais da espera. Mexer neste numero regrava TODAS as falas.
+LENTIDAO = 1.12
+
 # O sintetizador le o que estiver escrito. "Tr∅nikAt" tem um simbolo no meio
 # que seria lido como simbolo ou pulado. Grafado so para a VOZ; a tela continua
 # mostrando Tr∅nikAt. Pronuncias aprovadas pelo Gustavo na prova de vozes.
@@ -104,7 +123,8 @@ class Voz:
     def falar(self, texto: str) -> Fala:
         inicio = time.time()
         pedacos = list(self.piper.synthesize(
-            para_voz(texto), SynthesisConfig(length_scale=TOM), include_alignments=True))
+            para_voz(texto), SynthesisConfig(length_scale=TOM * LENTIDAO),
+            include_alignments=True))
         taxa = pedacos[0].sample_rate
 
         # A linha do tempo da boca, no tempo do audio LENTO (antes do efeito).
