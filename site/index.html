@@ -5,10 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fale com o Tr∅nikAt</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@500;600&display=swap">
-<!-- `defer` porque sem ele o navegador nao pinta NADA ate baixar e compilar
-     118 KB de biblioteca. A cena 3D so e montada depois que a pagina aparece
-     (ver `Fala`), entao nada aqui precisa de THREE durante a analise. -->
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   /* A paleta e a do proprio DevLingo, em docs/paleta.md. O site nao inventa
      identidade: ele usa a que o app ja tem. */
@@ -113,21 +109,32 @@
          gap:20px;align-items:stretch;margin-top:20px}
   @media (max-width:760px){.palco{grid-template-columns:1fr}}
 
-  /* A VIDEOCHAMADA. O quadrado com a cabeca flutuando virou uma chamada 4:3:
-     o quarto desfocado atras (e o desfoque que diz "webcam"), o busto em foco,
-     o selo REC, o cracha e a legenda. A altura continua 268 px -- a cabeca e o
-     chat ja tinham sido acusados de ocupar a tela demais; muda a proporcao,
-     nao o tamanho. */
+  /* O QUADRO DO CODEC. Era uma videochamada com a cabeca em 3D; virou a tela
+     de transmissao do Metal Gear Solid 1, a pedido do Gustavo -- e o motivo
+     nao foi so estetico: no notebook dele o 3D renderizava ERRADO, cabeca
+     preta e peito vazio, enquanto aqui desenhava certo. Mascote que muda de
+     cara conforme o driver de video nao serve.
+
+     O retrato e desenhado em 128x96 e AMPLIADO aqui. E a ampliacao que produz
+     o pixel grande, e essa foi a correcao que ele mesmo fez: o codec do
+     PlayStation nao e pixel art, e um desenho de baixa resolucao com
+     sombreado suave, esticado. Desenhar em quadradinhos daria Atari.
+
+     A altura continua 268 px. A cabeca e o chat ja tinham sido acusados de
+     ocupar a tela demais; isto muda o conteudo do quadro, nao o tamanho. */
   .chamada{position:relative;width:100%;aspect-ratio:4/3;max-height:268px;
-           border-radius:14px;overflow:hidden;border:1px solid rgba(0,229,255,.30);
-           background:#0B0618}
+           border-radius:14px;overflow:hidden;border:1px solid rgba(57,255,20,.34);
+           background:#05010C;box-shadow:inset 0 0 44px rgba(57,255,20,.12)}
   .chamada canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  /* O scale esconde a borda: blur puxa o preto de fora do canvas para dentro. */
-  #quarto{filter:blur(2.5px);transform:scale(1.06)}
+  #retrato{image-rendering:pixelated;image-rendering:crisp-edges}
+  /* Linhas de varredura: e o que diz "isto e uma tela transmitida", e e o
+     mesmo recurso que o painel do chat ja usava. Custam uma pintura so. */
+  .chamada::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:repeating-linear-gradient(rgba(0,0,0,.34) 0 1px, transparent 1px 3px)}
   @media (prefers-reduced-motion: reduce){.rec i{animation:none}}
-  /* Vinheta de lente: webcam barata escurece nas bordas. */
+  /* Vinheta: tubo de raios catodicos escurece nos cantos. */
   .chamada::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
-    background:radial-gradient(ellipse at 50% 42%,transparent 58%,rgba(0,0,0,.5) 100%)}
+    background:radial-gradient(ellipse at 50% 44%,transparent 52%,rgba(0,0,0,.66) 100%)}
   .hud{position:absolute;top:8px;left:9px;right:9px;z-index:2;display:flex;
        justify-content:space-between;align-items:center;gap:6px;font-family:var(--hud);
        letter-spacing:1.3px;text-transform:uppercase;font-size:11.5px}
@@ -265,10 +272,9 @@
 
   <div class="palco">
     <div class="chamada" id="chamada">
-      <canvas id="quarto" aria-hidden="true"></canvas>
-      <canvas id="cabeca" aria-label="O Tr∅nikAt em videochamada, em 3D, com a boca sincronizada à voz"></canvas>
+      <canvas id="retrato" aria-label="O Tr∅nikAt em transmissão, com a boca acompanhando a fala"></canvas>
       <div class="hud">
-        <span class="rec"><i></i>REC <b id="cronometro">00:00</b></span>
+        <span class="rec"><i></i>140.85 <b id="cronometro">00:00</b></span>
         <span class="sinal" id="sinal">procurando o estúdio…</span>
       </div>
       <!-- aria-hidden: o mesmo texto ja e anunciado pelo registro do chat, e
@@ -374,112 +380,13 @@
 </div>
 
 <script>
-/* ------------------------------------------------ nao desenhar para ninguem
- *
- * Um canvas fora da tela nao precisa desenhar, e ate 16 de setembro de 2026
- * todos desenhavam. Medido no Chrome, com a pagina rolada ate o fim: o site
- * gastava 6,8% de CPU pintando cenas que ninguem estava vendo, contra 14,3%
- * com elas a vista. O trabalho nao caia porque nada media se o canvas ainda
- * estava no quadro.
- *
- * A aba OCULTA nao ganha tratamento nenhum aqui, e isso e deliberado: o
- * navegador ja estrangula `requestAnimationFrame` para zero sozinho quando a
- * aba vai para tras. Medido: 0,0% de CPU, sem uma linha de codigo nossa.
- * Escrever um `visibilitychange` seria codigo para um problema que nao existe.
- */
-function observarNaTela(el) {
-  // Comeca em `true`: se o navegador nao tiver IntersectionObserver, ou se o
-  // observador ainda nao rodou, a cena desenha. Errar para o lado de desenhar
-  // custa alguns quadros; errar para o outro deixa um retangulo preto na tela.
-  const visao = { naTela: true };
-  if (!el || !window.IntersectionObserver) return visao;
-  new IntersectionObserver(
-    (entradas) => { visao.naTela = entradas[0].isIntersecting; },
-    // A margem faz a cena voltar a desenhar um pouco ANTES de entrar no
-    // quadro, senao ela aparece congelada no primeiro instante da rolagem.
-    { rootMargin: '200px' },
-  ).observe(el);
-  return visao;
-}
-/* A cabeca do Tr∅nikAt em 3D.
- *
- * Reescrita depois de olhar a primeira versao renderizada, que errava dez
- * coisas -- entre elas os LADOS TROCADOS: metal e visor a esquerda, olho a
- * direita. Na arte canonica e o contrario, e a assimetria pelo/metal e
- * identidade do personagem.
- *
- * As proporcoes saem de `tronikat.svg`, medidas e nao estimadas:
- *   cabeca rx 52, ry 46  ->  ela e ~12% mais LARGA que alta
- *   orelhas a 8 graus da vertical, coladas na cabeca
- *
- * Desenhar a olho ja falhou tres vezes neste projeto, todas medidas depois.
- */
-/* ------------------------------------------------------------- o quarto
-   O fundo da videochamada. Desenhado PEQUENO (240x180) e esticado com blur:
-   e o desfoque que diz "webcam", e em baixa resolucao ele sai de graca --
-   detalhe fino seria desenhado para ser apagado.
-
-   Pela janela, a mesma cidade do topo da pagina: o Tr∅nikAt mora nela. */
-(function quarto() {
-  const c = document.getElementById('quarto');
-  c.width = 240; c.height = 180;
-  const x = c.getContext('2d');
-  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Semente fixa: o quarto nao pode trocar de moveis a cada visita.
-  let s = 7; const acaso = () => (s = (s * 16807) % 2147483647) / 2147483647;
-  const predios = Array.from({ length: 9 }, (_, i) => ({
-    x: 14 + i * 11 + acaso() * 4, l: 7 + acaso() * 6, a: 30 + acaso() * 50,
-    cor: ['#FF2D95', '#00E5FF', '#FFE14D', '#39FF14'][Math.floor(acaso() * 4)],
-    fase: acaso() * 6 }));
-
-  function desenhar(t) {
-    // parede: roxo do app, mais escura embaixo
-    const g = x.createLinearGradient(0, 0, 0, 180);
-    g.addColorStop(0, '#2B1552'); g.addColorStop(1, '#0E0620');
-    x.fillStyle = g; x.fillRect(0, 0, 240, 180);
-
-    // janela a esquerda, com a cidade la fora
-    x.fillStyle = '#07030F'; x.fillRect(8, 22, 104, 92);
-    const ceu = x.createLinearGradient(0, 22, 0, 114);
-    ceu.addColorStop(0, '#1A0B3A'); ceu.addColorStop(1, '#4A1450');
-    x.fillStyle = ceu; x.fillRect(12, 26, 96, 84);
-    for (const p of predios) {
-      x.fillStyle = '#12082A'; x.fillRect(p.x, 110 - p.a, p.l, p.a);
-      // o letreiro de cada predio: pisca devagar, nunca todos juntos
-      const aceso = calmo || Math.sin(t * 1.3 + p.fase) > -.7;
-      x.globalAlpha = aceso ? .95 : .25;
-      x.fillStyle = p.cor; x.fillRect(p.x + 1, 112 - p.a + 6, 2, p.a * .35);
-      x.globalAlpha = 1;
-    }
-    // caixilho em cruz
-    x.fillStyle = '#07030F'; x.fillRect(58, 26, 4, 84); x.fillRect(12, 66, 96, 3);
-
-    // prateleira a direita, com livros e uma luz verde de roteador
-    x.fillStyle = '#1A0E33'; x.fillRect(150, 58, 84, 5);
-    [['#5B3FA0', 9, 22], ['#FF2D95', 6, 18], ['#2F6F8F', 8, 25], ['#8A6BD1', 5, 16]]
-      .reduce((px, [cor, l, a]) => { x.fillStyle = cor; x.fillRect(px, 58 - a, l, a); return px + l + 2; }, 162);
-    x.fillStyle = (calmo || (t * 2) % 3 > .4) ? '#39FF14' : '#0D3A08';
-    x.fillRect(212, 52, 3, 3);
-
-    // abajur quente no canto: a unica luz que nao e neon
-    const halo = x.createRadialGradient(222, 120, 2, 222, 120, 60);
-    halo.addColorStop(0, 'rgba(255,190,110,.55)'); halo.addColorStop(1, 'rgba(255,190,110,0)');
-    x.fillStyle = halo; x.fillRect(150, 60, 90, 120);
-    x.fillStyle = '#FFD39A'; x.beginPath(); x.moveTo(212, 112); x.lineTo(232, 112);
-    x.lineTo(228, 100); x.lineTo(216, 100); x.fill();
-  }
-  // Desenhado UMA vez, e nunca mais. Antes ele se repintava a cada 200 ms, e
-  // como este canvas vive sob `filter: blur(2.5px)` com `scale(1.06)`, cada
-  // repintura obrigava a GPU a refazer o desfoque da imagem esticada. Caro,
-  // e para um fundo de webcam cuja graca e justamente nao chamar atencao:
-  // o quarto e cenario, nao acontecimento.
-  //
-  // O instante 1 e escolhido, e nao 0: em t=0 a telinha da bancada cai no
-  // ramo apagado e o quarto perde o unico ponto de verde que ele tem.
-  desenhar(1);
-
-  // Cronometro do REC: conta desde a abertura da pagina.
-  const cron = document.getElementById('cronometro'), t0 = Date.now();
+/* O cronometro do REC. Vivia dentro da funcao que desenhava o quarto da
+   videochamada; aquela funcao saiu com a cena 3D, e ele nao podia ir junto --
+   e ele que faz o selo do topo contar em vez de ficar em 00:00. */
+(function cronometroDoRec() {
+  const cron = document.getElementById('cronometro');
+  if (!cron) return;
+  const t0 = Date.now();
   setInterval(() => {
     const seg = Math.floor((Date.now() - t0) / 1000);
     cron.textContent = String(Math.floor(seg / 60) % 100).padStart(2, '0') + ':' +
@@ -511,537 +418,224 @@ const Legenda = (function () {
   };
 })();
 
-/* A cena 3D e montada TARDE, e essa e a correcao mais importante deste
- * arquivo. Medido no Chrome, servindo de 127.0.0.1 (sem rede no meio):
+/* ------------------------------------------------- o retrato do codec
  *
- *     pagina trivial, mesmo navegador ....  1.612 ms ate a primeira pintura
- *     este site SEM a cena 3D ............  2.348 ms
- *     este site COMO ESTAVA .............. 13.472 ms
+ * Substitui a cabeca em 3D, e a razao nao foi so peso: no notebook do Gustavo
+ * ela renderizou ERRADA -- cabeca preta, o `>_` do peito vazio, o pelo sumido.
+ * Aqui desenhava certo. Mascote que depende do driver de video de cada
+ * maquina para ter a propria cara nao serve, e a alternativa dele e melhor
+ * que insistir: canvas 2D nao depende de GPU nenhuma.
  *
- * Onze segundos de tela branca, e nao era download: o HTML chega em 2 ms e o
- * three.js em 859 ms. Era esta funcao rodando de forma SINCRONA durante a
- * analise do documento -- criar o contexto WebGL e compilar os shaders, com o
- * navegador impedido de pintar enquanto isso nao termina.
+ * O molde e a tela de codec do Metal Gear Solid 1, pedido dele. E vale
+ * registrar a correcao que ele mesmo fez: aquilo NAO e pixel art. Sao
+ * retratos em baixa resolucao, com sombreado suave, que sao AMPLIADOS -- e a
+ * ampliacao e que produz o pixel grande. Entao aqui se desenha normalmente,
+ * com anti-serrilhado, num canvas de 128x96, e o CSS amplia com
+ * `image-rendering: pixelated`. Desenhar direto em quadradinhos daria outra
+ * coisa: daria Atari, e nao PlayStation.
  *
- * E nao e a geometria. Testado em A/B com um quarto dos poligonos: 15.160 ms,
- * ou seja igual. Diminuir esferas nao resolveria nada; so adiar resolve.
+ * E "tem movimento, pouco, mas tem", que foi a outra frase dele. O codec
+ * nunca fica parado: pisca, balanca um pixel, a boca acompanha a fala, o
+ * visor varre. Tudo a 12 quadros por segundo, que e baixo DE PROPOSITO --
+ * a animacao do codec e engasgada mesmo, e 12 qps num canvas de 12 mil pixels
+ * nao custa nada. Comparar com o que saiu daqui: a cena 3D travava a thread
+ * principal por 12,7 segundos ao montar.
  *
- * Entao `Fala` existe desde o comeco -- quem chama `abrir()` nunca precisa
- * saber disto -- mas a cena so e construida quando a pagina ja apareceu E a
- * cabeca esta no quadro. Ate la, o ultimo pedido de boca fica guardado.
+ * A API e a mesma da cena 3D -- `abrir(v, arredondamento, exato)` -- para que
+ * `Voz` e `Estudio` continuem funcionando sem saber que o desenho mudou.
  */
 const Fala = (function () {
- let cena3D = null;      // a cena de verdade, depois de montada
- let pedido = null;      // ultimo `abrir` recebido antes de ela existir
- let tentada = false;    // montar uma vez so, mesmo que falhe
+  const c = document.getElementById('retrato');
+  if (!c) return { abrir: () => {} };
+  const L = 128, A = 96;                 // resolucao interna, ampliada pelo CSS
+  c.width = L; c.height = A;
+  const g = c.getContext('2d');
+  const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
- function montar() {
- // A cena 3D inteira vai num try. Sem isto, UMA falha ao criar o contexto
- // WebGL derruba o script todo -- e o chat, a voz e o Estudio ficam
- // undefined, porque sao definidos DEPOIS daqui. O site vira uma pagina
- // morta com o cabecalho. Medido: com a GPU indisponivel, `typeof Voz`
- // e `typeof Estudio` davam 'undefined'.
- //
- // WebGL falta mais do que parece: GPU sem memoria (a placa desta maquina
- // roda modelos de IA), aceleracao desligada, driver antigo, navegador em
- // modo de economia. A conversa e o que importa; o 3D e enfeite.
- try {
-  const c = document.getElementById('cabeca');
-  const cena = new THREE.Scene();
-  // Enquadramento de WEBCAM: a camera recua e desce o centro para caber o
-  // busto. Visivel de y=-4,9 (o moletom SANGRA pela borda de baixo, que e o
-  // que faz ler como gente sentada na frente do computador, e nao boneco
-  // inteiro) ate y=4,0. A ponta da orelha fica em 3,1: com z=13,4 ela
-  // encostava na borda de cima (medido no print: 32 px por unidade, ponta no
-  // pixel da moldura), e a folga agora e de ~26 px.
-  const cam = new THREE.PerspectiveCamera(34, 4 / 3, 0.1, 100);
-  cam.position.set(0, -.45, 14.5);
-  const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
-  function medir() {
-    const l = c.clientWidth || 358, a = c.clientHeight || Math.round(l * 3 / 4);
-    // Em tela estreita o teto cai para 1,5. Cada quadro passa a sombrear
-    // 44% menos pixels, e num celular e ai que o custo por quadro mora --
-    // nao no numero de poligonos, que foi medido e nao muda nada.
-    r.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2));
-    r.setSize(l, a, false); cam.aspect = l / a; cam.updateProjectionMatrix();
-  }
-  addEventListener('resize', medir);
-
-  const PELO = 0xF4F2FF, PELO_SOMBRA = 0xD6D2EC, METAL = 0x777F9C,
-        CIANO = 0x00E5FF, VISOR = 0x39FF14, ROSA = 0xFF7FD0,
-        ROSA_FORTE = 0xFF2D95, ESCURO = 0x17092E, JUNTA = 0x8A8FA6;
-
-  const R = 2;                 // raio da cabeca
-  const ACHATA = 0.885;         // ry/rx medido na arte: ela e mais larga que alta
-  const cabeca = new THREE.Group(); cena.add(cabeca);
-
-  // Na superficie, e nao boiando na frente: cada peca do rosto e posta no
-  // ponto da esfera naquela direcao. A primeira versao chutava z e as pecas
-  // ficavam soltas no ar.
-  function naSuperficie(obj, x, y, folga = 0) {
-    const d = new THREE.Vector3(x, y * ACHATA, Math.sqrt(
-      Math.max(0.04, 1 - x * x - y * y))).normalize();
-    obj.position.set(d.x * (R + folga), d.y * (R + folga) * ACHATA,
-                     d.z * (R + folga));
-    obj.lookAt(obj.position.clone().multiplyScalar(2.2));
-    return obj;
-  }
-
-
-  /* TEXTURA.
-   *
-   * O Gustavo: "esta muito liso". Estava -- duas esferas de cor chapada nao
-   * tem pele, tem plastico. As duas metades do personagem ganham textura
-   * gerada em canvas, e cada uma pede um tipo diferente:
-   *
-   *   - o pelo e ALTO-RELEVO: milhares de riscos curtos, usados ao mesmo
-   *     tempo como cor e como `bumpMap`. E o bump que faz a luz raspar o
-   *     volume e produzir a sensacao de pelagem curta;
-   *   - o metal e BRILHO VARIAVEL: escovado na horizontal, com costura de
-   *     placa e rebite, usado como `roughnessMap`. Metal nao muda de cor, ele
-   *     muda de onde reflete -- pintar risco escuro nele daria sujeira, nao
-   *     usinagem.
-   *
-   * Tudo procedural, sem imagem externa: a CSP do artefato so aceita script
-   * de CDN, e nenhuma imagem vinda de fora. Textura que nasce de codigo
-   * tambem nao diverge da fonte, que e a regra dos cenarios do app.
-   */
-  function texturaDePelo() {
-    const c = document.createElement('canvas');
-    c.width = c.height = 512;
-    const x = c.getContext('2d');
-    x.fillStyle = '#F7F5FD'; x.fillRect(0, 0, 512, 512);
-    x.lineCap = 'round';
-    // Sem a borda macia, cada fio vira risco de lapis. E a falta disso que
-    // fazia a pelagem ler como escova em vez de penugem.
-    if ('filter' in x) x.filter = 'blur(0.5px)';
-
-    // Tres passadas: penugem curta por baixo, pelo medio, e uns poucos fios
-    // longos por cima. Uma passada so da tapete; tres dao volume.
-    const camadas = [
-      { n: 20000, comp: [3, 5], larg: [.35, .5], a: .10 },
-      { n: 11000, comp: [7, 9], larg: [.45, .7], a: .13 },
-      { n: 3000, comp: [13, 12], larg: [.5, .8], a: .10 },
-    ];
-    for (const cam of camadas)
-      for (let i = 0; i < cam.n; i++) {
-        const px = Math.random() * 512, py = Math.random() * 512;
-        const comp = cam.comp[0] + Math.random() * cam.comp[1];
-        // Pouca abertura: pelo assentado cai numa direcao so. Angulo solto
-        // daria feltro, que e o oposto de sedoso.
-        const ang = Math.PI / 2 + (Math.random() - .5) * .45;
-        const tom = Math.random();
-        x.strokeStyle = tom < .30 ? `rgba(206,202,232,${cam.a})`
-                      : tom < .88 ? `rgba(255,255,255,${cam.a * 1.5})`
-                                  : `rgba(178,174,214,${cam.a * .8})`;
-        x.lineWidth = cam.larg[0] + Math.random() * cam.larg[1];
-        x.beginPath(); x.moveTo(px, py);
-        x.lineTo(px + Math.cos(ang) * comp, py + Math.sin(ang) * comp);
-        x.stroke();
-      }
-
-    // Manchas claras muito suaves: pelagem de verdade nao tem tom uniforme,
-    // e e essa variacao larga que o olho le como maciez.
-    x.filter = 'blur(11px)';
-    for (let i = 0; i < 60; i++) {
-      x.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,.14)'
-                                       : 'rgba(196,192,226,.10)';
-      x.beginPath();
-      x.arc(Math.random() * 512, Math.random() * 512, 16 + Math.random() * 40, 0, 7);
-      x.fill();
-    }
-    x.filter = 'none';
-
-    const tx = new THREE.CanvasTexture(c);
-    tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
-    tx.repeat.set(2.4, 1.6);
-    return tx;
-  }
-
-  function texturaDeMetal() {
-    const c = document.createElement('canvas');
-    c.width = c.height = 512;
-    const x = c.getContext('2d');
-    x.fillStyle = '#A9B0C8'; x.fillRect(0, 0, 512, 512);
-    for (let i = 0; i < 2600; i++) {             // escovado na horizontal
-      const py = Math.random() * 512;
-      const larg = 30 + Math.random() * 240;
-      x.strokeStyle = Math.random() < .5 ? 'rgba(255,255,255,.20)'
-                                         : 'rgba(60,66,88,.22)';
-      x.lineWidth = .5 + Math.random() * 1.3;
-      x.beginPath(); x.moveTo(Math.random() * 512, py);
-      x.lineTo(Math.random() * 512 + larg, py + (Math.random() - .5) * 1.5);
-      x.stroke();
-    }
-    for (let i = 0; i < 5; i++) {                // costura de placa
-      const py = 60 + i * 95 + Math.random() * 20;
-      x.strokeStyle = 'rgba(40,44,62,.75)'; x.lineWidth = 2.4;
-      x.beginPath(); x.moveTo(0, py); x.lineTo(512, py); x.stroke();
-      x.strokeStyle = 'rgba(226,230,248,.34)'; x.lineWidth = 1;
-      x.beginPath(); x.moveTo(0, py + 2.4); x.lineTo(512, py + 2.4); x.stroke();
-      for (let r = 18; r < 512; r += 58) {       // rebites na costura
-        x.fillStyle = 'rgba(228,232,250,.55)';
-        x.beginPath(); x.arc(r, py - 7, 2.6, 0, 7); x.fill();
-        x.fillStyle = 'rgba(46,50,70,.6)';
-        x.beginPath(); x.arc(r, py - 6, 1.2, 0, 7); x.fill();
-      }
-    }
-    const tx = new THREE.CanvasTexture(c);
-    tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
-    tx.repeat.set(2, 1);
-    return tx;
-  }
-
-  const PELAGEM = texturaDePelo(), CHAPA = texturaDeMetal();
-
-  const craneo = new THREE.Mesh(
-    new THREE.SphereGeometry(R, 64, 48),
-    new THREE.MeshPhongMaterial({
-      color: PELO, shininess: 6, specular: 0x15101E,
-      map: PELAGEM, bumpMap: PELAGEM, bumpScale: .03 }));
-  craneo.scale.y = ACHATA; cabeca.add(craneo);
-
-  /* A penugem da silhueta.
-   *
-   * Textura resolve a SUPERFICIE, e superficie sozinha nao da fofo: o que o
-   * olho usa para julgar maciez e a BORDA. Um contorno duro le como bola
-   * pintada, por melhor que seja o pelo desenhado nela.
-   *
-   * Duas cascas concentricas, um pouco maiores que o cranio, viradas do
-   * avesso (`BackSide`) e quase transparentes. Como so as faces de tras
-   * sobrevivem ao teste de profundidade, o que aparece e um anel macio em
-   * volta da cabeca -- exatamente a penugem que escapa do contorno.
-   *
-   * `depthWrite: false` e obrigatorio: sem isso as cascas gravam profundidade
-   * e recortam as orelhas e os bigodes que passam por elas.
-   *
-   * So na metade de pelo. A metade de metal tem que ter aresta seca -- e a
-   * assimetria pelo/metal e identidade do personagem, nao decoracao.
-   */
-  for (const [fator, opacidade] of [[1.035, .34], [1.085, .16]]) {
-    const penugem = new THREE.Mesh(
-      new THREE.SphereGeometry(R * fator, 48, 32, -Math.PI / 2, Math.PI),
-      new THREE.MeshPhongMaterial({
-        color: 0xFFFFFF, shininess: 2, specular: 0x0A0A0C,
-        transparent: true, opacity: opacidade,
-        side: THREE.BackSide, depthWrite: false }));
-    penugem.scale.y = ACHATA;
-    cabeca.add(penugem);
-  }
-
-
-  // A metade METALICA fica a DIREITA (x positivo). Era o erro mais grave da
-  // primeira versao: `rotation.y = -PI/2` jogava a meia esfera para o lado
-  // do pelo, e o gato saia espelhado.
-  // ATENCAO ao `phiStart`: a formula do Three.js leva um sinal NEGATIVO no x
-  // (`x = -r * cos(phi) * sin(theta)`), entao phi=0 aponta para a ESQUERDA e
-  // phi=PI/2 para a frente. A metade com x>0 e `PI/2 -> 3PI/2`.
+  // Cores canonicas, copiadas de `tronikat.svg` e nao escolhidas aqui: o
+  // CLAUDE.md registra que inventar cor do personagem ja custou um retrato
+  // inteiro refeito (o episodio do olho ambar).
   //
-  // Isso custou tres renderizacoes. Com `0 -> PI` a meia esfera cobria a
-  // frente INTEIRA e o gato saia cinza dos dois lados; a sonda vermelha
-  // provou que ela estava sendo desenhada, e so entao o angulo virou suspeito.
-  const metade = new THREE.Mesh(
-    new THREE.SphereGeometry(R * 1.004, 64, 48, Math.PI / 2, Math.PI),
-    new THREE.MeshPhongMaterial({
-      color: 0x8E94A8, shininess: 44, specular: 0x8A90A0,
-      map: CHAPA, specularMap: CHAPA, bumpMap: CHAPA, bumpScale: .02 }));
-  metade.scale.y = ACHATA; cabeca.add(metade);
+  // O metal e ESCURO de proposito. Na primeira versao deste retrato ele saiu
+  // quase branco e o gato virou um gato branco comum -- exatamente o defeito
+  // que aquele arquivo ja descreve ("o aco comecando em #DCDEEC"). Com o pelo
+  // em #F4F2FA, o aco precisa cair para a casa dos #8x para a divisa aparecer.
+  const PELO = '#F4F2FA', PELO_SOMBRA = '#C9C3E0';
+  const METAL = '#7E8498', METAL_LUZ = '#A9AFC1', METAL_SOMBRA = '#575C6B';
+  const ESCURO = '#17092E', CIANO = '#00E5FF', VISOR = '#39FF14';
+  const ROSA = '#FF7ABF', ROSA_FORTE = '#FF2D95', MOLETOM = '#321E63';
 
-  // Divisa ciano: um anel FINO seguindo o meridiano, e nao a barra grossa de
-  // antes, que lia como um poste na frente do rosto.
-  const divisa = new THREE.Mesh(
-    new THREE.TorusGeometry(R * 1.008, .022, 10, 96),
-    new THREE.MeshBasicMaterial({ color: CIANO }));
-  divisa.rotation.y = Math.PI / 2; divisa.scale.y = ACHATA; cabeca.add(divisa);
+  let abertura = 0, alvo = 0, arredonda = 0, alvoArred = 0, preciso = false;
 
-  // --- orelhas: triangulos afiados, COLADOS no craneo, a 8 graus ---
-  function orelha(lado, cor) {
-    const g = new THREE.Group();
-    const forma = new THREE.Shape();
-    forma.moveTo(-.60, 0); forma.lineTo(-.04, 1.85); forma.lineTo(.52, 0);
-    forma.closePath();
-    const casca = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(forma, { depth: .42, bevelEnabled: true,
-        bevelThickness: .07, bevelSize: .07, bevelSegments: 3 }),
-      new THREE.MeshPhongMaterial({
-        color: cor === METAL ? 0x979DB2 : cor,
-        shininess: cor === METAL ? 38 : 4,
-        specular: cor === METAL ? 0x70747F : 0x141118,
-        map: cor === METAL ? CHAPA : PELAGEM,
-        bumpMap: cor === METAL ? CHAPA : PELAGEM,
-        bumpScale: cor === METAL ? .015 : .022 }));
-    casca.position.z = -.21; g.add(casca);
+  const elipse = (x, y, rx, ry, cor) => {
+    g.fillStyle = cor; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 7); g.fill();
+  };
 
-    const dentro = new THREE.Shape();
-    dentro.moveTo(-.30, .14); dentro.lineTo(-.03, 1.28); dentro.lineTo(.26, .14);
-    dentro.closePath();
-    const rosa = new THREE.Mesh(new THREE.ShapeGeometry(dentro),
-      new THREE.MeshBasicMaterial({ color: ROSA, side: THREE.DoubleSide }));
-    rosa.position.z = .23; g.add(rosa);
-
-    // A base da orelha vai NA superficie, e nao numa altura chutada. Antes ela
-    // ficava em `R*ACHATA - .28`, um valor fixo: no ponto onde a orelha nasce
-    // a esfera ja desceu, e a base sobrava no ar de um lado e afundava do
-    // outro. A altura sai da equacao da elipse, e a orelha ainda entra .22
-    // para dentro, para a juncao nao aparecer.
-    const bx = lado * 0.86;
-    const by = Math.sqrt(Math.max(0, 1 - (bx / R) * (bx / R))) * R * ACHATA;
-    g.position.set(bx, by - .34, -.04);
-
-    // Ela tambem INCLINA junto com a superficie: uma orelha vertical num
-    // ponto inclinado do craneo le como colada por cima. O giro combina a
-    // normal daquele ponto com os 8 graus da arte canonica -- orelha de gato
-    // e quase reta, e alguns graus a mais ja leem como orelha caida.
-    // 8 graus da vertical, e SO isso. Somar a inclinacao da normal dava 24
-    // graus, e a orelha lia como caida -- que e outro bicho. A arte canonica
-    // e a medida: 8,1 graus na esquerda, 9,9 na direita.
-    g.rotation.z = lado * -0.145;
-    cabeca.add(g);
-  }
-  orelha(-1, PELO); orelha(1, METAL);
-
-  // --- olho: no lado do PELO, que e a esquerda ---
-  const olho = new THREE.Mesh(new THREE.SphereGeometry(.4, 32, 24),
-    new THREE.MeshPhongMaterial({ color: ESCURO, shininess: 90, specular: 0x9AA2B4 }));
-  naSuperficie(olho, -.42, .12, -.16); cabeca.add(olho);
-  const brilho = new THREE.Mesh(new THREE.SphereGeometry(.115, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0xFFFFFF }));
-  naSuperficie(brilho, -.50, .21, .06); cabeca.add(brilho);
-
-  // --- visor: no lado do METAL, curvado junto com a cabeca ---
-  const visor = new THREE.Group();
-  const moldura = new THREE.Mesh(
-    new THREE.BoxGeometry(1.30, .60, .20),
-    new THREE.MeshPhongMaterial({ color: 0x3A3E52, shininess: 52, specular: 0x6A6F7C }));
-  visor.add(moldura);
-  const tela = new THREE.Mesh(new THREE.BoxGeometry(1.06, .36, .04),
-    new THREE.MeshBasicMaterial({ color: VISOR }));
-  tela.position.z = .12; visor.add(tela);
-  const alca = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, .5, 16),
-    new THREE.MeshPhongMaterial({ color: 0x3A3E52, shininess: 46, specular: 0x6A6F7C }));
-  alca.rotation.z = Math.PI / 2; alca.position.set(.80, 0, -.02); visor.add(alca);
-  naSuperficie(visor, .40, .12, -.08); cabeca.add(visor);
-
-  // --- focinho, boca e queixo ---
-  const focinho = new THREE.Mesh(new THREE.ConeGeometry(.19, .2, 3),
-    new THREE.MeshBasicMaterial({ color: ROSA_FORTE }));
-  naSuperficie(focinho, 0, -.20, .02);
-  focinho.rotateX(Math.PI / 2); focinho.rotateZ(Math.PI); cabeca.add(focinho);
-
-  // A BOCA: uma caixa arredondada que ESCALA. A primeira versao usava uma
-  // esfera achatada e lia como um risco preto no meio do rosto.
-  const boca = new THREE.Mesh(new THREE.SphereGeometry(.3, 28, 20),
-    new THREE.MeshPhongMaterial({ color: ESCURO, shininess: 58, specular: 0x565C6A }));
-  naSuperficie(boca, 0, -.44, -.03);
-  boca.scale.set(1.42, .26, .55); cabeca.add(boca);
-  const bocaEscalaBase = boca.scale.clone();
-
-  // --- bigodes: saem das BOCHECHAS para fora, sem atravessar o rosto ---
-  function bigode(lado, y, giro) {
-    const g = new THREE.Mesh(
-      new THREE.CylinderGeometry(.015, .008, 1.02, 8),
-      new THREE.MeshPhongMaterial({ color: lado < 0 ? PELO : METAL, shininess: 16, specular: 0x3A3E4A }));
-    g.rotation.z = Math.PI / 2 + giro * lado;
-    const p = new THREE.Vector3(lado * .68, y, .62).normalize()
-      .multiplyScalar(R * 0.98);
-    g.position.set(p.x + lado * .40, p.y * ACHATA, p.z * .55);
-    cabeca.add(g);
-  }
-  for (const l of [-1, 1]) { bigode(l, -.1, .17); bigode(l, -.22, 0); bigode(l, -.34, -.17); }
-
-  // Marcas de calibragem no lado metalico, como na arte canonica.
-  for (const [x, y] of [[.72, -.16], [.80, -.30]]) {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(.07, .016, 6, 4),
-      new THREE.MeshBasicMaterial({ color: JUNTA }));
-    naSuperficie(m, x, y, .01); cabeca.add(m);
+  /* Uma orelha. O angulo e o traco mais fragil do personagem: o CLAUDE.md
+     mede 8,1 graus da vertical na arte canonica e registra que desenhar a
+     olho ja saiu a 36 -- "ficou parecendo outro bicho". Por isso o apice sai
+     de seno e cosseno, e nao de um ponto escolhido no olho. */
+  function orelha(baseX, baseY, larg, alt, graus, corFora, corDentro) {
+    const r = graus * Math.PI / 180;
+    const ax = baseX + Math.sin(r) * alt, ay = baseY - Math.cos(r) * alt;
+    g.fillStyle = corFora;
+    g.beginPath();
+    g.moveTo(baseX - larg / 2, baseY); g.lineTo(ax, ay); g.lineTo(baseX + larg / 2, baseY);
+    g.closePath(); g.fill();
+    // Rosa por dentro: esta na arte canonica, e e o que impede a orelha de
+    // ler como um triangulo colado na cabeca.
+    g.fillStyle = corDentro;
+    g.beginPath();
+    g.moveTo(baseX - larg / 4.6, baseY - 1);
+    g.lineTo(baseX + (ax - baseX) * .6, ay + alt * .40);
+    g.lineTo(baseX + larg / 4.6, baseY - 1);
+    g.closePath(); g.fill();
   }
 
-  /* --- o BUSTO, copiado de assets/mascot/tronikat.svg por escala ---
-   * O plano era dividir o corpo em pelo e metal, como a cabeca. A arte
-   * canonica diz outra coisa: o corpo e um MOLETOM roxo (#2A1B4D) com gola
-   * rosa, e a telinha com `>_` verde no centro do peito. A assimetria pelo/
-   * metal aparece nos BRACOS -- o esquerdo branco, o direito de aco com rebite.
-   *
-   * Escala: a cabeca tem 104 de largura na arte e 2R = 4 aqui, entao cada
-   * unidade da arte vale 4/104. Moletom: 76 em cima, 88 embaixo, 92 de altura
-   * (as razoes 0,73 / 0,85 / 0,88 ja medidas no CLAUDE.md). */
-  const ARTE = (2 * R) / 104;
-  const corpo = new THREE.Group(); cena.add(corpo);
-  const TOPO = -1.55;                       // enfiado sob o queixo, como na arte
-  const ALTURA = 92 * ARTE, R_TOPO = 38 * ARTE, R_BASE = 44 * ARTE;
-  const FUNDO = .62;                        // moletom e achatado de frente, nao um tubo
-  const MOLETOM = new THREE.MeshPhongMaterial({ color: 0x2A1B4D, shininess: 3, specular: 0x0D0A14 });
-  const tronco = new THREE.Mesh(
-    new THREE.CylinderGeometry(R_TOPO, R_BASE, ALTURA, 48, 1), MOLETOM);
-  tronco.scale.z = FUNDO; tronco.position.y = TOPO - ALTURA / 2; corpo.add(tronco);
-  // Ombro tem quina; a esfera so a suaviza (a colina de ombro ja foi um erro).
-  const ombros = new THREE.Mesh(new THREE.SphereGeometry(R_TOPO, 36, 18, 0, Math.PI * 2, 0, Math.PI / 2),
-    MOLETOM);
-  ombros.scale.set(1, .30, FUNDO); ombros.position.y = TOPO; corpo.add(ombros);
+  function desenhar(t) {
+    // --- fundo da transmissao ---
+    // Degrade VERTICAL, e nao radial. O radial da primeira versao tinha 58 de
+    // raio num canvas de 96 de altura, entao ele se fechava em elipse e lia
+    // como um CHAO embaixo do gato -- um cenario que nao existe. Visto no
+    // print, nao deduzido.
+    const ceu = g.createLinearGradient(0, 0, 0, A);
+    ceu.addColorStop(0, '#0B0520'); ceu.addColorStop(1, '#040109');
+    g.fillStyle = ceu; g.fillRect(0, 0, L, A);
+    g.fillStyle = 'rgba(57,255,20,.05)'; g.fillRect(0, 14, L, 58);  // brilho de tubo
 
-  // Gola rosa: meia elipse na frente, logo abaixo do queixo.
-  const gola = new THREE.Mesh(new THREE.TorusGeometry(R_TOPO * .82, .075, 8, 40, Math.PI),
-    new THREE.MeshBasicMaterial({ color: ROSA_FORTE }));
-  gola.rotation.x = Math.PI / 2; gola.rotation.z = Math.PI;
-  gola.scale.set(1, FUNDO * 1.05, 1); gola.position.set(0, TOPO + .02, 0); corpo.add(gola);
+    const bx = parado ? 0 : Math.round(Math.sin(t * .62));
+    const by = parado ? 0 : Math.round(Math.sin(t * 1.05));
+    // O busto inteiro sobe 5 px. Sem isso o painel `>_` do peito encostava
+    // na borda de baixo e saia cortado ao meio -- visto no print. Subir o
+    // conjunto custa uma linha; remexer trinta coordenadas custaria erros.
+    g.save(); g.translate(bx, by - 5);
 
-  // A telinha do peito: 38x24 na arte, 42 abaixo do topo do moletom.
-  const peito = document.createElement('canvas'); peito.width = 152; peito.height = 96;
-  { const x = peito.getContext('2d');
-    x.fillStyle = '#170A31'; x.fillRect(0, 0, 152, 96);
-    x.strokeStyle = '#39FF14'; x.lineWidth = 6; x.strokeRect(3, 3, 146, 90);
-    x.fillStyle = '#39FF14'; x.font = 'bold 50px ui-monospace, Consolas, monospace';
-    x.textBaseline = 'middle'; x.fillText('>_', 34, 52); }
-  const tela_peito = new THREE.Mesh(new THREE.PlaneGeometry(38 * ARTE, 24 * ARTE),
-    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(peito) }));
-  const yPeito = TOPO - 42 * ARTE;
-  // Na superficie do cone achatado: o raio naquela altura, vezes o FUNDO.
-  const rPeito = R_TOPO + (R_BASE - R_TOPO) * (42 / 92);
-  tela_peito.position.set(0, yPeito, rPeito * FUNDO + .02); corpo.add(tela_peito);
+    // --- ombros e moletom, SANGRANDO pelas bordas ---
+    // O CLAUDE.md registra por que: enquadramento que cabe inteiro no quadro
+    // le como bonequinho, e nao como close. Entao os ombros saem da tela.
+    g.fillStyle = MOLETOM;
+    g.beginPath();
+    g.moveTo(-14, A + 6); g.lineTo(-14, 88);
+    g.quadraticCurveTo(20, 79, 42, 77);      // ombro tem quina; o moletom suaviza
+    g.lineTo(86, 77);
+    g.quadraticCurveTo(108, 79, 142, 88);
+    g.lineTo(142, A + 6); g.closePath(); g.fill();
 
-  // Bracos: 14 de espessura, esquerdo de pelo, direito de aco #9BA0B8 com o
-  // rebite. Na arte eles pendem ao lado do corpo; num busto isso deixava as
-  // patas BOIANDO no quadro e os tubos lendo como bexiga. Aqui eles descem
-  // para a FRENTE e saem pela borda de baixo -- quem esta numa chamada tem as
-  // maos no teclado, fora de cena -- e a ponta do tubo nunca aparece.
-  function braco(lado) {
-    const ombro = new THREE.Vector3(lado * 38 * ARTE, TOPO - 10 * ARTE, 0);
-    const meio = new THREE.Vector3(lado * 50 * ARTE, TOPO - 55 * ARTE, .5);
-    const fim = new THREE.Vector3(lado * 40 * ARTE, TOPO - 120 * ARTE, 2.2);
-    const metal = lado > 0;
-    const mat = new THREE.MeshPhongMaterial(metal
-      ? { color: 0x9AA0B4, shininess: 42, specular: 0x8A90A0,
-          map: CHAPA, specularMap: CHAPA, bumpMap: CHAPA, bumpScale: .015 }
-      : { color: 0xFFFFFF, shininess: 4, specular: 0x141118,
-          map: PELAGEM, bumpMap: PELAGEM, bumpScale: .022 });
-    corpo.add(new THREE.Mesh(new THREE.TubeGeometry(
-      new THREE.QuadraticBezierCurve3(ombro, meio, fim), 24, 7 * ARTE, 12), mat));
-    if (metal) {
-      // O rebite vai NA curva do braco, e nao numa posicao chutada.
-      const p = new THREE.QuadraticBezierCurve3(ombro, meio, fim).getPoint(.28);
-      const rebite = new THREE.Mesh(new THREE.SphereGeometry(5 * ARTE, 12, 8),
-        new THREE.MeshPhongMaterial({ color: 0x5C6178, shininess: 48, specular: 0x7B8090 }));
-      rebite.position.set(p.x, p.y, p.z + 6.5 * ARTE); corpo.add(rebite);
+    // pescoco: ALARGA para baixo, senao vira balde -- outra ja registrada la
+    g.fillStyle = PELO_SOMBRA;
+    g.beginPath();
+    g.moveTo(57, 62); g.lineTo(71, 62); g.lineTo(76, 79); g.lineTo(52, 79);
+    g.closePath(); g.fill();
+
+    // --- painel `>_` no peito ---
+    g.fillStyle = '#0A2607'; g.fillRect(53, 84, 24, 12);
+    g.strokeStyle = VISOR; g.lineWidth = 1; g.strokeRect(53.5, 84.5, 23, 11);
+    g.fillStyle = VISOR; g.font = '8px ui-monospace, monospace';
+    g.fillText('>_', 57, 93);
+
+    // --- orelhas, antes da cabeca para nascerem atras dela ---
+    // Uma treme de vez em quando. E o tipo de movimento que o codec tem:
+    // pouco, e sem avisar.
+    const treme = !parado && (t % 7.3) > 7.05 ? 2.5 : 0;
+    orelha(50, 30, 14, 18, -8.1 - treme, PELO, ROSA);        // esquerda: pelo
+    orelha(78, 30, 15, 19, 9.9 + treme, METAL, METAL_SOMBRA); // direita: metal
+    // A direita NAO e o espelho da esquerda: e um pouco maior e mais
+    // inclinada nas duas artes canonicas. Copiado, nao inventado.
+
+    // --- cabeca: ~12% mais larga que alta, como a referencia (rx52/ry46) ---
+    elipse(64, 45, 25, 22, PELO);
+
+    // metade metalica: recorte no meio, e nao uma segunda elipse por cima,
+    // senao a emenda vira um degrau visivel depois da ampliacao
+    g.save();
+    g.beginPath(); g.rect(64, 0, L - 64, A); g.clip();
+    elipse(64, 45, 25, 22, METAL);
+    g.save();
+    g.beginPath(); g.ellipse(64, 45, 25, 22, 0, 0, 7); g.clip();
+    // Volume por tons CHAPADOS, nunca gradiente: e a regra que o CLAUDE.md
+    // tirou de um gradiente que o flutter_svg simplesmente nao aplicou.
+    g.fillStyle = METAL_LUZ;    g.fillRect(64, 27, 9, 40);
+    g.fillStyle = METAL_SOMBRA; g.fillRect(82, 32, 8, 30);
+    g.restore(); g.restore();
+
+    // --- a costura ciano da divisa ---
+    g.strokeStyle = CIANO; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(64, 24); g.lineTo(64, 67); g.stroke();
+
+    // --- bigodes: saem das BOCHECHAS para fora, sem atravessar o rosto ---
+    // Finos e curtos. Na primeira versao eram retas longas e grossas, e o
+    // gato ficou com cara de antena.
+    g.strokeStyle = 'rgba(242,240,255,.55)'; g.lineWidth = .7;
+    for (const [x0, y0, x1, y1] of [
+      [45, 51, 33, 48], [45, 54, 32, 55], [83, 51, 95, 48], [83, 54, 96, 55]]) {
+      g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+    }
+
+    // --- olho, no lado do PELO, que e a esquerda ---
+    // Preto, redondo, com um brilho branco em cima. Foi aqui que eu ja
+    // inventei um olho ambar de pupila em fenda, e o Gustavo pegou na hora:
+    // "um gato de olho ambar e outro gato".
+    const piscando = !parado && (t % 4.9) > 4.76;
+    if (piscando) {
+      g.strokeStyle = ESCURO; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(48, 44); g.lineTo(58, 44); g.stroke();
+    } else {
+      elipse(53, 43, 5, 5.8, ESCURO);
+      elipse(54.6, 40.8, 1.7, 1.7, '#FFFFFF');
+    }
+
+    // --- visor, no lado do METAL ---
+    g.fillStyle = '#23283A'; g.fillRect(69, 37, 20, 11);
+    g.fillStyle = VISOR;     g.fillRect(70, 38, 18, 9);
+    // A varredura do visor: uma linha clara que desce. E o unico movimento
+    // que o personagem tem enquanto esta calado.
+    if (!parado) {
+      const linha = 38 + Math.floor((t * 9) % 12);
+      if (linha < 47) { g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(70, linha, 18, 1); }
+    }
+    g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(70, 38, 18, 2);
+
+    // --- focinho rosa ---
+    g.fillStyle = ROSA_FORTE;
+    g.beginPath(); g.moveTo(61, 53); g.lineTo(67, 53); g.lineTo(64, 56.5);
+    g.closePath(); g.fill();
+
+    // --- boca: e ela que carrega a fala ---
+    // "o" e "u" fecham os cantos e projetam o labio: menos largura, mais
+    // altura. Mesma regra da cena 3D que saiu daqui.
+    const a = Math.max(0, abertura);
+    const larg = 11 * (1 - arredonda * .34), alt = 1.3 + a * 7;
+    elipse(64, 60 + alt * .3, larg / 2, alt / 2 + .6, ESCURO);
+    if (a > .3) elipse(64, 61 + alt * .34, larg / 3.6, alt / 3.8, '#8E2A5E');
+
+    g.restore();
+
+    // --- interferencia: uma fatia deslocada, um quadro a cada tanto ---
+    // E o que faz a imagem parecer TRANSMITIDA, e nao desenhada.
+    if (!parado && Math.random() < .03) {
+      const y = Math.floor(Math.random() * (A - 12)), h = 3 + Math.floor(Math.random() * 6);
+      g.putImageData(g.getImageData(0, y, L, h), Math.random() < .5 ? -2 : 2, y);
     }
   }
-  braco(-1); braco(1);
 
-  // --- luz: NEUTRA na frente, e a cor so nas bordas ---
-  // A primeira versao tinha um ponto ciano e um rosa apontados para o rosto,
-  // e o metal saia AZUL. Cor de cena nao pode reescrever a cor do personagem.
-  cena.add(new THREE.AmbientLight(0xFFFFFF, .80));
-  const chave = new THREE.DirectionalLight(0xFFFFFF, .85);
-  chave.position.set(2.5, 3.5, 6); cena.add(chave);
-  const preenche = new THREE.DirectionalLight(0xFFFFFF, .42);
-  preenche.position.set(-4, 1, 5); cena.add(preenche);
-  const borda1 = new THREE.PointLight(CIANO, .85, 26);
-  borda1.position.set(-6.5, 1.5, -2); cena.add(borda1);
-  const borda2 = new THREE.PointLight(ROSA_FORTE, .7, 26);
-  borda2.position.set(6.5, -2, -2); cena.add(borda2);
-
-  let abertura = 0, alvo = 0, arredonda = 0, alvoArred = 0, preciso = false,
-      mira = { x: 0, y: 0 }, piscar = 0;
-  addEventListener('pointermove', e => {
-    mira.x = (e.clientX / innerWidth - .5) * .52;
-    mira.y = (e.clientY / innerHeight - .5) * .30;
-  });
-
-  medir();
-  const visao = observarNaTela(c);
-  let ultimoQuadro = 0;
-  (function anima() {
-    requestAnimationFrame(anima);
-    // Cabeca fora do quadro: nada a renderizar. O `abrir()` continua sendo
-    // recebido e guardado nas variaveis; quando ela voltar, a boca ja esta
-    // na posicao certa e ninguem ve salto.
-    if (!visao.naTela) return;
-    const agora = performance.now();
-    // 30 quadros por segundo, e nao 60. A cena tem respiracao lenta, piscar
-    // seco e boca falando -- nenhum dos tres se distingue a 60, e a conta de
-    // GPU cai pela metade. Esta e a unica animacao que sobrou na pagina, e
-    // ela e a que o Gustavo pediu para manter.
-    if (agora - ultimoQuadro < 31) return;
-    ultimoQuadro = agora;
-    const t = agora / 1000;
-    cabeca.rotation.y += (mira.x - cabeca.rotation.y) * .06;
-    cabeca.rotation.x += (mira.y - cabeca.rotation.x) * .06;
-    cabeca.position.y = Math.sin(t * 1.4) * .06;
-    // O corpo segue a cabeca a um terco: pescoco gira, tronco quase nao.
-    corpo.rotation.y = cabeca.rotation.y * .3;
-    corpo.position.y = Math.sin(t * 1.4 - .5) * .025;
-
-    // Piscar: seco, sem transicao, como na tela de titulo do app.
-    piscar = (t % 4.6) > 4.45 ? 1 : 0;
-    olho.scale.y = piscar ? .08 : 1;
-    brilho.visible = !piscar;
-
-    // Duas fontes movem a boca. A voz do NAVEGADOR so da o limite das
-    // palavras, e o tremor disfarca a aproximacao. O ESTUDIO manda o fonema
-    // de verdade, com hora marcada: ali tremor seria ruido, e a suavizacao
-    // tem que ser curta, senao a boca chega atrasada ao fonema seguinte.
-    abertura += (alvo - abertura) * (preciso ? .6 : .38);
+  // 12 quadros por segundo. Baixo DE PROPOSITO -- a animacao do codec e
+  // engasgada mesmo -- e barato por consequencia: 12 mil pixels, 12 vezes por
+  // segundo. Compare com o que saiu daqui: a cena 3D travava a thread
+  // principal por 12,7 segundos so para montar.
+  let ultimo = 0;
+  (function quadro(agora) {
+    requestAnimationFrame(quadro);
+    if (agora - ultimo < 83) return;
+    ultimo = agora;
+    abertura += (alvo - abertura) * (preciso ? .7 : .45);
     arredonda += (alvoArred - arredonda) * .5;
-    const tremor = !preciso && alvo > .04 ? Math.sin(t * 40) * .1 * alvo : 0;
-    const a = Math.max(0, abertura + tremor);
-    // "o" e "u" fecham os cantos e projetam o labio: menos largura, mais fundo.
-    boca.scale.set(bocaEscalaBase.x * (1 - a * .22) * (1 - arredonda * .38),
-                   bocaEscalaBase.y + a * 1.15,
-                   bocaEscalaBase.z * (1 + a * .5) * (1 + arredonda * .35));
-    tela.material.color.setHex(alvo > .04 ? 0x9CFF7A : VISOR);
-    r.render(cena, cam);
-  })();
+    desenhar(agora / 1000);
+  })(0);
 
   return {
     abrir: (v, arred = 0, exato = false) => { alvo = v; alvoArred = arred; preciso = exato; },
   };
- } catch (e) {
-  // Sem cena, a boca nao move -- e so isso. O resto do site segue inteiro.
-  console.warn('cena 3D indisponivel, o chat continua:', e && e.message);
-  const c = document.getElementById('cabeca');
-  if (c) c.style.display = 'none';
-  return null;
- }
- }
-
- /* Monta na primeira vez que for chamada, e nunca mais. Se a cena ficar de
-    pe e alguem ja tiver pedido uma boca, o pedido guardado e aplicado --
-    senao uma fala que comecou antes da montagem sairia de boca parada. */
- function garantir() {
-  if (tentada) return;
-  tentada = true;
-  if (typeof THREE === 'undefined') return;   // o `defer` ainda nao chegou
-  cena3D = montar();
-  if (cena3D && pedido) cena3D.abrir(pedido[0], pedido[1], pedido[2]);
- }
-
- return {
-  abrir: (v, arred = 0, exato = false) => {
-   if (cena3D) cena3D.abrir(v, arred, exato);
-   else pedido = [v, arred, exato];
-  },
-  garantir,
- };
 })();
-
-/* O gatilho da montagem. Duas condicoes, e as duas importam:
-   - `load` garante que a pagina JA PINTOU e que o three.js (com `defer`) ja
-     existe. Montar antes disso e o defeito que esta correcao desfaz;
-   - o observador garante que nao se gasta um contexto WebGL com a cabeca
-     fora da tela -- em celular estreito ela pode nascer abaixo da dobra.
-   `requestIdleCallback` empurra para um momento em que o navegador nao tem
-   nada melhor a fazer; onde ele nao existe, um `setTimeout` curto serve. */
-addEventListener('load', () => {
-  const alvo = document.getElementById('cabeca');
-  const agora = () => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(
-    () => Fala.garantir());
-  if (!alvo || !window.IntersectionObserver) { agora(); return; }
-  const obs = new IntersectionObserver((entradas) => {
-    if (!entradas[0].isIntersecting) return;
-    obs.disconnect();
-    agora();
-  }, { rootMargin: '200px' });
-  obs.observe(alvo);
-});
 
 /* ------------------------------------------------------------- lip sync
    A sincronia sai do evento `boundary` da sintese de voz do navegador, que
@@ -1349,7 +943,7 @@ form.addEventListener('submit', e => {
 document.querySelectorAll('.atalho').forEach(b =>
   b.addEventListener('click', () => responder(b.dataset.p)));
 
-dizer('Oi. Sou o Tr∅nikAt — gato ciborgue, visor verde, guia deste lugar.\nO DevLingo ensina a programar em português de verdade. Pergunte o que quiser: eu respondo falando.', false);
+dizer('Tr∅nikAt na escuta. Câmbio.\nAqui é o DevLingo: você aprende a programar resolvendo questão, no celular. Pergunte o que quiser sobre ele — eu respondo falando.', false);
 
 claudePronto = (window.claude?.use ? claude.use('sample') : Promise.resolve(null))
   .catch(() => null);
