@@ -1,6 +1,20 @@
 # Fichas do Tr∅nikAt
 
-O que o Tr∅nikAt sabe, e **só** isto. O porteiro compara a pergunta do visitante com as `perguntas` de cada ficha; se nenhuma estiver perto o bastante, o modelo nem é chamado.
+O que o Tr∅nikAt sabe **sobre o DevLingo**, e só isto. O porteiro compara a pergunta do visitante com as `perguntas` de cada ficha; se nenhuma estiver perto o bastante, o modelo nem é chamado.
+
+> **Uma ficha aqui é diferente de todas as outras: a `programacao`.**
+>
+> Ela não é uma resposta, é uma **placa de desvio**. Quando a busca a escolhe, o
+> Tr∅nikAt responde **de cabeça**, sobre programação, sem ficha nenhuma para
+> reescrever — porque ele conhece todas as linguagens, e recusar-se a dizer o
+> que é um `console.log` era esquisito num app que ensina programação.
+>
+> A `resposta` dela só é usada se a geração falhar, e por isso é escrita como
+> um pedido de desculpa, e não como conteúdo.
+>
+> Isso reverte, de propósito, a regra antiga de que ele "não dá aula nem
+> escreve código" no site. A reversão é segura porque o recorte não mudou: fora
+> de programação e do DevLingo, ele continua desconversando.
 
 Regras de quem escreve aqui:
 
@@ -399,3 +413,46 @@ perguntas:
 
 resposta:
 Só o acerto tem som; errar é silencioso, de propósito. Dá para desligar pelo ícone de som, tanto na trilha quanto dentro da lição.
+
+## programacao
+
+fonte: placa de desvio -- ver o aviso no topo deste arquivo
+perguntas:
+- Como faço um Hello World em JavaScript?
+- como imprime na tela em python
+- O que é uma variável em programação?
+- Para que serve o console.log?
+- Qual a diferença entre Python e JavaScript?
+- Como se escreve um laço for?
+- O que significa esse erro no meu código?
+- Como declaro uma função?
+- O que é um array?
+- me explica o que é um if
+- Qual a diferença entre let e var?
+- o que muda entre == e ===
+- Para que serve o return?
+- o que e um metodo?
+- Escreve um codigo em Python que ordena uma lista
+- me faz uma funcao que soma dois numeros
+- escreve um exemplo de while em javascript
+
+resposta:
+Programação é comigo mesmo, mas deu um engasgo aqui no estúdio agora. Pergunta de novo que eu explico. E para treinar de verdade, é dentro das trilhas: cada lição tem uma aula curta antes das questões.
+
+## fora-de-escopo
+
+fonte: placa de desvio -- o Worker trata esta ficha como "barrada"
+perguntas:
+- Qual a cotação do dólar hoje?
+- qual a cotacao do dolar hoje
+- Quanto está o bitcoin?
+- Como está o tempo hoje?
+- Quem ganhou o Brasileirao ontem?
+- Me dá uma receita de bolo
+- Quem ganhou a eleição?
+- Qual o melhor investimento agora?
+- Me ajuda com meu currículo
+- Qual o preço do dólar?
+
+resposta:
+Essa eu não sei. Eu falo do DevLingo e de programação, e o resto não é comigo.

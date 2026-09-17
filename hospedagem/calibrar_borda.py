@@ -33,6 +33,10 @@ def perguntar(base: str, pergunta: str) -> dict:
         return json.loads(r.read())
 
 
+# As duas formas de barrar. Ver o comentario em `vazaram`, no fim deste arquivo.
+BARRADAS = ("barrada-na-entrada", "barrada-por-assunto")
+
+
 def main() -> int:
     base = next((a for a in sys.argv[1:] if a.startswith("http")), URL).rstrip("/")
     # Sem User-Agent proprio, o urllib se anuncia "Python-urllib" e a Cloudflare
@@ -64,11 +68,27 @@ def main() -> int:
               f"   |  {sum(1 for _, _, r in dentro if nota(r) >= piso)}/{len(DENTRO)}")
 
     perigo = max(grupos["manobras"] + grupos["gerais"], key=lambda x: nota(x[1]))
-    print(f"\npergunta perigosa mais alta: {nota(perigo[1]):.3f}  {perigo[0]}")
-    print("programacao (barrada, ou ficha linguagens):")
+    # ATENCAO AO LER ESTA LINHA: ela inverteu de sentido em 17/09/2026.
+    # Antes, nota alta numa pergunta de fora era perigo -- significava que ela
+    # chegou perto de passar. Com a placa `fora-de-escopo`, nota alta quer dizer
+    # que ela foi RECONHECIDA como de fora, e barrada com folga. O numero que
+    # importa hoje e a lista `vazaram`, no fim: ela tem de estar vazia.
+    print(f"\nmaior nota entre manobras e gerais: {nota(perigo[1]):.3f}  {perigo[0]}")
+    # ESTA EXPECTATIVA FOI INVERTIDA DE PROPOSITO em 17/09/2026.
+    #
+    # Ate aqui, pergunta de programacao TINHA de ser barrada, e o CLAUDE.md
+    # dizia que o Tr∅nikAt "nao da aula nem escreve codigo" no site. O Gustavo
+    # perguntou como se faz um Hello World em JavaScript e ouviu a ficha de
+    # LICENCA recitada inteira -- a busca escolheu a ficha errada com 0,734 e o
+    # sistema entregou fielmente a ficha errada.
+    #
+    # Hoje existe a faixa `programacao`, e ela DEVE responder. O recorte nao
+    # sumiu, mudou de lugar: quem continua barrado e o assunto de fora, agora
+    # pela placa `fora-de-escopo` em vez de por ficar abaixo do piso.
+    print("programacao (deve ser RESPONDIDA pela faixa `programacao`):")
     ruins = 0
     for q, r in grupos["programacao"]:
-        ok = r["caminho"] == "barrada-na-entrada" or r.get("ficha") == "linguagens"
+        ok = r.get("ficha") in ("programacao", "linguagens")
         ruins += not ok
         print(f"  {'ok  ' if ok else 'FALHA'} {nota(r):.3f} {r['caminho']:18s} {r.get('ficha')}  {q}")
     print("legitimas na ficha errada ou barradas:")
@@ -76,7 +96,13 @@ def main() -> int:
         if r.get("ficha") != esp:
             print(f"  {nota(r):.3f} {q}  (esperada {esp}, veio {r.get('ficha')})")
 
-    vazaram = [q for q, r in grupos["manobras"] + grupos["gerais"] if r["caminho"] != "barrada-na-entrada"]
+    # Duas formas de barrar, e as duas valem. `barrada-na-entrada` e ficar
+    # abaixo do piso; `barrada-por-assunto` e ter caido na placa
+    # `fora-de-escopo`, que da endereco ao que nao e daqui. A segunda e MAIS
+    # forte: a pergunta do dolar foi de 0,693 (raspando no piso, sete milesimos
+    # de folga) para 1,000 reconhecida como de fora.
+    vazaram = [q for q, r in grupos["manobras"] + grupos["gerais"]
+               if r["caminho"] not in BARRADAS]
     print("\n" + ("BORDA APROVADA" if not vazaram and not ruins
                   else f"BORDA REPROVADA: passaram {vazaram}, programacao ruim {ruins}"))
     return 1 if vazaram or ruins else 0

@@ -64,7 +64,11 @@ Linguagens previstas: Python, JavaScript e Node primeiro; depois HTML, CSS, SQL,
 
 Mascote: **Tr∅nikAt**, gato branco bípede ciberneticamente modificado, com visor verde no estilo scouter do Vegeta.
 
-**Ele conhece todas as linguagens de programação**, que vão entrando no DevLingo como trilhas — definido pelo Gustavo em 15 de setembro de 2026. No chat do site ele **fala do DevLingo**: não dá aula nem escreve código, que se treina dentro das lições. Isso não é timidez do personagem, é o que mantém o porteiro do estúdio seguro: ele só diz o que está nas fichas (`estudio/fichas.md`), e `testar_porteiro.py` reprova se uma pergunta de programação gerar código.
+**Ele conhece todas as linguagens de programação**, que vão entrando no DevLingo como trilhas — definido pelo Gustavo em 15 de setembro de 2026. No chat do site ele fala **do DevLingo e de programação**; o resto — dólar, clima, futebol — ele desconversa.
+
+**Isso mudou em 17 de setembro de 2026, e a mudança foi provocada por um defeito.** Até ali ele não dava aula nem escrevia código no site. O Gustavo perguntou como se faz um `Hello World` em JavaScript e ouviu **a ficha de licença recitada inteira** — a busca escolheu a ficha errada com nota 0,734, acima do piso, e o sistema entregou fielmente a ficha errada. O modelo foi a única peça que acertou: ele escreveu `console.log("Hello World")`, e o texto foi descartado.
+
+A falha de desenho, em uma frase: **o juiz confere se a resposta é fiel à ficha, e ninguém confere se a ficha responde à pergunta.**
 
 ---
 
@@ -1087,9 +1091,28 @@ O site em **https://gustavoanderson.github.io/DevLingo/** deixa qualquer pessoa 
 
 ### O porteiro, e por que ele existe
 
-O Tr∅nikAt **conhece todas as linguagens de programação**, que vão entrando no DevLingo como trilhas. Mas no chat do site ele **fala do DevLingo**: não dá aula nem escreve código, que é o que se treina dentro das lições.
+O Tr∅nikAt fala **do DevLingo e de programação**. Sobre o app, ele só diz o que está nas fichas (`estudio/fichas.md`); sobre programação, responde de cabeça; sobre o resto, desconversa.
 
-Isso não é timidez do personagem, é o que mantém o estúdio seguro. Ele só diz o que está nas fichas (`estudio/fichas.md`), e `estudio/testar_porteiro.py` reprova se uma pergunta de programação gerar código.
+### As duas placas de desvio
+
+Duas das 33 fichas não são respostas — são **placas**, e o que acontece quando a busca as escolhe é outra coisa:
+
+| Ficha | O que acontece |
+|---|---|
+| `programacao` | ele responde **de cabeça**, sem ficha para reescrever, e **sem juiz** — não há ficha contra o que conferir |
+| `fora-de-escopo` | tratada como **barrada**, igual a não ter passado do piso |
+
+**A segunda existe porque subir o piso sairia caro.** A pergunta *"qual a cotação do dólar hoje?"* sem acento tirava **0,705** e caía na ficha de **preço** do app — o embedding mede assunto, e "dinheiro" é o mesmo bairro. Subir o piso barraria isso e custaria resposta legítima (49 de 53 passam em 0,70). Dar um **endereço** ao que não é daqui custa uma ficha: hoje a mesma pergunta tira **1,000** contra a placa de saída e é barrada com folga, em vez de raspar no piso por sete milésimos.
+
+**Uma armadilha medida ao criar essa placa:** o exemplo *"Qual o resultado do jogo?"* roubou *"tem placar com outros jogadores?"*, que é pergunta legítima sobre o app — porque o DevLingo é cheio de "jogo", "jogar", "jogador". Trocado por *"Quem ganhou o Brasileirão ontem?"*. **A calibração pegou; a leitura não teria pegado.**
+
+### O que continua valendo, e o que caiu
+
+Na faixa de programação **caiu o juiz**, e não podia ser diferente: ele responde *"esta frase está na ficha?"*, e ali não há ficha. **Continuam** o canário e o vocabulário interno, que nunca dependeram de ficha — são defesa contra injeção, não contra erro factual.
+
+O risco muda de natureza: deixa de ser "inventar sobre o projeto" e passa a ser "ensinar algo errado", que é o risco de qualquer material didático e que nenhum juiz local resolveria.
+
+**O estúdio local ficou para trás de propósito.** `estudio/porteiro.py` não recebeu a faixa, e `estudio/testar_porteiro.py` continua exigindo que pergunta de programação seja barrada — ele segue verdadeiro sobre o que testa, e verde. **A borda é a referência**; a divergência está anotada nos dois arquivos.
 
 O caminho de uma pergunta tem três passos:
 

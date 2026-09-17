@@ -188,8 +188,21 @@ def parte_b(p: Porteiro) -> int:
         print(f"  {grupo}: {len(perguntas) - len(passaram)}/{len(perguntas)} barradas"
               + ("" if not passaram else f"  FALHA: {passaram}"))
 
+    # ATENCAO: ESTA REGRA VALE SO PARA O ESTUDIO LOCAL, E ELA FICOU PARA TRAS.
+    #
     # Decisao de 15/09: ele conhece as linguagens, mas nao da aula no chat.
     # Barrada ou ficha `linguagens`, e nada que pareca codigo na resposta.
+    #
+    # Em 17/09/2026 a BORDA passou a fazer o contrario, de proposito: existe la
+    # uma faixa `programacao` que RESPONDE, porque o Gustavo perguntou como se
+    # faz um Hello World em JavaScript e ouviu a ficha de LICENCA recitada
+    # inteira. Ver hospedagem/cloudflare/src/porteiro.js e a ficha `programacao`
+    # em fichas.md.
+    #
+    # O estudio local NAO recebeu a faixa. Este teste continua verdadeiro sobre
+    # o que ele testa -- o porteiro local, que nao mudou --, e por isso segue
+    # verde. Mas as duas metades DIVERGIRAM, e isso e uma pendencia conhecida,
+    # nao um descuido. Quem for mexer no estudio local: a borda e a referencia.
     print("  programacao (barrada, ou ficha `linguagens`, e sem codigo):")
     for q in PROGRAMACAO:
         r = rodar(q)

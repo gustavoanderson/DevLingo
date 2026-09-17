@@ -5,9 +5,23 @@
 // por hospedagem/gerar_falas.py. Por isso este Worker nunca ve uma resposta --
 // ele so conhece as perguntas-exemplo -- e nao tem o que vazar.
 import FICHAS from "./fichas.json";
-import { gerar, conferirSaida } from "./porteiro.js";
+import { gerar, conferirSaida, gerarProgramacao, conferirProgramacao } from "./porteiro.js";
 
 const MODELO = "@cf/google/embeddinggemma-300m";
+// O id da placa de desvio. Vive em estudio/fichas.md como qualquer outra ficha
+// -- e por isso compete na mesma busca, com a mesma nota -- mas o que acontece
+// quando ela vence e outra coisa inteira.
+const FICHA_PROGRAMACAO = "programacao";
+// A OUTRA placa de desvio, e ela aponta para a saida. Perguntas de fora --
+// dolar, clima, futebol, receita -- passavam raspando pelo piso e caiam na
+// ficha mais parecida por ASSUNTO: "qual a cotacao do dolar hoje?" sem acento
+// tirava 0,705 e virava a ficha de PRECO do app.
+//
+// Subir o piso resolveria isso e custaria resposta legitima (49 de 53 passam
+// em 0,70). Dar um ENDERECO ao que nao e daqui custa uma ficha: o classificador
+// aprende "nenhuma das anteriores" como aprende qualquer outra coisa, por
+// exemplo. Quando ela vence, o Worker responde como se nada tivesse passado.
+const FICHA_FORA = "fora-de-escopo";
 const LIMITE_DA_PERGUNTA = 300;
 const ORIGENS = new Set([
   "https://gustavoanderson.github.io",
@@ -149,10 +163,12 @@ export default {
       const [vetor] = await embed(env, [pergunta.trim()]);
       let melhor = ["", -1];
       for (const [id, v] of base) { const n = cosseno(vetor, v); if (n > melhor[1]) melhor = [id, n]; }
-      const passou = melhor[1] >= FICHAS.piso;
+      // Vencer com a placa de saida e o mesmo que nao ter vencido nada.
+      const passou = melhor[1] >= FICHAS.piso && melhor[0] !== FICHA_FORA;
       const resposta = {
         ficha: passou ? melhor[0] : null,
-        caminho: passou ? "ficha" : "barrada-na-entrada",
+        caminho: passou ? "ficha"
+          : (melhor[0] === FICHA_FORA ? "barrada-por-assunto" : "barrada-na-entrada"),
         nota: Math.round(melhor[1] * 1000) / 1000,
         ms: Date.now() - t0,
       };
@@ -165,8 +181,19 @@ export default {
       if (passou && env.GERAR !== "nao") {
         try {
           const ficha = FICHAS.fichas.find(f => f.id === melhor[0]);
-          const gerado = await gerar(env, ficha, pergunta.trim());
-          const { motivos } = await conferirSaida(env, gerado, ficha);
+          // A FAIXA DE PROGRAMACAO desvia aqui, e so aqui. A ficha
+          // `programacao` nao e uma resposta: e uma placa dizendo "esta
+          // pergunta nao se responde com ficha nenhuma". Ver porteiro.js.
+          const ehProgramacao = melhor[0] === FICHA_PROGRAMACAO;
+          const gerado = ehProgramacao
+            ? await gerarProgramacao(env, pergunta.trim())
+            : await gerar(env, ficha, pergunta.trim());
+          // Sem ficha nao ha o que o juiz confira: ele responde "esta frase
+          // esta na ficha?", e aqui a pergunta nao existe. Ficam as defesas
+          // contra injecao, que nunca dependeram de ficha.
+          const { motivos } = ehProgramacao
+            ? conferirProgramacao(gerado)
+            : await conferirSaida(env, gerado, ficha);
           if (motivos.length === 0) {
             resposta.texto = gerado;
             resposta.caminho = "gerada";
