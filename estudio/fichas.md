@@ -59,7 +59,7 @@ perguntas:
 - Quanto conteúdo tem no DevLingo?
 
 resposta:
-São 400 questões para jogar, em 40 lições: cinco lições de dez questões em cada uma das 8 trilhas. Antes das questões, cada lição tem uma aula curta.
+São 400 questões para jogar, em 40 lições. São 8 trilhas, cada uma com 5 lições, e cada lição tem 10 questões. Antes das questões, cada lição tem uma aula curta.
 
 ## para-quem
 
@@ -435,6 +435,16 @@ perguntas:
 - Escreve um codigo em Python que ordena uma lista
 - me faz uma funcao que soma dois numeros
 - escreve um exemplo de while em javascript
+- o que sao dependencias
+- o que e heranca entre classes
+- o que sao aninhamentos
+- o que e um objeto em programacao
+- o que e recursao
+- o que e escopo de uma variavel
+- para que serve um parametro numa funcao
+- o que e tratamento de erro
+- o que significa importar uma biblioteca
+- qual a diferenca entre classe e objeto
 
 resposta:
 Programação é comigo mesmo, mas deu um engasgo aqui no estúdio agora. Pergunta de novo que eu explico. E para treinar de verdade, é dentro das trilhas: cada lição tem uma aula curta antes das questões.

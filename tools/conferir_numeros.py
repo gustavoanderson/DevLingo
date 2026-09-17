@@ -89,8 +89,11 @@ AFIRMACOES: dict[str, list[tuple[str, list[str]]]] = {
     "estudio/fichas.md": [
         (r'diz "(\d+) questões"',                          ["jogaveis"]),
         (r"São (\d+) trilhas:",                            ["trilhas"]),
-        (r"São (\d+) questões para jogar, em (\d+) lições: "
-         r"cinco lições de dez questões em cada uma das (\d+) trilhas",
+        # A frase foi reescrita em 17/09/2026 porque a antiga ("cinco licoes de
+        # dez questoes") era INVERTIVEL: o modelo gerou "cada licao tem cinco
+        # questoes", que e falso, e o juiz aprovou porque todos os numeros
+        # estavam na ficha. Hoje cada numero vem colado no proprio substantivo.
+        (r"São (\d+) questões para jogar, em (\d+) lições\. São (\d+) trilhas",
          ["jogaveis", "licoes", "trilhas"]),
         (r"São (\d+) testes automatizados no app",         ["testes"]),
     ],

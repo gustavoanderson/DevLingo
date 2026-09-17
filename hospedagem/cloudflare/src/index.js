@@ -163,12 +163,41 @@ export default {
       const [vetor] = await embed(env, [pergunta.trim()]);
       let melhor = ["", -1];
       for (const [id, v] of base) { const n = cosseno(vetor, v); if (n > melhor[1]) melhor = [id, n]; }
-      // Vencer com a placa de saida e o mesmo que nao ter vencido nada.
-      const passou = melhor[1] >= FICHAS.piso && melhor[0] !== FICHA_FORA;
+      /* O PADRAO E DEV, E ISSO FOI INVERTIDO EM 17/09/2026.
+       *
+       * Antes: so respondia o que a busca RECONHECIA; abaixo do piso,
+       * desconversava. O Gustavo perguntou o que sao dependencias (0,694),
+       * herancas entre classes (0,700, e caiu na ficha TRILHAS) e o que sao
+       * aninhamentos (0,681). Tres perguntas de programacao seguidas, e ele
+       * resumiu: "ele nao e inteligente?".
+       *
+       * E a resposta e que o modelo e -- ele respondeu console.log e array
+       * corretamente. Burro era o PORTEIRO na frente dele: uma busca por
+       * semelhanca contra uma lista escrita a mao, que nao entende a pergunta,
+       * so mede se ela parece com os exemplos. "Dependencias" nao parece com
+       * "Hello World".
+       *
+       * E acrescentar exemplos era enxugar gelo: programacao tem milhares de
+       * conceitos. Entao o padrao inverteu. Hoje:
+       *
+       *   melhor = fora-de-escopo  -> desconversa
+       *   melhor >= piso           -> aquela ficha (inclui `programacao`)
+       *   nada reconhecido         -> FAIXA DE PROGRAMACAO, e nao recusa
+       *
+       * O ultimo ramo e o que mudou. Quem decide no caso ambiguo passa a ser o
+       * MODELO, que ao menos entende a pergunta -- e as instrucoes dele mandam
+       * dizer que so fala de programacao e do DevLingo quando o assunto for
+       * outro. O porteiro continua guardando o que importa: nada do que ele
+       * diz SOBRE O APP sai de fora das fichas, porque ficha nenhuma chega
+       * naquele caminho. */
+      const foraDeEscopo = melhor[0] === FICHA_FORA;
+      const alvo = foraDeEscopo ? null
+        : (melhor[1] >= FICHAS.piso ? melhor[0] : FICHA_PROGRAMACAO);
+      const passou = alvo !== null;
       const resposta = {
-        ficha: passou ? melhor[0] : null,
-        caminho: passou ? "ficha"
-          : (melhor[0] === FICHA_FORA ? "barrada-por-assunto" : "barrada-na-entrada"),
+        ficha: alvo,
+        caminho: passou ? (melhor[1] >= FICHAS.piso ? "ficha" : "dev-por-padrao")
+          : "barrada-por-assunto",
         nota: Math.round(melhor[1] * 1000) / 1000,
         ms: Date.now() - t0,
       };
@@ -180,11 +209,11 @@ export default {
       // requisito, e o teto de neurons do plano gratuito e duro.
       if (passou && env.GERAR !== "nao") {
         try {
-          const ficha = FICHAS.fichas.find(f => f.id === melhor[0]);
+          const ficha = FICHAS.fichas.find(f => f.id === alvo);
           // A FAIXA DE PROGRAMACAO desvia aqui, e so aqui. A ficha
           // `programacao` nao e uma resposta: e uma placa dizendo "esta
           // pergunta nao se responde com ficha nenhuma". Ver porteiro.js.
-          const ehProgramacao = melhor[0] === FICHA_PROGRAMACAO;
+          const ehProgramacao = alvo === FICHA_PROGRAMACAO;
           const gerado = ehProgramacao
             ? await gerarProgramacao(env, pergunta.trim())
             : await gerar(env, ficha, pergunta.trim());
