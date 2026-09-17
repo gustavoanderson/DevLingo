@@ -43,10 +43,43 @@ FALAS = RAIZ / "site" / "falas"
 INDICE = FALAS / "indice.json"
 RECUSA = "_recusa"          # id da frase fixa; o sublinhado nunca colide com ficha
 
+# AS FALAS DE ENROLAR, e por que elas existem.
+#
+# Medido em 17/09/2026, do envio ate a voz comecar: ~7,4 s o Worker pensando
+# (modelo + juiz) e mais ~4 s o Piper sintetizando no Oracle. Onze segundos, e
+# a maior parte deles em SILENCIO -- o texto aparece no meio do caminho, a voz
+# so no fim.
+#
+# Ideia do Gustavo: enrolar. Como estas ficam GRAVADAS, elas tocam em zero
+# segundo -- nao passam pelo Piper na hora, nem pelo Oracle, nem por nada. Sao
+# a unica coisa no site que responde instantaneamente.
+#
+# A regra de escrita, e ela e o ponto: NENHUMA pode prometer nada. "Ah, essa eu
+# sei!" soa otimo ate ser seguido de "nao sei". Todas servem antes de qualquer
+# resposta, inclusive antes de uma recusa.
+#
+# Duram de 2 a 4 s. Quando a espera passa disso, o site toca outra -- e duas
+# seguidas soam como alguem que ainda esta pensando, nao como repeticao.
+ENROLAR = [
+    "Hmmmm... deixa eu processar isso aqui.",
+    "Boa pergunta. So um instante que o visor ta calculando.",
+    "Certo, certo... ja te respondo.",
+    "Perai que eu puxo isso da memoria.",
+    "Hmmm. Essa merece uma olhada com calma.",
+    "Deixa eu organizar as ideias aqui...",
+    "To processando. Segura ai um segundinho.",
+    "Interessante. Rodando aqui no meu circuito...",
+    "Anotado. Deixa eu montar a resposta direito.",
+    "Hmmmm, perai. To cruzando os dados.",
+]
+
 
 def textos() -> dict[str, str]:
     t = {f.id: f.resposta for f in ler_fichas()}
     t[RECUSA] = FRASE_FIXA
+    # O prefixo `_enrolar` e o que o site procura para sortear uma delas.
+    for i, frase in enumerate(ENROLAR, 1):
+        t[f"_enrolar-{i:02d}"] = frase
     return t
 
 

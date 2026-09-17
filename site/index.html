@@ -703,8 +703,13 @@ const Fala = (function () {
 const VOZ_URL = 'https://tronikat.tronikat-busca.workers.dev';
 
 const Voz = (function () {
-  return async function falar(texto) {
-    if (!VOZ_URL) return;                 // sem servico, silencio honesto
+  /* BUSCAR e TOCAR sao separados de proposito.
+     A sintese no Oracle leva ~4 s, e ela e a segunda metade da espera (a
+     primeira sao os ~7,4 s do Worker pensando). Quem chama precisa poder
+     ENROLAR enquanto isto acontece -- e para isso tem de segurar a promessa do
+     audio em vez de simplesmente esperar por ele tocando. */
+  async function buscar(texto) {
+    if (!VOZ_URL) return null;            // sem servico, silencio honesto
     try {
       const r = await fetch(VOZ_URL.replace(/\/$/, '') + '/falar', {
         method: 'POST',
@@ -714,13 +719,20 @@ const Voz = (function () {
       if (!r.ok) throw new Error('voz respondeu ' + r.status);
       const f = await r.json();
       // Mesmo formato do indice das falas: o tocador nao distingue.
-      await Estudio.tocar({ texto, audio: f.audio, duracao: f.duracao, bocas: f.bocas });
+      return { texto, audio: f.audio, duracao: f.duracao, bocas: f.bocas };
     } catch (e) {
       // Voz e conveniencia, nao requisito -- a mesma regra que o CLAUDE.md ja
       // da ao som do app. O texto ja esta na tela quando isto roda.
       console.warn('voz indisponivel, o texto continua:', e && e.message);
+      return null;
     }
+  }
+  const falar = async (texto) => {
+    const f = await buscar(texto);
+    if (f) await Estudio.tocar(f);
   };
+  falar.buscar = buscar;
+  return falar;
 })();
 
 /* ------------------------------------------------------------- o estudio
@@ -844,11 +856,61 @@ const Estudio = (function () {
 
   sondar();
   setInterval(() => { if (!document.hidden) sondar(); }, 15000);
+  /* ------------------------------------------------------------- enrolar
+     Ideia do Gustavo, e ela ataca o problema certo. Medido em 17/09/2026, do
+     envio ate a voz comecar: ~7,4 s o Worker pensando e mais ~4 s o Piper
+     sintetizando. Onze segundos, quase todos em silencio.
+
+     As falas de enrolar sao GRAVADAS (ver ENROLAR em hospedagem/gerar_falas.py),
+     entao tocam em zero segundo -- sao a unica coisa do site que responde
+     instantaneamente. Elas nao encurtam a espera; tiram o silencio dela.
+
+     TRES CUIDADOS, e cada um evita deixar o site pior:
+
+     1. So comeca depois de ESPERA_PARA_ENROLAR. Se a resposta chegar antes,
+        nao se enrola nada -- enfiar 2 s de "hmmm" numa resposta que ja ia sair
+        seria ATRASAR o caso bom
+     2. A fala em curso SEMPRE termina. Cortar no meio da palavra soa como
+        falha de audio, que e pior que esperar
+     3. Nenhuma se repete na mesma espera, e quando as dez acabam ela para. Duas
+        seguidas soam como quem ainda esta pensando; a mesma duas vezes soa como
+        disco riscado */
+  const ESPERA_PARA_ENROLAR = 1000;
+
+  async function enrolarAte(trabalho) {
+    let pronto = false;
+    trabalho.then(() => { pronto = true; }, () => { pronto = true; });
+    await new Promise(r => setTimeout(r, ESPERA_PARA_ENROLAR));
+    if (pronto) return;
+    let indice;
+    try { indice = await indiceDasFalas(); } catch { return; }
+    const sobrando = Object.keys(indice).filter(k => k.startsWith('_enrolar'));
+    while (!pronto && sobrando.length) {
+      const [id] = sobrando.splice(Math.floor(Math.random() * sobrando.length), 1);
+      const f = indice[id];
+      const comecou = performance.now();
+      // Tocada inteira de proposito: ver o cuidado 2 acima.
+      await tocar({ texto: f.texto, duracao: f.duracao, bocas: f.bocas,
+                    arquivo: 'falas/' + f.audio });
+      // 4. SE O AUDIO NAO ESTIVER TOCANDO, PARE.
+      //
+      // `tocar` resolve no fim do audio OU no erro. Quando o som nao sai --
+      // autoplay bloqueado, aba sem dispositivo, arquivo faltando -- ele
+      // resolve na hora, e sem esta trava o laco gastaria as dez falas num
+      // piscar e deixaria o RESTO da espera em silencio. Pior que nao enrolar.
+      //
+      // Visto no teste: as dez dispararam no mesmo milissegundo, 1018 a 1019.
+      // Era artefato do Chrome sem cabeca, mas o mesmo aconteceria numa aba de
+      // verdade com o som bloqueado.
+      if (performance.now() - comecou < f.duracao * 500) return;
+    }
+  }
+
   return {
     get vivo() { return !!modo; },
     falhou() { if (modo === 'nuvem') modo = null; sondar(); },
     comClaude(sim) { temClaude = sim; marcar(); },
-    sondar, perguntar, tocar,
+    sondar, perguntar, tocar, enrolarAte,
   };
 })();
 
@@ -920,9 +982,18 @@ async function responder(pergunta) {
   if (Estudio.vivo) {
     try {
       estado.textContent = 'Tr∅nikAt · pensando';
-      const r = await Estudio.perguntar(pergunta);
-      balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
-      if (r.arquivo) await Estudio.tocar(r); else Voz(r.texto);
+      /* O trabalho inteiro numa promessa so -- perguntar E buscar o audio --
+         para que a enrolacao cubra as DUAS esperas. Cobrir so a primeira
+         deixaria um silencio novo bem no meio, entre o texto aparecer e a voz
+         comecar, que e onde mora a sintese do Piper. */
+      const trabalho = (async () => {
+        const r = await Estudio.perguntar(pergunta);
+        balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
+        return r.arquivo ? r : await Voz.buscar(r.texto);
+      })();
+      await Estudio.enrolarAte(trabalho);
+      const pronta = await trabalho;
+      if (pronta) await Estudio.tocar(pronta);
       estado.textContent = 'Tr∅nikAt · online';
       ocupado = false; env.disabled = false; txt.focus();
       return;
