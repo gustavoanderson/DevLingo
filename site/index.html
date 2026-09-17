@@ -188,6 +188,18 @@
         flex-direction:column;gap:11px;font-size:13.5px;line-height:1.6}
   .msg{padding:9px 12px;border-radius:10px;max-width:88%;white-space:pre-wrap;
        overflow-wrap:anywhere}
+  /* O BALAO DE "PENSANDO".
+     Antes o lugar da resposta ficava com tres pontinhos parados, e parado nao
+     distingue "trabalhando" de "travado" -- que e a leitura que o usuario faz.
+     Os pontos pulsam por OPACIDADE, que o navegador anima no compositor: e a
+     mesma regra que tirou os 12 s de travamento desta pagina, entao a animacao
+     nao volta a custar quadro. */
+  .pensa i{display:inline-block;width:.34em;height:.34em;border-radius:50%;
+           background:currentColor;margin-left:.2em;opacity:.22;
+           animation:pulsa 1.3s ease-in-out infinite}
+  .pensa i:nth-of-type(2){animation-delay:.22s}
+  .pensa i:nth-of-type(3){animation-delay:.44s}
+  @keyframes pulsa{0%,62%,100%{opacity:.22}30%{opacity:1}}
   .dele{background:rgba(2,17,7,.92);border:1px solid rgba(57,255,20,.38);
         color:#DFF7E2;align-self:flex-start}
   .meu{background:rgba(24,3,20,.92);border:1px solid rgba(255,45,149,.40);
@@ -970,6 +982,45 @@ const fala = document.getElementById('fala'), form = document.getElementById('fo
       estado = document.getElementById('estado');
 let claudePronto = null, ocupado = false;
 
+/* Tira o PEDIDO e deixa o ASSUNTO.
+   "me fale sobre como fazer fibonacci" -> "como fazer fibonacci"
+
+   So corta no COMECO, e so o que e pedido de fala. "como", "o que", "por que"
+   e "para que" ficam: eles sao a pergunta, nao a embalagem. E se sobrar pouco
+   -- alguem que escreveu so "me explica" --, devolve o original, porque um eco
+   vazio soa pior que um eco desajeitado. */
+const PEDIDOS = [
+  'me fale sobre', 'me fala sobre', 'me fale de', 'me fala de',
+  'me explique sobre', 'me explica sobre', 'me explique', 'me explica',
+  'me diga sobre', 'me diga', 'me fale', 'me fala', 'me conte sobre',
+  'me conta sobre', 'me conte', 'me conta', 'me ensina', 'me ensine',
+  'gostaria de saber', 'queria saber', 'quero saber', 'preciso saber',
+  'pode me dizer', 'poderia me dizer', 'pode me explicar', 'você sabe',
+  'voce sabe', 'tenho uma dúvida sobre', 'tenho uma duvida sobre',
+  'uma dúvida:', 'uma duvida:', 'explica pra mim', 'explique para mim',
+];
+
+function soAssunto(pergunta) {
+  let t = pergunta.trim();
+  // Repete porque as formas se encaixam: "me diga, você sabe o que é X".
+  for (let volta = 0; volta < 3; volta++) {
+    const antes = t;
+    const baixo = t.toLowerCase();
+    for (const p of PEDIDOS) {
+      if (baixo.startsWith(p)) {
+        t = t.slice(p.length).replace(/^[\s,:;.-]+/, '');
+        break;
+      }
+    }
+    if (t === antes) break;
+  }
+  // O piso era 8 e cortava demais: "me conta sobre heranca" virava "heranca",
+  // com 7 letras, e voltava ao original. Uma palavra so e eco perfeitamente bom
+  // ("array", "heranca"); o que este guarda existe para pegar e o caso em que
+  // sobra NADA -- alguem que escreveu so "me explica".
+  return t.length >= 3 ? t : pergunta.trim();
+}
+
 function dizer(texto, meu) {
   const d = document.createElement('div');
   d.className = 'msg ' + (meu ? 'meu' : 'dele');
@@ -1023,7 +1074,15 @@ async function responder(pergunta) {
   if (ocupado) return;
   ocupado = true; env.disabled = true;
   dizer(pergunta, true);
-  const balao = dizer('…', false);
+  const balao = dizer('', false);
+  /* Escrito por extenso, e nao "…": o visitante precisa saber QUEM esta
+     demorando. Tres pontinhos servem para qualquer coisa, inclusive para uma
+     pagina quebrada. */
+  balao.className += ' pensa';
+  balao.append('Tr∅nikAt está pensando',
+               document.createElement('i'),
+               document.createElement('i'),
+               document.createElement('i'));
 
   const pronta = RESERVA[pergunta.toLowerCase().trim()];
 
@@ -1038,6 +1097,9 @@ async function responder(pergunta) {
          comecar, que e onde mora a sintese do Piper. */
       const trabalho = (async () => {
         const r = await Estudio.perguntar(pergunta);
+        // `textContent` derruba os <i> do "pensando" junto, mas a CLASSE fica
+        // -- e com ela o `margin-left` dos pontos. Tirar as duas coisas.
+        balao.className = balao.className.replace(' pensa', '');
         balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
         return r.arquivo ? r : await Voz.buscar(r.texto);
       })();
@@ -1058,9 +1120,18 @@ async function responder(pergunta) {
       /* A redacao e a que ele pediu. As reticencias nao sao enfeite: elas
          transformam o resto em CITACAO, e assim a frase cai bem com qualquer
          pergunta. Sem elas, "voce ta querendo saber como faco um hello world"
-         erra a pessoa do verbo em metade dos casos. */
+         erra a pessoa do verbo em metade dos casos.
+
+         E a pergunta vai LIMPA. Repetida ao pe da letra, ela produzia:
+
+           "Entao voce ta querendo saber... me fale sobre como fazer a
+            sequencia de fibonacci em python"
+
+         O "me fale sobre" e um PEDIDO, nao o assunto -- e repetido dentro de
+         "voce ta querendo saber" vira frase torta. Tirando o pedido, sobra o
+         assunto: "...como fazer a sequencia de fibonacci em python". */
       const eco = Voz.buscar('Então você tá querendo saber... '
-                             + pergunta.slice(0, 140));
+                             + soAssunto(pergunta).slice(0, 140));
       await Estudio.enrolarAte(trabalho, eco);
       const pronta = await trabalho;
       if (pronta) await Estudio.tocar(pronta);
