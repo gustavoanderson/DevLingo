@@ -10,3 +10,23 @@ binding = "AI"
 # Medido: com prefixo 44/52, sem 31/52 (ver src/index.js). Nao troque sem remedir.
 [vars]
 FORMATO = "gemma"
+
+# GERACAO DESLIGADA, E E TEMPORARIO.
+#
+# O Gustavo notou que o site tinha DUAS vozes: as 31 fichas tocam audio do
+# Piper, gravado antes, e a resposta GERADA saia pela sintese do navegador --
+# "bem robotica", nas palavras dele. Duas vozes para o mesmo personagem e
+# defeito de produto.
+#
+# A correcao definitiva e a fase 2 do plano: o servico de voz
+# (hospedagem/voz_servico.py) hospedado, dando ao texto gerado a MESMA voz das
+# fichas. Ele ja existe e esta provado -- 6,2x mais rapido que tempo real --,
+# mas precisa de uma maquina no ar, e isso depende do Gustavo.
+#
+# Ate la, ele escolheu ter UMA voz agora: sem geracao, toda resposta vem de
+# ficha, e toda ficha tem audio gravado. O preco e o Tr∅nikAt ficar
+# temporariamente menos esperto.
+#
+# PARA RELIGAR: apague esta variavel (ou ponha "sim") no mesmo dia em que o
+# servico de voz entrar no ar, e rode hospedagem/calibrar_borda.py depois.
+GERAR = "nao"

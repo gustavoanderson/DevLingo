@@ -672,73 +672,50 @@ const Fala = (function () {
   };
 })();
 
-/* ------------------------------------------------------------- lip sync
-   A sincronia sai do evento `boundary` da sintese de voz do navegador, que
-   dispara a cada palavra com o indice do caractere. Entre uma palavra e a
-   seguinte, a boca e movida pelas VOGAIS daquela palavra -- vogal abre,
-   consoante fecha. E aproximacao, e nao fonema de verdade; fonema exigiria
-   analisar o audio, e a sintese do navegador nao entrega o audio.
+/* ------------------------------------------------------- a voz, uma so
+   O Gustavo notou que o site tinha DUAS vozes: as 31 fichas tocavam audio do
+   Piper, gravado antes, e a resposta gerada saia pela sintese do navegador --
+   "bem robotica", nas palavras dele. Duas vozes para o mesmo personagem e
+   defeito de produto, nao detalhe.
 
-   Sem voz instalada, o texto ainda aparece: a fala e um extra, nunca o
-   unico caminho da informacao. */
+   E os dois pedidos dele estavam ligados: deixar o Tr∅nikAt mais esperto
+   significa MAIS respostas geradas, e resposta gerada era justamente a que
+   saia robotica. Consertar so a esperteza transformaria a voz errada de
+   excecao em regra.
+
+   Entao a sintese do navegador SAIU daqui. Quem fala e sempre o Piper -- ou
+   pelo audio gravado da ficha, ou por `hospedagem/voz_servico.py`, que da ao
+   texto novo a mesma voz. Provado local: 0,717 s para 4,46 s de audio, 6,2x
+   mais rapido que tempo real, com a boca alinhada por FONEMA.
+
+   E ele devolve `bocas` no mesmo formato do indice das falas, entao o texto
+   gerado toca pelo MESMO tocador das fichas -- boca e legenda inclusas. Nao
+   ha um segundo caminho de audio para divergir do primeiro.
+
+   ENQUANTO `VOZ_URL` ESTIVER VAZIO, a voz do texto gerado simplesmente nao
+   sai, e isso e deliberado: melhor mudo que com a voz de outro personagem.
+   Hoje isso nao aparece, porque a geracao esta desligada no Worker
+   (ver wrangler.toml) justamente para o site ter uma voz so desde ja. */
+const VOZ_URL = '';   // ex.: 'https://voz.exemplo.workers.dev' -- ver hospedagem/ORACLE.md
+
 const Voz = (function () {
-  const temVoz = 'speechSynthesis' in window;
-  let vozPt = null;
-  function escolher() {
-    if (!temVoz) return;
-    const vs = speechSynthesis.getVoices();
-    vozPt = vs.find(v => /pt[-_]BR/i.test(v.lang)) || vs.find(v => /^pt/i.test(v.lang)) || null;
-  }
-  if (temVoz) { escolher(); speechSynthesis.onvoiceschanged = escolher; }
-
-  let timers = [];
-  function limpar() { timers.forEach(clearTimeout); timers = []; }
-
-  return function falar(texto) {
-    if (!temVoz) return;
-    limpar(); speechSynthesis.cancel();
-    // Marcacao e endereco nao se leem em voz alta.
-    const limpo = texto.replace(/[*`_#]/g, '').replace(/https?:\/\/\S+/g, 'o link');
-    const u = new SpeechSynthesisUtterance(limpo);
-    if (vozPt) u.voice = vozPt;
-    u.lang = 'pt-BR'; u.rate = 1.04; u.pitch = 1.22;
-    Legenda.preparar(limpo); Legenda.acompanhar(0);
-
-    // O `boundary` NAO dispara no Chrome do Android -- defeito conhecido, e o
-    // Android e justamente o alvo. Sem isto a voz sairia e a boca ficaria
-    // PARADA. Entao a boca comeca generica no `start`, e so cede a vez se o
-    // `boundary` aparecer (desktop), onde a sincronia por palavra e melhor.
-    let porPalavra = false;
-    u.onstart = () => {
-      // ~14 caracteres por segundo na velocidade usada; serve so para a
-      // legenda avancar, e errar um pouco nao atrapalha a leitura.
-      const t0 = Date.now(), dur = Math.max(1200, limpo.length / 14 * 1000);
-      const tique = setInterval(() => {
-        if (porPalavra) return clearInterval(tique);
-        Legenda.acompanhar(Math.min(1, (Date.now() - t0) / dur));
-        Fala.abrir(.18 + Math.random() * .38);
-      }, 90);
-      timers.push(tique);
-    };
-
-    u.onboundary = ev => {
-      porPalavra = true;
-      Legenda.acompanhar(ev.charIndex / limpo.length);
-      const resto = limpo.slice(ev.charIndex);
-      const palavra = (resto.match(/^\S+/) || [''])[0];
-      limpar();
-      // Cada letra vira um movimento: vogal abre bastante, consoante quase
-      // nada. O passo sai da duracao media de silaba na velocidade usada.
-      const passo = Math.max(42, 300 / Math.max(1, palavra.length));
-      [...palavra].forEach((ch, i) => {
-        const v = /[aeiouáéíóúâêôãõà]/i.test(ch) ? .5 + Math.random() * .22
-                : /[mbpvfsz]/i.test(ch) ? .05 : .2;
-        timers.push(setTimeout(() => Fala.abrir(v), i * passo));
+  return async function falar(texto) {
+    if (!VOZ_URL) return;                 // sem servico, silencio honesto
+    try {
+      const r = await fetch(VOZ_URL.replace(/\/$/, '') + '/falar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto }),
       });
-      timers.push(setTimeout(() => Fala.abrir(0), palavra.length * passo));
-    };
-    u.onend = u.onerror = () => { limpar(); Fala.abrir(0); Legenda.limpar(); };
-    speechSynthesis.speak(u);
+      if (!r.ok) throw new Error('voz respondeu ' + r.status);
+      const f = await r.json();
+      // Mesmo formato do indice das falas: o tocador nao distingue.
+      await Estudio.tocar({ texto, audio: f.audio, duracao: f.duracao, bocas: f.bocas });
+    } catch (e) {
+      // Voz e conveniencia, nao requisito -- a mesma regra que o CLAUDE.md ja
+      // da ao som do app. O texto ja esta na tela quando isto roda.
+      console.warn('voz indisponivel, o texto continua:', e && e.message);
+    }
   };
 })();
 
