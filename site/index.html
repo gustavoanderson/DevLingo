@@ -465,30 +465,57 @@ const Fala = (function () {
   const ESCURO = '#17092E', CIANO = '#00E5FF', VISOR = '#39FF14';
   const ROSA = '#FF7ABF', ROSA_FORTE = '#FF2D95', MOLETOM = '#321E63';
 
+  // A elipse da cabeca numa fonte so. As orelhas LEEM estes numeros para
+  // achar onde a superficie esta; enquanto eles viviam soltos, a base da
+  // orelha era um palpite -- e palpite foi o que deixou a orelha descolada.
+  const CX = 64, CY = 45, RX = 25, RY = 22;
+
   let abertura = 0, alvo = 0, arredonda = 0, alvoArred = 0, preciso = false;
 
   const elipse = (x, y, rx, ry, cor) => {
     g.fillStyle = cor; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 7); g.fill();
   };
 
-  /* Uma orelha. O angulo e o traco mais fragil do personagem: o CLAUDE.md
-     mede 8,1 graus da vertical na arte canonica e registra que desenhar a
-     olho ja saiu a 36 -- "ficou parecendo outro bicho". Por isso o apice sai
-     de seno e cosseno, e nao de um ponto escolhido no olho. */
-  function orelha(baseX, baseY, larg, alt, graus, corFora, corDentro) {
-    const r = graus * Math.PI / 180;
-    const ax = baseX + Math.sin(r) * alt, ay = baseY - Math.cos(r) * alt;
+  /* Uma orelha.
+     A BASE NAO E UMA RETA. Enquanto era, a orelha ficava descolada da cabeca,
+     e o Gustavo apontou com um "como sempre" merecido -- o CLAUDE.md ja
+     registra duas correcoes de orelha neste projeto.
+
+     A causa, medida: a base reta ficava em y=30, mas a cabeca e curva. No
+     meio da base a superficie esta em y=26,8; no canto de fora, em y=33,1.
+     O canto externo flutuava 3,2 px ACIMA da cabeca. Desenhar a orelha antes
+     da cabeca escondia a emenda do meio, e deixava justamente a ponta de fora
+     aparecendo solta.
+
+     Agora os dois cantos sao pontos SOBRE a elipse da cabeca, dados por
+     angulo, e afundados 7% em direcao ao centro. Assim eles acompanham a
+     curva em qualquer tamanho de cabeca, e a cabeca desenhada por cima cobre
+     a base inteira -- a orelha nasce dela em vez de pousar nela.
+
+     O angulo do apice continua saindo de seno e cosseno: o CLAUDE.md mede
+     8,1 graus da vertical na arte canonica e registra que desenhar a olho ja
+     saiu a 36 -- "ficou parecendo outro bicho". */
+  function orelha(ang1, ang2, alt, inclina, corFora, corDentro) {
+    const AFUNDA = .93;
+    const naCabeca = (a) => {
+      const r = a * Math.PI / 180;
+      return [CX + Math.sin(r) * RX * AFUNDA, CY - Math.cos(r) * RY * AFUNDA];
+    };
+    const [x1, y1] = naCabeca(ang1), [x2, y2] = naCabeca(ang2);
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;      // meio da base, na curva
+    const t = inclina * Math.PI / 180;
+    const ax = mx + Math.sin(t) * alt, ay = my - Math.cos(t) * alt;
     g.fillStyle = corFora;
     g.beginPath();
-    g.moveTo(baseX - larg / 2, baseY); g.lineTo(ax, ay); g.lineTo(baseX + larg / 2, baseY);
+    g.moveTo(x1, y1); g.lineTo(ax, ay); g.lineTo(x2, y2);
     g.closePath(); g.fill();
     // Rosa por dentro: esta na arte canonica, e e o que impede a orelha de
-    // ler como um triangulo colado na cabeca.
+    // ler como um triangulo chapado.
     g.fillStyle = corDentro;
     g.beginPath();
-    g.moveTo(baseX - larg / 4.6, baseY - 1);
-    g.lineTo(baseX + (ax - baseX) * .6, ay + alt * .40);
-    g.lineTo(baseX + larg / 4.6, baseY - 1);
+    g.moveTo(x1 + (mx - x1) * .40, y1 + (my - y1) * .40);
+    g.lineTo(mx + (ax - mx) * .62, my + (ay - my) * .62);
+    g.lineTo(x2 + (mx - x2) * .40, y2 + (my - y2) * .40);
     g.closePath(); g.fill();
   }
 
@@ -537,21 +564,29 @@ const Fala = (function () {
     // Uma treme de vez em quando. E o tipo de movimento que o codec tem:
     // pouco, e sem avisar.
     const treme = !parado && (t % 7.3) > 7.05 ? 2.5 : 0;
-    orelha(50, 30, 14, 18, -8.1 - treme, PELO, ROSA);        // esquerda: pelo
-    orelha(78, 30, 15, 19, 9.9 + treme, METAL, METAL_SOMBRA); // direita: metal
+    // O tremor entra na INCLINACAO, e nao na posicao: a orelha gira em torno
+    // da propria base, que continua presa na cabeca. Mexer a base faria ela
+    // descolar de novo, uma vez a cada sete segundos.
+    // Os angulos dizem ONDE na cabeca a orelha nasce. Na primeira versao com
+    // base curva eles eram -36..-13 e 13..38: perto demais do topo central, e
+    // a orelha saiu um espeto fino com ombro de cabeca sobrando dos lados.
+    // Orelha de gato nasce no canto de cima, e a base e quase tao larga
+    // quanto a orelha e alta.
+    orelha(-58, -20, 16, -8.1 - treme, PELO, ROSA);           // esquerda: pelo
+    orelha(20, 60, 17, 9.9 + treme, METAL, METAL_SOMBRA);     // direita: metal
     // A direita NAO e o espelho da esquerda: e um pouco maior e mais
     // inclinada nas duas artes canonicas. Copiado, nao inventado.
 
     // --- cabeca: ~12% mais larga que alta, como a referencia (rx52/ry46) ---
-    elipse(64, 45, 25, 22, PELO);
+    elipse(CX, CY, RX, RY, PELO);
 
     // metade metalica: recorte no meio, e nao uma segunda elipse por cima,
     // senao a emenda vira um degrau visivel depois da ampliacao
     g.save();
     g.beginPath(); g.rect(64, 0, L - 64, A); g.clip();
-    elipse(64, 45, 25, 22, METAL);
+    elipse(CX, CY, RX, RY, METAL);
     g.save();
-    g.beginPath(); g.ellipse(64, 45, 25, 22, 0, 0, 7); g.clip();
+    g.beginPath(); g.ellipse(CX, CY, RX, RY, 0, 0, 7); g.clip();
     // Volume por tons CHAPADOS, nunca gradiente: e a regra que o CLAUDE.md
     // tirou de um gradiente que o flutter_svg simplesmente nao aplicou.
     g.fillStyle = METAL_LUZ;    g.fillRect(64, 27, 9, 40);
