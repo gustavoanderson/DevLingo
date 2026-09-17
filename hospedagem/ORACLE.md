@@ -416,6 +416,32 @@ E para ver o serviço trabalhando: `curl -s http://SEU_IP:8080/saude` mostra qua
 
 ---
 
+# Quando o `voz.py` mudar, mande ele de novo
+
+A máquina do Oracle tem uma **cópia** do `estudio/voz.py`. Mexer nele aqui não
+muda nada lá — e a falha é silenciosa: as fichas gravadas saem com a voz nova,
+as respostas geradas continuam com a velha, e ninguém avisa. É a mesma armadilha
+que o `CLAUDE.md` registra para os assets do `pubspec` e para os arquivos gerados.
+
+Na sua máquina, num Git Bash:
+
+```bash
+cd /d/repositorio/DevLingo
+scp -i /d/dev/chave.key estudio/voz.py ubuntu@SEU_IP:~/voz/
+```
+
+E no SSH da máquina, para o serviço reler o arquivo:
+
+```bash
+sudo systemctl restart voz
+curl -s -X POST http://127.0.0.1:8080/falar -H 'Content-Type: application/json'   -d '{"texto":"Testando a voz nova."}' | head -c 120; echo
+```
+
+> O **cache guarda o áudio antigo** por texto. Reiniciar o serviço esvazia o
+> cache junto, que é por que o `restart` não é opcional.
+
+---
+
 # Quando algo der errado
 
 | Sintoma | Causa provável |

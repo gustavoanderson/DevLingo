@@ -54,6 +54,41 @@ def main() -> int:
     conferir(fala.duracao < 1.2 * voz.falar("Mamãe, o Trônicat fala do Dév Língo. Amanhã tem mais!").duracao,
              "a grafia pronunciavel nao muda o tamanho da fala", f"TOM {TOM}")
 
+    # AS PONTAS NAO PODEM TER SILENCIO, e este teste existe porque o defeito
+    # era INAUDIVEL do lado de fora. O Piper deixa uma cauda em cada sintese:
+    # medido em 17/09/2026, 37 ms no inicio e 236 ms no FIM. Entre duas falas
+    # emendadas dava ~273 ms de nada, e numa sequencia de sete, quase 1,7 s.
+    #
+    # O Gustavo ouvia isso e reclamava de "muito espaco". Eu media do lado do
+    # TOCADOR, onde o vao aparecia como 310 ms no total -- numero bom. O
+    # silencio estava DENTRO da onda, e por isso nenhuma medicao de fluxo o
+    # pegava. Se alguem tirar a aparagem, e exatamente isso que volta: sem erro,
+    # sem teste vermelho, so a conversa arrastada de novo.
+    import numpy as np
+    with wave.open(io.BytesIO(fala.wav)) as w:
+        a = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16)
+    limite = max(300, int(np.abs(a).max() * 0.02))
+    forte = np.flatnonzero(np.abs(a) > limite)
+    ini, fim_s = forte[0] / taxa * 1000, (len(a) - forte[-1]) / taxa * 1000
+    # 60 ms de teto para os 40 ms de margem que a aparagem deixa de proposito:
+    # corte rente tira o ataque da primeira silaba e a queda da ultima.
+    conferir(ini <= 60 and fim_s <= 60, "as pontas nao guardam silencio",
+             f"inicio {ini:.0f} ms, fim {fim_s:.0f} ms")
+
+    # O HUM NAO PODE SER SOLETRADO. O espeak le palavra sem vogal letra por
+    # letra: "Hmmmm" virava 18 fonemas -- "a-ga e-me e-me e-me e-mi". Um hum de
+    # pensar tem POUCOS trechos de boca; soletrado, tem muitos.
+    # Mede o hum SOZINHO. A primeira versao deste teste usou "Hmmm, entao..." e
+    # contou 12 trechos -- mas os de "entao" estavam na conta, entao o numero
+    # nao media o hum. Mesma familia do erro ja registrado no CLAUDE.md, quando
+    # medi altura para detectar um FittedBox que encolhe por transformacao.
+    #
+    # Controle medido: com o mapeamento sao 5 trechos; sem ele, 20. O teto de 8
+    # fica no meio, com folga dos dois lados.
+    hum = voz.falar("Hmmm")
+    conferir(len(hum.bocas) <= 8, "o hum de pensar nao e soletrado",
+             f"{len(hum.bocas)} trechos de boca")
+
     print(f"\n{'VOZ APROVADA' if not falhas else f'VOZ REPROVADA: {len(falhas)} falha(s)'}")
     return 1 if falhas else 0
 

@@ -72,7 +72,21 @@ LENTIDAO = 1.35
 PRONUNCIA = {
     "Tr∅nikAt": "Trônicat",
     "DevLingo": "Dév Língo",
-    "Hmmmm": "Ãããã", "Hmmm": "Ããã", "Hmm": "Ãã",
+    # O HUM DE PENSAR, e ele passou por DUAS correcoes medidas.
+    #
+    # "Ããã" saia PICOTADO: o espeak lia tres vogais separadas, com acento
+    # proprio -- ^ˌɐ̃ɐ̃ˈɐ̃$ -- e o resultado era "ã-ã-Ã", nao um hum continuo.
+    #
+    # A primeira correcao foi "Ahmmm", que o Gustavo sugeriu. Ela conserta o
+    # picote -- vira ^ˈam$, um som so -- mas sai CURTA: 0,38 s. E aqui esta o
+    # achado que so a medicao deu: o Piper COLAPSA letra repetida, entao
+    # "ahmmmmm" e "ahm" duram exatamente o mesmo. Nao da para alongar um hum
+    # escrevendo mais emes, que era a ideia dele e a minha.
+    #
+    # O que alonga e a VIRGULA. "Ah, hum" vira ^ˈa, ˈũm$ -- o "ah" aberto que
+    # ele pediu, e depois o hum nasal -- e mede 0,61 s, quase o dobro. Duas
+    # batidas de hesitacao em vez de uma silaba fechada.
+    "Hmmmm": "Ah, hum", "Hmmm": "Ah, hum", "Hmm": "Ahm",
 }
 
 # Quanto a boca abre em cada fonema (IPA do espeak-ng), de 0 a 1, e se os labios
@@ -155,13 +169,53 @@ class Voz:
         n = int(len(audio) / TOM)
         audio = np.interp(np.arange(n) * TOM, np.arange(len(audio)), audio).astype(np.int16)
 
+        # APARA O SILENCIO DAS PONTAS, e isto nao e detalhe de arquivo.
+        #
+        # O Piper deixa uma cauda em cada sintese. Medido em 17/09/2026 nos 14
+        # arquivos gravados: 37 ms no inicio e 236 ms no FIM, em media. Entre
+        # duas falas emendadas isso da ~273 ms de silencio REAL -- e numa
+        # sequencia de sete, quase 1,7 s de nada.
+        #
+        # E o pior: esse silencio NAO aparece medindo do lado do tocador, que e
+        # onde eu estava medindo. A conta dava 310 ms de vao total enquanto o
+        # Gustavo ouvia "muito espaco". O silencio estava dentro da onda.
+        #
+        # Sobram 40 ms de cada lado, de proposito: corte rente tira o ataque da
+        # primeira silaba e a queda da ultima, e a fala fica com som de cortada.
+        MARGEM = int(0.040 * taxa)
+        limite = max(300, int(np.abs(audio).max() * 0.02))
+        forte = np.flatnonzero(np.abs(audio) > limite)
+        recorte = 0
+        if len(forte):
+            ini = max(0, forte[0] - MARGEM)
+            fim = min(len(audio), forte[-1] + MARGEM)
+            audio = audio[ini:fim]
+            recorte = ini / taxa
+        # A boca vive no mesmo eixo do audio: cortando o comeco, todo tempo
+        # anda junto. Sem isto ela ficaria atrasada pelo tanto que se aparou.
+        # Duas correcoes, e as duas sao do mesmo eixo: cortar o COMECO anda com
+        # todo mundo para tras; cortar o FIM encurta o eixo, e o que passar do
+        # novo fim precisa ser aparado tambem. Sem a segunda, a boca continua se
+        # mexendo depois de a voz acabar -- pego pelo testar_voz.py, que exige
+        # "a boca termina junto com a voz".
+        fim_novo = len(audio) / taxa
+        ajustadas = []
+        for t0, t1, ab, rd in bocas:
+            t0, t1 = max(0.0, t0 - recorte), max(0.0, t1 - recorte)
+            if t0 >= fim_novo:
+                continue
+            ajustadas.append((round(t0, 3), round(min(t1, fim_novo), 3), ab, rd))
+        bocas = ajustadas
+
         buf = io.BytesIO()
         with wave.open(buf, "wb") as w:
             w.setnchannels(1)
             w.setsampwidth(2)
             w.setframerate(taxa)
             w.writeframes(audio.tobytes())
-        return Fala(buf.getvalue(), n / taxa, bocas, time.time() - inicio)
+        # A duracao vem do audio JA aparado, senao o site reservaria tempo para
+        # um silencio que nao existe mais.
+        return Fala(buf.getvalue(), len(audio) / taxa, bocas, time.time() - inicio)
 
 
 def main() -> int:
