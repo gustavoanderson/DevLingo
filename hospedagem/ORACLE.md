@@ -17,6 +17,32 @@ navegador  --HTTPS-->  Worker da Cloudflare  --HTTP-->  máquina do Oracle
 
 O preço é uma porta aberta na máquina, defendida por uma chave secreta que só o Worker manda.
 
+> ⚠️ **A PORTA É 8080, E NÃO PODE SER QUALQUER UMA.**
+>
+> Cloudflare Workers só conseguem buscar em portas de uma lista fechada. Para
+> HTTP são **80, 8080, 8880, 2052, 2082, 2086, 2095** (e as de HTTPS são outras).
+>
+> Isto custou uma rodada em 17/09/2026: o serviço subiu na 8770, ficou
+> respondendo perfeitamente de fora — `curl` direto devolvia `200` —, e mesmo
+> assim o Worker só dava `voz indisponivel`. O `fetch` dele é recusado **antes
+> de sair**, então o sintoma não aparece em lugar nenhum do lado da máquina.
+>
+> Se um dia precisar mudar a porta, escolha dentro daquela lista.
+
+> ⚠️ **E O ENDERECO PRECISA SER UM NOME, NUNCA UM IP.**
+>
+> Workers tambem nao buscam em IP puro. O `fetch` para `http://136.248.107.142:8080`
+> e interceptado pela propria Cloudflare e volta como **`error code: 1003`**
+> (*Direct IP access not allowed*) -- de novo sem deixar rastro do lado da maquina.
+>
+> A saida sem comprar dominio e **sslip.io**: um DNS curinga gratuito e sem
+> cadastro em que o proprio nome carrega o IP. O endereco vira
+> `http://136.248.107.142.sslip.io:8080`.
+>
+> As duas armadilhas juntas custaram tres rodadas em 17/09/2026, e nenhuma
+> aparecia em log nenhum ate o Worker passar a registrar o erro do `fetch`
+> (`console.error` no `catch` de `/falar`, visivel em `npx wrangler tail`).
+
 | | |
 |---|---|
 | Custo | **zero** |
@@ -60,16 +86,64 @@ Clique em **Edit** na caixa *Image and shape*.
 
 **Change image** → aba **Canonical Ubuntu** → marque **Ubuntu 24.04** → *Select image*.
 
-**Change shape** → aba **Ampere** → marque **VM.Standard.A1.Flex** → ajuste:
+**Change shape** → abre a tela *Browse all shapes*.
 
-- **OCPUs: 2**
-- **Memory: 12 GB**
+Nela, procure a fileira **Shape series**, logo abaixo de *Virtual machine*. São
+quatro **cartões** lado a lado:
+
+```
+[ AMD ]   [ Intel ]   [ Ampere ]   [ Specialty and previous generation ]
+                         ^^^^                        ^^^^
+                   "Arm-based processor"      costuma vir SELECIONADO
+```
+
+> ⚠️ **O Ampere é um cartão, e não uma aba — e ele não vem selecionado.**
+>
+> A Oracle costuma abrir essa tela com *Specialty and previous generation*
+> marcado, e aí a lista de baixo mostra só AMD (`VM.Standard.E2.1.Micro`,
+> `E3.Flex`, `VM.Standard2.x`). O Ampere está ali do lado o tempo todo; **a
+> lista só troca depois que você clica no cartão.**
+
+**Clique no cartão `Ampere`.** A lista de baixo se refaz e aparecem dois shapes:
+**VM.Standard.A1.Flex** (com o selo *Always Free-eligible*) e o `A2.Flex`.
+
+Marque o **A1.Flex**. A linha vai mostrar algo como `1 (80 max)` e `6 (512 max)`.
+
+> ⚠️ **Isso NAO e uma opcao fixa.** E o valor atual, com o maximo do shape entre
+> parenteses. Para mudar, clique na **setinha `▸` a esquerda do nome do shape**:
+> a linha expande e revela os campos de OCPU e memoria.
+
+Ajuste para **2 OCPUs** e **12 GB**.
+
+**Mas 1 OCPU e 6 GB bastam**, e as vezes sao a escolha melhor. A sintese do
+Piper usa um nucleo por vez -- medido, 0,717 s para 4,46 s de audio. Os 2/12
+sao folga porque e de graca; **pedir menos tem mais chance de ser provisionado**,
+ja que a escassez do ARM gratuito e de capacidade. Se der *Out of capacity* com
+2/12, baixe para 1/6 sem hesitar: nao muda nada para este servico.
 
 > ⚠️ **Confira que aparece o selo "Always Free eligible"** antes de continuar.
 >
 > O padrão da Oracle é um formato Intel/AMD que **não** é gratuito, e ele vem pré-selecionado. Se você não trocar para Ampere, a conta vem no fim do mês.
 
-### Rede e chave
+### Advanced options: nao mexa
+
+Ainda na etapa 1 aparece uma secao **Advanced options**, com *Instance metadata
+service* e *Initialization script*. **Tudo ali e opcional e pode ficar como
+esta:**
+
+- **Require an authorization header** (ligado) e o IMDSv2, a versao mais segura
+  do servico de metadados. O Ubuntu 24.04 suporta. Deixe ligado
+- **Initialization script** deixe VAZIO. A instalacao e a mao por SSH, nas
+  partes 4 a 7 -- assim cada passo se ve dar certo, em vez de um cloud-init
+  falhar calado no primeiro boot
+
+Recolha a secao e siga.
+
+### Rede e chave -- numa etapa SEGUINTE
+
+> A tela de criacao e um assistente por etapas: repare no **"1 Basic
+> information"** na lateral esquerda. Rede e chave SSH **nao estao na etapa 1**.
+> Role ate o fim e clique em **Next**.
 
 - **Networking**: deixe criar a VCN nova que ele oferece.
 - **Assign a public IPv4 address**: precisa estar **ligado**.
@@ -81,17 +155,52 @@ Clique em **Create**. Em 1 a 2 minutos o estado vira **RUNNING**.
 
 **Anote o `Public IP address`** que aparece na página. Ele vai ser usado duas vezes.
 
-### Se aparecer "Out of capacity"
+### Se aparecer "Out of capacity" — aconteceu, em 17/09/2026
 
-É o erro mais comum do ARM gratuito, e não é culpa sua: a Oracle fica sem máquinas Ampere nas regiões populares.
+```
+Out of capacity for shape VM.Standard.A1.Flex in availability domain AD-1
+```
+
+É o erro mais comum do ARM gratuito, e não é culpa de ninguém: a Oracle vende a
+capacidade Ampere e sobra pouco para o Always Free.
+
+**A primeira sugestão da mensagem não serve no Brasil.** Ela manda tentar outro
+*availability domain*, e São Paulo tem **um só**. Não há AD-2.
 
 O que tentar, em ordem:
 
-1. Trocar o **Availability Domain** (AD-1, AD-2, AD-3), se a região tiver mais de um
-2. Pedir **1 OCPU e 6 GB** em vez de 2 e 12 — a voz roda num núcleo só
-3. Tentar de novo em outro horário. Madrugada costuma liberar
+1. Pedir **1 OCPU e 6 GB** em vez de 2 e 12 — a voz roda num núcleo só
+2. Tentar de novo mais tarde; a capacidade libera em horários imprevisíveis
 
-Se não liberar de jeito nenhum, me avisa: existe um formato AMD gratuito com 1 GB de memória, e a gente mede se o Piper cabe lá antes de você perder tempo.
+Em 17/09 **as duas falharam**, e a saída foi o AMD abaixo.
+
+### O plano B: o AMD de 1 GB, e ele é melhor do que parece
+
+**`VM.Standard.E2.1.Micro`** — 1 OCPU, 1 GB, também Always Free, e quase sempre
+com capacidade. Duas vantagens que só apareceram quando o ARM faltou:
+
+- **É x86**, a mesma arquitetura onde o Piper já foi medido. O desempenho em
+  ARM Ampere era o **único número não medido** deste plano; no AMD a incógnita
+  simplesmente não existe
+- Always Free permite **duas** dessas instâncias
+
+E a dúvida que restava — se cabe em 1 GB — **foi medida, não estimada**. O
+serviço rodando no desktop, com a voz carregada e 6 falas sintetizadas:
+
+| | |
+|---|---|
+| Memória em uso | **328 MB** |
+| Pico | **333 MB** |
+
+Com o Ubuntu 24.04 de servidor consumindo 150 a 250 MB, sobram uns 400 MB de
+folga. **Não é marginal, cabe.** O cache pode somar até ~64 MB com o tempo (256
+falas em base64); se algum dia apertar, é só baixar `CACHE_MAX` no
+`voz_servico.py`.
+
+**Para usar o AMD:** em *Change shape*, cartão **Specialty and previous
+generation** → `VM.Standard.E2.1.Micro` (com o selo *Always Free-eligible*).
+O resto do roteiro segue **igual**, exceto o `cloudflared` da parte 8, que já
+não é usado.
 
 ---
 
@@ -171,7 +280,7 @@ User=ubuntu
 WorkingDirectory=/home/ubuntu/voz
 Environment=ESTUDIO_VOZ=/home/ubuntu/voz/pt_BR-faber-medium.onnx
 Environment=PYTHONPATH=/home/ubuntu/voz
-Environment=VOZ_PORTA=8770
+Environment=VOZ_PORTA=8080
 Environment=VOZ_CHAVE=COLE_A_CHAVE_AQUI
 ExecStart=/home/ubuntu/voz/.venv/bin/python /home/ubuntu/voz/voz_servico.py
 Restart=always
@@ -183,7 +292,7 @@ FIM
 
 sudo systemctl daemon-reload
 sudo systemctl enable --now voz
-sleep 25 && curl -s localhost:8770/saude
+sleep 25 && curl -s localhost:8080/saude
 ```
 
 Tem que sair algo assim:
@@ -203,7 +312,7 @@ Se não sair nada: `sudo journalctl -u voz -n 40 --no-pager`.
 **Este é o único número do plano que nunca foi medido.** Tudo o que sabemos veio do seu desktop x86.
 
 ```bash
-curl -s -X POST localhost:8770/falar \
+curl -s -X POST localhost:8080/falar \
   -H 'Content-Type: application/json' -H "X-Voz-Chave: $(grep VOZ_CHAVE /etc/systemd/system/voz.service | cut -d= -f3)" \
   -d '{"texto":"Tr∅nikAt na escuta. Câmbio."}' \
   | python3 -c "import json,sys; r=json.load(sys.stdin); print('audio', r['duracao'],'s | sintese', r['sintese_s'],'s | razao', round(r['duracao']/r['sintese_s'],1),'x tempo real')"
@@ -232,7 +341,7 @@ No console: **Instances** → clique em `voz-tronikat` → em *Primary VNIC*, cl
 | Source Type | CIDR |
 | Source CIDR | `0.0.0.0/0` |
 | IP Protocol | TCP |
-| Destination Port Range | `8770` |
+| Destination Port Range | `8080` |
 
 Salve.
 
@@ -247,7 +356,7 @@ sudo iptables -L INPUT --line-numbers | head -12
 Procure a linha com `REJECT` e **anote o número dela**. Depois, trocando `N` por esse número:
 
 ```bash
-sudo iptables -I INPUT N -p tcp --dport 8770 -j ACCEPT
+sudo iptables -I INPUT N -p tcp --dport 8080 -j ACCEPT
 sudo netfilter-persistent save
 ```
 
@@ -256,7 +365,7 @@ sudo netfilter-persistent save
 Se a máquina usar `ufw` em vez de iptables (`sudo ufw status` responde `active`):
 
 ```bash
-sudo ufw allow 8770/tcp
+sudo ufw allow 8080/tcp
 ```
 
 ### 9c. Conferir de fora
@@ -264,7 +373,7 @@ sudo ufw allow 8770/tcp
 **Na sua máquina**, não na do Oracle:
 
 ```bash
-curl -s -m 8 http://SEU_IP:8770/saude
+curl -s -m 8 http://SEU_IP:8080/saude
 ```
 
 Se responder o JSON, os dois firewalls estão certos. Se der tempo esgotado, falta um dos dois.
@@ -277,7 +386,7 @@ Na sua máquina, no repositório:
 
 ```bash
 cd hospedagem/cloudflare
-npx wrangler secret put VOZ_ORIGEM      # cole:  http://SEU_IP:8770
+npx wrangler secret put VOZ_ORIGEM      # cole:  http://SEU_IP:8080
 npx wrangler secret put VOZ_CHAVE       # cole:  a chave do passo 6
 ```
 
@@ -303,7 +412,7 @@ Depois, no site:
 - A resposta tem de sair **na voz do Tr∅nikAt**, não na do navegador
 - A boca tem de acompanhar as sílabas, e não abrir e fechar em ritmo genérico
 
-E para ver o serviço trabalhando: `curl -s http://SEU_IP:8770/saude` mostra quantas falas foram sintetizadas e quantas vieram do cache.
+E para ver o serviço trabalhando: `curl -s http://SEU_IP:8080/saude` mostra quantas falas foram sintetizadas e quantas vieram do cache.
 
 ---
 

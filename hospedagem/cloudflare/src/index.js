@@ -116,6 +116,13 @@ export default {
         });
         return json(request, r.status, await r.json());
       } catch (e) {
+        // O LOG NAO E OPCIONAL AQUI. Sem ele, este ramo devolve "voz
+        // indisponivel" para causas completamente diferentes -- maquina
+        // desligada, porta fora da lista permitida pela Cloudflare, chave
+        // errada -- e nao ha como distinguir de fora. Custou uma rodada de
+        // depuracao em 17/09/2026 justamente por estar mudo.
+        // Aparece em `npx wrangler tail`, e nao na resposta ao visitante.
+        console.error("falar falhou:", e && (e.message || String(e)));
         // Maquina desligada, reiniciando ou sem rede: o site fica mudo e
         // segue inteiro. Mesma degradacao que a geracao ja tinha.
         return json(request, 503, { erro: "voz indisponivel" });
