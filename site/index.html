@@ -876,14 +876,36 @@ const Estudio = (function () {
         seguidas soam como quem ainda esta pensando; a mesma duas vezes soa como
         disco riscado */
   const ESPERA_PARA_ENROLAR = 600;
-  let ultimaEnrolacao = null;   // para nao repetir de uma pergunta para a outra
+  let escolhidas = null;        // sorteadas e pre-carregadas ANTES do envio
 
-  /* Toca UMA enrolacao sorteada. Devolve false quando o audio nao esta
-     tocando de verdade -- ver a trava la embaixo. */
-  async function umaEnrolacao(indice, sobrando) {
-    if (!indice || !sobrando.length) return false;
-    const [id] = sobrando.splice(Math.floor(Math.random() * sobrando.length), 1);
-    ultimaEnrolacao = id;
+  /* ESCOLHE E PRE-CARREGA antes de o visitante apertar FALAR.
+
+     Sem isto, a primeira fala so comeca depois de baixar uns 90 KB -- e o
+     buraco aparece justamente onde a enrolacao precisa soar imediata. O
+     Gustavo resumiu: "a enrolacao tem que convencer", e tres falas com vao
+     entre elas nao convencem.
+
+     Escolher CEDO e o que torna o pre-carregamento possivel: da para buscar
+     exatamente as duas que vao tocar, em vez das dez. */
+  async function prepararEnrolacao() {
+    if (escolhidas) return;
+    let indice;
+    try { indice = await indiceDasFalas(); } catch { return; }
+    const sorteia = (p) => {
+      const ids = Object.keys(indice).filter(k => k.startsWith(p));
+      return ids.length ? ids[Math.floor(Math.random() * ids.length)] : null;
+    };
+    const abrir = sorteia('_abrir'), pensar = sorteia('_pensar');
+    if (!abrir || !pensar) return;
+    escolhidas = { abrir, pensar };
+    // Basta PEDIR: o navegador guarda, e o `new Audio` de depois acha pronto.
+    for (const id of [abrir, pensar]) fetch('falas/' + indice[id].audio).catch(() => {});
+  }
+
+  /* Toca uma fala do indice. Devolve false quando o audio nao esta tocando de
+     verdade -- ver a trava la embaixo. */
+  async function tocarDoIndice(indice, id) {
+    if (!indice || !id || !indice[id]) return false;
     const f = indice[id];
     const comecou = performance.now();
     await tocar({ texto: f.texto, duracao: f.duracao, bocas: f.bocas,
@@ -906,41 +928,39 @@ const Estudio = (function () {
     await new Promise(r => setTimeout(r, ESPERA_PARA_ENROLAR));
     if (pronto) return;
     let indice = null;
-    try { indice = await indiceDasFalas(); } catch { /* segue sem enrolar */ }
-    let sobrando = indice
-      ? Object.keys(indice).filter(k => k.startsWith('_enrolar')) : [];
-    /* NAO repetir a ultima da pergunta anterior. O sorteio ja evita repeticao
-       DENTRO de uma espera; isto evita entre uma pergunta e a seguinte, que e
-       onde a repeticao mais chama atencao. */
-    if (sobrando.length > 1 && sobrando.includes(ultimaEnrolacao)) {
-      sobrando = sobrando.filter(k => k !== ultimaEnrolacao);
-    }
+    try { indice = await indiceDasFalas(); } catch { return; }
+    await prepararEnrolacao();
+    const plano = escolhidas;
+    escolhidas = null;            // a proxima pergunta sorteia de novo
+    if (!plano) return;
 
-    /* A SEQUENCIA, e ela tem no maximo TRES peças.
+    /* A SEQUENCIA, e ela tem TRES PAPEIS, na ordem que o Gustavo desenhou:
 
-       A primeira versao tocava enrolacao ate a resposta chegar, e com 11 s de
-       espera isso dava CINCO seguidas. O Gustavo ouviu e resumiu: "o Tr∅nikAt
-       repete varias frases seguidas". Ouvindo metade do baralho toda vez, o
-       sorteio deixa de parecer sorteio.
+         1. ABERTURA  "Bom, vamos la."            reconhece que ouviu
+         2. ECO       a pergunta dele de volta    ganha tempo, e cresce com ela
+         3. PENSANDO  "Hmmm, entao..."            ainda trabalhando
 
-       Hoje: uma enrolacao (instantanea, cobre a sintese do eco), o ECO da
-       pergunta, e no maximo mais uma. Depois disso, silencio -- que e melhor
-       que tagarelice. */
-    if (!await umaEnrolacao(indice, sobrando)) return;
+       A primeira versao sorteava as duas pontas do MESMO saco, e o que ele
+       ouviu foi "deixa eu processar a informacao" ... eco ... "deixa eu
+       processar". Duas vezes a mesma ideia. Papel separado resolve na origem,
+       em vez de tentar evitar repeticao por sorteio.
+
+       Depois das tres, silencio: tagarelar mais nao convence, cansa. */
+    if (!await tocarDoIndice(indice, plano.abrir)) return;
     if (pronto) return;
 
     const falaDoEco = await eco;
     if (falaDoEco && !pronto) await tocar(falaDoEco);
     if (pronto) return;
 
-    await umaEnrolacao(indice, sobrando);
+    await tocarDoIndice(indice, plano.pensar);
   }
 
   return {
     get vivo() { return !!modo; },
     falhou() { if (modo === 'nuvem') modo = null; sondar(); },
     comClaude(sim) { temClaude = sim; marcar(); },
-    sondar, perguntar, tocar, enrolarAte,
+    sondar, perguntar, tocar, enrolarAte, prepararEnrolacao,
   };
 })();
 
@@ -1035,7 +1055,11 @@ async function responder(pergunta) {
          O corte em 140 caracteres nao e so ritmo: o site passa a FALAR, na voz
          do mascote, um texto que o visitante escreveu. Eco curto limita o que
          da para pendurar ali. */
-      const eco = Voz.buscar('Deixa eu ver se entendi. Você perguntou: '
+      /* A redacao e a que ele pediu. As reticencias nao sao enfeite: elas
+         transformam o resto em CITACAO, e assim a frase cai bem com qualquer
+         pergunta. Sem elas, "voce ta querendo saber como faco um hello world"
+         erra a pessoa do verbo em metade dos casos. */
+      const eco = Voz.buscar('Então você tá querendo saber... '
                              + pergunta.slice(0, 140));
       await Estudio.enrolarAte(trabalho, eco);
       const pronta = await trabalho;
@@ -1067,6 +1091,12 @@ async function responder(pergunta) {
     ocupado = false; env.disabled = false; txt.focus();
   }
 }
+
+/* O pre-carregamento comeca quando ele toca no campo, nao na abertura da
+   pagina: as falas somam quase 1 MB, e baixar isso no carregamento desfaria o
+   trabalho de fazer o site abrir em 2,5 s. Aqui sao duas, e sobra tempo de
+   sobra entre clicar e terminar de digitar. */
+txt.addEventListener('focus', () => { Estudio.prepararEnrolacao(); }, { once: true });
 
 form.addEventListener('submit', e => {
   e.preventDefault();

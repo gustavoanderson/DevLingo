@@ -46,40 +46,57 @@ RECUSA = "_recusa"          # id da frase fixa; o sublinhado nunca colide com fi
 # AS FALAS DE ENROLAR, e por que elas existem.
 #
 # Medido em 17/09/2026, do envio ate a voz comecar: ~7,4 s o Worker pensando
-# (modelo + juiz) e mais ~4 s o Piper sintetizando no Oracle. Onze segundos, e
-# a maior parte deles em SILENCIO -- o texto aparece no meio do caminho, a voz
-# so no fim.
+# (modelo + juiz) e mais ~4 s o Piper sintetizando. Onze segundos, e a maior
+# parte deles em SILENCIO.
 #
 # Ideia do Gustavo: enrolar. Como estas ficam GRAVADAS, elas tocam em zero
-# segundo -- nao passam pelo Piper na hora, nem pelo Oracle, nem por nada. Sao
-# a unica coisa no site que responde instantaneamente.
+# segundo -- nao passam pelo Piper na hora, nem pelo Oracle. Sao a unica coisa
+# do site que responde instantaneamente.
 #
-# A regra de escrita, e ela e o ponto: NENHUMA pode prometer nada. "Ah, essa eu
-# sei!" soa otimo ate ser seguido de "nao sei". Todas servem antes de qualquer
-# resposta, inclusive antes de uma recusa.
+# ELAS TEM PAPEL, E NAO SAO UM MONTE SO. A primeira versao sorteava de uma
+# lista unica, e o resultado que ele ouviu foi:
 #
-# Duram de 2 a 4 s. Quando a espera passa disso, o site toca outra -- e duas
-# seguidas soam como alguem que ainda esta pensando, nao como repeticao.
-ENROLAR = [
-    "Hmmmm... deixa eu processar isso aqui.",
-    "Boa pergunta. So um instante que o visor ta calculando.",
-    "Certo, certo... ja te respondo.",
-    "Perai que eu puxo isso da memoria.",
-    "Hmmm. Essa merece uma olhada com calma.",
-    "Deixa eu organizar as ideias aqui...",
-    "To processando. Segura ai um segundinho.",
-    "Interessante. Rodando aqui no meu circuito...",
-    "Anotado. Deixa eu montar a resposta direito.",
-    "Hmmmm, perai. To cruzando os dados.",
+#   "perai, deixa eu processar a informacao"
+#   "voce perguntou o que e tal coisa?"
+#   "deixa eu processar"
+#
+# Duas vezes "processar", porque as duas pontas sorteavam do mesmo saco. Hoje
+# a sequencia tem tres papeis distintos, na ordem que ele desenhou:
+#
+#   1. ABERTURA  -- "bom, vamos la"          (reconhece que ouviu)
+#   2. ECO       -- a pergunta dele de volta (ganha tempo, e cresce com ela)
+#   3. PENSANDO  -- "hmmm, entao..."         (ainda trabalhando)
+#
+# A regra que vale para as duas listas: NENHUMA pode prometer nada. "Ah, essa
+# eu sei!" soa otimo ate ser seguido de "nao sei". Todas tem de servir antes de
+# qualquer resposta, inclusive antes de uma recusa.
+#
+# A abertura e curta de proposito: ela so precisa durar ate o eco ficar pronto.
+ABERTURA = [
+    "Bom, vamos la.",
+    "Ta, deixa eu ver se entendi.",
+    "Certo. Deixa eu ver aqui.",
+    "Opa. Deixa eu olhar isso.",
+    "Ah, boa. Vamos la.",
+]
+
+PENSANDO = [
+    "Hmmm, entao...",
+    "Hmmm. Deixa eu processar isso.",
+    "Ta. Deixa eu montar a resposta.",
+    "Certo. Ja te falo.",
+    "Hmmm. Perai que eu organizo isso.",
 ]
 
 
 def textos() -> dict[str, str]:
     t = {f.id: f.resposta for f in ler_fichas()}
     t[RECUSA] = FRASE_FIXA
-    # O prefixo `_enrolar` e o que o site procura para sortear uma delas.
-    for i, frase in enumerate(ENROLAR, 1):
-        t[f"_enrolar-{i:02d}"] = frase
+    # Os prefixos sao o que o site usa para sortear DENTRO do papel certo.
+    for i, frase in enumerate(ABERTURA, 1):
+        t[f"_abrir-{i:02d}"] = frase
+    for i, frase in enumerate(PENSANDO, 1):
+        t[f"_pensar-{i:02d}"] = frase
     return t
 
 

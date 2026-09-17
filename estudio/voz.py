@@ -54,7 +54,9 @@ TOM = 1.45
 # 1,0 e a velocidade de sempre. O Gustavo pediu "levemente mais lento" em
 # 17/09/2026, para a fala ficar mais facil de acompanhar e de quebra ocupar
 # mais da espera. Mexer neste numero regrava TODAS as falas.
-LENTIDAO = 1.12
+# 1,12 ainda soou rapido para ele. 1,35 e o segundo passo -- este numero e a
+# unica coisa a mexer se precisar de mais ou de menos.
+LENTIDAO = 1.35
 
 # O sintetizador le o que estiver escrito. "Tr∅nikAt" tem um simbolo no meio
 # que seria lido como simbolo ou pulado. Grafado so para a VOZ; a tela continua
