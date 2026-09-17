@@ -983,12 +983,35 @@ const fala = document.getElementById('fala'), form = document.getElementById('fo
 let claudePronto = null, ocupado = false;
 
 /* Tira o PEDIDO e deixa o ASSUNTO.
-   "me fale sobre como fazer fibonacci" -> "como fazer fibonacci"
+   "consegue me explicar o que e um aninhamento?" -> "o que e um aninhamento?"
 
-   So corta no COMECO, e so o que e pedido de fala. "como", "o que", "por que"
-   e "para que" ficam: eles sao a pergunta, nao a embalagem. E se sobrar pouco
-   -- alguem que escreveu so "me explica" --, devolve o original, porque um eco
-   vazio soa pior que um eco desajeitado. */
+   A PRIMEIRA VERSAO ERA UMA LISTA DE PREFIXOS, e ela falhou como toda lista:
+   tinha "pode me explicar" e nao tinha "consegue me explicar", entao o eco
+   saiu "voce quer saber consegue me explicar o que e um aninhamento". E o
+   mesmo erro que eu ja tinha cometido hoje tentando enumerar programacao --
+   enumerar jeitos de pedir nao escala, porque nao ha lista completa.
+
+   A regra que escala nao pergunta "isto e um pedido conhecido?", e sim ONDE A
+   PERGUNTA COMECA. Em portugues ela quase sempre abre com uma interrogativa:
+   "o que", "como", "por que", "qual", "quando"...
+
+   Entao: acha a primeira interrogativa e corta o que vier antes -- MAS so se o
+   que vier antes for mesmo pedido. Essa condicao e o que impede o estrago em
+   "python tem o que de diferente?", onde "python tem" e assunto, nao embalagem.
+
+   Sem interrogativa nenhuma ("me conta sobre heranca"), cai na lista de
+   prefixos, que continua util como segunda linha. */
+
+// Ordem importa: as de duas palavras vem antes, senao "que" casaria primeiro
+// dentro de "para que".
+const INTERROGATIVAS =
+  /\b(por que|por quê|para que|pra que|o que|oque|quantos|quantas|quanto|quanta|quais|qual|quando|onde|quem|como|que)\b/i;
+
+// O que caracteriza PEDIDO: um verbo de pedir, ou uma abertura de cortesia.
+const MARCAS_DE_PEDIDO =
+  /\b(consegue|consegues|pode|podes|poderia|quer|queria|quero|gostaria|preciso|sabe|saber|explicar|explica|explique|dizer|diga|diz|falar|fale|fala|contar|conte|conta|ensinar|ensina|mostrar|mostra|ajudar|ajuda|duvida|dúvida|curiosidade)\b/i;
+
+// Segunda linha, para quando nao ha interrogativa nenhuma.
 const PEDIDOS = [
   'me fale sobre', 'me fala sobre', 'me fale de', 'me fala de',
   'me explique sobre', 'me explica sobre', 'me explique', 'me explica',
@@ -1002,18 +1025,27 @@ const PEDIDOS = [
 
 function soAssunto(pergunta) {
   let t = pergunta.trim();
-  // Repete porque as formas se encaixam: "me diga, você sabe o que é X".
-  for (let volta = 0; volta < 3; volta++) {
-    const antes = t;
-    const baixo = t.toLowerCase();
-    for (const p of PEDIDOS) {
-      if (baixo.startsWith(p)) {
-        t = t.slice(p.length).replace(/^[\s,:;.-]+/, '');
-        break;
+
+  /* Percorre TODAS as interrogativas, e nao so a primeira.
+     "tem como voce explicar por que usar docker?" tem duas: o "como" de "tem
+     como", que faz parte do PEDIDO, e o "por que", que e a pergunta de
+     verdade. Parando na primeira, nada era cortado. */
+  const todas = [...t.matchAll(new RegExp(INTERROGATIVAS.source, 'gi'))];
+  const corte = todas.find(m => m.index > 0 && MARCAS_DE_PEDIDO.test(t.slice(0, m.index)));
+  if (corte) {
+    t = t.slice(corte.index).replace(/^[\s,:;.-]+/, '');
+  } else {
+    // Repete porque as formas se encaixam: "me diga, me explica o que e X".
+    for (let volta = 0; volta < 3; volta++) {
+      const antes = t;
+      const baixo = t.toLowerCase();
+      for (const p of PEDIDOS) {
+        if (baixo.startsWith(p)) { t = t.slice(p.length).replace(/^[\s,:;.-]+/, ''); break; }
       }
+      if (t === antes) break;
     }
-    if (t === antes) break;
   }
+
   // O piso era 8 e cortava demais: "me conta sobre heranca" virava "heranca",
   // com 7 letras, e voltava ao original. Uma palavra so e eco perfeitamente bom
   // ("array", "heranca"); o que este guarda existe para pegar e o caso em que
@@ -1095,13 +1127,20 @@ async function responder(pergunta) {
          para que a enrolacao cubra as DUAS esperas. Cobrir so a primeira
          deixaria um silencio novo bem no meio, entre o texto aparecer e a voz
          comecar, que e onde mora a sintese do Piper. */
+      /* O TEXTO SO APARECE QUANDO A VOZ COMECA, e nao quando a resposta chega.
+         Antes ele aparecia pronto no chat enquanto o Tr∅nikAt ainda dizia
+         "hmmm, deixa eu ver" -- e ai a enrolacao denuncia a si mesma: da para
+         LER a resposta que ele finge estar montando. O Gustavo: "parece que ele
+         ta lerdeando pra falar (que e o motivo mesmo, ne?)".
+
+         Guardar o texto ate a fala comecar custa nada e devolve a imersao: o
+         balao continua dizendo "pensando" enquanto ele pensa, que e a verdade. */
       const trabalho = (async () => {
         const r = await Estudio.perguntar(pergunta);
-        // `textContent` derruba os <i> do "pensando" junto, mas a CLASSE fica
-        // -- e com ela o `margin-left` dos pontos. Tirar as duas coisas.
-        balao.className = balao.className.replace(' pensa', '');
-        balao.textContent = r.texto; fala.scrollTop = fala.scrollHeight;
-        return r.arquivo ? r : await Voz.buscar(r.texto);
+        if (r.arquivo) return r;
+        // Sem voz disponivel, o objeto vai so com o texto -- e o chat revela
+        // assim mesmo. Voz e conveniencia; texto e requisito.
+        return (await Voz.buscar(r.texto)) || { texto: r.texto };
       })();
       /* O ECO DA PERGUNTA, ideia do Gustavo, e ele ganha mais tempo que
          qualquer frase pronta -- porque CRESCE com a pergunta. E soa como
@@ -1134,7 +1173,12 @@ async function responder(pergunta) {
                              + soAssunto(pergunta).slice(0, 140));
       await Estudio.enrolarAte(trabalho, eco);
       const pronta = await trabalho;
-      if (pronta) await Estudio.tocar(pronta);
+      // A REVELACAO. `textContent` derruba os <i> do "pensando" junto, mas a
+      // CLASSE fica -- e com ela o `margin-left` dos pontos. Tirar as duas.
+      balao.className = balao.className.replace(' pensa', '');
+      balao.textContent = pronta.texto;
+      fala.scrollTop = fala.scrollHeight;
+      if (pronta.audio || pronta.arquivo) await Estudio.tocar(pronta);
       estado.textContent = 'Tr∅nikAt · online';
       ocupado = false; env.disabled = false; txt.focus();
       return;
