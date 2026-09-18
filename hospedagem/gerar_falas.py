@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -72,12 +73,27 @@ RECUSA = "_recusa"          # id da frase fixa; o sublinhado nunca colide com fi
 # qualquer resposta, inclusive antes de uma recusa.
 #
 # A abertura e curta de proposito: ela so precisa durar ate o eco ficar pronto.
+# TODA FRASE ABRE DE UM JEITO DIFERENTE, e isso e medido, nao estilo.
+#
+# O Gustavo ouviu "ah, hum, ta" e logo depois "ah, hmm, entendi", e disse: "ta
+# muito fake isso, nao pode repetir tanto assim". A medicao deu razao a ele com
+# folga -- nas 13 frases antigas, "Certo" abria 3, "Hmmm" abria 3, "Ta" e "Ah"
+# abriam 2 cada, e "Deixa eu" aparecia em 5. Simulando o sorteio, **78% das
+# conversas** repetiam uma abertura.
+#
+# Eu tinha PIORADO isso no mesmo dia: ao mapear "Hmmm" para "Ah, hum", as tres
+# frases que comecavam com "Hmmm" passaram a abrir identicas e mais longas, o
+# que tornou a colisao obvia em vez de discreta.
+#
+# A regra agora e uma so, e o `conferir_aberturas` abaixo a faz valer: nenhuma
+# frase abre com a mesma palavra de outra. Com 13 aberturas distintas, repetir
+# deixa de ser improvavel e passa a ser impossivel.
 ABERTURA = [
     "Bom, vamos la.",
-    "Ta, deixa eu ver se entendi.",
-    "Certo. Deixa eu ver aqui.",
-    "Opa. Deixa eu olhar isso.",
-    "Ah, boa. Vamos la.",
+    "Opa. Vou olhar isso.",
+    "Beleza. Ja comeco a pensar.",
+    "Legal, gostei da pergunta.",
+    "Saquei. Vamos nessa.",
 ]
 
 # A MOLDURA DO ECO, gravada -- e a razao e medida, nao estetica.
@@ -100,11 +116,17 @@ ECO = [
 ]
 
 PENSANDO = [
-    "Hmmm, entao...",
-    "Hmmm. Deixa eu processar isso.",
-    "Ta. Deixa eu montar a resposta.",
-    "Certo. Ja te falo.",
-    "Hmmm. Perai que eu organizo isso.",
+    # O HUM VIVE AQUI, e em MAIS NENHUM lugar. Ele era o tique mais audivel
+    # justamente por estar em tres das cinco: bastava o sorteio tirar duas
+    # delas -- 30% das vezes -- para a mesma hesitacao sair duas vezes seguidas.
+    # Numa frase so, repetir na mesma conversa e impossivel.
+    "Hmmm, quase la.",
+    "Ta. Ja te falo.",
+    "Perai que eu organizo isso.",
+    "Olha, ja ja sai.",
+    # O unico "Deixa eu" do catalogo. Ele aparecia em 5 das 13 frases, e tique
+    # de vocabulario cansa tanto quanto abertura repetida.
+    "Deixa eu montar a resposta.",
 ]
 
 
@@ -181,7 +203,38 @@ def gerar() -> None:
     INDICE.write_text(json.dumps(indice, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
 
 
+def conferir_aberturas() -> list[str]:
+    """Nenhuma frase de enrolacao pode abrir com a mesma palavra de outra.
+
+    Este portao existe porque o defeito era INAUDIVEL uma frase por vez: cada
+    uma soa bem sozinha, e o "fake" so aparece quando duas caem na mesma
+    conversa. Escrevendo mais uma frase daqui a um mes, ninguem vai lembrar de
+    conferir as outras doze -- entao quem confere e o gerador, antes de gravar.
+
+    Vale tambem para o "Deixa eu": tique de vocabulario cansa tanto quanto
+    abertura repetida, e ele ja chegou a estar em 5 das 13 frases.
+    """
+    frases = ABERTURA + ECO + PENSANDO
+    erros, vistas = [], {}
+    for f in frases:
+        # A abertura e o que vem antes da primeira virgula ou ponto.
+        chave = re.split(r"[,.]", f)[0].strip().lower()
+        if chave in vistas:
+            erros.append(f'abrem igual ("{chave}"): "{vistas[chave]}" e "{f}"')
+        vistas[chave] = f
+    tique = [f for f in frases if "deixa eu" in f.lower()]
+    if len(tique) > 1:
+        erros.append(f'"Deixa eu" em {len(tique)} frases, e so pode haver uma: {tique}')
+    return erros
+
+
 def main() -> int:
+    colisoes = conferir_aberturas()
+    if colisoes:
+        for c in colisoes:
+            print(f"  [ERRO] {c}")
+        print(f"ENROLACAO REPROVADA: {len(colisoes)} colisao(oes). Nada foi gravado.")
+        return 1
     if "--conferir" in sys.argv:
         erros = conferir()
         for e in erros:

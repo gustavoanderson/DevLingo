@@ -916,14 +916,24 @@ const Estudio = (function () {
       }
       return fora;
     };
-    /* QUATRO pecas, e nao duas. Com duas, a fila acabava antes da resposta e o
-       resto da espera ficava mudo -- que foi a queixa. Intercaladas
-       abertura/pensando para nao sair "hmmm" atras de "hmmm". */
-    /* TODAS as gravadas entram na fila, intercaladas. Com quatro ela acabava
-       antes da resposta e o resto da espera ficava mudo -- medido, 2,9 s de
-       silencio no fim. As quatro primeiras sao pre-carregadas; as outras o
-       navegador busca durante a conversa, e ate la ja houve tempo de sobra. */
-    const abrir = sorteia('_abrir', 9), pensar = sorteia('_pensar', 9);
+    /* TRES gravadas, e a historia deste numero e a coisa mais util aqui.
+       Ele ja foi 2, depois 4, depois TODAS as dez -- cada mudanca corrigindo a
+       queixa anterior e criando a seguinte:
+
+         2   -> sobrava silencio no fim (2,9 s medidos)
+         10  -> cobria a espera inteira, e o Gustavo ouviu enrolacao demais:
+                "ta muito fake isso, nao pode repetir tanto assim"
+
+       O erro comum aos dois foi tratar como problema de QUANTIDADE o que era
+       de VARIEDADE. Com "Certo" abrindo 3 frases e "Hmmm" abrindo outras 3,
+       tocar mais falas nao dava mais variedade -- dava mais repeticao. Hoje as
+       13 aberturas sao distintas e o gerador se recusa a gravar duas iguais,
+       entao tres falas ja soam como tres coisas diferentes.
+
+       Escolha dele: menos fala, aceitando um vao curto no fim. Um silencio
+       antes da resposta le como alguem terminando de pensar; enrolacao que nao
+       acaba le como maquina ganhando tempo. */
+    const abrir = sorteia('_abrir', 2), pensar = sorteia('_pensar', 1);
     const molduras = sorteia('_eco', 1);
     if (!abrir.length || !pensar.length) return;
     escolhidas = [];
@@ -935,9 +945,9 @@ const Estudio = (function () {
     // assunto quando ele fica pronto.
     moldura = molduras[0] || null;
     // Basta PEDIR: o navegador guarda, e o `new Audio` de depois acha pronto.
-    // So as quatro primeiras, mais a moldura: o conjunto inteiro passa de
-    // 900 KB, e baixar isso de uma vez desfaria o trabalho de abrir em 2,5 s.
-    for (const id of escolhidas.slice(0, 4).concat(moldura ? [moldura] : [])) {
+    // Sao tres falas mais a moldura, entao cabe pre-carregar tudo -- o que
+    // antes eram 900 KB de dez arquivos agora sao quatro.
+    for (const id of escolhidas.concat(moldura ? [moldura] : [])) {
       fetch('falas/' + indice[id].audio).catch(() => {});
     }
   }
