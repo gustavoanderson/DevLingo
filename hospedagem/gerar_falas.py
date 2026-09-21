@@ -89,9 +89,9 @@ RECUSA = "_recusa"          # id da frase fixa; o sublinhado nunca colide com fi
 # frase abre com a mesma palavra de outra. Com 13 aberturas distintas, repetir
 # deixa de ser improvavel e passa a ser impossivel.
 ABERTURA = [
-    "Bom, vamos la.",
+    "Bom, vamos lá.",
     "Opa. Vou olhar isso.",
-    "Beleza. Ja comeco a pensar.",
+    "Beleza. Já começo a pensar.",
     "Legal, gostei da pergunta.",
     "Saquei. Vamos nessa.",
 ]
@@ -110,9 +110,9 @@ ABERTURA = [
 # A moldura e texto FIXO, entao pode ser gravada e custa zero. So o assunto --
 # tres a seis palavras, depois da limpeza -- precisa de CPU.
 ECO = [
-    "Entao voce ta querendo saber...",
-    "Ah, entendi. Voce quer saber sobre...",
-    "Certo. Voce ta perguntando sobre...",
+    "Então você tá querendo saber...",
+    "Ah, entendi. Você quer saber sobre...",
+    "Certo. Você tá perguntando sobre...",
 ]
 
 PENSANDO = [
@@ -120,10 +120,10 @@ PENSANDO = [
     # justamente por estar em tres das cinco: bastava o sorteio tirar duas
     # delas -- 30% das vezes -- para a mesma hesitacao sair duas vezes seguidas.
     # Numa frase so, repetir na mesma conversa e impossivel.
-    "Hmmm, quase la.",
-    "Ta. Ja te falo.",
-    "Perai que eu organizo isso.",
-    "Olha, ja ja sai.",
+    "Hmmm, quase lá.",
+    "Tá. Já te falo.",
+    "Pera aí que eu organizo isso.",
+    "Olha, já já sai.",
     # O unico "Deixa eu" do catalogo. Ele aparecia em 5 das 13 frases, e tique
     # de vocabulario cansa tanto quanto abertura repetida.
     "Deixa eu montar a resposta.",
@@ -203,6 +203,53 @@ def gerar() -> None:
     INDICE.write_text(json.dumps(indice, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
 
 
+# PALAVRAS QUE SO EXISTEM COM ACENTO, e o portao que as exige.
+#
+# Em 21/09/2026 o Gustavo ouviu o Tr∅nikAt dizer "comeco" com som de K, e
+# "voce" com a tonica na silaba errada. As 13 frases de enrolacao estavam em
+# ASCII puro -- eu apliquei a texto FALADO a convencao que o repositorio tem
+# para CODIGO.
+#
+# O estrago, medido com os fonemas do espeak:
+#
+#   comeco   -> kˌomˈɛkʊ   |  começo -> kˌomˈesʊ
+#   voce     -> vˈɔsɪ      |  você   -> vosˈe     (a tonica MUDA de lugar)
+#   nao      -> nˈaʊ       |  não    -> nˈɐ̃ʊ̃      (perde a nasalizacao)
+#   la       -> la         |  lá     -> lˈa       (fica SEM tonica)
+#   Entao    -> ẽntˈaʊ     |  Então  -> ẽntˈɐ̃ʊ̃
+#
+# Nada disso quebra: o audio e gerado, o teste passa, o site toca. So quem
+# ouve percebe -- e foi assim que passou por duas sessoes inteiras.
+#
+# A lista e curta de proposito: so palavras comuns em fala espontanea cuja
+# versao sem acento EXISTE e soa diferente. Nao e um corretor ortografico.
+SEM_ACENTO = {
+    "nao": "não", "voce": "você", "ja": "já", "ta": "tá", "la": "lá",
+    "entao": "então", "comeco": "começo", "tambem": "também", "esta": "está",
+    "sera": "será", "aqui": None, "porque": None, "vamos": None,
+    "ai": "aí", "so": "só", "ate": "até", "voces": "vocês", "e": None,
+}
+
+
+def conferir_acentos() -> list[str]:
+    """Recusa gravar frase falada com palavra que perdeu o acento.
+
+    Roda sobre TODAS as falas, nao so as de enrolacao: ficha nova escrita as
+    pressas cai no mesmo buraco, e ficha vira audio gravado.
+    """
+    erros = []
+    for chave, frase in textos().items():
+        # O hifen NAO separa: "reabri-la" e uma palavra so, e o pronome
+        # enclitico -la nao leva acento. Sem isto a regra reprovava conteudo
+        # correto -- e falso positivo ensina a contornar o portao em vez de
+        # confiar nele.
+        for cru in re.findall(r"[A-Za-zÀ-ÿ]+(?:-[A-Za-zÀ-ÿ]+)*", frase):
+            certo = SEM_ACENTO.get(cru.lower())
+            if certo:
+                erros.append(f'{chave}: "{cru}" deveria ser "{certo}" -- {frase}')
+    return erros
+
+
 def conferir_aberturas() -> list[str]:
     """Nenhuma frase de enrolacao pode abrir com a mesma palavra de outra.
 
@@ -229,11 +276,11 @@ def conferir_aberturas() -> list[str]:
 
 
 def main() -> int:
-    colisoes = conferir_aberturas()
+    colisoes = conferir_aberturas() + conferir_acentos()
     if colisoes:
         for c in colisoes:
             print(f"  [ERRO] {c}")
-        print(f"ENROLACAO REPROVADA: {len(colisoes)} colisao(oes). Nada foi gravado.")
+        print(f"FALAS REPROVADAS: {len(colisoes)} problema(s). Nada foi gravado.")
         return 1
     if "--conferir" in sys.argv:
         erros = conferir()
