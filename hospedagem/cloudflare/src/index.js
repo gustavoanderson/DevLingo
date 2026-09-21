@@ -12,6 +12,39 @@ const MODELO = "@cf/google/embeddinggemma-300m";
 // -- e por isso compete na mesma busca, com a mesma nota -- mas o que acontece
 // quando ela vence e outra coisa inteira.
 const FICHA_PROGRAMACAO = "programacao";
+
+/* QUANDO O JUIZ REPROVA, A CULPA PODE SER DA FICHA -- e ate hoje ninguem
+ * perguntava de quem era.
+ *
+ * O CLAUDE.md descreve a falha de desenho em uma frase: "o juiz confere se a
+ * resposta e fiel a ficha, e ninguem confere se a ficha responde a pergunta".
+ * Foi assim que um "Hello World" virou a ficha de licenca recitada.
+ *
+ * Mas o sinal existe e estava sendo jogado fora. Quando o juiz diz "ausente",
+ * ele esta dizendo exatamente "esta resposta nao sai desta ficha". Falta
+ * separar as duas causas possiveis, e a NOTA da busca separa:
+ *
+ *   medido em 21/09/2026, com o Worker no ar
+ *   ---------------------------------------------------------------
+ *   DevLingo na ficha certa .......... 0,988  0,956  0,941  0,994
+ *   o mais baixo legitimo ............ 0,759  ("e de graca?" -> preco)
+ *   ---------------------------------------------------------------
+ *   programacao na ficha ERRADA ...... 0,736  ("api rest" -> como-roda)
+ *                                      0,704  ("ponteiro" -> proximos-passos)
+ *
+ * Acima do limiar, a ficha responde e quem errou foi o modelo: recitar a ficha
+ * gravada e o certo. Foi o que aconteceu com "quais linguagens tem?", que tirou
+ * 0,994 e mesmo assim foi reprovada.
+ *
+ * Abaixo, a ficha nao tem nada a ver com a pergunta, e recitar e o pior dos
+ * mundos -- o visitante pergunta sobre ponteiro e ouve falar dos proximos
+ * passos do app. Ali vale uma SEGUNDA CHANCE pela faixa de programacao.
+ *
+ * A FOLGA E DE 23 MILESIMOS (0,736 contra 0,759), e e o numero a vigiar: e o
+ * mesmo tipo de margem estreita que o CLAUDE.md ja manda vigiar no piso. Ao
+ * mexer nas fichas, remeca esta linha.
+ */
+const CONFIANCA_FICHA = 0.75;
 // A OUTRA placa de desvio, e ela aponta para a saida. Perguntas de fora --
 // dolar, clima, futebol, receita -- passavam raspando pelo piso e caiam na
 // ficha mais parecida por ASSUNTO: "qual a cotacao do dolar hoje?" sem acento
@@ -280,8 +313,26 @@ export default {
           if (motivos.length === 0) {
             resposta.texto = gerado;
             resposta.caminho = "gerada";
+          } else if (!ehProgramacao && melhor[1] < CONFIANCA_FICHA) {
+            // A FICHA E QUE NAO SERVIA. Segunda chance pela faixa de
+            // programacao, que nao depende de ficha nenhuma. Custa uma chamada
+            // a mais, e so acontece aqui -- reprovacao com nota baixa e rara.
+            const segundo = await gerarProgramacao(env, pergunta.trim());
+            const r2 = conferirProgramacao(segundo);
+            resposta.motivos = motivos;
+            resposta.gerado = gerado;
+            if (r2.motivos.length === 0) {
+              resposta.texto = segundo;
+              resposta.caminho = "dev-apos-ficha-fraca";
+            } else {
+              // As duas portas fecharam: recita a ficha, que ao menos e
+              // verdadeira sobre o DevLingo.
+              resposta.caminho = "ficha-literal";
+              resposta.motivos = motivos.concat(r2.motivos.map(m => "2a: " + m));
+            }
           } else {
-            // Reprovada: cai para a ficha literal, que tem audio gravado.
+            // Reprovada com nota ALTA: a ficha responde a pergunta e quem
+            // errou foi o modelo. Recitar a ficha gravada e o certo.
             resposta.caminho = "ficha-literal";
             resposta.motivos = motivos;
             // O que o modelo escreveu, MESMO descartado: sem isto, depurar uma
