@@ -35,7 +35,29 @@ import numpy as np
 from piper import PiperVoice, SynthesisConfig
 
 MODELO = Path(os.environ.get("ESTUDIO_VOZ", r"D:\dev\piper-vozes\pt_BR-faber-medium.onnx"))
-TOM = 1.45
+# TOM = 1.0 DESDE 21/09/2026, e isto foi uma troca consciente.
+#
+# O truque original: sintetizar `TOM` vezes mais devagar e depois reamostrar
+# para encolher de volta. A velocidade se cancelava e o tom subia -- voz aguda
+# em ritmo normal. Custava, porem, GERAR 45% mais amostras do que sairiam.
+#
+# Medido (mesma frase, mesmo ritmo de fala final):
+#
+#   length_scale 1,9575 (TOM 1,45)  ->  1,15 s de sintese para 8,74 s de audio
+#   length_scale 1,35   (sem TOM)   ->  0,73 s de sintese para 8,90 s de audio
+#
+# 37% da CPU ia para amostras descartadas. Numa maquina normal seria luxo
+# aceitavel; a do Oracle e `VM.Standard.E2.1.Micro`, que a documentacao do
+# Always Free descreve como **um oitavo de OCPU** com rajada -- e foi a rajada
+# acabando que produziu os 503 e a latencia crescente que eu media sem
+# entender.
+#
+# O Gustavo decidiu: "eu quero ganhar tempo, nao importa o tom de voz".
+# A fala continua com a mesma LENTIDAO que ele pediu tres vezes; o que se perde
+# e o agudo, e a voz fica no timbre natural do faber.
+#
+# Para trazer o agudo de volta, basta subir este numero -- e pagar os 37%.
+TOM = 1.0
 
 # QUANTO MAIS DEVAGAR ELE FALA, sem mexer no timbre.
 #
@@ -165,9 +187,14 @@ class Voz:
 
         # O efeito de desenho: reamostrar para durar 1/TOM e tocar na taxa
         # original sobe o tom TOM vezes. Detalhes em prova_de_vozes.py.
+        #
+        # Com TOM = 1,0 a conta e a identidade, e o `np.interp` percorreria o
+        # audio inteiro para nao mudar nada. Numa maquina de um oitavo de OCPU
+        # isso nao e detalhe: o passo e pulado.
         audio = np.concatenate([p.audio_int16_array for p in pedacos])
-        n = int(len(audio) / TOM)
-        audio = np.interp(np.arange(n) * TOM, np.arange(len(audio)), audio).astype(np.int16)
+        if TOM != 1.0:
+            n = int(len(audio) / TOM)
+            audio = np.interp(np.arange(n) * TOM, np.arange(len(audio)), audio).astype(np.int16)
 
         # APARA O SILENCIO DAS PONTAS, e isto nao e detalhe de arquivo.
         #

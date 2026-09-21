@@ -1087,6 +1087,25 @@ const PEDIDOS = [
   'uma dúvida:', 'uma duvida:', 'explica pra mim', 'explique para mim',
 ];
 
+/* Parte a resposta em FRASES.
+   Frase e a unidade certa: o corte cai onde ja havia pausa, entao a emenda
+   entre dois pedacos soa como pontuacao, e nao como corte. Partir por numero
+   de caracteres cortaria no meio de uma palavra ou de uma ideia.
+
+   Pedacos muito curtos nao compensam: cada um custa uma ida ao servico
+   (~0,4 s fixos, medido), entao frase de duas palavras gastaria mais em
+   viagem do que em voz. Por isso frases curtas sao coladas na seguinte. */
+function dividirFala(texto) {
+  const frases = texto.split(/(?<=[.!?])\s+/).filter(f => f.trim());
+  if (frases.length <= 1) return [texto];
+  const fora = [];
+  for (const f of frases) {
+    if (fora.length && fora[fora.length - 1].length < 40) fora[fora.length - 1] += ' ' + f;
+    else fora.push(f);
+  }
+  return fora;
+}
+
 function soAssunto(pergunta) {
   let t = pergunta.trim();
 
@@ -1214,11 +1233,34 @@ async function responder(pergunta) {
          dura, e nunca da para ficar a frente. O resultado foi um vao de 1,6 s
          no meio da resposta -- trocar espera no comeco por gagueira no meio e
          piorar. */
+      /* A RESPOSTA E FALADA EM PARTES, e `trabalho` resolve quando a PRIMEIRA
+         esta pronta -- nao quando a resposta inteira esta. Esse e o instante em
+         que ele pode comecar a falar, e portanto o instante em que a enrolacao
+         deve parar.
+
+         ISTO JA FOI DESFEITO UMA VEZ, e vale saber por que voltou. Em 17/09 eu
+         tinha partido a fala e desfeito no mesmo dia: a sintese media ~1,0x o
+         tempo real, entao um pedaco nunca ficava pronto antes de o anterior
+         acabar, e abria um vao de 1,6 s no meio da resposta.
+
+         O que mudou nao foi a ideia, foi a maquina. Naquele dia o eco era
+         sintetizado INTEIRO em paralelo, e as duas sinteses disputavam o unico
+         nucleo. Hoje a moldura do eco e gravada, e a medicao de 21/09 da 0,74x
+         -- cada pedaco fica pronto com folga enquanto o anterior toca.
+
+         Medido, resposta media de 166 caracteres:
+           inteira de uma vez .............. 9,02 s ate a primeira palavra
+           partida em frases ............... 3,50 s
+
+         Os pedacos saem UM DE CADA VEZ, nunca em paralelo: a maquina tem um
+         oitavo de OCPU, e duas sinteses juntas demoram o dobro cada. */
       const trabalho = (async () => {
         const r = await Estudio.perguntar(pergunta);
-        if (r.arquivo) return { texto: r.texto, fala: r };
+        if (r.arquivo) return { texto: r.texto, fala: r, pedacos: null };
+        const pedacos = dividirFala(r.texto);
         // Sem voz disponivel o texto aparece assim mesmo: voz e conveniencia.
-        return { texto: r.texto, fala: await Voz.buscar(r.texto) };
+        return { texto: r.texto, fala: await Voz.buscar(pedacos[0]),
+                 pedacos: pedacos.slice(1) };
       })();
       /* O ECO DA PERGUNTA, ideia do Gustavo, e ele ganha mais tempo que
          qualquer frase pronta -- porque CRESCE com a pergunta. E soa como
@@ -1259,7 +1301,16 @@ async function responder(pergunta) {
       balao.className = balao.className.replace(' pensa', '');
       balao.textContent = pronta.texto;
       fala.scrollTop = fala.scrollHeight;
-      if (pronta.fala) await Estudio.tocar(pronta.fala);
+      /* Pede o PROXIMO pedaco e so entao toca o atual. Assim a sintese do
+         seguinte acontece DURANTE a fala do anterior, e a emenda fica sem vao.
+         Pedir depois de tocar desperdicaria exatamente o tempo da fala. */
+      let atual = pronta.fala;
+      const fila = (pronta.pedacos || []).slice();
+      while (atual) {
+        const proxima = fila.length ? Voz.buscar(fila.shift()) : null;
+        await Estudio.tocar(atual);
+        atual = proxima ? await proxima : null;
+      }
       estado.textContent = 'Tr∅nikAt · online';
       ocupado = false; env.disabled = false; txt.focus();
       return;
