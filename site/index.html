@@ -744,6 +744,21 @@ const Voz = (function () {
     if (f) await Estudio.tocar(f);
   };
   falar.buscar = buscar;
+  /* ADIANTA O CUSTO DA PRIMEIRA SINTESE.
+     Medido em 21/09/2026: com a maquina parada ha dias, a primeira fala custou
+     7,0 s contra 1,6 s quente. A enrolacao cobre ~6,7 s -- entao, fria, sobra
+     silencio justamente para quem abre o site pela primeira vez, que num
+     portfolio e quase todo mundo.
+     Nao retorna nada e nunca lanca: se falhar, o visitante so nao ganha o
+     adiantamento. */
+  falar.aquecer = () => {
+    if (!VOZ_URL) return;
+    fetch(VOZ_URL.replace(/\/$/, '') + '/aquecer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    }).catch(() => {});
+  };
   return falar;
 })();
 
@@ -1277,7 +1292,14 @@ async function responder(pergunta) {
    pagina: as falas somam quase 1 MB, e baixar isso no carregamento desfaria o
    trabalho de fazer o site abrir em 2,5 s. Aqui sao duas, e sobra tempo de
    sobra entre clicar e terminar de digitar. */
-txt.addEventListener('focus', () => { Estudio.prepararEnrolacao(); }, { once: true });
+txt.addEventListener('focus', () => {
+  Estudio.prepararEnrolacao();
+  /* E o MESMO instante serve para aquecer a voz. Entre tocar no campo e
+     terminar de escrever a pergunta passam varios segundos; gasta-los
+     adiantando a primeira sintese e de graca, e e o mesmo principio da tela de
+     titulo do app: a espera nao diminui, ela deixa de ser espera. */
+  Voz.aquecer();
+}, { once: true });
 
 form.addEventListener('submit', e => {
   e.preventDefault();

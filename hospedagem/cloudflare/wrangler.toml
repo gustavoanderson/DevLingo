@@ -10,3 +10,18 @@ binding = "AI"
 # Medido: com prefixo 44/52, sem 31/52 (ver src/index.js). Nao troque sem remedir.
 [vars]
 FORMATO = "gemma"
+
+# AQUECE A VOZ DE 15 EM 15 MINUTOS.
+#
+# Confirmado na documentacao oficial antes de escrever: Cron Triggers existem
+# no plano gratuito, com teto de 5 por conta (250 no pago). Esta e a primeira.
+#
+# O intervalo sai da medicao de 21/09/2026: 15 minutos e o maior tempo de
+# ociosidade em que eu PROVEI que a voz nao esfria (0,72-0,76x o tempo real em
+# cinco chamadas). Numero maior seria chute; para subi-lo, meca antes.
+#
+# Sao ~96 chamadas por dia, de uma frase de tres letras. Quem carrega o peso de
+# verdade e o aquecimento na visita, no site -- este aqui e seguro, e de quebra
+# da sinal de vida para a Oracle, que recicla instancia Always Free ociosa.
+[triggers]
+crons = ["*/15 * * * *"]

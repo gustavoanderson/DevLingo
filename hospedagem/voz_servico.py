@@ -94,6 +94,10 @@ LIMITE = 700
 # entonação diferente, o que lê como se fosse outra gravação.
 CACHE_MAX = 256
 
+# Curta de proposito: o que aquece e RODAR a rede, e ela roda inteira em
+# qualquer tamanho de texto. Frase longa custaria CPU sem aquecer mais nada.
+TEXTO_AQUECIMENTO = "Oi."
+
 # Um balde por endereço. Sintetizar é a operação cara deste serviço, e ele fica
 # numa máquina gratuita: sem isto, um laço de `curl` de alguém derruba a voz do
 # site inteiro. Não protege contra muitos endereços, e não pretende -- protege
@@ -143,6 +147,34 @@ class Estudio:
         self.trava = Lock()
         self.sintetizadas = 0
         self.do_cache = 0
+        self.aquecimentos = 0
+
+    def aquecer(self) -> dict:
+        """Toca o modelo de proposito, PASSANDO AO LARGO DO CACHE.
+
+        Medido em 21/09/2026: depois de ~3 dias parado, a primeira sintese
+        custou 7,0 s contra 1,6 s quente -- 5,4 s a mais. O processo nao tinha
+        reiniciado (o contador `sintetizadas` estava zerado mas intacto), e a
+        ociosidade de 15 minutos NAO esfria: a razao ficou em 0,72-0,76x o
+        tempo real nas cinco medicoes. Entao o custo e de ociosidade longa, de
+        horas ou dias -- que e o perfil de um site de portfolio, onde a visita
+        e rara e quem a faz paga sempre o pior caso.
+
+        E O CACHE E A ARMADILHA. A ideia obvia -- mandar sintetizar uma frase
+        curta e fixa -- falharia exatamente quando fosse necessaria: o cache
+        guarda POR TEXTO, entao da segunda visita em diante ele devolveria o
+        audio guardado sem tocar no modelo. Por isso este metodo chama a voz
+        direto e nao grava nada.
+
+        Nao entra em `sintetizadas` de proposito: aquele numero responde
+        "quantas falas o site pediu", e misturar aquecimento ali faria o
+        /saude mentir sobre o uso real.
+        """
+        i = time.time()
+        self.voz.falar(TEXTO_AQUECIMENTO)
+        with self.trava:
+            self.aquecimentos += 1
+        return {"ok": True, "sintese_s": round(time.time() - i, 3)}
 
     def falar(self, texto: str) -> dict:
         with self.trava:
@@ -205,6 +237,7 @@ def criar_manipulador(estudio: Estudio, limitador: Limitador):
                 "ok": True, "voz": estudio.modelo, "com_chave": bool(CHAVE),
                 "carga_s": round(estudio.carga_s, 2),
                 "sintetizadas": estudio.sintetizadas, "do_cache": estudio.do_cache,
+                "aquecimentos": estudio.aquecimentos,
                 "em_cache": len(estudio.cache),
             })
 
@@ -216,7 +249,7 @@ def criar_manipulador(estudio: Estudio, limitador: Limitador):
             return self.client_address[0] in LOCAIS
 
         def do_POST(self) -> None:
-            if self.path != "/falar":
+            if self.path not in ("/falar", "/aquecer"):
                 return self._json(404, {"erro": "caminho desconhecido"})
             if not self._autorizado():
                 return self._json(401, {"erro": "sem chave"})
@@ -228,6 +261,14 @@ def criar_manipulador(estudio: Estudio, limitador: Limitador):
                     or self.client_address[0])
             if not limitador.permite(quem):
                 return self._json(429, {"erro": "muitas falas seguidas; espere um pouco"})
+            if self.path == "/aquecer":
+                # Passa pela chave e pelo limitador como o /falar: aquecer custa
+                # CPU, e a maquina tem um nucleo so.
+                try:
+                    return self._json(200, estudio.aquecer())
+                except Exception as e:
+                    print(f"falha ao aquecer: {e}", flush=True)
+                    return self._json(503, {"erro": "voz indisponivel"})
             try:
                 n = int(self.headers.get("Content-Length", "0"))
                 if n > 8192:

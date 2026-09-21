@@ -81,6 +81,29 @@ const json = (request, codigo, corpo) =>
   new Response(JSON.stringify(corpo), { status: codigo, headers: cabecalhos(request) });
 
 export default {
+  /* O AGENDADOR, e ele e SEGURO, nao a defesa principal.
+   *
+   * Quem resolve a partida a frio e o site, que manda aquecer quando o
+   * visitante toca no campo -- ali o custo so existe quando alguem vai mesmo
+   * perguntar. Este gatilho cobre o que aquilo nao cobre: o primeiro visitante
+   * que digita rapido demais, e a propria Oracle, que RECICLA instancia
+   * Always Free ociosa (esta anotado em hospedagem/ORACLE.md). Trafego de 15
+   * em 15 minutos mantem a maquina com sinal de vida.
+   *
+   * 15 MINUTOS SAI DA MEDICAO, nao do gosto: e o maior intervalo em que eu
+   * PROVEI que a voz nao esfria. Qualquer numero maior seria extrapolacao.
+   */
+  async scheduled(evento, env, ctx) {
+    if (!env.VOZ_ORIGEM) return;
+    ctx.waitUntil(
+      fetch(env.VOZ_ORIGEM.replace(/\/$/, "") + "/aquecer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Voz-Chave": env.VOZ_CHAVE || "" },
+        body: "{}",
+      }).catch((e) => console.error("aquecimento agendado falhou:", e && (e.message || String(e)))),
+    );
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
@@ -103,6 +126,37 @@ export default {
     // Isso apagou tres coisas do roteiro de hospedagem: comprar dominio,
     // emitir certificado e instalar tunel. O preco e uma porta aberta na
     // maquina, defendida pela chave que vai no cabecalho abaixo.
+    /* AQUECER A VOZ, e o motivo e medido.
+     *
+     * 21/09/2026: depois de ~3 dias parada, a primeira sintese custou 7,0 s
+     * contra 1,6 s quente. O processo nao tinha reiniciado, e 15 minutos de
+     * ociosidade NAO esfriam (0,72-0,76x o tempo real em cinco medicoes) --
+     * entao o custo e de ociosidade longa.
+     *
+     * Isso bate exatamente no visitante que mais importa: o site e portfolio,
+     * quem avalia abre o link, faz UMA pergunta e sai. Ele nunca chega quente.
+     *
+     * A maquina responde em /aquecer PASSANDO AO LARGO DO CACHE -- sem isso o
+     * aquecimento devolveria audio guardado sem tocar no modelo, e falharia
+     * justamente quando fosse preciso.
+     */
+    if (request.method === "POST" && url.pathname === "/aquecer") {
+      if (!env.VOZ_ORIGEM) return json(request, 503, { erro: "voz nao configurada" });
+      try {
+        const r = await fetch(env.VOZ_ORIGEM.replace(/\/$/, "") + "/aquecer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Voz-Chave": env.VOZ_CHAVE || "" },
+          body: "{}",
+        });
+        return json(request, r.status, await r.json());
+      } catch (e) {
+        console.error("aquecer falhou:", e && (e.message || String(e)));
+        // Falhar aqui nao custa nada ao visitante: ele so nao ganha o
+        // adiantamento. A pergunta dele segue pelo caminho de sempre.
+        return json(request, 503, { erro: "voz indisponivel" });
+      }
+    }
+
     if (request.method === "POST" && url.pathname === "/falar") {
       if (!env.VOZ_ORIGEM) {
         // Ainda nao ha maquina no ar. O site ja trata isto como "sem voz" e
