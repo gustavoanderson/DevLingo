@@ -1103,6 +1103,21 @@ function dividirFala(texto) {
     if (fora.length && fora[fora.length - 1].length < 40) fora[fora.length - 1] += ' ' + f;
     else fora.push(f);
   }
+  /* O PRIMEIRO PEDACO E CORTADO MENOR QUE OS OUTROS, de proposito.
+     Ele e o unico que o visitante ESPERA em silencio; os seguintes sao
+     sintetizados enquanto o anterior toca, e por isso podem ser grandes.
+     Medido em 21/09/2026: o tempo ate a primeira palavra acompanha quase
+     linearmente o tamanho do primeiro pedaco.
+     O corte cai numa virgula para soar como pausa, e so acontece se sobrar
+     frase dos dois lados -- pedaco de duas palavras gastaria mais nos ~0,4 s
+     fixos de ida e volta do que em voz. */
+  if (fora[0].length > 70) {
+    const virgula = fora[0].lastIndexOf(',', 70);
+    if (virgula >= 30) {
+      const resto = fora[0].slice(virgula + 1).trim();
+      if (resto) { fora[0] = fora[0].slice(0, virgula + 1); fora.splice(1, 0, resto); }
+    }
+  }
   return fora;
 }
 
