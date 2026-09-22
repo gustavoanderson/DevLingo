@@ -10,6 +10,11 @@
  * custaria. */
 
 :root {
+  /* Sem isto a barra de rolagem da escolha de trilha saia BRANCA, a do
+     sistema -- a borda direita inteira brilhando numa pagina escura. Diz ao
+     navegador para desenhar os controles nativos no tema escuro. */
+  color-scheme: dark;
+
   --fundo: #170A31;
   --superficie: #1E0F3E;
   --linha: #3D2A66;
