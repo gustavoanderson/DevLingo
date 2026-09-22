@@ -70,5 +70,6 @@ hospedagem/cloudflare/.wrangler/
 # versao, sem ninguem ter mexido em codigo. E a mesma razao pela qual
 # gerar_falas.py compara IMPRESSAO (texto + voz + tom) em vez dos bytes do WAV.
 jogo/cerebro.js
+jogo/conteudo.json
 jogo/cerebro.js.deps
 jogo/cerebro.js.map

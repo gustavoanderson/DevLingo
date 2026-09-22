@@ -46,6 +46,7 @@ import 'dart:js_interop_unsafe';
 
 import 'answer/normalize.dart';
 import 'answer/sessao_questao.dart';
+import 'models/lesson.dart';
 import 'models/question.dart';
 import 'ui/realce.dart';
 
@@ -146,6 +147,68 @@ String _tokenizar(String linha, String linguagem) => jsonEncode(
         .map((t) => {'texto': t.texto, 'tipo': t.tipo.name})
         .toList());
 
+/// AS TRILHAS, montadas com as regras do app -- nenhuma delas mora no JS.
+///
+/// O navegador nao consegue listar pastas, entao `tools/construir_jogo.py`
+/// gera um indice CRU: uma linha por arquivo de licao, com o que esta escrito
+/// nele e nada mais. Tudo que e REGRA acontece aqui:
+///
+///   - a ordem das trilhas e `ordemDasTrilhas` -- Java antes de Selenium,
+///     Frameworks depois de JavaScript, pela dependencia entre elas
+///   - o nome de tela e a descricao vem de `nomeBonito` e `descricaoDaLinguagem`
+///   - a licao 00 e a de referencia do formato, e NINGUEM a joga
+///   - o rotulo do nivel e `Level.rotulo`
+///
+/// O `Lesson` construido sem questoes existe so para reusar `numero` e
+/// `ehLicaoDeReferencia` do modelo, em vez de reescrever "a licao cujo id
+/// termina em 00" uma segunda vez.
+String _trilhas(String indiceJson) {
+  final porTrilha = <String, List<Lesson>>{};
+  final arquivos = <String, String>{};
+  final contagem = <String, int>{};
+  for (final item in jsonDecode(indiceJson) as List<dynamic>) {
+    final m = item as Map<String, dynamic>;
+    final licao = Lesson(
+      schemaVersion: 1,
+      language: m['language'] as String,
+      level: Level.fromJson(m['level'] as String),
+      lessonId: m['lessonId'] as String,
+      lessonTitle: m['lessonTitle'] as String,
+      questions: const [],
+    );
+    if (licao.ehLicaoDeReferencia) continue;
+    porTrilha.putIfAbsent(licao.language, () => []).add(licao);
+    arquivos[licao.lessonId] = m['arquivo'] as String;
+    contagem[licao.lessonId] = m['questoes'] as int;
+  }
+
+  final chaves = porTrilha.keys.toList()
+    ..sort((a, b) => posicaoDaTrilha(a).compareTo(posicaoDaTrilha(b)));
+
+  return jsonEncode([
+    for (final chave in chaves)
+      {
+        'chave': chave,
+        'nome': nomeBonito(chave),
+        'descricao': descricaoDaLinguagem[chave] ?? '',
+        'licoes': [
+          for (final l in porTrilha[chave]!
+            ..sort((a, b) => a.level.index != b.level.index
+                ? a.level.index.compareTo(b.level.index)
+                : a.numero.compareTo(b.numero)))
+            {
+              'id': l.lessonId,
+              'arquivo': arquivos[l.lessonId],
+              'titulo': l.lessonTitle,
+              'numero': l.numero,
+              'nivel': l.level.rotulo,
+              'questoes': contagem[l.lessonId],
+            },
+        ],
+      },
+  ]);
+}
+
 void main() {
   // Uma unica propriedade global, `devlingo`, com as funcoes dentro. Espalhar
   // nomes soltos no `window` e como o site poluiria o espaco de qualquer outro
@@ -159,5 +222,6 @@ void main() {
   api['estado'] = ((() => _estado().toJS).toJS);
   api['tokenizar'] =
       ((JSString l, JSString g) => _tokenizar(l.toDart, g.toDart).toJS).toJS;
+  api['trilhas'] = ((JSString j) => _trilhas(j.toDart).toJS).toJS;
   globalContext['devlingo'] = api;
 }

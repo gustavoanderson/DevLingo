@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DevLingo — exercício</title>
-<meta name="description" content="A tela de exercício do DevLingo rodando no navegador, com o mesmo cérebro do app Android.">
+<title>DevLingo</title>
+<meta name="description" content="O DevLingo no navegador, com o mesmo cérebro do app Android.">
 <!-- Favicon embutido: um arquivo a parte custaria uma requisicao, e a
      ausencia dele custa um 404 no console -- que polui a medicao e faz
      parecer que a pagina tem defeito. -->
@@ -14,22 +14,47 @@
 <body>
 
 <!--
-  PROVA DE CONCEITO DA VERSAO WEB, e ela prova UMA coisa:
-  que a interface pode ser leve e escrita a mao sem que a LOGICA seja
-  reescrita.
+  O DEVLINGO NO NAVEGADOR.
 
-  Nada nesta pagina decide se uma resposta esta certa, quando eliminar uma
-  alternativa, quando revelar ou como colorir o codigo. Tudo isso vem de
-  `cerebro.js`, compilado de `app/lib/ponte_web.dart`, que por sua vez usa os
-  MESMOS arquivos que o app Android usa e que os 349 testes cobrem.
+  Nada nesta pagina decide regra de jogo: se uma resposta esta certa, quando
+  eliminar, quando revelar, como colorir o codigo, em que ordem as trilhas
+  aparecem, que licao nao se joga. Tudo isso vem de `cerebro.js`, compilado de
+  `app/lib/ponte_web.dart`, que usa os MESMOS arquivos que o app Android usa e
+  que os testes do app cobrem.
 
-  Esta pagina so desenha o retrato que o cerebro devolve.
+  Tres vistas numa pagina so, trocadas pelo `#` do endereco -- assim o botao
+  voltar do navegador funciona, e um link aponta direto para uma licao.
 -->
 
-<div class="tela">
+<!-- ==================================================== escolha de trilha -->
+<section class="vista" id="vista-escolha" hidden>
+  <div class="coluna">
+    <header class="marca">
+      <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
+      <p class="lema">Aprenda a programar uma questão por vez.</p>
+    </header>
+    <h2 class="rotulo-secao">Escolha uma trilha</h2>
+    <nav class="cartoes" id="lista-trilhas" aria-label="Trilhas"></nav>
+  </div>
+</section>
+
+<!-- ============================================================= a trilha -->
+<section class="vista" id="vista-trilha" hidden>
+  <div class="coluna">
+    <header class="cabecalho">
+      <a class="voltar" href="#/" aria-label="Voltar para as trilhas">←</a>
+      <h1 class="nome-trilha" id="nome-trilha"></h1>
+    </header>
+    <p class="descricao-trilha" id="descricao-trilha"></p>
+    <nav class="cartoes" id="lista-licoes" aria-label="Lições"></nav>
+  </div>
+</section>
+
+<!-- ============================================================ exercicio -->
+<div class="tela vista" id="vista-exercicio" hidden>
 
   <header class="topo">
-    <button class="sair" title="Sair da lição" aria-label="Sair da lição">✕</button>
+    <a class="sair" id="sair" href="#/" title="Sair da lição" aria-label="Sair da lição">✕</a>
     <div class="barra" role="progressbar" aria-label="Progresso da lição"
          aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="barra"></i></div>
     <span class="contador" id="contador">—</span>
@@ -66,6 +91,8 @@
   </footer>
 
 </div>
+
+<p class="falha" id="falha" hidden></p>
 
 <script src="cerebro.js"></script>
 <script src="jogo.js"></script>

@@ -14,10 +14,13 @@
 
 const $ = (id) => document.getElementById(id);
 
-/* A licao de exemplo vem do BANCO DE VERDADE, nao de um arquivo de mentira.
-   Provar com dado real e o que distingue esta pagina de uma maquete. */
-const LICAO = '../app/assets/content/python/python-beg-03.json';
+/* As trilhas vem do cerebro, montadas a partir do indice CRU que
+   `tools/construir_jogo.py` gera. Ordem, nomes, descricoes e a regra de
+   esconder a licao 00 sao do app -- esta pagina so as recebe prontas. */
+let trilhas = [];
 
+let trilhaAtual = null;
+let licaoAtual = null;
 let questoes = [];
 let indice = 0;
 let estado = null;
@@ -171,7 +174,10 @@ function abrir(i) {
 
 $('btn-verificar').addEventListener('click', () => {
   if (estado && estado.terminou) {
+    // Fim da licao volta para a trilha: e la que se escolhe a proxima, e e la
+    // que o progresso vai aparecer quando o login chegar.
     if (indice + 1 < questoes.length) abrir(indice + 1);
+    else location.hash = '#/' + trilhaAtual.chave;
     return;
   }
   aplicar(estado && estado.ehEscrita
@@ -195,21 +201,123 @@ $('copiar').addEventListener('click', async (ev) => {
   setTimeout(() => { b.textContent = 'copiar'; }, 2000);
 });
 
+/* ---------------------------------------------------------------- vistas */
+
+function mostrar(id) {
+  for (const v of document.querySelectorAll('.vista')) v.hidden = v.id !== id;
+  window.scrollTo(0, 0);
+}
+
+function cartao(href, titulo, sub, lado, extraTopo) {
+  const a = document.createElement('a');
+  a.className = 'cartao';
+  a.href = href;
+  const t = document.createElement('span');
+  t.className = 'titulo-cartao';
+  if (extraTopo) {
+    const n = document.createElement('span');
+    n.className = 'num-licao';
+    n.textContent = extraTopo;
+    t.appendChild(n);
+    t.appendChild(document.createElement('br'));
+  }
+  t.appendChild(document.createTextNode(titulo));
+  a.appendChild(t);
+  const s2 = document.createElement('span');
+  s2.className = 'lado';
+  s2.textContent = lado;
+  a.appendChild(s2);
+  if (sub) {
+    const d = document.createElement('span');
+    d.className = 'sub';
+    d.textContent = sub;
+    a.appendChild(d);
+  }
+  return a;
+}
+
+function pintarEscolha() {
+  const lista = $('lista-trilhas');
+  lista.textContent = '';
+  for (const t of trilhas) {
+    lista.appendChild(cartao('#/' + t.chave, t.nome, t.descricao,
+      t.licoes.length + ' lições'));
+  }
+  document.title = 'DevLingo';
+  mostrar('vista-escolha');
+}
+
+function pintarTrilha(t) {
+  $('nome-trilha').textContent = t.nome;
+  $('descricao-trilha').textContent = t.descricao;
+  const lista = $('lista-licoes');
+  lista.textContent = '';
+  for (const l of t.licoes) {
+    lista.appendChild(cartao('#/' + t.chave + '/' + l.id, l.titulo, null,
+      l.questoes + ' questões',
+      'Lição ' + String(l.numero).padStart(2, '0') + ' · ' + l.nivel));
+  }
+  document.title = t.nome + ' — DevLingo';
+  mostrar('vista-trilha');
+}
+
+async function abrirLicao(t, l, q) {
+  // A mesma licao ja aberta nao e rebaixada: trocar so a questao nao pode
+  // perder o que se jogou nela.
+  if (licaoAtual !== l) {
+    const dados = await (await fetch(l.arquivo)).json();
+    questoes = dados.questions;
+    licaoAtual = l;
+  }
+  $('sair').href = '#/' + t.chave;
+  document.title = l.titulo + ' — DevLingo';
+  mostrar('vista-exercicio');
+  const n = Number(q);
+  abrir(Number.isInteger(n) && n >= 0 && n < questoes.length ? n : 0);
+}
+
+/* O ROTEADOR, pelo `#` do endereco:
+
+     #/                         escolha de trilha
+     #/python                   a trilha
+     #/python/python-beg-03     a licao, da primeira questao
+     #/python/python-beg-03/4   a licao, direto na questao 4
+
+   Pelo `#` e nao por caminho de verdade porque o site e estatico: `/python`
+   pediria ao servidor um arquivo que nao existe. E o botao voltar do
+   navegador passa a funcionar de graca. */
+async function rotear() {
+  const [chave, idLicao, q] = location.hash.replace(/^#\/?/, '').split('/');
+  const t = trilhas.find((x) => x.chave === chave);
+  if (!t) return pintarEscolha();
+  trilhaAtual = t;
+  const l = t.licoes.find((x) => x.id === idLicao);
+  if (!l) return pintarTrilha(t);
+  try {
+    await abrirLicao(t, l, q);
+  } catch (e) {
+    falhar('Não consegui abrir a lição (' + e.message + ').');
+  }
+}
+
+function falhar(texto) {
+  for (const v of document.querySelectorAll('.vista')) v.hidden = true;
+  const f = $('falha');
+  f.hidden = false;
+  f.textContent = texto;
+}
+
 /* -------------------------------------------------------------- a abertura */
 
 (async () => {
   try {
-    const licao = await (await fetch(LICAO)).json();
-    questoes = licao.questions;
-    /* `?q=N` abre uma questao especifica. Existe para a medicao poder apontar
-       para uma questao COM bloco de codigo -- a primeira da licao nao tem, e
-       medir o realce sem codigo na tela nao prova nada. Depois serve de link
-       direto para uma questao. */
-    const pedida = Number(new URLSearchParams(location.search).get('q'));
-    abrir(Number.isInteger(pedida) && pedida >= 0 && pedida < questoes.length ? pedida : 0);
+    const indiceCru = await (await fetch('conteudo.json')).text();
+    trilhas = JSON.parse(devlingo.trilhas(indiceCru));
   } catch (e) {
-    $('enunciado').textContent =
-      'Não consegui abrir a lição (' + e.message + '). '
-      + 'Esta página precisa ser servida por um servidor, não aberta como arquivo.';
+    return falhar('Não consegui carregar o conteúdo (' + e.message + '). '
+      + 'Rode `python tools/construir_jogo.py` e sirva a pasta do repositório '
+      + 'por um servidor -- aberta como arquivo, a página não lê nada.');
   }
+  window.addEventListener('hashchange', rotear);
+  rotear();
 })();

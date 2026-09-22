@@ -47,6 +47,15 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` TEM QUE VENCER, e sem isto ele perde. Seletor de classe tem
+ * precedencia sobre a regra padrao do navegador para [hidden], entao
+ * `.alternativas { display: grid }` mantinha a caixa no layout mesmo
+ * "escondida" -- nas questoes de escrita ela ficava la, vazia, e por isso
+ * ninguem viu. Com VISTAS inteiras escondidas por `hidden`, o defeito deixaria
+ * de ser invisivel: a tela de exercicio (display: grid) apareceria por cima da
+ * trilha. */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   height: 100%;
@@ -92,6 +101,7 @@ html, body {
   padding: 0 4px;
   line-height: 1;
 }
+.sair { text-decoration: none; }
 .sair:hover { color: var(--texto); }
 
 /* Ela mede a LICAO, nunca a linguagem: barra que nao sai do lugar desmotiva. */
@@ -335,4 +345,93 @@ html, body {
   .miolo { padding: 14px 16px 6px; }
   .enunciado { font-size: 16px; }
   .acoes { padding: 10px 16px; }
+}
+
+/* ================================================== escolha e trilha
+ *
+ * Aqui entra a liberdade estetica que o Gustavo deu ao navegador -- "da ate
+ * pra ser mais criativo com os elementos esteticos" --, mas dentro da mesma
+ * paleta e da mesma mono. A liberdade e de MOLDURA, nao de identidade. */
+
+.vista:not(.tela) { min-height: 100%; }
+.coluna { max-width: 820px; margin: 0 auto; padding: 36px 20px 48px; }
+
+/* A marca do CLAUDE.md: mono com deslocamento em ciano e magenta, a
+ * aberracao cromatica. Feita com sombra de texto, sem fonte baixada -- fonte
+ * cyberpunk de terceiro quebra onde nao esta instalada. */
+.logo {
+  margin: 0;
+  font-size: 44px;
+  letter-spacing: .02em;
+  color: var(--texto);
+  text-shadow: -2px 0 var(--destaque), 2px 0 var(--acerto);
+}
+.logo span { color: var(--visor); text-shadow: -2px 0 var(--destaque), 2px 0 var(--acerto); }
+.lema { color: var(--suave); margin: 6px 0 34px; }
+
+.rotulo-secao {
+  font-size: 12px;
+  font-weight: normal;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--suave);
+  margin: 0 0 12px;
+}
+
+.cartoes { display: grid; gap: 12px; }
+
+.cartao {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 16px;
+  align-items: center;
+  background: var(--superficie);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  padding: 16px 18px;
+  color: var(--texto);
+  text-decoration: none;
+  transition: border-color .15s, transform .15s;
+}
+.cartao:hover, .cartao:focus-visible {
+  border-color: var(--destaque);
+  outline: none;
+  transform: translateX(3px);
+}
+.cartao .titulo-cartao { font-size: 18px; }
+.cartao .sub { color: var(--suave); font-size: 13px; grid-column: 1; }
+.cartao .lado {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  color: var(--destaque);
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cabecalho { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+.voltar {
+  color: var(--suave);
+  text-decoration: none;
+  font-size: 24px;
+  line-height: 1;
+}
+.voltar:hover { color: var(--texto); }
+.nome-trilha { margin: 0; font-size: 28px; font-weight: normal; }
+.descricao-trilha { color: var(--suave); margin: 0 0 26px; }
+
+/* O numero da licao em destaque, como no app: "Licao 03" e o que a pessoa
+ * procura na lista. */
+.num-licao {
+  color: var(--destaque);
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.falha { max-width: 640px; margin: 60px auto; padding: 0 20px; color: var(--erro); }
+
+@media (max-width: 560px) {
+  .coluna { padding: 24px 16px 36px; }
+  .logo { font-size: 36px; }
 }
