@@ -167,11 +167,44 @@
 
 </div>
 
+<!-- ==================================================== a janela do Tr∅nikAt
+     FORA DAS VISTAS, de proposito: ela nao pertence a nenhuma tela, e por isso
+     sobrevive a troca de todas elas. Fica disponivel inclusive ANTES do login,
+     porque foi assim que o Gustavo decidiu -- quem abre o link sem conta ainda
+     consegue perguntar o que e isto.
+
+     Ele NAO enxerga a questao em que a pessoa esta. Nada aqui le a tela do
+     exercicio, e isso e garantia e nao limitacao: um mascote que visse o
+     enunciado poderia entregar a resposta. -->
+<button class="btn-tronikat" id="btn-tronikat" type="button"
+        aria-expanded="false" aria-controls="tronikat-janela"
+        title="Falar com o Tr∅nikAt">
+  <img src="../assets/mascot/tronikat-retrato.svg" alt="" aria-hidden="true">
+  <span class="sr">Falar com o Tr∅nikAt</span>
+</button>
+
+<aside class="tronikat-janela" id="tronikat-janela" hidden
+       aria-label="Conversa com o Tr∅nikAt">
+  <header class="tronikat-topo">
+    <span class="tronikat-nome">Tr∅nikAt</span>
+    <span class="tronikat-sub">fala do DevLingo e de programação</span>
+    <button class="tronikat-fechar" id="tronikat-fechar" type="button"
+            aria-label="Fechar a conversa">✕</button>
+  </header>
+  <div class="tronikat-conversa" id="tronikat-conversa" role="log" aria-live="polite"></div>
+  <form class="tronikat-form" id="tronikat-form">
+    <input class="campo" id="tronikat-campo" type="text" autocomplete="off"
+           placeholder="Pergunte alguma coisa…" aria-label="Sua pergunta">
+    <button class="btn principal" type="submit">Enviar</button>
+  </form>
+</aside>
+
 <p class="carregando" id="carregando">Carregando…</p>
 <p class="falha" id="falha" hidden></p>
 
 <script src="cerebro.js"></script>
 <script src="nuvem.js"></script>
 <script src="jogo.js"></script>
+<script src="tronikat.js"></script>
 </body>
 </html>

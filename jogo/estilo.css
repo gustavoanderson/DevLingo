@@ -678,3 +678,126 @@ html, body {
   .mascote { width: 132px; }
   .sol { width: 150px; height: 150px; margin-left: -75px; }
 }
+
+/* =================================================== a janela do Tr∅nikAt
+ *
+ * Ela flutua sobre tudo, e por isso e a unica coisa da pagina com `z-index`
+ * alto -- o cenario e 0, as vistas sao 1, e ela e 50. */
+
+/* So para leitor de tela. O botao e um rosto, e rosto nao tem nome acessivel. */
+.sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.btn-tronikat {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 50;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 2px solid var(--destaque);
+  border-radius: 50%;
+  background: var(--superficie);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .45);
+  transition: transform .15s, border-color .15s;
+}
+.btn-tronikat:hover { transform: translateY(-2px); border-color: var(--visor); }
+
+/* O RETRATO CANONICO, recortado na cabeca. `object-position: top` porque o
+   arquivo e um busto: sem isso o botao redondo mostraria o meio do moletom. */
+.btn-tronikat img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.tronikat-janela {
+  position: fixed;
+  right: 20px;
+  bottom: 94px;
+  z-index: 50;
+  width: min(380px, calc(100vw - 40px));
+  max-height: min(520px, calc(100vh - 130px));
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+  border: 1px solid var(--destaque);
+  border-radius: 12px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .5);
+  overflow: hidden;
+}
+
+.tronikat-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--linha);
+}
+.tronikat-nome { color: var(--visor); font-weight: 700; }
+/* O ESCOPO DELE ESTA ESCRITO NA JANELA, e isso e deliberado: o site do
+   portfolio ja aprendeu que mascote que desconversa sem avisar do que fala
+   parece quebrado. Dizer antes evita a pergunta que vai ser barrada. */
+.tronikat-sub { color: var(--suave); font-size: 11px; flex: 1; }
+.tronikat-fechar {
+  background: none; border: none; color: var(--suave);
+  font: inherit; cursor: pointer; padding: 0 2px; line-height: 1;
+}
+.tronikat-fechar:hover { color: var(--texto); }
+
+.tronikat-conversa {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.fala {
+  padding: 8px 11px;
+  border-radius: 10px;
+  max-width: 86%;
+  line-height: 1.45;
+}
+/* A pergunta sai a direita em ciano; a resposta a esquerda, na superficie. */
+.fala-minha {
+  align-self: flex-end;
+  background: var(--alt-selecionada);
+  border: 1px solid var(--destaque);
+}
+.fala-dele {
+  align-self: flex-start;
+  background: var(--fundo);
+  border: 1px solid var(--linha);
+}
+.fala.pensando { color: var(--suave); font-style: italic; }
+/* Vermelho de ALERTA, nao de punicao -- e o mesmo `--erro` do pontinho da IDE,
+   e nao uma cor nova. */
+.fala.falhou { border-color: var(--erro); color: var(--texto); }
+
+.tronikat-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--linha);
+}
+.tronikat-form .campo { flex: 1; margin: 0; }
+.tronikat-form .btn { flex: none; padding: 8px 14px; }
+
+/* No celular ela ocupa a largura toda, menos o respiro das bordas. */
+@media (max-width: 560px) {
+  .btn-tronikat { width: 54px; height: 54px; right: 14px; bottom: 14px; }
+  .tronikat-janela { right: 14px; left: 14px; width: auto; bottom: 78px; }
+}

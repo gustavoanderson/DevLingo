@@ -1570,6 +1570,58 @@ tirando dos recentes. A sincronização roda na abertura e no `paused`/`resumed`
 — minimizar pode subir sem redesenhar a tela, e aí se vê número velho e se
 conclui que falhou quando não falhou.
 
+### A janela do Tr∅nikAt, dentro do jogo
+
+`jogo/tronikat.js`. Um botão redondo com a cabeça dele no canto, e uma janela de
+conversa. Ele fala **do DevLingo e de programação**, exatamente como no site do
+portfólio — nenhum modelo novo, nenhuma chave, nenhum custo: é o **mesmo
+Worker** que o site usa.
+
+Provado em 22/09/2026, contra o Worker no ar e sem serviço falso:
+
+| Pergunta | Resposta | Tempo |
+|---|---|---|
+| *"o que é uma variável em programação?"* | "Uma variável é um espaço na memória para armazenar dados…" | **2047 ms** |
+| *"qual a cotação do dólar hoje?"* | desconversou, como deve | 4857 ms |
+
+**Nenhuma regra de porteiro mora aqui.** Qual ficha responde, se a pergunta
+passa do piso e o que o modelo pode dizer continuam no Worker. Este arquivo
+pergunta e mostra — a mesma disciplina que mantém as regras do jogo dentro do
+cérebro compilado.
+
+#### Ele NÃO vê a questão em que você está, e isso é garantia
+
+O Gustavo escolheu entre esta janela e um **tutor da questão travada**, em que o
+enunciado iria ao modelo. A segunda não foi recusada, foi adiada, e o motivo é
+concreto: sem ficha contra a qual conferir, o risco deixa de ser inventar sobre
+o projeto e passa a ser **entregar a resposta** — o que esvaziaria a eliminação
+e a revelação que a mecânica inteira sustenta. Nada em `tronikat.js` lê a tela
+do exercício, e é isso que torna a garantia verificável em vez de prometida.
+
+#### Fica fora do muro
+
+O botão aparece também na **tela de entrada**, antes do login. Decisão dele, e
+ela preserva o valor de portfólio: quem abre o link sem conta ainda consegue
+perguntar o que é isto.
+
+#### A origem tem que estar na lista do Worker, e isso me pegou
+
+A primeira tentativa falhou com **CORS**, e a causa é uma lista de origens no
+`index.js` do Worker. Ela já traz `127.0.0.1:8000`, e eu tinha subido o servidor
+local na **8123**.
+
+**A correção foi mudar a porta, não a lista**, e o motivo importa: em produção o
+jogo sai sob `gustavoanderson.github.io`, que **já está autorizado** — o
+problema era só do servidor de desenvolvimento. Acrescentar portas ad-hoc
+faria a lista crescer sem controle para resolver o que não era problema.
+
+Quando o domínio próprio chegar, **ele precisa entrar naquela lista**, e o
+sintoma de esquecer é exatamente este: a janela falha e nada mais.
+
+Vale registrar como a falha se comportou, porque foi por desenho: o texto já
+estava na tela, o jogo seguiu inteiro, e a mensagem disse o que fazer em vez de
+dizer "erro". Som e voz são conveniência aqui, a mesma regra da fanfarra.
+
 ### O que ainda não existe
 
 São **quatro telas**, em 22/09/2026: entrada (entrar, criar conta, recuperar
