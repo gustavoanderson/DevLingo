@@ -4,15 +4,12 @@ import 'package:sqflite/sqflite.dart';
 import '../answer/sessao_questao.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
+import 'partida.dart';
+import 'partida.dart' as partida;
 
-/// Como a questao terminou.
-enum Desfecho {
-  /// O aluno chegou na resposta sozinho, com uma ou mais tentativas.
-  acertou,
-
-  /// As tentativas se esgotaram e a resposta foi revelada.
-  revelada,
-}
+// Quem importava `Desfecho` daqui continua importando: ele so mudou de
+// arquivo. Ver partida.dart para o porque da mudanca.
+export 'partida.dart' show Desfecho;
 
 /// O registro de uma questao respondida.
 class RespostaGravada {
@@ -247,14 +244,12 @@ class Progresso implements RegistroDeProgresso {
   /// numa questao dificil e plausivel, dez ja e ter saido. Recalibrar quando
   /// houver dados reais de alguem jogando; ate la, e um numero escolhido sem
   /// evidencia, e esta escrito aqui que e.
-  static const Duration tetoDeDuracao = Duration(minutes: 10);
+  static const Duration tetoDeDuracao = partida.tetoDeDuracao;
 
   /// A duracao que deve ser gravada: a medida, ou nulo se implausivel.
-  static int? duracaoGravavel(Duration? medida) {
-    if (medida == null) return null;
-    if (medida.isNegative || medida > tetoDeDuracao) return null;
-    return medida.inMilliseconds;
-  }
+  /// Mora em partida.dart desde que o navegador passou a gravar partidas.
+  static int? duracaoGravavel(Duration? medida) =>
+      partida.duracaoGravavel(medida);
 
   /// Chaves da tabela `preferencia`.
   ///
@@ -528,7 +523,7 @@ class Progresso implements RegistroDeProgresso {
   ///   entao mandar de novo para a nuvem e inofensivo. Sincronizacao que nao e
   ///   idempotente vira historico inflado na primeira queda de conexao
   static String idDoEvento(String uid, String questionId, int quando) =>
-      '$uid|$questionId|$quando';
+      partida.idDoEvento(uid, questionId, quando);
 
   /// Fica em funcao propria para o `onCreate` e o `onUpgrade` usarem a mesma
   /// definicao. Duas copias do mesmo CREATE TABLE divergem com o tempo, e a
@@ -784,24 +779,17 @@ class Progresso implements RegistroDeProgresso {
     required SessaoQuestao sessao,
     DateTime? quando,
   }) async {
-    if (!sessao.terminou) return;
-
     final instante = (quando ?? DateTime.now()).millisecondsSinceEpoch;
-    final dados = {
-      'uid': _uid,
-      'question_id': questao.id,
-      'lesson_id': licao.lessonId,
-      'language': licao.language,
-      'level': licao.level.name,
-      'topic': questao.topic,
-      'tentativas': sessao.tentativas,
-      'desfecho': sessao.fase == FaseResposta.acertou
-          ? Desfecho.acertou.name
-          : Desfecho.revelada.name,
-      'usou_dica': sessao.dicaPedida ? 1 : 0,
-      'duracao_ms': duracaoGravavel(sessao.duracao),
-      'respondida_em': instante,
-    };
+    // O FORMATO da partida vem de partida.dart, que o navegador tambem usa.
+    // Monta-lo aqui a mao era o que tornaria o cross-play fragil: dois lugares
+    // dizendo o que uma partida contem.
+    final dados = dadosDaPartida(
+        uid: _uid, licao: licao, questao: questao, sessao: sessao,
+        instante: instante);
+    final evento = eventoDaPartida(
+        uid: _uid, licao: licao, questao: questao, sessao: sessao,
+        instante: instante);
+    if (dados == null || evento == null) return;
 
     // Numa transacao so: o estado atual e o historico contam a mesma coisa, e
     // gravar um sem o outro produziria um banco que se contradiz -- uma questao
@@ -814,11 +802,8 @@ class Progresso implements RegistroDeProgresso {
       );
       // Sem `question_id` como chave: aqui cada resposta e um evento novo, e
       // repetir a mesma questao e justamente o que se quer registrar.
-      await txn.insert('evento_resposta', {
-        ...dados,
-        'evento_id': idDoEvento(_uid, questao.id, instante),
-        'sincronizado': 0,
-      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      await txn.insert('evento_resposta', evento,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
     });
   }
 

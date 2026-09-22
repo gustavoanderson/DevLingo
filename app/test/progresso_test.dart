@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:devlingo/answer/sessao_questao.dart';
+import 'package:devlingo/data/partida.dart';
 import 'package:devlingo/data/progresso.dart';
 import 'package:devlingo/models/lesson.dart';
 import 'package:devlingo/models/question.dart';
@@ -91,6 +92,91 @@ void main() {
   });
 
   tearDown(() => progresso.fechar());
+
+  // O CONTRATO DA PARTIDA COM O NAVEGADOR.
+  //
+  // Desde 22/09/2026 o navegador grava partidas que o celular baixa, e o
+  // celular as enfia DIRETO no SQLite. Uma coluna a mais, a menos ou com outro
+  // nome derruba a sincronizacao NO APARELHO, sem nada avisar no site. Estes
+  // testes sao o que impede os dois lados de divergirem.
+  group('o contrato da partida com o navegador', () {
+    test('eventoDaPartida produz EXATAMENTE a linha que o app grava', () async {
+      final questao = licao.questions[0];
+      final sessao = acertando(questao);
+      await progresso.registrar(
+        licao: licao,
+        questao: questao,
+        sessao: sessao,
+        quando: DateTime.fromMillisecondsSinceEpoch(1000),
+      );
+      final gravada = (await progresso.eventosPendentes()).single;
+
+      final doNavegador = eventoDaPartida(
+        uid: gravada['uid']! as String,
+        licao: licao,
+        questao: questao,
+        sessao: sessao,
+        instante: 1000,
+      );
+
+      // Mesmas chaves E mesmos valores. So as chaves provaria o esquema; os
+      // valores provam que `revelado` virou `revelada` e que `usou_dica` e
+      // inteiro, dos dois lados.
+      expect(doNavegador!.keys.toSet(), gravada.keys.toSet());
+      expect(doNavegador, gravada);
+    });
+
+    test('a revelada tambem bate, com o desfecho no feminino', () async {
+      final questao = licao.questions[1];
+      final sessao = ateRevelar(questao);
+      await progresso.registrar(
+        licao: licao,
+        questao: questao,
+        sessao: sessao,
+        quando: DateTime.fromMillisecondsSinceEpoch(2000),
+      );
+      final gravada = (await progresso.eventosPendentes()).single;
+      final doNavegador = eventoDaPartida(
+        uid: gravada['uid']! as String,
+        licao: licao,
+        questao: questao,
+        sessao: sessao,
+        instante: 2000,
+      );
+      expect(doNavegador, gravada);
+      // O nome da FASE e `revelado`; o do DESFECHO gravado e `revelada`.
+      expect(gravada['desfecho'], 'revelada');
+    });
+
+    test('partida sem fim nao existe', () {
+      final questao = licao.questions[0];
+      final sessao = SessaoQuestao(questao, sorteio: Random(1));
+      expect(
+        eventoDaPartida(
+          uid: 'x', licao: licao, questao: questao, sessao: sessao, instante: 1),
+        isNull,
+      );
+    });
+
+    test('a contagem do historico bate com a do app', () async {
+      // Duas questoes, a primeira refeita: sao TRES partidas e DUAS questoes
+      // respondidas. Refazer nao conta duas vezes -- nem no app, nem aqui.
+      final q0 = licao.questions[0];
+      final q1 = licao.questions[1];
+      await progresso.registrar(licao: licao, questao: q0,
+          sessao: acertando(q0), quando: DateTime.fromMillisecondsSinceEpoch(10));
+      await progresso.registrar(licao: licao, questao: q0,
+          sessao: acertando(q0), quando: DateTime.fromMillisecondsSinceEpoch(20));
+      await progresso.registrar(licao: licao, questao: q1,
+          sessao: ateRevelar(q1), quando: DateTime.fromMillisecondsSinceEpoch(30));
+
+      final historico = await progresso.eventosPendentes();
+      expect(historico, hasLength(3));
+      expect(respondidasPorLicaoNoHistorico(historico),
+          await progresso.respondidasPorLicao());
+      expect(respondidasPorLicaoNoHistorico(historico), {'python-beg-01': 2});
+    });
+  });
 
   group('registro de resposta', () {
     test('acertar de primeira grava tentativa 1 e desfecho de acerto', () async {

@@ -46,6 +46,7 @@ import 'dart:js_interop_unsafe';
 
 import 'answer/normalize.dart';
 import 'answer/sessao_questao.dart';
+import 'data/partida.dart';
 import 'models/lesson.dart';
 import 'models/question.dart';
 import 'ui/realce.dart';
@@ -209,6 +210,39 @@ String _trilhas(String indiceJson) {
   ]);
 }
 
+/// A PARTIDA desta questao, pronta para ir ao Firestore.
+///
+/// O formato vem de `partida.dart` -- o MESMO que o app Android grava e le.
+/// Nao ha formato de partida escrito em JavaScript em lugar nenhum, e e isso
+/// que garante o cross-play: o celular enfia o documento da nuvem DIRETO no
+/// SQLite, e um campo com outro nome ou outro tipo quebraria a sincronizacao
+/// no aparelho, em silencio. Ver o teste "o contrato da partida com o
+/// navegador" em progresso_test.dart.
+///
+/// Devolve `null` se a questao ainda nao terminou.
+String _evento(String uid, String licaoJson, int instante) {
+  final s = _sessao;
+  if (s == null) return 'null';
+  final m = jsonDecode(licaoJson) as Map<String, dynamic>;
+  final licao = Lesson(
+    schemaVersion: 1,
+    language: m['language'] as String,
+    level: Level.fromJson(m['level'] as String),
+    lessonId: m['lessonId'] as String,
+    lessonTitle: (m['lessonTitle'] ?? '') as String,
+    questions: const [],
+  );
+  return jsonEncode(eventoDaPartida(
+      uid: uid, licao: licao, questao: s.questao, sessao: s,
+      instante: instante));
+}
+
+/// Quantas questoes distintas foram respondidas em cada licao -- a mesma conta
+/// que o app faz, testada contra ela.
+String _respondidas(String eventosJson) => jsonEncode(
+    respondidasPorLicaoNoHistorico((jsonDecode(eventosJson) as List<dynamic>)
+        .cast<Map<String, Object?>>()));
+
 void main() {
   // Uma unica propriedade global, `devlingo`, com as funcoes dentro. Espalhar
   // nomes soltos no `window` e como o site poluiria o espaco de qualquer outro
@@ -223,5 +257,9 @@ void main() {
   api['tokenizar'] =
       ((JSString l, JSString g) => _tokenizar(l.toDart, g.toDart).toJS).toJS;
   api['trilhas'] = ((JSString j) => _trilhas(j.toDart).toJS).toJS;
+  api['evento'] = ((JSString uid, JSString licao, JSNumber quando) =>
+      _evento(uid.toDart, licao.toDart, quando.toDartInt).toJS).toJS;
+  api['respondidas'] =
+      ((JSString eventos) => _respondidas(eventos.toDart).toJS).toJS;
   globalContext['devlingo'] = api;
 }
