@@ -1604,6 +1604,46 @@ O botão aparece também na **tela de entrada**, antes do login. Decisão dele, 
 ela preserva o valor de portfólio: quem abre o link sem conta ainda consegue
 perguntar o que é isto.
 
+#### Sem conexão ele entra em STANDBY, e não vira mensagem de erro
+
+Ideia do Gustavo em 22/09/2026: *"quando estiver offline, a IA do Tr∅nikAt
+poderia aparecer em standby (aguardando conexão para respondê-lo) — cinza, com
+uma frase do tipo 'connection lost' e umas interferências na câmera dele"*.
+
+**Ela resolve um problema real, e não é enfeite.** O DevLingo funciona offline
+**por desenho**, e o Tr∅nikAt é a única peça que não. Uma mensagem de erro ali
+faz a pessoa concluir que o jogo caiu junto — por isso o standby diz, com todas
+as letras, que **o resto continua de pé**.
+
+O retrato é o mesmo arquivo de sempre; o que muda é o tratamento por cima: sem
+saturação, linhas de varredura, e a interferência forte mirando o **visor**,
+que é a câmera dele. As medidas saem do SVG — o halo vai de `x=204` a `344` e
+de `y=152` a `224` num viewBox de `400×520` —, então a faixa cai onde deve sem
+ninguém ajustar a olho.
+
+Quatro decisões, e cada uma tem asserção em `jogo/testar_standby.js`:
+
+- **`navigator.onLine` sozinho não serve.** Ele mente do lado otimista: diz
+  `true` para quem está num wi-fi sem saída para a internet — vê-se a rede, não
+  se vê o mundo. Ele liga o standby quando diz `false`, e **uma falha de
+  `fetch` liga também**, mesmo com ele jurando que há rede
+- **`fetch` que rejeita e 500 do servidor não são a mesma coisa.** O primeiro
+  não chegou (sem rede, DNS, CORS) e o standby é o estado do mundo; o segundo
+  **chegou**, e pintar tudo de cinza mentiria sobre a causa
+- **A rede voltando tira ele do standby sozinho**, pelo evento `online`. Sem
+  isso, quem perdeu o sinal no elevador olharia um gato cinza depois de a
+  conexão voltar e concluiria que o recurso quebrou. Verificado removendo o
+  listener: reprovou nas duas asserções do fim
+- **`prefers-reduced-motion` para o chuvisco.** Aqui pesa mais que no resto do
+  projeto: chuvisco é justamente o tipo de movimento que incomoda quem é
+  sensível a ele
+
+O teste corta a rede de verdade, com `Network.emulateNetworkConditions`, e não
+com um dublê do `fetch` — que provaria apenas que o `catch` roda.
+
+**Isto é a referência visual para quando o Tr∅nikAt entrar no app**, onde o
+offline não é exceção e sim o caso comum previsto desde o início.
+
 #### A origem tem que estar na lista do Worker, e isso me pegou
 
 A primeira tentativa falhou com **CORS**, e a causa é uma lista de origens no

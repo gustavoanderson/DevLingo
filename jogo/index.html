@@ -192,10 +192,30 @@
             aria-label="Fechar a conversa">✕</button>
   </header>
   <div class="tronikat-conversa" id="tronikat-conversa" role="log" aria-live="polite"></div>
+
+  <!-- STANDBY: sem conexao ele nao some nem vira mensagem de erro. O retrato e
+       o MESMO arquivo de sempre; o que muda e o tratamento por cima dele. -->
+  <div class="tronikat-standby" id="tronikat-standby" hidden>
+    <div class="standby-arte">
+      <img src="../assets/mascot/tronikat-retrato.svg" alt="" aria-hidden="true">
+      <!-- A interferencia forte mira o VISOR, que e a camera dele. As medidas
+           saem do SVG: o halo vai de x=204 a 344 e de y=152 a 224, num viewBox
+           de 400x520 -- daqui em porcentagem. -->
+      <i class="ruido-visor" aria-hidden="true"></i>
+      <!-- E as linhas de varredura cobrem o retrato inteiro: quem perdeu o
+           sinal foi a transmissao, nao so a camera. -->
+      <i class="varredura" aria-hidden="true"></i>
+    </div>
+    <p class="standby-titulo">CONNECTION LOST</p>
+    <p class="standby-recado">Aguardando conexão para respondê-lo.</p>
+    <!-- O RECADO MAIS IMPORTANTE DA JANELA, e ele e sobre o resto do app: quem
+         ve um mascote cinza precisa saber que o jogo nao caiu junto. -->
+    <p class="standby-nota">O jogo continua funcionando normalmente.</p>
+  </div>
   <form class="tronikat-form" id="tronikat-form">
     <input class="campo" id="tronikat-campo" type="text" autocomplete="off"
            placeholder="Pergunte alguma coisa…" aria-label="Sua pergunta">
-    <button class="btn principal" type="submit">Enviar</button>
+    <button class="btn principal" id="tronikat-enviar" type="submit">Enviar</button>
   </form>
 </aside>
 

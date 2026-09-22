@@ -35,6 +35,33 @@
   let indice = null;      // o indice das falas, buscado uma vez so
   let tocando = null;     // o <audio> em curso, para o proximo poder calar
   let ocupado = false;
+  let semRede = false;    // o que a ULTIMA tentativa descobriu, nao um palpite
+
+  /* --------------------------------------------------------- o standby
+   *
+   * Ideia do Gustavo: sem conexao ele nao vira mensagem de erro, vira
+   * PERSONAGEM ESPERANDO -- cinza, chuviscando, com "connection lost".
+   *
+   * A distincao que faz isso valer a pena: o DevLingo funciona offline por
+   * desenho, e o Tr∅nikAt e a unica peca que nao. Um "erro" aqui deixaria a
+   * pessoa achando que o jogo caiu junto; por isso o standby diz, em voz alta,
+   * que o resto continua de pe.
+   *
+   * DUAS FONTES, e nenhuma sozinha basta. `navigator.onLine` responde rapido e
+   * MENTE do lado otimista: ele diz `true` para quem esta num wi-fi sem saida
+   * para a internet -- ve-se a rede, nao se ve o mundo. Entao ele liga o
+   * standby na hora quando diz `false`, e uma falha de `fetch` liga tambem,
+   * mesmo com ele jurando que ha rede. */
+  function pintarEstado() {
+    const fora = semRede || navigator.onLine === false;
+    $('tronikat-standby').hidden = !fora;
+    $('tronikat-conversa').hidden = fora;
+    $('tronikat-campo').disabled = fora;
+    $('tronikat-enviar').disabled = fora;
+    $('tronikat-campo').placeholder = fora
+      ? 'Sem conexão no momento…' : 'Pergunte alguma coisa…';
+    $('btn-tronikat').classList.toggle('offline', fora);
+  }
 
   /* ------------------------------------------------------------ a conversa */
 
@@ -121,18 +148,34 @@
 
     try {
       const r = await perguntar(pergunta);
+      semRede = false;
       espera.classList.remove('pensando');
       espera.textContent = r.texto;
       falar(r);
     } catch (e) {
       espera.classList.remove('pensando');
-      // A mensagem diz O QUE FAZER. "Erro" sozinho nao ajuda ninguem.
-      espera.textContent = 'Não consegui falar com o Tr∅nikAt agora. '
-        + 'Confira a conexão e tente de novo — o jogo continua funcionando sem ele.';
-      espera.classList.add('falhou');
+      // DOIS TIPOS DE FALHA, e confundi-los daria o recado errado.
+      //
+      // `fetch` rejeita quando a requisicao nao chega -- sem rede, DNS morto,
+      // CORS. Ai o standby e a resposta certa: e o estado do mundo, nao um
+      // tropeco desta pergunta. Ja um 500 do servidor CHEGOU: ha conexao, e
+      // pintar tudo de cinza mentiria sobre a causa.
+      const naoChegou = e instanceof TypeError;
+      if (naoChegou) {
+        semRede = true;
+        // A bolha sai de cena: quem manda agora e o standby, e deixar as duas
+        // seria dizer a mesma coisa de dois jeitos.
+        espera.remove();
+        pintarEstado();
+      } else {
+        // A mensagem diz O QUE FAZER. "Erro" sozinho nao ajuda ninguem.
+        espera.textContent = 'O Tr∅nikAt não conseguiu responder agora. '
+          + 'Tente de novo em instantes — o jogo continua funcionando sem ele.';
+        espera.classList.add('falhou');
+      }
     } finally {
       ocupado = false;
-      campo.focus();
+      if (!$('tronikat-campo').disabled) campo.focus();
     }
   }
 
@@ -142,7 +185,8 @@
     j.hidden = !abrindo;
     $('btn-tronikat').setAttribute('aria-expanded', String(abrindo));
     if (abrindo) {
-      $('tronikat-campo').focus();
+      pintarEstado();
+      if (!$('tronikat-campo').disabled) $('tronikat-campo').focus();
       if (!$('tronikat-conversa').childElementCount) {
         linha('dele', 'Oi! Pergunte o que quiser sobre o DevLingo ou sobre programação.');
       }
@@ -162,5 +206,12 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !$('tronikat-janela').hidden) alternar();
     });
+
+    // A REDE VOLTANDO TIRA ELE DO STANDBY SOZINHO, e isso importa: sem escutar
+    // o evento, quem perdeu o sinal no elevador ficaria olhando um gato cinza
+    // depois de a conexao voltar, e concluiria que o recurso quebrou.
+    window.addEventListener('online', () => { semRede = false; pintarEstado(); });
+    window.addEventListener('offline', () => { pintarEstado(); });
+    pintarEstado();
   });
 })();
