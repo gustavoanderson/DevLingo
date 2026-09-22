@@ -115,10 +115,13 @@ function pintarRetorno(e) {
   if (!temRecado) return;
 
   painel.dataset.fase = e.fase;
-  const titulo = e.fase === 'acertou' ? 'Boa!'
-    : e.fase === 'revelado' ? 'Vamos juntos'
-    : e.dicaAberta && !e.recado ? 'Dica'
-    : 'Ainda não';
+  /* OS TITULOS SAO OS DO APP, palavra por palavra. "ERRADO" nao existe em
+     lugar nenhum: a cor sinaliza que algo nao deu certo, e a escrita continua
+     do lado do aluno. Ver tela_exercicio.dart. */
+  const titulo = e.fase === 'acertou' ? 'CERTO'
+    : e.fase === 'revelado' ? 'VAMOS JUNTOS'
+    : e.dicaAberta && !e.recado ? 'DICA'
+    : 'AINDA NÃO';
   $('retorno-titulo').textContent = titulo;
 
   const corpo = $('retorno-corpo');

@@ -22,6 +22,14 @@
   --telemetria: #FFE14D;
   --termo: #8FDCE8;
 
+  /* CERTO x ACERTO: nomes parecidos, papeis opostos, e eu ja troquei um pelo
+     outro. `--certo` e o VERDE que sinaliza resposta certa; `--acerto` e o
+     magenta de marca do botao primario. Copiados de paleta.dart. */
+  --certo: #39FF14;
+  --certo-tenue: rgba(57, 255, 20, .2);
+  --erro-tenue: rgba(255, 95, 87, .2);
+  --alt-selecionada: #1D2C4A;
+
   --ide-fundo: #1B1235;
   --ide-aba: #241847;
   --ide-numero: #5F4B8B;
@@ -228,20 +236,24 @@ html, body {
   margin-top: 2px;
 }
 
-.alt[aria-pressed="true"] { border-color: var(--destaque); background: #241847; }
+.alt[aria-pressed="true"] { border-color: var(--destaque); background: var(--alt-selecionada); }
 .alt[aria-pressed="true"] .rotulo { color: var(--destaque); border-color: var(--destaque); }
 
 /* RISCADA, nao apagada: ver o que ja foi descartado faz parte do raciocinio
- * por exclusao. Por isso ela continua na lista. */
+ * por exclusao. Por isso ela continua na lista, com borda e risco vermelhos --
+ * como no app, e nao apenas esmaecida. */
 .alt.eliminada {
   text-decoration: line-through;
+  text-decoration-color: var(--erro);
   color: var(--suave);
-  border-color: var(--linha);
-  background: transparent;
+  border-color: var(--erro);
+  background: var(--erro-tenue);
   cursor: not-allowed;
 }
-.alt.certa { border-color: var(--acerto); }
-.alt.certa .rotulo { color: var(--acerto); border-color: var(--acerto); }
+.alt.eliminada .rotulo { color: var(--erro); border-color: var(--erro); }
+
+.alt.certa { border-color: var(--certo); background: var(--certo-tenue); }
+.alt.certa .rotulo { color: var(--certo); border-color: var(--certo); }
 
 /* ----------------------------------------------------------- escrita livre */
 .molde {
@@ -275,9 +287,12 @@ html, body {
   border-radius: 8px;
   padding: 10px 14px;
 }
-.retorno[data-fase="acertou"] { border-color: var(--acerto); background: #2A0F26; }
-.retorno[data-fase="revelado"] { border-color: var(--telemetria); background: #2A2410; }
-.retorno[data-fase="respondendo"] { border-color: var(--erro); background: #2A1518; }
+/* ACERTAR E REVELAR USAM A MESMA COR, e isso e deliberado no app: revelar nao
+   e falhar, e o `VAMOS JUNTOS` da tela. Pintar de vermelho transformaria
+   "errar nao termina a questao" em mentira. */
+.retorno[data-fase="acertou"] { border-color: var(--certo); background: var(--certo-tenue); }
+.retorno[data-fase="revelado"] { border-color: var(--certo); background: var(--certo-tenue); }
+.retorno[data-fase="respondendo"] { border-color: var(--erro); background: var(--erro-tenue); }
 
 .retorno .titulo {
   font-size: 12px;
@@ -285,8 +300,8 @@ html, body {
   text-transform: uppercase;
   margin-bottom: 4px;
 }
-.retorno[data-fase="acertou"] .titulo { color: var(--acerto); }
-.retorno[data-fase="revelado"] .titulo { color: var(--telemetria); }
+.retorno[data-fase="acertou"] .titulo { color: var(--certo); }
+.retorno[data-fase="revelado"] .titulo { color: var(--certo); }
 .retorno[data-fase="respondendo"] .titulo { color: var(--erro); }
 /* O CORPO CONTINUA BRANCO. Verde ou vermelho saturado em texto longo sobre
  * fundo escuro reprova em contraste, e a explicacao e o texto mais longo da
