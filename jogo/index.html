@@ -13,6 +13,19 @@
 </head>
 <body>
 
+<!-- O CENARIO, e ele e da PAGINA e nao de uma tela.
+     Na primeira versao so a entrada tinha fundo, e a escolha de trilha caia
+     num roxo chapado -- "cade a arte de fundo?". Ele e `fixed`, entao nao rola
+     junto e nao custa repintura a cada rolagem.
+
+     CSS puro: a tela de titulo do app desenha a grade em fuga com
+     CustomPainter porque "grade em fuga e geometria calculada". Aqui
+     `repeating-linear-gradient` mais `perspective` fazem o mesmo sem imagem e
+     sem JavaScript, e o navegador compoe na GPU. -->
+<div class="cenario" aria-hidden="true">
+  <i class="grade"></i>
+</div>
+
 <!--
   O DEVLINGO NO NAVEGADOR.
 
@@ -32,15 +45,6 @@
      em triplicata, e e assim que uma delas acaba com mensagem pior que as
      outras. -->
 <section class="vista" id="vista-entrada" hidden>
-  <!-- O CENARIO E CSS PURO, e isso e decisao de peso: a tela de titulo do app
-       desenha a grade em fuga com CustomPainter porque "grade em fuga e
-       geometria calculada". Aqui gradiente conico e repeating-linear-gradient
-       fazem o mesmo sem uma linha de JavaScript e sem imagem nenhuma, e o
-       navegador os compoe na GPU. -->
-  <div class="cenario" aria-hidden="true">
-    <i class="grade"></i>
-  </div>
-
   <div class="coluna estreita">
     <header class="marca">
       <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
@@ -85,10 +89,24 @@
 <!-- ==================================================== escolha de trilha -->
 <section class="vista" id="vista-escolha" hidden>
   <div class="coluna">
-    <header class="marca">
-      <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
-      <p class="lema">Aprenda a programar uma questão por vez.</p>
-      <p class="conta"><span id="quem"></span> · <a href="#" id="sair-conta">sair da conta</a></p>
+    <!-- A conta vem ANTES da marca, e discreta. Ela estava entre o lema e os
+         cartoes, cortando o cabecalho em duas metades sem relacao: informacao
+         de sistema no meio do caminho entre a marca e a acao. No app ela e uma
+         linha de botoes no topo, e aqui vale a mesma leitura. -->
+    <p class="conta"><span id="quem"></span> · <a href="#" id="sair-conta">sair da conta</a></p>
+    <header class="marca com-mascote">
+      <div>
+        <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
+        <!-- A mesma frase do app. Ali o lema desta tela e "Escolha por onde
+             comecar", e nao o lema da marca: a tela pede uma escolha. -->
+        <p class="lema">Escolha por onde começar.</p>
+      </div>
+      <!-- O mascote de CORPO INTEIRO, o mesmo arquivo e o mesmo lugar do app,
+           que o poe a direita do titulo com 82px. E a arte canonica: a regra
+           deste repositorio e copiar o traco de identidade, nunca desenha-lo
+           de novo. -->
+      <img class="mascote-lado" src="../assets/mascot/tronikat.svg"
+           alt="Tr∅nikAt, o mascote do DevLingo">
     </header>
     <h2 class="rotulo-secao">Escolha uma trilha</h2>
     <nav class="cartoes" id="lista-trilhas" aria-label="Trilhas"></nav>

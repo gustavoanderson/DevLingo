@@ -221,10 +221,43 @@ function conversa(ws) {
     conferir(await texto('quem') === CONTA.email, 'mostra quem esta na conta');
     const nomes = await js(`[...document.querySelectorAll('#lista-trilhas .titulo-cartao')].map(e => e.textContent)`);
     conferir(nomes.indexOf('Java') < nomes.indexOf('Selenium'), 'Java vem antes de Selenium, como no app');
-    const ladoPython = await js(`document.querySelector('a[href="#/python"] .lado').textContent`);
-    conferir(ladoPython === '3 de 50', 'Python mostra o progresso que veio da nuvem', ladoPython);
-    const ladoJava = await js(`document.querySelector('a[href="#/java"] .lado').textContent`);
-    conferir(ladoJava === '5 lições', 'trilha nunca jogada ve um convite, nao zeros', ladoJava);
+    // O CARTAO DA ESCOLHA COPIA O `_CartaoDaTrilha` DO APP: uma linha de
+    // metadados so, faixa colorida a esquerda contando o estado, e barra.
+    const metaPython = await js(`document.querySelector('a[href="#/python"] .meta-trilha').textContent`);
+    conferir(metaPython === '5 lições · 3 de 50 questões',
+      'Python mostra o progresso que veio da nuvem', metaPython);
+
+    // UMA REGRA SO, E ELA E A DO APP.
+    //
+    // Antes esta assercao exigia "5 licoes" aqui e "3 de 50" acima -- duas
+    // metricas na mesma coluna, conforme houvesse progresso. O Gustavo leu a
+    // tela e disse que os titulos estavam desorganizados; a causa era esta.
+    //
+    // A regra "quem nao jogou ve um convite, nao zeros" continua valendo onde
+    // nasceu: a tela de ESTATISTICAS, em que o zero e o unico retorno. Aqui ele
+    // divide o cartao com uma barra vazia, que ja diz "nao comecou", e o numero
+    // passa a ser o que e -- quanto falta.
+    const metaJava = await js(`document.querySelector('a[href="#/java"] .meta-trilha').textContent`);
+    conferir(metaJava === '5 lições · 0 de 50 questões',
+      'trilha intocada usa a MESMA linha, com zero', metaJava);
+
+    // A COR DA FAIXA E O ESTADO. Sem esta assercao, a lista inteira podia ficar
+    // com o mesmo peso visual e nenhum texto denunciaria -- o CLAUDE.md registra
+    // a barra de desfechos que ficou INVISIVEL com os rotulos todos certos.
+    const estados = await js(`(() => {
+      const e = (h) => { const c = document.querySelector('a[href="' + h + '"]');
+        return c.classList.contains('concluida') ? 'concluida'
+             : c.classList.contains('comecada') ? 'comecada' : 'intocada'; };
+      return [e('#/python'), e('#/java')];
+    })()`);
+    conferir(estados[0] === 'comecada' && estados[1] === 'intocada',
+      'a faixa do cartao conta o estado da trilha', estados.join(' / '));
+
+    // E a barra tem ALTURA. `ColoredBox` sem filho ja resolveu para zero no app,
+    // e o defeito passou despercebido porque o texto ao lado continuava certo.
+    const alturaBarra = await js(`Math.round(document.querySelector(
+      'a[href="#/python"] .progresso-trilha').getBoundingClientRect().height)`);
+    conferir(alturaBarra >= 6, 'a barra de progresso tem altura de verdade', alturaBarra + 'px');
 
     await js(`document.querySelector('a[href="#/python"]').click()`);
     conferir(await esperar(visivel('vista-trilha')), 'clicar em Python abre a trilha');

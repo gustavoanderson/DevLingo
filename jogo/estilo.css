@@ -460,12 +460,85 @@ html, body {
 .btn.largo { width: 100%; margin-top: 12px; }
 .trocar-modo { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; }
 .trocar-modo a, .conta a { color: var(--destaque); font-size: 13px; }
-.conta { color: var(--suave); font-size: 13px; margin: -22px 0 30px; }
+
+/* A conta e a PRIMEIRA linha da tela, e discreta. Ela ficava entre o lema e os
+   cartoes, partindo o cabecalho em duas metades sem relacao. */
+.conta {
+  color: var(--suave);
+  font-size: 13px;
+  margin: 0 0 4px;
+  text-align: right;
+}
+
+/* O mascote ao lado do titulo, como no app -- la ele tem 82px e fica a direita
+   do bloco de texto. A arte e `tronikat.svg`, a MESMA que o app carrega. */
+.marca.com-mascote {
+  display: flex;
+  /* CENTRO, e nao a base. O app usa um `Row` sem `crossAxisAlignment`, cujo
+     padrao e `center`. Com a base alinhada, o mascote -- que e alto -- empurrava
+     o titulo para baixo e abria um buraco de 140px a esquerda dele. */
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+.marca.com-mascote .lema { margin-bottom: 0; }
+
+.mascote-lado {
+  width: 124px;
+  flex: none;
+  /* Ele nao respira aqui. A entrada tem um gato so, em close, e o movimento e
+     o convite; nesta tela ele divide espaco com seis cartoes, e um desenho
+     pulsando ao lado de uma lista disputa a leitura em vez de enfeita-la. */
+}
+
+@media (max-width: 560px) {
+  .mascote-lado { width: 78px; }
+}
 
 /* O progresso na trilha: o numero e o que a pessoa procura, e a licao
    concluida ganha o verde de CERTO -- concluir e acertar tem o mesmo sabor. */
 .cartao.concluida { border-color: var(--certo); }
 .cartao.concluida .lado { color: var(--certo); }
+
+/* ============================ a faixa e a barra, copiadas de _CartaoDaTrilha
+ *
+ * A COR DA FAIXA E O ESTADO, e e assim no app: apagada quando a trilha nunca
+ * foi tocada, ciano quando esta em andamento, verde quando acabou. Sem ela a
+ * lista inteira tem o mesmo peso visual, e descobrir onde se parou exige ler
+ * seis numeros.
+ *
+ * Tres pixels, a esquerda, como la. */
+.cartao { border-left: 3px solid var(--linha); }
+.cartao.comecada { border-left-color: var(--destaque); }
+.cartao.concluida { border-left-color: var(--certo); }
+
+/* A barra ocupa a largura inteira do cartao, embaixo. `grid-column: 1 / -1`
+   porque o cartao e uma grade de duas colunas e ela nao pertence a nenhuma. */
+.progresso-trilha {
+  grid-column: 1 / -1;
+  height: 8px;
+  margin-top: 10px;
+  background: var(--linha);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progresso-trilha > i {
+  display: block;
+  height: 100%;
+  background: var(--destaque);
+  border-radius: 4px;
+}
+.cartao.concluida .progresso-trilha > i { background: var(--certo); }
+
+/* A linha de metadados, que substituiu o numero solto. Ela e `--suave` e nao
+   `--destaque`: e informacao de apoio, e pintar tudo de ciano faria a lista
+   competir consigo mesma. */
+.meta-trilha {
+  grid-column: 1 / -1;
+  color: var(--suave);
+  font-size: 12px;
+}
 
 /* Enquanto a conta e o progresso chegam. Sem isto a primeira coisa na tela
    seria o fundo vazio, que se le como pagina quebrada. */
@@ -480,19 +553,37 @@ html, body {
 
 #vista-entrada { position: relative; }
 
-/* O `overflow` mora AQUI, e nao na vista inteira. A grade transborda de
-   proposito (left e right em -25%), e alguem precisa conter isso -- mas se
-   quem contivesse fosse a vista, numa janela baixa o formulario seria cortado
-   sem rolagem, e a pessoa nao alcancaria o botao de entrar. */
+/* `fixed`, e isso importa por dois motivos. O cenario e da PAGINA, entao toda
+   tela o herda sem ninguem repetir marcacao; e ele nao rola junto, entao nao
+   ha repintura a cada rolagem numa lista longa de licoes.
+
+   O `overflow` mora AQUI, e nao no corpo. A grade transborda de proposito
+   (`left` e `right` em -25%), e alguem precisa conter isso -- mas se quem
+   contivesse fosse a pagina, numa janela baixa o formulario da entrada seria
+   cortado sem rolagem e ninguem alcancaria o botao de entrar. */
+/* As vistas sobem UM nivel, para ficarem na frente do cenario. Sem isto o
+   cenario, que vem antes no documento, ainda perderia para nada -- mas com
+   `position: fixed` ele passa a pintar por cima do conteudo estatico. */
+.vista { position: relative; z-index: 1; }
+
 .cenario {
-  position: absolute;
+  position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  /* O ceu, do roxo do fundo para o magenta da marca, bem de leve. */
+
+  /* NAO use z-index negativo aqui. Foi a primeira tentativa, e o cenario
+     sumiu: um filho com `z-index: -1` vai parar atras do fundo do proprio
+     `body`, que e opaco. O print mostrou fundo chapado e nenhuma grade.
+     A ordem certa e cenario em 0 e conteudo em 1. */
+  z-index: 0;
+  /* O ceu. Sao TRES camadas, e cada uma cobre uma faixa que as outras deixam
+     chapada -- a de cima entrou depois do print da escolha, onde os primeiros
+     300px, que e por onde o olho entra, nao tinham nada. */
   background:
-    radial-gradient(120% 70% at 50% 78%, rgba(255, 45, 149, .16), transparent 60%),
-    linear-gradient(180deg, #120725 0%, var(--fundo) 55%);
+    radial-gradient(90% 40% at 50% 0%, rgba(0, 229, 255, .10), transparent 70%),
+    radial-gradient(120% 60% at 50% 88%, rgba(255, 45, 149, .18), transparent 62%),
+    linear-gradient(180deg, #120725 0%, var(--fundo) 45%);
 }
 
 /* O SOL E CONTRALUZ DO MASCOTE, e nao paisagem de fundo.

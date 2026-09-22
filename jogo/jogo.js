@@ -280,10 +280,12 @@ function cartao(href, titulo, sub, lado, extraTopo) {
   }
   t.appendChild(document.createTextNode(titulo));
   a.appendChild(t);
-  const s2 = document.createElement('span');
-  s2.className = 'lado';
-  s2.textContent = lado;
-  a.appendChild(s2);
+  if (lado) {
+    const s2 = document.createElement('span');
+    s2.className = 'lado';
+    s2.textContent = lado;
+    a.appendChild(s2);
+  }
   if (sub) {
     const d = document.createElement('span');
     d.className = 'sub';
@@ -293,17 +295,50 @@ function cartao(href, titulo, sub, lado, extraTopo) {
   return a;
 }
 
+/* Acrescenta ao cartao a linha de metadados e a barra -- o que o
+   `_CartaoDaTrilha` do app desenha e a web nao desenhava.
+
+   A COR DA FAIXA E O ESTADO, e as classes saem daqui em vez de do CSS porque
+   so quem tem os numeros sabe qual e. */
+function comProgresso(a, meta, feitas, total) {
+  const m = document.createElement('span');
+  m.className = 'meta-trilha';
+  m.textContent = meta;
+  a.appendChild(m);
+
+  if (feitas > 0) a.classList.add(total > 0 && feitas >= total ? 'concluida' : 'comecada');
+
+  const barra = document.createElement('span');
+  barra.className = 'progresso-trilha';
+  const i = document.createElement('i');
+  i.style.width = (total > 0 ? Math.round((feitas / total) * 100) : 0) + '%';
+  barra.appendChild(i);
+  a.appendChild(barra);
+  return a;
+}
+
 function pintarEscolha() {
   const lista = $('lista-trilhas');
   lista.textContent = '';
   for (const t of trilhas) {
     const feitas = t.licoes.reduce((n, l) => n + (respondidas[l.id] || 0), 0);
     const total = t.licoes.reduce((n, l) => n + l.questoes, 0);
-    // QUEM AINDA NAO JOGOU VE UM CONVITE, NAO ZEROS. E a regra da tela de
-    // estatisticas do app: "0 de 50" parece um resultado ruim quando nao ha
-    // resultado nenhum.
-    lista.appendChild(cartao('#/' + t.chave, t.nome, t.descricao,
-      feitas ? feitas + ' de ' + total : t.licoes.length + ' lições'));
+    const n = t.licoes.length;
+
+    // UMA REGRA SO, e ela e a do app.
+    //
+    // Antes esta linha alternava entre "2 de 50" e "5 licoes" conforme houvesse
+    // progresso -- duas metricas na mesma coluna, e foi isso que o Gustavo leu
+    // como desorganizado. O `_CartaoDaTrilha` sempre escreve a linha inteira.
+    //
+    // Eu tinha escrito aqui que "0 de 50" quebraria a regra do convite. Ela
+    // vale na tela de ESTATISTICAS, onde o zero e o unico retorno e se le como
+    // resultado ruim. Aqui a barra vazia ja diz "nao comecou" sem cobrar nada,
+    // e o numero passa a ser o que e: quanto falta.
+    const meta = n + (n === 1 ? ' lição · ' : ' lições · ') +
+      feitas + ' de ' + total + ' questões';
+    lista.appendChild(comProgresso(
+      cartao('#/' + t.chave, t.nome, t.descricao, null), meta, feitas, total));
   }
   document.title = 'DevLingo';
   mostrar('vista-escolha');
