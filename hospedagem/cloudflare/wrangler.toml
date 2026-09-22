@@ -24,4 +24,11 @@ FORMATO = "gemma"
 # verdade e o aquecimento na visita, no site -- este aqui e seguro, e de quebra
 # da sinal de vida para a Oracle, que recicla instancia Always Free ociosa.
 [triggers]
-crons = ["*/15 * * * *"]
+# DOIS RITMOS, porque duas coisas esfriam em escalas diferentes:
+#
+#   */3   a BUSCA (embedding do Workers AI), que esfria em MINUTOS -- medido,
+#         300 s de pausa levaram a busca de ~250 ms para 4388 ms
+#   */15  a VOZ no Oracle, que so esfria depois de horas
+#
+# Sao 2 dos 5 gatilhos do plano gratuito.
+crons = ["*/3 * * * *", "*/15 * * * *"]

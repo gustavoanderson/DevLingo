@@ -127,14 +127,46 @@ export default {
    * PROVEI que a voz nao esfria. Qualquer numero maior seria extrapolacao.
    */
   async scheduled(evento, env, ctx) {
-    if (!env.VOZ_ORIGEM) return;
+    /* SAO DUAS COISAS QUE ESFRIAM, e em ritmos MUITO diferentes.
+     *
+     * A BUSCA (o embedding do Workers AI) esfria em MINUTOS. Medido em
+     * 21/09/2026, com pausas crescentes antes de cada chamada:
+     *
+     *     0 s -> 247 ms       120 s -> 522 ms
+     *    30 s -> 156 ms       180 s -> 598 ms
+     *    60 s -> 189 ms       300 s -> 4388 ms
+     *
+     * E ela era TODA a variacao do tempo de resposta: a geracao de texto ficou
+     * entre 323 e 716 ms nas doze medicoes, enquanto a busca foi de 196 ms a
+     * 4923 ms. Eu passei a sessao inteira chamando isso de "o Worker pensando"
+     * -- e o modelo que pensa nunca foi o lento.
+     *
+     * A VOZ, no Oracle, so esfria depois de HORAS (ver o comentario do
+     * /aquecer). Aquece-la de 3 em 3 minutos seria castigar uma maquina de um
+     * oitavo de OCPU a troco de nada.
+     *
+     * Dai os dois gatilhos. Custo da busca: ~10 tokens por aquecimento, 480 por
+     * dia, menos de 30 neurons contra o teto gratuito de 10.000 -- conferido na
+     * tabela de precos oficial antes de escrever.
+     */
+    const cron = evento && evento.cron;
+
+    // A busca, sempre: e o gatilho de 3 minutos que domina.
     ctx.waitUntil(
-      fetch(env.VOZ_ORIGEM.replace(/\/$/, "") + "/aquecer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Voz-Chave": env.VOZ_CHAVE || "" },
-        body: "{}",
-      }).catch((e) => console.error("aquecimento agendado falhou:", e && (e.message || String(e)))),
+      embed(env, ["aquecendo a busca"])
+        .catch((e) => console.error("aquecimento da busca falhou:", e && (e.message || String(e)))),
     );
+
+    // A voz, so no gatilho lento.
+    if (cron === "*/15 * * * *" && env.VOZ_ORIGEM) {
+      ctx.waitUntil(
+        fetch(env.VOZ_ORIGEM.replace(/\/$/, "") + "/aquecer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Voz-Chave": env.VOZ_CHAVE || "" },
+          body: "{}",
+        }).catch((e) => console.error("aquecimento da voz falhou:", e && (e.message || String(e)))),
+      );
+    }
   },
 
   async fetch(request, env) {
