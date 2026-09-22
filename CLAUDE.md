@@ -998,6 +998,44 @@ Os três modos — entrar, criar conta, recuperar senha — são **um formulári
 - **A recuperação NUNCA revela se a conta existe.** Responder "não achamos esse e-mail" entregaria a lista de quem tem conta. Um teste compara as duas respostas e exige que sejam idênticas
 - **O mínimo da senha aparece antes de a pessoa errar.** Regra escondida até a falha é regra mal comunicada
 
+### Dá para sair da conta, e por quase um ano não deu
+
+Encontrado pelo Gustavo em 22 de setembro de 2026, usando o app: *"não tem como
+deslogar da sessão no app! como não previu isso ao criar uma tela de login,
+Claude?"*.
+
+**A pergunta dele é a parte importante.** `Autenticacao.sair()` existia desde o
+primeiro dia, nas duas implementações, com teste. O que faltava era **alguém
+chamá-lo**: nenhuma tela do app tinha o botão. A peça estava pronta, coberta, e
+inalcançável — e uma suíte verde não tem como reclamar de uma chamada que
+ninguém escreveu.
+
+**E ele escondia um segundo defeito, que é o mesmo defeito.** O "Esqueci minha
+senha" só existe na tela de entrada, e **sem sair da conta aquela tela nunca
+mais aparece**. Quem entrou uma vez ficava preso: não saía, e não alcançava a
+recuperação de senha. Um item da lista dele — *"e o esqueci minha senha não tem
+também"* — era consequência do outro, e consertar o primeiro consertou os dois.
+
+Três decisões da implementação:
+
+- **Ele PERGUNTA antes, ao contrário do ✕ da tela de exercício.** Lá a regra é
+  não perguntar, porque o progresso é salvo a cada questão e a pergunta viraria
+  ruído. Aqui o custo é outro: voltar exige a senha **e exige internet**, e o
+  DevLingo foi desenhado para funcionar offline depois do primeiro login. Sair
+  sem querer tranca a pessoa fora do app até ela achar uma rede
+- **Sobe o que falta antes de sair**, com teto de 5 segundos. Depois do logout o
+  uid sai de cena e a sincronização não roda mais; quem sai logo depois de jogar
+  deixaria as últimas partidas presas no aparelho. O teto existe porque esperar
+  o Firestore desistir sozinho deixaria a pessoa olhando um botão que não
+  responde — e o que não subir continua pendente, que é o comportamento normal
+  de toda a sincronização deste app
+- **No modo de demonstração o botão nem aparece.** `aoSairDaConta` é nulo quando
+  a autenticação é a falsa. Oferecer "sair" de uma conta que não existe é a
+  mesma mentira que o painel amarelo existe para desfazer
+
+Dois testes travam isso: um confirma que sair **pergunta** e só então volta à
+entrada, o outro que sem conta de verdade o botão não é desenhado.
+
 ### O Firebase está ligado
 
 Projeto **`devlingo-cc399`**, plano Spark (gratuito). Provado no emulador: conta criada de verdade, UID devolvido pelo servidor, e o app reabriu **sem pedir login** — a sessão em cache funciona, que era a promessa central do desenho.
@@ -1188,7 +1226,11 @@ O protocolo de uma linha por frase custa **~5 tokens por frase**. E ele é segur
 
 **O site público não gera texto nenhum**, e essa é a decisão central. Cada ficha tem seu texto e sua voz gravados antes, por `hospedagem/gerar_falas.py`. O Worker recebe a pergunta e devolve só **qual ficha responde**; o site toca o áudio correspondente.
 
-A consequência de segurança está escrita na fonte do Worker e vale repetir: **ele nunca vê uma resposta — só conhece as perguntas-exemplo — e não tem o que vazar.** Não há chave de API, porque não há API paga. Não há teto de gasto a defender, porque o gasto é zero.
+Não há chave de API, porque não há API paga. Não há teto de gasto a defender, porque o gasto é zero.
+
+> **Correção de 22/09/2026.** Este parágrafo afirmava que o Worker **nunca vê uma resposta**, e isso deixou de ser verdade na fase 1, quando ele passou a gerar texto na borda: sem a resposta ele não teria o que reescrever. O `fichas.json` publicado carrega `id`, `perguntas` **e** `resposta`.
+>
+> **O que isso muda de risco é menos do que parece**, e o comentário em `gerar_falas.py` já dizia: os mesmos textos são públicos em `site/falas/indice.json`, servido em HTTP 200 com 346 KB. Nada que estava escondido deixou de estar. O que muda é o procedimento — ver "Ao mexer em `fichas.md`" abaixo.
 
 ### O prefixo do embedding vale 13 respostas, e a documentação diz o contrário
 
@@ -1230,14 +1272,15 @@ estudio/.venv/Scripts/python.exe hospedagem/calibrar_borda.py # 3. confere o pis
 
 **Pular o passo 1 é a falha silenciosa da vez:** o Worker passa a apontar para uma ficha cuja voz ainda é a antiga, e o site responde a pergunta certa com o áudio errado. Nada quebra, nada avisa. É a mesma armadilha que este arquivo já registra para os assets do `pubspec` e para os arquivos gerados.
 
-**E os três passos nem sempre são necessários — medido em 16/09/2026.** O `fichas.json` do Worker carrega **só `id` e `perguntas`**, nunca as respostas. Então:
+**Os três passos são sempre necessários, e este arquivo já disse o contrário.**
 
-| O que mudou na ficha | O que rodar |
-|---|---|
-| só a `resposta` | **apenas `gerar_falas.py`** — o Worker não viu diferença |
-| `perguntas`, `id`, ou o piso | os três passos, na ordem |
+Em 16/09/2026 ficou registrado aqui que mudar só a `resposta` dispensava o deploy, *"porque o Worker não viu diferença"*. Era verdade naquela data. A **fase 1 — geração na borda — pôs a `resposta` dentro do `fichas.json`**, porque sem ela o Worker não tem o que reescrever, e a regra virou mentira sem ninguém reescrevê-la.
 
-Confirmado na prática ao corrigir o denominador da cobertura: mudou o texto de uma resposta, `git status` mostrou **um** WAV regravado e o `fichas.json` do Worker **intacto**. E `gerar_falas.py --conferir` diz quais falas estão desatualizadas **sem sintetizar voz** — ele compara a impressão (texto + voz + tom), e não os bytes do WAV, porque o Piper tem aleatoriedade e gerar duas vezes nunca dá os mesmos bytes.
+Em 22/09/2026 ela quase custou caro: eu mudei uma contagem de testes numa resposta e **ia pular o deploy apoiado nela**. Quem pegou foi `gerar_falas.py --conferir`, que compara o `fichas.json` do disco com o que a ficha produz e reclamou de uma divergência que, pela regra escrita aqui, não deveria existir.
+
+**A lição é sobre este arquivo, não sobre aquele passo:** uma regra que enumera *quando não fazer* envelhece junto com o desenho que a justificava, e o código muda sem que ninguém se lembre de voltar aqui. O atalho foi removido; sobram os três passos, na ordem.
+
+`gerar_falas.py --conferir` continua sendo a forma barata de saber o que está desatualizado **sem sintetizar voz** — ele compara a impressão (texto + voz + tom), e não os bytes do WAV, porque o Piper tem aleatoriedade e gerar duas vezes nunca dá os mesmos bytes. **Ele é o portão, e a prosa daqui não é.**
 
 ### Armadilhas medidas, que custaram tempo
 
@@ -1456,6 +1499,43 @@ Para comparar: o site do Tr∅nikAt, depois de três rodadas de limpeza, abre em
 Provado com a lição real `python-beg-03`, não com maquete: embaralhamento,
 eliminação riscada, recado, explicação e realce de sintaxe, todos vindos do
 cérebro.
+
+### A tela de entrada, e o que o print corrigiu
+
+O Gustavo, em 22/09: *"estou achando essa tela inicial do navegador muito
+crua"*. Era: logo, formulário, fundo liso.
+
+**Nada do mascote foi desenhado aqui**, e isso é a regra "traço de identidade se
+copia, não se inventa" cobrando o que já custou o olho âmbar. O navegador
+aponta para `../assets/mascot/tronikat-retrato.svg` — **o mesmo arquivo que o
+app usa**, sem cópia, do mesmo jeito que o jogo já lê o banco de questões em
+`../app/assets/content/`. Ele é estático (sem SMIL), então o navegador desenha
+o arquivo de verdade, com as três correções que aquela arte já levou: olho
+preto redondo, proporção do corpo, e as orelhas a poucos graus da vertical.
+
+O cenário é **CSS puro** — gradientes para o céu e a grade, `transform` para a
+respiração. Nenhuma imagem, nenhum JavaScript, e nada que o navegador precise
+repintar. O site do Tr∅nikAt já custou três rodadas de limpeza por pintura
+cara, e esta é a **primeira** tela que qualquer pessoa vê.
+
+**Três defeitos que só o print mostrou**, e nenhum deles apareceria lendo o CSS:
+
+| O que estava errado | Por quê |
+|---|---|
+| O sol atravessava o formulário | Sol no horizonte é o synthwave clássico, e não serve aqui: o painel de login ocupa o centro, então as fatias escuras apareciam **dentro** dele e liam como falha de renderização. Virou contraluz atrás da cabeça do gato, que é onde nada passa por cima |
+| O mascote terminava em corte reto | O retrato é um busto que **sangra de propósito** (ombros de `x=-40` a `x=440`). No app ele encosta na borda e ninguém vê o corte; aqui ele flutua no meio da página. Um `mask-image` desmancha a base em vez de cortá-la |
+| No celular o sol ficava **maior** que no computador | A regra do `@media` ainda trazia o tamanho da versão de horizonte, e o disco engolia o gato |
+
+E uma armadilha que o print **não** mostraria, porque só aparece em janela
+baixa: o `overflow: hidden` que contém a grade — ela transborda de propósito,
+`left` e `right` em `-25%` — mora no **cenário**, e não na vista. Se quem
+contivesse fosse a vista, numa janela baixa o formulário seria cortado sem
+rolagem e a pessoa não alcançaria o botão de entrar. Verificado a 420×560: a
+página rola, nada some.
+
+Medido com CPU 4× mais lenta, que é como este arquivo manda simular o notebook
+dele: **primeira pintura em 2132 ms**, zero erro no console, sem rolagem
+horizontal. O critério continua sendo os 4 s escritos antes.
 
 ### O que ainda não existe
 

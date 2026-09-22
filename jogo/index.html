@@ -32,10 +32,27 @@
      em triplicata, e e assim que uma delas acaba com mensagem pior que as
      outras. -->
 <section class="vista" id="vista-entrada" hidden>
+  <!-- O CENARIO E CSS PURO, e isso e decisao de peso: a tela de titulo do app
+       desenha a grade em fuga com CustomPainter porque "grade em fuga e
+       geometria calculada". Aqui gradiente conico e repeating-linear-gradient
+       fazem o mesmo sem uma linha de JavaScript e sem imagem nenhuma, e o
+       navegador os compoe na GPU. -->
+  <div class="cenario" aria-hidden="true">
+    <i class="grade"></i>
+  </div>
+
   <div class="coluna estreita">
     <header class="marca">
       <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
+      <p class="lema">Uma questão por vez.</p>
     </header>
+    <!-- O retrato CANONICO do mascote, o mesmo arquivo que o app usa. Ele
+         respira 2%, como na tela de titulo: mais que isso vira zoom, e zoom em
+         laco embrulha o estomago. -->
+    <div class="palco" aria-hidden="true">
+      <i class="sol"></i>
+      <img class="mascote" src="../assets/mascot/tronikat-retrato.svg" alt="">
+    </div>
     <form class="formulario" id="form-entrada" novalidate>
       <h2 class="titulo-form" id="titulo-entrada">Entrar</h2>
       <p class="explica" id="explica-entrada"></p>

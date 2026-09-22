@@ -325,6 +325,55 @@ void main() {
       expect(find.text('concluída'), findsOneWidget);
     });
 
+    // SAIR DA CONTA, que faltava desde que o login existe. O Gustavo encontrou
+    // usando: "nao tem como deslogar da sessao no app!". O `sair()` existia na
+    // interface de autenticacao e nenhuma tela o chamava.
+    //
+    // E ele escondia outro: o "Esqueci minha senha" so vive na tela de
+    // entrada, e sem sair da conta aquela tela nunca mais aparece.
+    testWidgets('da para sair da conta, e ele PERGUNTA antes', (tester) async {
+      var saiu = 0;
+      await montar(
+        tester,
+        TelaLinguagens(
+          banco: bancoDuasLinguagens,
+          progresso: ProgressoFalso(),
+          aoSairDaConta: () => saiu++,
+        ),
+      );
+
+      expect(find.byKey(TelaLinguagens.chaveSair), findsOneWidget);
+
+      await tester.tap(find.byKey(TelaLinguagens.chaveSair));
+      await tester.pumpAndSettle();
+      // Perguntar antes e deliberado, e diferente do ✕ da tela de exercicio:
+      // aqui voltar exige senha e internet.
+      expect(find.text('Sair da conta?'), findsOneWidget);
+      expect(saiu, 0, reason: 'nao pode sair so por abrir a pergunta');
+
+      await tester.tap(find.text('Ficar'));
+      await tester.pumpAndSettle();
+      expect(saiu, 0, reason: 'desistir nao sai');
+
+      await tester.tap(find.byKey(TelaLinguagens.chaveSair));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(TelaLinguagens.chaveConfirmarSaida));
+      await tester.pumpAndSettle();
+      expect(saiu, 1, reason: 'confirmar tem de CHAMAR o sair');
+    });
+
+    testWidgets('sem conta de verdade o botao de sair nem aparece', (
+      tester,
+    ) async {
+      // No modo de demonstracao nao ha do que sair, e oferecer o botao seria
+      // oferecer o que nao existe.
+      await montar(
+        tester,
+        TelaLinguagens(banco: bancoDuasLinguagens, progresso: ProgressoFalso()),
+      );
+      expect(find.byKey(TelaLinguagens.chaveSair), findsNothing);
+    });
+
     testWidgets('o cartao diz o que a trilha cobre', (tester) async {
       // Defeito de descoberta apontado pelo Gustavo: quem abre a lista ve
       // "Frameworks" e nao tem como saber que aquilo e sobre JavaScript. O

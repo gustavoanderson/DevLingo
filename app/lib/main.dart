@@ -236,6 +236,30 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
   ///
   /// Falha de rede nao vira erro visivel: o `Sincronizador` ja engole e relata,
   /// e os eventos continuam pendentes para a proxima rodada.
+  /// Sai da conta e volta para a tela de entrada.
+  ///
+  /// SOBE O QUE FALTA ANTES DE SAIR, e isso nao e zelo: depois do logout o uid
+  /// sai de cena e a sincronizacao nao roda mais. Quem saisse logo depois de
+  /// jogar deixaria as ultimas partidas presas no aparelho ate voltar -- e
+  /// quem sai da conta muitas vezes esta trocando de aparelho.
+  ///
+  /// Com teto de tempo: sem rede, esperar o Firestore desistir sozinho
+  /// deixaria a pessoa olhando um botao que nao responde. O que nao subir
+  /// continua pendente e sobe na proxima entrada, que e o comportamento normal
+  /// de toda a sincronizacao deste app.
+  Future<void> _aoSair() async {
+    final partida = await _partida;
+    try {
+      await _sincronizar(
+        partida.progresso,
+      ).timeout(const Duration(seconds: 5));
+    } on Object {
+      // Falhar aqui nao impede a saida. Sincronizacao e conveniencia.
+    }
+    await _autenticacao.sair();
+    if (mounted) setState(() => _usuario = null);
+  }
+
   Future<void> _sincronizar(Progresso progresso) async {
     final resultado = await _sincronizador.sincronizar(progresso);
     if (resultado.recebidos > 0 && mounted) {
@@ -306,6 +330,9 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
         }
 
         return TelaLinguagens(
+          // Nulo no modo de demonstracao: sem conta de verdade, nao ha do que
+          // sair, e o botao nao aparece.
+          aoSairDaConta: _autenticacao is AutenticacaoFalsa ? null : _aoSair,
           banco: partida.banco,
           progresso: partida.progresso,
           aoVoltarAoTitulo: aoVoltarAoTitulo,

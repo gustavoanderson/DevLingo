@@ -20,6 +20,7 @@ class TelaLinguagens extends StatefulWidget {
     required this.banco,
     this.progresso,
     this.aoVoltarAoTitulo,
+    this.aoSairDaConta,
     this.sineta,
     this.chegouDaNuvem,
   });
@@ -34,6 +35,22 @@ class TelaLinguagens extends StatefulWidget {
   /// exigiria fechar e reabrir o app**. Ela não é conteúdo consumível, é a
   /// abertura — e abertura que só se vê matando o processo é abertura perdida.
   final VoidCallback? aoVoltarAoTitulo;
+
+  /// Sai da conta e volta para a tela de entrada.
+  ///
+  /// **Faltava, e o Gustavo encontrou usando:** *"nao tem como deslogar da
+  /// sessao no app! como nao previu isso ao criar uma tela de login?"*. O
+  /// `Autenticacao.sair()` existia desde o comeco, com as duas implementacoes
+  /// prontas, e nenhuma tela o chamava.
+  ///
+  /// E ele escondia um segundo defeito, que e o mesmo defeito: o "Esqueci
+  /// minha senha" so existe na tela de entrada, e **sem sair da conta aquela
+  /// tela nunca mais aparece**. Quem entrou uma vez ficava preso -- nao saia,
+  /// e nao alcancava a recuperacao de senha.
+  ///
+  /// Nulo quando nao ha conta de verdade, e ai o botao nem aparece: oferecer
+  /// "sair" no modo de demonstracao seria oferecer o que nao existe.
+  final VoidCallback? aoSairDaConta;
 
   final Sineta? sineta;
 
@@ -51,6 +68,12 @@ class TelaLinguagens extends StatefulWidget {
   /// `resource-id`, e com dois nomes um dos dois envelhece sozinho.
   static const String idLicencas = 'linguagens-licencas';
   static const Key chaveLicencas = Key(idLicencas);
+
+  static const String idSair = 'linguagens-sair';
+  static const Key chaveSair = Key(idSair);
+
+  /// O botao de confirmar dentro do dialogo de saida.
+  static const Key chaveConfirmarSaida = Key('confirmar-saida');
 
   /// As trilhas que existem de verdade, em ordem de linguagem e nível.
   ///
@@ -130,6 +153,8 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
                 if (widget.aoVoltarAoTitulo != null)
                   _BotaoTitulo(aoTocar: widget.aoVoltarAoTitulo!),
                 const Spacer(),
+                if (widget.aoSairDaConta != null)
+                  _BotaoSair(aoSair: widget.aoSairDaConta!),
                 const _BotaoLicencas(),
               ],
             ),
@@ -376,6 +401,67 @@ class _CartaoDaTrilha extends StatelessWidget {
 /// É um ícone sem rótulo, e discreto de propósito: a ação principal desta
 /// tela é escolher uma trilha. Mesmo raciocínio que faz o botão de título ser
 /// contornado em vez de preenchido.
+class _BotaoSair extends StatelessWidget {
+  const _BotaoSair({required this.aoSair});
+
+  final VoidCallback aoSair;
+
+  /// PERGUNTA ANTES, ao contrario do ✕ da tela de exercicio.
+  ///
+  /// La a regra e nao perguntar, porque o progresso e salvo a cada questao e a
+  /// pergunta viraria ruido. Aqui o custo e outro: voltar exige a senha e
+  /// exige internet -- e o DevLingo foi desenhado para funcionar offline
+  /// depois do primeiro login. Sair sem querer tranca a pessoa fora do app ate
+  /// ela achar uma rede.
+  Future<void> _perguntar(BuildContext context) async {
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Paleta.superficie,
+        title: const Text('Sair da conta?',
+            style: TextStyle(color: Paleta.texto, fontFamily: fonteMono)),
+        content: const Text(
+          'Seu progresso fica guardado e volta quando você entrar de novo. '
+          'Para voltar você vai precisar da senha e de internet.',
+          style: TextStyle(color: Paleta.texto),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Ficar',
+                style: TextStyle(color: Paleta.suave, fontFamily: fonteMono)),
+          ),
+          TextButton(
+            key: TelaLinguagens.chaveConfirmarSaida,
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Sair',
+                style: TextStyle(color: Paleta.acerto, fontFamily: fonteMono)),
+          ),
+        ],
+      ),
+    );
+    if (confirmou ?? false) aoSair();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      identifier: TelaLinguagens.idSair,
+      label: 'Sair da conta',
+      button: true,
+      child: IconButton(
+        key: TelaLinguagens.chaveSair,
+        onPressed: () => _perguntar(context),
+        icon: const Icon(Icons.logout, size: 18),
+        color: Paleta.suave,
+        tooltip: 'Sair da conta',
+        padding: const EdgeInsets.all(12),
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      ),
+    );
+  }
+}
+
 class _BotaoLicencas extends StatelessWidget {
   const _BotaoLicencas();
 

@@ -470,3 +470,120 @@ html, body {
 /* Enquanto a conta e o progresso chegam. Sem isto a primeira coisa na tela
    seria o fundo vazio, que se le como pagina quebrada. */
 .carregando { max-width: 640px; margin: 80px auto; padding: 0 20px; color: var(--suave); text-align: center; }
+
+/* ============================================ o cenario da tela de entrada
+ *
+ * Tudo aqui e `transform` e `opacity` no que se move, e gradiente no que nao
+ * se move: e o que o navegador compoe sem repintar. O site do Tr∅nikAt ja
+ * custou tres rodadas de limpeza por causa de pintura cara, e esta tela e a
+ * PRIMEIRA que qualquer pessoa ve. */
+
+#vista-entrada { position: relative; }
+
+/* O `overflow` mora AQUI, e nao na vista inteira. A grade transborda de
+   proposito (left e right em -25%), e alguem precisa conter isso -- mas se
+   quem contivesse fosse a vista, numa janela baixa o formulario seria cortado
+   sem rolagem, e a pessoa nao alcancaria o botao de entrar. */
+.cenario {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* O ceu, do roxo do fundo para o magenta da marca, bem de leve. */
+  background:
+    radial-gradient(120% 70% at 50% 78%, rgba(255, 45, 149, .16), transparent 60%),
+    linear-gradient(180deg, #120725 0%, var(--fundo) 55%);
+}
+
+/* O SOL E CONTRALUZ DO MASCOTE, e nao paisagem de fundo.
+ *
+ * Na primeira versao ele ficava no horizonte, como manda o synthwave. O print
+ * mostrou por que nao da: o formulario ocupa o centro da pagina, entao as
+ * fatias escuras do disco apareciam DENTRO do painel de login e liam como
+ * falha de renderizacao. Atras da cabeca do gato nada passa por cima dele.
+ *
+ * O recorte e obrigatorio: sem ele as fatias sobram para os lados no topo,
+ * onde o circulo e estreito, e viram tracos soltos -- defeito que ja apareceu
+ * na tela de titulo do app. Aqui quem recorta e o proprio border-radius. */
+.palco { position: relative; }
+
+.sol {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 190px;
+  height: 190px;
+  margin-left: -95px;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0 9px, rgba(23, 10, 49, .8) 9px 13px),
+    linear-gradient(180deg, var(--telemetria) 0%, var(--acerto) 78%);
+  opacity: .42;
+  filter: blur(1px);
+}
+
+/* A grade em fuga: linhas que se aproximam perto do horizonte. */
+.grade {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: 0;
+  height: 46%;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 58px, rgba(0, 229, 255, .22) 58px 60px),
+    repeating-linear-gradient(180deg,
+      transparent 0 26px, rgba(0, 229, 255, .18) 26px 28px);
+  transform: perspective(200px) rotateX(58deg);
+  transform-origin: bottom center;
+  mask-image: linear-gradient(180deg, transparent, #000 45%);
+}
+
+#vista-entrada .coluna { position: relative; }
+#vista-entrada .marca { text-align: center; }
+#vista-entrada .lema { margin: 6px 0 0; }
+
+/* O retrato e um BUSTO QUE SANGRA de proposito: o CLAUDE.md registra que os
+   ombros vao de x=-40 a x=440 num viewBox de 400, porque "enquadramento que
+   cabe todo dentro da moldura nao e close". No app ele encosta na borda da
+   tela e o corte nao existe; aqui ele flutua no meio da pagina, e o corte reto
+   aparecia. O `mask-image` desmancha a base em vez de corta-la. */
+.mascote {
+  position: relative;
+  display: block;
+  width: 168px;
+  margin: 2px auto -4px;
+  animation: respirar 3.6s ease-in-out infinite;
+  transform-origin: bottom center;
+  mask-image: linear-gradient(180deg, #000 72%, transparent);
+}
+
+/* 2%, ancorada embaixo: ancorar no centro afastaria a cabeca dos ombros, que
+   nao e respirar. Copiado da tela de titulo do app. */
+@keyframes respirar {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.02); }
+}
+
+/* Quem pediu menos movimento no sistema nao ve movimento nenhum -- a mesma
+   regra que o app cumpre com "reduzir animacoes" do Android. */
+@media (prefers-reduced-motion: reduce) {
+  .mascote { animation: none; }
+}
+
+.formulario {
+  background: rgba(30, 15, 62, .72);
+  border: 1px solid var(--linha);
+  border-radius: 14px;
+  padding: 20px 22px 24px;
+  backdrop-filter: blur(2px);
+}
+
+/* O disco acompanha o mascote. Deixar o valor da versao de horizonte aqui
+   fazia o sol ficar MAIOR no celular que no computador, engolindo o gato. */
+@media (max-width: 560px) {
+  .mascote { width: 132px; }
+  .sol { width: 150px; height: 150px; margin-left: -75px; }
+}
