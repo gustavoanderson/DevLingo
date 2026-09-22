@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevLingo — exercício</title>
+<meta name="description" content="A tela de exercício do DevLingo rodando no navegador, com o mesmo cérebro do app Android.">
+<!-- Favicon embutido: um arquivo a parte custaria uma requisicao, e a
+     ausencia dele custa um 404 no console -- que polui a medicao e faz
+     parecer que a pagina tem defeito. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23170A31'/%3E%3Ctext x='16' y='23' font-size='19' font-family='monospace' text-anchor='middle' fill='%2339FF14'%3E&gt;_%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<!--
+  PROVA DE CONCEITO DA VERSAO WEB, e ela prova UMA coisa:
+  que a interface pode ser leve e escrita a mao sem que a LOGICA seja
+  reescrita.
+
+  Nada nesta pagina decide se uma resposta esta certa, quando eliminar uma
+  alternativa, quando revelar ou como colorir o codigo. Tudo isso vem de
+  `cerebro.js`, compilado de `app/lib/ponte_web.dart`, que por sua vez usa os
+  MESMOS arquivos que o app Android usa e que os 349 testes cobrem.
+
+  Esta pagina so desenha o retrato que o cerebro devolve.
+-->
+
+<div class="tela">
+
+  <header class="topo">
+    <button class="sair" title="Sair da lição" aria-label="Sair da lição">✕</button>
+    <div class="barra" role="progressbar" aria-label="Progresso da lição"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="barra"></i></div>
+    <span class="contador" id="contador">—</span>
+  </header>
+
+  <main class="miolo" id="miolo">
+    <span class="topico" id="topico">carregando</span>
+    <p class="enunciado" id="enunciado">Abrindo a questão…</p>
+
+    <div class="ide" id="ide" hidden>
+      <div class="ide-aba">
+        <span class="bolinhas" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="ide-nome" id="ide-nome">exemplo</span>
+        <button class="copiar" id="copiar">copiar</button>
+      </div>
+      <pre class="codigo" id="codigo" tabindex="0" aria-label="Bloco de código do exercício"></pre>
+    </div>
+
+    <p class="molde" id="molde" hidden></p>
+    <div class="alternativas" id="alternativas" role="group" aria-label="Alternativas"></div>
+    <input class="campo" id="campo" hidden autocomplete="off" spellcheck="false"
+           aria-label="Sua resposta">
+  </main>
+
+  <footer class="rodape">
+    <div class="retorno" id="retorno" hidden>
+      <div class="titulo" id="retorno-titulo"></div>
+      <div class="corpo" id="retorno-corpo"></div>
+    </div>
+    <div class="acoes">
+      <button class="btn dica" id="btn-dica">Dica</button>
+      <button class="btn principal" id="btn-verificar">Verificar</button>
+    </div>
+  </footer>
+
+</div>
+
+<script src="cerebro.js"></script>
+<script src="jogo.js"></script>
+</body>
+</html>

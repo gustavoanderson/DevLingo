@@ -59,3 +59,16 @@ estudio/.venv/
 # Worker da Cloudflare: dependencias e estado local do wrangler
 hospedagem/cloudflare/node_modules/
 hospedagem/cloudflare/.wrangler/
+
+# O CEREBRO DO JOGO NO NAVEGADOR e GERADO, nao escrito.
+#
+#   cd app && dart compile js lib/ponte_web.dart -o ../jogo/cerebro.js -O2
+#
+# Fica fora do git de proposito. Versiona-lo criaria a regra "arquivo gerado
+# tem de bater com o gerador", e `dart compile js` NAO garante saida byte a
+# byte entre versoes do SDK -- o portao reprovaria por trocar o Flutter de
+# versao, sem ninguem ter mexido em codigo. E a mesma razao pela qual
+# gerar_falas.py compara IMPRESSAO (texto + voz + tom) em vez dos bytes do WAV.
+jogo/cerebro.js
+jogo/cerebro.js.deps
+jogo/cerebro.js.map

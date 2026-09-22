@@ -1,0 +1,323 @@
+/* A TELA DE EXERCICIO DO DEVLINGO, NO NAVEGADOR.
+ *
+ * As cores NAO foram escolhidas aqui: sao as mesmas de app/lib/ui/paleta.dart,
+ * copiadas uma a uma. O CLAUDE.md registra que "nenhuma cor e escolhida ate ser
+ * vista renderizada", e estas ja passaram por isso no aparelho.
+ *
+ * O que muda em relacao ao app e a MOLDURA, nao a identidade: aqui ha tela
+ * larga, cursor e teclado de verdade, e o texto e texto -- seleciona, o leitor
+ * de tela le, a busca indexa. Era isso que o motor grafico do Flutter web
+ * custaria. */
+
+:root {
+  --fundo: #170A31;
+  --superficie: #1E0F3E;
+  --linha: #3D2A66;
+  --texto: #F2F0FF;
+  --suave: #9B8FC7;
+  --acerto: #FF2D95;
+  --erro: #FF5F57;
+  --destaque: #00E5FF;
+  --visor: #39FF14;
+  --telemetria: #FFE14D;
+  --termo: #8FDCE8;
+
+  --ide-fundo: #1B1235;
+  --ide-aba: #241847;
+  --ide-numero: #5F4B8B;
+
+  --sx-palavra: #FF7AD9;
+  --sx-texto: #FFE14D;
+  --sx-numero: #FF7AD9;
+  --sx-funcao: #39FF14;
+  --sx-nome: #00E5FF;
+  --sx-pontuacao: #F2F0FF;
+  --sx-comentario: #7A68B0;
+
+  --mono: ui-monospace, "Cascadia Mono", "Consolas", "DejaVu Sans Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* TRES FAIXAS, e a do meio e a unica que rola.
+ *
+ * O CLAUDE.md fixa isso: topo e rodape nao saem da tela, porque a explicacao e
+ * "o pagamento do exercicio" e nao pode depender de o aluno descobrir que
+ * precisa rolar. */
+.tela {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  border-left: 1px solid var(--linha);
+  border-right: 1px solid var(--linha);
+}
+
+/* ---------------------------------------------------------------- o topo */
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--linha);
+  background: var(--fundo);
+}
+
+.sair {
+  background: none;
+  border: none;
+  color: var(--suave);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+.sair:hover { color: var(--texto); }
+
+/* Ela mede a LICAO, nunca a linguagem: barra que nao sai do lugar desmotiva. */
+.barra {
+  flex: 1;
+  height: 8px;
+  background: var(--linha);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.barra > i {
+  display: block;
+  height: 100%;
+  background: var(--destaque);
+  transition: width .25s ease;
+}
+
+.contador { color: var(--suave); font-size: 13px; white-space: nowrap; }
+
+/* -------------------------------------------------------------- o miolo */
+.miolo {
+  overflow-y: auto;
+  padding: 18px 16px 8px;
+}
+
+.topico {
+  display: inline-block;
+  color: var(--destaque);
+  border: 1px solid var(--destaque);
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.enunciado { font-size: 17px; margin: 0 0 18px; }
+/* Termo tecnico em italico e cor propria -- e `--termo`, nao `--destaque`:
+ * ciano puro e cor de acao, e espalhado pelo paragrafo faria o texto piscar. */
+.enunciado em { color: var(--termo); font-style: italic; }
+.enunciado strong { color: var(--texto); }
+
+/* --------------------------------------------------------- a IDE de faz-conta */
+.ide {
+  background: var(--ide-fundo);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  margin: 0 0 18px;
+  overflow: hidden;
+}
+
+.ide-aba {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ide-aba);
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--linha);
+}
+.bolinhas { display: flex; gap: 6px; }
+.bolinhas i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.bolinhas i:nth-child(1) { background: var(--erro); }
+.bolinhas i:nth-child(2) { background: var(--telemetria); }
+.bolinhas i:nth-child(3) { background: var(--visor); }
+.ide-nome { color: var(--suave); font-size: 12px; flex: 1; }
+
+.copiar {
+  background: none;
+  border: 1px solid var(--linha);
+  color: var(--suave);
+  font: inherit;
+  font-size: 11px;
+  border-radius: 5px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.copiar:hover { color: var(--texto); border-color: var(--suave); }
+
+/* NUNCA quebra linha. Quebra automatica destroi a indentacao, e em Python a
+ * indentacao e sintaxe -- esta e a regra que obriga a rolagem horizontal. */
+.codigo {
+  margin: 0;
+  padding: 12px 0;
+  overflow-x: auto;
+  font-size: 14px;
+}
+.codigo .ln { display: flex; white-space: pre; }
+.codigo .num {
+  color: var(--ide-numero);
+  min-width: 3ch;
+  padding: 0 12px 0 10px;
+  text-align: right;
+  user-select: none;
+  position: sticky;
+  left: 0;
+  background: var(--ide-fundo);
+}
+.codigo .src { padding-right: 16px; }
+
+.t-palavraChave { color: var(--sx-palavra); }
+.t-texto       { color: var(--sx-texto); }
+.t-numero      { color: var(--sx-numero); }
+.t-funcao      { color: var(--sx-funcao); }
+.t-nome        { color: var(--sx-nome); }
+.t-pontuacao,
+.t-espaco      { color: var(--sx-pontuacao); }
+.t-comentario  { color: var(--sx-comentario); font-style: italic; }
+.t-lacuna {
+  background: var(--destaque);
+  color: #062230;
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+/* ---------------------------------------------------------- alternativas */
+.alternativas { display: grid; gap: 10px; margin-bottom: 14px; }
+
+.alt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: var(--superficie);
+  color: var(--texto);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.alt:hover:not(:disabled) { border-color: var(--suave); }
+.alt .rotulo {
+  color: var(--suave);
+  font-size: 12px;
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  padding: 0 6px;
+  flex: none;
+  margin-top: 2px;
+}
+
+.alt[aria-pressed="true"] { border-color: var(--destaque); background: #241847; }
+.alt[aria-pressed="true"] .rotulo { color: var(--destaque); border-color: var(--destaque); }
+
+/* RISCADA, nao apagada: ver o que ja foi descartado faz parte do raciocinio
+ * por exclusao. Por isso ela continua na lista. */
+.alt.eliminada {
+  text-decoration: line-through;
+  color: var(--suave);
+  border-color: var(--linha);
+  background: transparent;
+  cursor: not-allowed;
+}
+.alt.certa { border-color: var(--acerto); }
+.alt.certa .rotulo { color: var(--acerto); border-color: var(--acerto); }
+
+/* ----------------------------------------------------------- escrita livre */
+.molde {
+  color: var(--suave);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.molde b { color: var(--telemetria); font-weight: normal; letter-spacing: .12em; }
+
+.campo {
+  width: 100%;
+  background: var(--ide-fundo);
+  color: var(--texto);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font: inherit;
+  margin-bottom: 14px;
+}
+.campo:focus { outline: none; border-color: var(--destaque); }
+
+/* --------------------------------------------------------------- o rodape */
+.rodape { border-top: 1px solid var(--linha); background: var(--fundo); }
+
+/* O painel de retorno e FIXO acima da barra de acoes, nunca dentro da
+ * rolagem. */
+.retorno {
+  margin: 12px 16px 0;
+  border: 1px solid;
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.retorno[data-fase="acertou"] { border-color: var(--acerto); background: #2A0F26; }
+.retorno[data-fase="revelado"] { border-color: var(--telemetria); background: #2A2410; }
+.retorno[data-fase="respondendo"] { border-color: var(--erro); background: #2A1518; }
+
+.retorno .titulo {
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.retorno[data-fase="acertou"] .titulo { color: var(--acerto); }
+.retorno[data-fase="revelado"] .titulo { color: var(--telemetria); }
+.retorno[data-fase="respondendo"] .titulo { color: var(--erro); }
+/* O CORPO CONTINUA BRANCO. Verde ou vermelho saturado em texto longo sobre
+ * fundo escuro reprova em contraste, e a explicacao e o texto mais longo da
+ * tela: pinta-la a tornaria dificil de ler justo quando mais importa. */
+.retorno .corpo { color: var(--texto); }
+.retorno .corpo code { color: var(--visor); }
+
+.acoes { display: flex; gap: 12px; padding: 12px 16px; }
+
+.btn {
+  flex: 1;
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.btn:disabled { opacity: .4; cursor: default; }
+
+/* Dica e secundaria de proposito. Com o mesmo peso da acao principal, ela
+ * viraria o caminho de menor resistencia. */
+.btn.dica { flex: 0 0 34%; background: transparent; color: var(--telemetria); border: 1px solid var(--telemetria); }
+.btn.principal { background: var(--acerto); color: #FFF; border: 1px solid var(--acerto); }
+
+/* --------------------------------------------------------------- telefone */
+@media (max-width: 560px) {
+  body { font-size: 14px; }
+  .tela { border: none; }
+  .miolo { padding: 14px 16px 6px; }
+  .enunciado { font-size: 16px; }
+  .acoes { padding: 10px 16px; }
+}
