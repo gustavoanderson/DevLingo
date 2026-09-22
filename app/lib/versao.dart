@@ -21,4 +21,4 @@ library;
 ///
 /// O `+N` fica de fora porque é número de build para o Android, e não diz nada
 /// a quem usa o app.
-const String versaoDoApp = '1.7.0';
+const String versaoDoApp = '1.8.0';
