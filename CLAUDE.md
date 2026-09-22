@@ -337,6 +337,34 @@ Três regras aprendidas apanhando na tela do emulador, ao fazer `tronikat-retrat
 
 E a regra que vale mais que as três: **nenhuma cor é escolhida até ser vista renderizada.** A primeira versão do retrato tinha o aço começando em `#DCDEEC`, quase o branco do pelo — no papel era "metal claro", na tela era um gato branco comum, com o conceito do personagem invisível. A ferramenta para isso é a captura de tela, não a leitura do arquivo.
 
+### `acerto` e `certo` são cores diferentes, e os nomes enganam
+
+Custou um defeito visível em 21/09/2026, na primeira tela da versão web:
+
+```dart
+static const acerto = Color(0xFFFF2D95);   // magenta de MARCA — o botão primário
+static const certo  = visor;               // VERDE #39FF14 — resposta certa
+```
+
+Em português as duas palavras são praticamente sinônimas, e eu usei o magenta
+para sinalizar acerto. O Gustavo pegou em trinta segundos: *"a cor de acerto é
+verde, lembra? acertei e está rosa"*.
+
+**Quem decide isso é `tela_exercicio.dart`, não a paleta**, e ali há três
+detalhes que a leitura da paleta sozinha não entrega:
+
+| Fase | Cor | Título |
+|---|---|---|
+| acertou | `certo` | `CERTO` |
+| **revelado** | **`certo` também** | `VAMOS JUNTOS` |
+| respondendo | `erro` | `AINDA NÃO` |
+
+**Revelar usa a cor de acerto**, e isso é deliberado: revelar não é falhar.
+Pintá-lo de alerta transformaria *"errar não termina a questão"* em mentira.
+
+A alternativa correta leva `certo` **com** `certoTenue` de preenchimento; a
+eliminada leva `erro`, `erroTenue` e risco vermelho — não basta esmaecer.
+
 ### Traço de identidade se copia, não se inventa
 
 `assets/mascot/tronikat.svg` é a **fonte da verdade do personagem**. Ao desenhar o Tr∅nikAt em qualquer enquadramento novo, abra aquele arquivo e copie os traços que definem quem ele é, com as proporções convertidas para o novo tamanho.
@@ -581,7 +609,9 @@ Isso tornou redundante o esqueleto que aparecia no terceiro erro — seria a mes
 
 ### Termos técnicos destacados no texto corrido
 
-Ideia do Gustavo: nome de função, tipo de dado e palavra reservada aparecem em **itálico e cor própria** dentro do enunciado e da aula, para o aluno separar o que é da linguagem do que é português. Vive em `app/lib/ui/texto_rico.dart`, Dart puro, fora de widget — mesma razão de `realce.dart`.
+Ideia do Gustavo: nome de função, tipo de dado e palavra reservada aparecem em **itálico e cor própria** dentro do enunciado e da aula, para o aluno separar o que é da linguagem do que é português. Vive em `app/lib/ui/texto_rico.dart`, fora de widget — mesma razão de `realce.dart`.
+
+> **Correção de 21/09/2026:** este arquivo já foi descrito aqui como *"Dart puro"*, e **não é** — ele importa `package:flutter/material.dart`, porque devolve trechos já estilizados. A distinção passou a ter consequência no dia em que o jogo foi para o navegador: `normalize.dart`, `sessao_questao.dart` e `realce.dart` compilam para JavaScript sozinhos, e este **não**. Separar o analisador da pintura é trabalho pequeno e ainda não foi feito.
 
 #### O léxico NÃO pode ser a lista do realce de sintaxe
 
@@ -1244,6 +1274,102 @@ Script Node com WebSocket nativo, `--use-gl=angle --use-angle=d3d11`, e **perfil
 
 Os perfis de Chrome de teste vão para o `D:`, não para o scratchpad: o `C:` já chegou a 894 MB livres, e com o disco cheio o Chrome trava.
 
+### A máquina da voz é de UM OITAVO de núcleo, e isso explica muita coisa
+
+Medido em 21/09/2026 contra a documentação do Always Free: a
+`VM.Standard.E2.1.Micro` é descrita como **"1/8th of an OCPU (with ability to
+use additional CPU resources)"**. O console mostra *"OCPU count: 1"* — é o
+rótulo da forma, não o que se recebe.
+
+Isso explicou três coisas que eu vinha tratando como mistério: o custo fixo por
+chamada **crescendo** (0,42 → 0,96 → 1,21 s), três **503** em momentos
+diferentes, e uma medição de síntese a 2,07× o tempo real. Era o crédito de
+rajada acabando depois dos **meus próprios** testes de 32 s de síntese contínua.
+
+**Ela se recupera em minutos**, não em horas — medido, seis amostras voltaram a
+0,73–0,80× em 13 minutos. E visitante de portfólio faz uma pergunta e sai, o
+que cabe folgado na rajada. Quem estoura o limite é quem mede em sequência.
+
+**A ARM (2 OCPUs de verdade, 12 GB) está bloqueada por capacidade.** São Paulo
+tem um único domínio de disponibilidade, e o Always Free só existe na região de
+origem — conferido na documentação. Não há AD nem região para tentar; a saída é
+tentar de tempos em tempos, e não vale ficar parado esperando.
+
+### O ritmo da fala: de 10,7 s para 4,8 s até ele começar a falar
+
+Pedido do Gustavo em 21/09: *"eu quero ganhar tempo, não importa o tom de voz…
+deixar uns 4-5 segundos, já temos evolução"*.
+
+**A primeira descoberta foi que eu vinha culpando a peça errada.** Medindo os
+dois relógios separados, em doze perguntas:
+
+| | Mínimo | Máximo |
+|---|---|---|
+| Geração de texto | 323 ms | 716 ms |
+| **Busca (embedding)** | 196 ms | **4923 ms** |
+
+O modelo que escreve a resposta é estável. Eu chamava os 5 s de *"o Worker
+pensando"*, e o modelo que pensa nunca foi o lento.
+
+Três mudanças, e o ganho de cada uma:
+
+- **`TOM = 1.0`.** O tom agudo vinha de sintetizar 1,45× mais devagar e
+  reamostrar de volta — ou seja, **gerar 45% de amostras que são descartadas**.
+  Medido: 1,15 s de síntese para 8,74 s de áudio, contra **0,73 s** para 8,90 s
+  sem o truque. A fala mantém a lentidão que ele pediu três vezes; perde-se o
+  agudo. Para trazer de volta, é só subir o número e pagar os 37%
+- **Exatamente 2 frases de até 12 palavras.** A instrução dizia *"até 2 frases
+  curtas"*, e saíam 230 caracteres — o modelo obedecia à contagem de frases e
+  ignorava "curtas", que não é coisa que ele consiga verificar
+- **A resposta é falada em partes**, e a primeira é cortada menor que as outras
+
+**E as duas primeiras se anularam na primeira tentativa.** Pedir "1 ou 2 frases"
+encurtou a resposta pela metade e, sem querer, **desligou a fala em partes**:
+com uma frase só não há fronteira onde cortar. O tempo não caiu. Pedir *duas*
+frases curtas fez as duas cooperarem.
+
+### Dois portões novos, porque os dois defeitos eram mudos
+
+**Silêncio dentro da onda.** O Piper deixa ~37 ms no início e **236 ms no fim**
+de cada síntese. Entre duas falas emendadas são ~273 ms de nada. Isso **não
+aparece medindo do lado do tocador** — a conta dava 310 ms de vão total
+enquanto o Gustavo ouvia "muito espaço". `testar_voz.py` agora reprova se as
+pontas guardarem silêncio.
+
+**Acento em texto falado.** As 13 frases de enrolação estavam em ASCII: eu
+apliquei a texto **falado** a convenção que este repositório tem para
+**código**. Medido com os fonemas do espeak, `comeco` vira `kˌomˈɛkʊ` (o C vira
+K), `voce` vira `vˈɔsɪ` (a tônica muda de sílaba) e `la` fica **sem tônica**.
+`gerar_falas.py` agora **se recusa a gravar** nesse caso — e já me pegou num
+falso positivo (`reabri-la` quebrava no hífen), corrigido **na regra**, não no
+conteúdo.
+
+### A reprovação do juiz virou o detector de ficha errada
+
+Este arquivo registra a falha de desenho em uma frase: *"o juiz confere se a
+resposta é fiel à ficha, e ninguém confere se a ficha responde à pergunta"*.
+Foi assim que um `Hello World` virou a ficha de licença recitada.
+
+**O sinal existia e estava sendo jogado fora.** Quando o juiz diz `ausente`, ele
+está dizendo exatamente *"esta resposta não sai desta ficha"*. Faltava separar
+as duas causas, e a nota da busca separa:
+
+| | Notas medidas em 21/09 |
+|---|---|
+| DevLingo na ficha certa | 0,988 · 0,956 · 0,941 · 0,994 |
+| **o mais baixo legítimo** | **0,759** — *"é de graça?"* → `preco` |
+| **programação na ficha errada** | **0,736** e **0,704** |
+
+Acima de `CONFIANCA_FICHA` (0,75) a ficha serve e quem errou foi o modelo:
+recitar a ficha é o certo. Abaixo, a ficha não tem a ver com a pergunta, e vale
+uma **segunda chance pela faixa de programação**.
+
+O caso que prova a regra dos dois lados: *"quais linguagens tem?"* tirou 0,994 e
+**foi reprovada** pelo juiz. Continua recitando a ficha `trilhas`, como deve.
+
+**A folga é de 23 milésimos**, e é o número a vigiar — mesma natureza dos 7
+milésimos do piso. Ao mexer nas fichas, remeça esta linha.
+
 ### O que falta no estúdio
 
 | O quê | Estado |
@@ -1254,6 +1380,121 @@ Os perfis de Chrome de teste vão para o `D:`, não para o scratchpad: o `C:` j�
 | Revisar as **5 fichas** marcadas `revisar: Gustavo` | pendente, e é decisão dele |
 
 ---
+
+## O DevLingo no navegador
+
+Decidido pelo Gustavo em 21/09/2026, em duas frentes. **A primeira é o jogo
+jogável no navegador, com cross-play**: mesmos cursos, telas semelhantes com
+liberdade estética, login e criação de conta pelo navegador, e o Tr∅nikAt como
+janela consultável a qualquer momento. Ele vai comprar domínio próprio.
+
+**A segunda frente são cinco itens de segurança, e a ordem é dele:** construir
+primeiro, segurança depois. Com uma distinção que vale registrar — **construir
+→ segurança → publicar**, e não construir → publicar → segurança. Enquanto roda
+na máquina dele não há exposição; ela começa no dia em que o domínio aponta.
+
+### A arquitetura: interface à mão, cérebro compilado
+
+A pergunta dele mudou o desenho: *"não tem como fazer uma interface mais leve
+mas que mantenha a mesma personalidade do app?"*. As três saídas, medidas:
+
+| | Como | Peso |
+|---|---|---|
+| A | compilar o app Flutter para web | **1,5 a 2,5 MB** de motor gráfico antes do primeiro pixel |
+| B | reescrever tudo em JavaScript | leve, mas **duplica o cérebro do jogo** |
+| **C** | **interface à mão + cérebro compilado** | **106 KB no total** |
+
+A **C** foi escolhida, e ela só é possível por causa de uma disciplina que veio
+de outro lugar: `normalize.dart`, `sessao_questao.dart` e `realce.dart` ficaram
+livres de Flutter **para serem testáveis sem montar tela**. Isso os tornou
+portáveis sem ninguém ter planejado — `dart compile js` os aceita direto.
+
+A duplicação evitada não é teórica. Este repositório tem a cicatriz: o
+`normalize()` existe em Dart e em Python, e `tools/normalize_cases.json` existe
+só para impedir que divirjam em silêncio. A máquina de estado do progresso é
+pior: é a parte que **corrompe dado** quando erra.
+
+### As peças
+
+| | O que é |
+|---|---|
+| `app/lib/ponte_web.dart` | a ponte. Tudo atravessa como **JSON**, de propósito: tipar interop a fundo amarraria os modelos a uma segunda declaração em JS |
+| `jogo/cerebro.js` | **gerado**, e fora do git — ver abaixo |
+| `jogo/index.html`, `estilo.css`, `jogo.js` | a interface. Ela **desenha, não decide** |
+
+```bash
+cd app && dart compile js lib/ponte_web.dart -o ../jogo/cerebro.js -O2
+```
+
+**O `cerebro.js` não é versionado, e isso é deliberado.** Versioná-lo criaria a
+regra "arquivo gerado bate com o gerador", e `dart compile js` não garante
+saída byte a byte entre versões do SDK: o portão reprovaria por troca de versão
+do Flutter, sem ninguém ter mexido em código. É a mesma razão pela qual
+`gerar_falas.py` compara impressão em vez dos bytes do WAV.
+
+**A regra que sustenta tudo:** se alguém escrever um `if (resposta === correta)`
+dentro de `jogo.js`, a arquitetura acabou. A regra passa a existir em dois
+lugares, e o resto deste arquivo conta o que acontece depois.
+
+### O que foi medido, e o critério escrito antes
+
+Critério, definido antes de escrever a primeira linha: **primeira pintura abaixo
+de 4 s com CPU 4× mais lenta** — que é como este arquivo manda simular o
+notebook dele, e foi como a versão pesada do site foi pega.
+
+```
+peso total ........... 106 KB  (3 html + 9 css + 7 js + 72 cérebro + 15 lição)
+primeira pintura ..... 1732 ms
+trabalho no thread ... 498 ms
+memória de JS ........ 1 MB
+erros no console ..... 0
+```
+
+Para comparar: o site do Tr∅nikAt, depois de três rodadas de limpeza, abre em
+~2,5 s. **A tela de exercício abre mais rápido que ele.**
+
+Provado com a lição real `python-beg-03`, não com maquete: embaralhamento,
+eliminação riscada, recado, explicação e realce de sintaxe, todos vindos do
+cérebro.
+
+### O que ainda não existe
+
+**É uma tela, a do exercício.** Faltam título, login, escolha de linguagem,
+trilha, aula e estatísticas.
+
+| Pendência | Nota |
+|---|---|
+| O progresso | `sqflite` não tem web. **O Gustavo decidiu que o navegador NÃO precisa funcionar offline**, então ele pode ir direto ao Firestore |
+| Termos destacados no enunciado | depende de separar o analisador de `texto_rico.dart` da pintura |
+| Os cinco itens de segurança | antes de publicar |
+
+### A auditoria de segurança que ele pediu, com o estado real
+
+| | Estado |
+|---|---|
+| Rotas de API com autenticação | **parcial** — o Firestore exige `request.auth.uid == uid`; o Worker (`/perguntar`, `/falar`, `/aquecer`) **não pede nada** |
+| Senhas criptografadas | **sim, e melhor**: não existe campo de senha em lugar nenhum do banco. O Firebase guarda, nosso código nunca vê |
+| Rate limit de login / DDoS | **parcial** — login protegido pelo Firebase (*"user-agent strings and IP addresses to prevent abuse"*), Cloudflare na frente. **`/perguntar` sem limite nenhum** |
+| RLS nas tabelas | **sim** — `firestore.rules`, com `allow read, write: if request.auth.uid == uid` e negação explícita para o resto |
+| Dados criptografados | **sim** — em trânsito por HTTPS e em repouso, conferido na página de privacidade do Firebase |
+
+**Duas lacunas concretas**, e a segunda eu não sabia que existia:
+
+1. **`/perguntar` não tem limite de uso.** Com o jogo no navegador, a URL do
+   Worker passa a estar no código da página que todos abrem
+2. **As regras do Firestore são coladas à mão no console.** O arquivo avisa
+   isso. Logo, **não temos como provar que o publicado é igual ao versionado** —
+   se alguém editou no console, o repositório não sabe. Num projeto que é
+   portfólio de qualidade, é a pior classe de problema: a regra está certa no
+   arquivo e ninguém confere se é ela que está no ar
+
+**E uma coisa que costuma assustar e não é defeito:** a configuração do Firebase
+fica visível no JavaScript da página. Ela **já está visível dentro do APK** —
+chave de API do Firebase é identificador de projeto, não segredo. O que protege
+os dados são as regras e a autenticação.
+
+**Decisão dele, confirmada:** o jogo no navegador **exige login**, igual ao app.
+O Tr∅nikAt fica fora do muro, então o valor de portfólio se preserva.
 
 ## O servidor MCP, e o agente local que o usa
 
