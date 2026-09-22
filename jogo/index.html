@@ -199,7 +199,17 @@
     <button class="tronikat-fechar" id="tronikat-fechar" type="button"
             aria-label="Fechar a conversa">✕</button>
   </header>
-  <div class="tronikat-conversa" id="tronikat-conversa" role="log" aria-live="polite"></div>
+  <div id="tronikat-vivo" class="tronikat-vivo">
+    <!-- O MESMO RETRATO DO SITE, desenhado por `../site/codec.js`. O modulo
+         procura um canvas com o id `retrato`, entao basta ele existir aqui:
+         nada foi parametrizado e nada foi copiado. Estilo Metal Gear Solid 1,
+         num canvas de 128x96 ampliado com `image-rendering: pixelated` -- a
+         ampliacao e que faz o pixel grande, e nao o desenho. -->
+    <div class="tronikat-retrato">
+      <canvas id="retrato" aria-label="O Tr∅nikAt em transmissão, com a boca acompanhando a fala"></canvas>
+    </div>
+    <div class="tronikat-conversa" id="tronikat-conversa" role="log" aria-live="polite"></div>
+  </div>
 
   <!-- STANDBY: sem conexao ele nao some nem vira mensagem de erro. O retrato e
        o MESMO arquivo de sempre; o que muda e o tratamento por cima dele. -->
@@ -233,6 +243,8 @@
 <script src="cerebro.js"></script>
 <script src="nuvem.js"></script>
 <script src="jogo.js"></script>
+<!-- O retrato vem ANTES: `tronikat.js` chama `Fala.abrir` para mover a boca. -->
+<script src="../site/codec.js"></script>
 <script src="tronikat.js"></script>
 </body>
 </html>

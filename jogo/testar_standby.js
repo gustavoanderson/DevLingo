@@ -78,7 +78,15 @@ const conferir = (ok, nome, det = '') => {
 
   conferir(await js(`navigator.onLine === false`), 'o navegador se declara offline');
   conferir(await js(`!document.getElementById('tronikat-standby').hidden`), 'o standby APARECE');
-  conferir(await js(`document.getElementById('tronikat-conversa').hidden`), 'a conversa sai de cena');
+  // MEDE VISIBILIDADE, e nao o atributo `hidden` de um elemento especifico.
+  // A primeira versao perguntava se a propria conversa estava `hidden`, e ela
+  // reprovou quando o retrato do codec entrou: quem passou a ser escondido foi
+  // o bloco que envolve os dois. O comportamento continuava certo -- a
+  // assercao e que media o mecanismo em vez do efeito.
+  conferir(!(await js(`document.getElementById('tronikat-conversa').checkVisibility()`)),
+    'a conversa sai de cena');
+  conferir(!(await js(`document.getElementById('retrato').checkVisibility()`)),
+    'e o retrato colorido tambem -- quem fala agora e o standby');
   conferir(await js(`document.getElementById('tronikat-campo').disabled`), 'o campo desliga');
   conferir(await js(`document.getElementById('tronikat-enviar').disabled`), 'o botao enviar desliga');
   conferir(await js(`document.getElementById('btn-tronikat').classList.contains('offline')`),

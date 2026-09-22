@@ -12,13 +12,15 @@
  *
  * FICA FORA DO MURO. O botao aparece tambem na tela de entrada, antes do
  * login, porque foi assim que o Gustavo decidiu: quem abre o link sem conta
- * ainda consegue perguntar o que e isto. O valor de portfolio nao depende de
- * cadastro.
+ * ainda consegue perguntar o que e isto.
  *
  * NENHUMA REGRA DE JOGO MORA AQUI, e nenhuma regra de porteiro tambem. Quem
  * decide qual ficha responde, se a pergunta passa do piso e o que o modelo
- * pode dizer e o Worker -- o mesmo que atende o site. Este arquivo pergunta e
- * mostra.
+ * pode dizer e o Worker -- o mesmo que atende o site. Este arquivo pergunta,
+ * mostra e toca.
+ *
+ * O ROSTO E O MESMO DO SITE, e nao uma copia dele: `site/codec.js` desenha o
+ * retrato em estilo Metal Gear, e as duas paginas carregam aquele arquivo.
  */
 'use strict';
 
@@ -30,6 +32,9 @@
   // questoes e lido em `../app/assets/content/` e o mascote em
   // `../assets/mascot/`. Nada e copiado.
   const FALAS = '../site/falas/';
+
+  // Enquanto o Worker pensa, ele ENROLA. Ideia do Gustavo, ja provada no site.
+  const ENROLAR = ['_pensar-01', '_pensar-02', '_pensar-03', '_pensar-04', '_pensar-05'];
 
   const $ = (id) => document.getElementById(id);
   let indice = null;      // o indice das falas, buscado uma vez so
@@ -56,7 +61,7 @@
   function pintarEstado() {
     const fora = semRede || navigator.onLine === false;
     $('tronikat-standby').hidden = !fora;
-    $('tronikat-conversa').hidden = fora;
+    $('tronikat-vivo').hidden = fora;
     $('tronikat-campo').disabled = fora;
     $('tronikat-enviar').disabled = fora;
     $('tronikat-campo').placeholder = fora
@@ -102,37 +107,57 @@
     return indice;
   }
 
-  /* Toca a voz, e FALHAR AQUI NAO E ERRO.
+  /* --------------------------------------------------------------- a voz */
+
+  /* Toca uma fala e MOVE A BOCA junto, lendo `audio.currentTime` a cada quadro.
    *
-   * O texto ja esta na tela quando isto roda. Navegador que bloqueia som sem
-   * gesto, rede que cai, Oracle fora do ar -- em todos, a resposta continua
-   * legivel. Som e conveniencia, a mesma regra que o app tem para a fanfarra. */
-  async function falar(r) {
-    try {
-      if (tocando) { tocando.pause(); tocando = null; }
-      let url;
-      if (r.arquivo) {
-        url = r.arquivo;
-      } else {
-        // Texto gerado na hora nao tem WAV gravado: a voz vem do servico.
-        const v = await fetch(WORKER + '/falar', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texto: r.texto }),
-        });
-        if (!v.ok) return;
-        const j = await v.json();
-        if (!j.audio) return;
-        const bin = atob(j.audio);
+   * O relogio e o do AUDIO, e nao um cronometro proprio: se o som engasgar, a
+   * boca espera junto em vez de seguir falando sozinha. E a mesma escolha do
+   * site, e o motivo esta escrito la.
+   *
+   * `bocas` vem como [inicio, fim, abertura, arredondamento], no mesmo formato
+   * para fala gravada e para texto sintetizado na hora -- por isso existe um
+   * tocador so, e nao dois caminhos para divergir.
+   *
+   * Resolve no fim do audio OU no erro: som bloqueado pelo navegador nao pode
+   * deixar a conversa pendurada. */
+  function tocar(r) {
+    return new Promise((resolve) => {
+      let url = r.arquivo, temporaria = false;
+      if (!url) {
+        if (!r.audio) { resolve(); return; }
+        const bin = atob(r.audio);
         const bytes = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
         url = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+        temporaria = true;
       }
-      const a = new Audio(url);
-      tocando = a;
-      a.play().catch(() => {});
-    } catch (e) {
-      // De proposito: a resposta ja foi entregue em texto.
-    }
+      const audio = new Audio(url);
+      if (tocando) { try { tocando.pause(); } catch (e) {} }
+      tocando = audio;
+      const bocas = r.bocas || [];
+      let i = 0, fim = false;
+      const boca = (v, a) => { if (window.Fala) Fala.abrir(v, a, true); };
+      function quadro() {
+        if (fim) return;
+        const t = audio.currentTime;
+        while (i < bocas.length && bocas[i][1] <= t) i++;
+        const b = bocas[i];
+        if (b && b[0] <= t) boca(b[2], b[3]); else boca(0, 0);
+        requestAnimationFrame(quadro);
+      }
+      function acabar() {
+        if (fim) return;
+        fim = true;
+        boca(0, 0);
+        if (temporaria) URL.revokeObjectURL(url);
+        if (tocando === audio) tocando = null;
+        resolve();
+      }
+      audio.onended = audio.onerror = acabar;
+      audio.onplay = () => requestAnimationFrame(quadro);
+      audio.play().catch(acabar);
+    });
   }
 
   async function perguntar(pergunta) {
@@ -142,14 +167,27 @@
     });
     if (!r.ok) throw new Error('o servidor respondeu ' + r.status);
     const corpo = await r.json();
-
-    // Dois caminhos, e o Worker diz qual foi. Resposta GERADA na borda nao tem
-    // audio gravado; ficha conhecida tem texto e voz prontos no indice.
-    if (corpo.texto) return { texto: corpo.texto };
     const falas = await indiceDasFalas();
+
+    // Dois caminhos, e o Worker diz qual foi. Ficha conhecida ja tem texto, voz
+    // e boca gravados; resposta GERADA na borda precisa passar pelo servico de
+    // voz, que devolve `bocas` no mesmo formato -- por isso o tocador e um so.
+    if (corpo.texto) {
+      let voz = {};
+      try {
+        const v = await fetch(WORKER + '/falar', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto: corpo.texto }),
+        });
+        if (v.ok) voz = await v.json();
+      } catch (e) {
+        // Sem voz a resposta ainda vale: o texto e o conteudo, a fala e o tom.
+      }
+      return { texto: corpo.texto, audio: voz.audio, bocas: voz.bocas };
+    }
     const f = falas[corpo.ficha || '_recusa'];
     if (!f) throw new Error('fala desconhecida: ' + corpo.ficha);
-    return { texto: f.texto, arquivo: FALAS + f.audio };
+    return { texto: f.texto, arquivo: FALAS + f.audio, bocas: f.bocas };
   }
 
   async function enviar(ev) {
@@ -161,39 +199,63 @@
     ocupado = true;
     campo.value = '';
     linha('minha', pergunta);
-    // O RETORNO E IMEDIATO, e isso nao e enfeite: a busca mais a geracao levam
-    // uns 4 segundos, e botao que nao responde e lido como travado -- a mesma
-    // razao pela qual a tela de titulo do app passa a dizer "CARREGANDO..." em
-    // vez de ignorar o toque.
-    const espera = linha('dele', 'pensando…');
-    espera.classList.add('pensando');
+
+    /* ENQUANTO ELE PENSA, ELE ENROLA -- e o texto NAO sai antes da fala.
+     *
+     * A primeira versao mostrava a resposta escrita assim que o Worker
+     * respondia, e a voz chegava segundos depois. O Gustavo: "o texto da
+     * janela sai antes da fala, lembra que no site tinha uma demora ate a
+     * resposta sair? tem que implementar ali tambem".
+     *
+     * Ele esta certo, e o motivo e que sao a MESMA fala. Ler antes de ouvir
+     * transforma a voz em repeticao do que a pessoa ja leu -- e o personagem
+     * vira legenda de si mesmo. No site as duas saem juntas, e e isso que faz
+     * parecer alguem falando.
+     *
+     * A enrolacao e o que paga por essa espera. Ela toca em ZERO segundo,
+     * porque ja esta gravada, entao o silencio de 1 a 5 segundos do Worker
+     * deixa de ser silencio. */
+    const pensando = linha('dele', '…');
+    pensando.classList.add('pensando');
+    const falas = await indiceDasFalas().catch(() => null);
+    // O sorteio escolhe UMA fala, e o arquivo tem de ser o dela. A primeira
+    // versao sorteava e depois montava o caminho com `ENROLAR[0]`: tocava
+    // sempre "Hmmm, quase la", com a boca de outra frase por cima.
+    const qual = ENROLAR[Math.floor(Math.random() * ENROLAR.length)];
+    const enrolacao = (falas && falas[qual])
+      ? tocar({ ...falas[qual], arquivo: FALAS + falas[qual].audio })
+      : Promise.resolve();
 
     try {
       const r = await perguntar(pergunta);
       semRede = false;
-      espera.classList.remove('pensando');
-      espera.textContent = r.texto;
-      falar(r);
+      // A enrolacao termina de falar antes: duas vozes por cima uma da outra
+      // seriam duas pessoas, e ele e um so.
+      await enrolacao;
+      pensando.classList.remove('pensando');
+      pensando.textContent = r.texto;
+      $('tronikat-conversa').scrollTop = $('tronikat-conversa').scrollHeight;
+      tocar(r);
     } catch (e) {
-      espera.classList.remove('pensando');
+      await enrolacao.catch(() => {});
+      pensando.classList.remove('pensando');
       // DOIS TIPOS DE FALHA, e confundi-los daria o recado errado.
       //
       // `fetch` rejeita quando a requisicao nao chega -- sem rede, DNS morto,
       // CORS. Ai o standby e a resposta certa: e o estado do mundo, nao um
       // tropeco desta pergunta. Ja um 500 do servidor CHEGOU: ha conexao, e
       // pintar tudo de cinza mentiria sobre a causa.
-      const naoChegou = e instanceof TypeError;
-      if (naoChegou) {
+      if (e instanceof TypeError) {
         semRede = true;
         // A bolha sai de cena: quem manda agora e o standby, e deixar as duas
         // seria dizer a mesma coisa de dois jeitos.
-        espera.remove();
+        pensando.remove();
         pintarEstado();
       } else {
         // A mensagem diz O QUE FAZER. "Erro" sozinho nao ajuda ninguem.
-        espera.textContent = 'O Tr∅nikAt não conseguiu responder agora. '
+        pensando.textContent = 'O Tr∅nikAt não conseguiu responder agora. '
           + 'Tente de novo em instantes — o jogo continua funcionando sem ele.';
-        espera.classList.add('falhou');
+        pensando.classList.add('falhou');
       }
     } finally {
       ocupado = false;
@@ -217,6 +279,7 @@
       // Fechar cala. Voz seguindo de uma janela fechada e defeito de produto.
       tocando.pause();
       tocando = null;
+      if (window.Fala) Fala.abrir(0, 0, true);
     }
   }
 

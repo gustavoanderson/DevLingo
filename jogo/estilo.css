@@ -1000,3 +1000,36 @@ html, body {
 @media (max-width: 560px) {
   .tronikat-chamada { right: 78px; bottom: 26px; padding: 7px 10px; }
 }
+
+/* ==================================== o retrato do codec, na janela do jogo
+ *
+ * O desenho vem de `../site/codec.js`, o MESMO arquivo que o site carrega --
+ * pedido do Gustavo: "tem que ser igual a da home do site, estilo metal gear,
+ * talvez reaproveitar aquela mesmo". Reaproveitar, e nao copiar: mascote
+ * desenhado em dois lugares diverge, e aqui a divergencia seria na cara dele.
+ */
+.tronikat-vivo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;   /* sem isto o filho que rola estoura a altura da janela */
+}
+
+.tronikat-retrato {
+  padding: 10px 12px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* O canvas e de 128x96 e sobe ampliado. `pixelated` e o que produz o pixel
+   grande do codec -- o desenho la dentro e feito com anti-serrilhado, em baixa
+   resolucao, e a ampliacao faz o resto. Desenhar em quadradinhos daria Atari,
+   e nao PlayStation. */
+#retrato {
+  width: 168px;
+  height: 126px;
+  image-rendering: pixelated;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: #06110C;
+}
