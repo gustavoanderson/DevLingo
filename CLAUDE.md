@@ -1537,6 +1537,34 @@ Medido com CPU 4× mais lenta, que é como este arquivo manda simular o notebook
 dele: **primeira pintura em 2132 ms**, zero erro no console, sem rolagem
 horizontal. O critério continua sendo os 4 s escritos antes.
 
+### O cross-play, provado com a conta real — e a metade que ainda falta
+
+Em 22 de setembro de 2026, **celular → navegador está provado**: o Gustavo
+entrou na web com a conta dele e o progresso do Xiaomi apareceu. Isso derruba
+a hipótese mais provável de falha — o navegador gravando no caminho errado do
+Firestore, ou as regras negando.
+
+**Nenhum teste automático consegue provar isso**, e a razão está escrita em
+`jogo/testar_jogo.js`: a nuvem é falsa de propósito. Ela prova o **formato** de
+cada partida, nunca que o Firebase aceitou.
+
+**A outra metade — navegador → celular — ainda não foi verificada**, e ela pode
+quebrar em silêncio por um motivo concreto: o navegador monta a partida em
+JavaScript, e o app espera exatamente as colunas de `evento_resposta`, com
+`usou_dica` **inteiro** e não booleano. O CLAUDE.md já registra que divergir aí
+falha na inserção **só no aparelho de quem sincroniza** — nunca em teste local.
+
+As duas direções são assimétricas, então **uma não prova a outra**:
+
+| Direção | O que prova |
+|---|---|
+| celular → navegador | o app subiu, e a web desceu e recalculou o estado |
+| **navegador → celular** | a web **grava** num formato que o app aceita |
+
+Para fechar: jogar no navegador uma lição intocada no celular, **fechar o app de
+verdade** (tirar dos recentes) e reabrir. O `paused`/`resumed` importa — deixar
+em segundo plano pode não bastar para a tela atualizar.
+
 ### O que ainda não existe
 
 **É uma tela, a do exercício.** Faltam título, login, escolha de linguagem,
