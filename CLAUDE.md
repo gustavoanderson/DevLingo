@@ -1537,44 +1537,55 @@ Medido com CPU 4× mais lenta, que é como este arquivo manda simular o notebook
 dele: **primeira pintura em 2132 ms**, zero erro no console, sem rolagem
 horizontal. O critério continua sendo os 4 s escritos antes.
 
-### O cross-play, provado com a conta real — e a metade que ainda falta
+### O cross-play está PROVADO, nas duas direções, com a conta real
 
-Em 22 de setembro de 2026, **celular → navegador está provado**: o Gustavo
-entrou na web com a conta dele e o progresso do Xiaomi apareceu. Isso derruba
-a hipótese mais provável de falha — o navegador gravando no caminho errado do
-Firestore, ou as regras negando.
+Verificado à mão pelo Gustavo em 22 de setembro de 2026, num Xiaomi 15T Pro com
+a v1.8.0 e no navegador do notebook:
 
-**Nenhum teste automático consegue provar isso**, e a razão está escrita em
-`jogo/testar_jogo.js`: a nuvem é falsa de propósito. Ela prova o **formato** de
-cada partida, nunca que o Firebase aceitou.
-
-**A outra metade — navegador → celular — ainda não foi verificada**, e ela pode
-quebrar em silêncio por um motivo concreto: o navegador monta a partida em
-JavaScript, e o app espera exatamente as colunas de `evento_resposta`, com
-`usou_dica` **inteiro** e não booleano. O CLAUDE.md já registra que divergir aí
-falha na inserção **só no aparelho de quem sincroniza** — nunca em teste local.
-
-As duas direções são assimétricas, então **uma não prova a outra**:
-
-| Direção | O que prova |
+| Direção | O que ela prova |
 |---|---|
-| celular → navegador | o app subiu, e a web desceu e recalculou o estado |
-| **navegador → celular** | a web **grava** num formato que o app aceita |
+| celular → navegador | o app subiu o histórico, e a web **desceu** e recalculou o estado |
+| navegador → celular | a web **grava** num formato que o app aceita e reconhece |
 
-Para fechar: jogar no navegador uma lição intocada no celular, **fechar o app de
-verdade** (tirar dos recentes) e reabrir. O `paused`/`resumed` importa — deixar
-em segundo plano pode não bastar para a tela atualizar.
+**As duas eram necessárias, porque são assimétricas.** A primeira derruba a
+hipótese mais provável de falha — o navegador gravando no caminho errado do
+Firestore, ou as regras negando. A segunda é a que podia quebrar **em
+silêncio**: o navegador monta a partida em JavaScript, e o app espera as
+colunas de `evento_resposta` com `usou_dica` **inteiro**, porque o SQLite não
+tem booleano. Divergir ali falha na inserção **só no aparelho de quem
+sincroniza** — nunca em teste local.
+
+**E nenhum teste automático podia provar isto.** `jogo/testar_jogo.js` usa nuvem
+falsa de propósito: ela prova o **formato** de cada partida, e não que o
+Firebase aceitou. Aqui a verificação manual não é preguiça — é a única que
+alcança.
+
+O que faz as duas direções funcionarem é a decisão registrada em "Sincroniza o
+HISTÓRICO, não o estado": o que viaja só cresce, então juntar dois aparelhos é
+juntar duas listas, e não existe conflito a resolver. A web e o app nunca
+precisaram concordar sobre nada além do formato de uma linha.
+
+Uma armadilha do procedimento, para quem repetir: **feche o app de verdade**,
+tirando dos recentes. A sincronização roda na abertura e no `paused`/`resumed`
+— minimizar pode subir sem redesenhar a tela, e aí se vê número velho e se
+conclui que falhou quando não falhou.
 
 ### O que ainda não existe
 
-**É uma tela, a do exercício.** Faltam título, login, escolha de linguagem,
-trilha, aula e estatísticas.
+São **quatro telas**, em 22/09/2026: entrada (entrar, criar conta, recuperar
+senha), escolha de trilha, trilha e exercício. Com progresso indo e voltando do
+Firestore, e cross-play provado.
 
 | Pendência | Nota |
 |---|---|
-| O progresso | `sqflite` não tem web. **O Gustavo decidiu que o navegador NÃO precisa funcionar offline**, então ele pode ir direto ao Firestore |
+| Título, aula e estatísticas | as três telas que faltam |
+| A janela do Tr∅nikAt | reusa a interface que já existe, e fica **fora** do login |
 | Termos destacados no enunciado | depende de separar o analisador de `texto_rico.dart` da pintura |
 | Os cinco itens de segurança | antes de publicar |
+
+**O progresso saiu desta lista.** `sqflite` não tem web, e a decisão do Gustavo
+de que o navegador **não precisa funcionar offline** liberou o caminho direto
+ao Firestore — que é o que o cross-play provou funcionando.
 
 ### A auditoria de segurança que ele pediu, com o estado real
 
