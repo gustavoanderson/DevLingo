@@ -440,3 +440,33 @@ html, body {
   .coluna { padding: 24px 16px 36px; }
   .logo { font-size: 36px; }
 }
+
+/* =============================================================== entrada */
+.coluna.estreita { max-width: 440px; }
+.formulario { display: grid; gap: 4px; margin-top: 28px; }
+.titulo-form { margin: 0; font-size: 22px; font-weight: normal; }
+.explica { color: var(--suave); margin: 4px 0 18px; }
+.rotulo-campo { color: var(--suave); font-size: 13px; margin-top: 8px; }
+.formulario .campo { margin-bottom: 4px; }
+.dica-campo { color: var(--suave); font-size: 12px; margin: 0 0 8px; }
+.erro-form, .aviso-form {
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0 4px;
+  font-size: 14px;
+}
+.erro-form { border: 1px solid var(--erro); background: var(--erro-tenue); }
+.aviso-form { border: 1px solid var(--certo); background: var(--certo-tenue); }
+.btn.largo { width: 100%; margin-top: 12px; }
+.trocar-modo { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.trocar-modo a, .conta a { color: var(--destaque); font-size: 13px; }
+.conta { color: var(--suave); font-size: 13px; margin: -22px 0 30px; }
+
+/* O progresso na trilha: o numero e o que a pessoa procura, e a licao
+   concluida ganha o verde de CERTO -- concluir e acertar tem o mesmo sabor. */
+.cartao.concluida { border-color: var(--certo); }
+.cartao.concluida .lado { color: var(--certo); }
+
+/* Enquanto a conta e o progresso chegam. Sem isto a primeira coisa na tela
+   seria o fundo vazio, que se le como pagina quebrada. */
+.carregando { max-width: 640px; margin: 80px auto; padding: 0 20px; color: var(--suave); text-align: center; }

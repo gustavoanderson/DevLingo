@@ -21,6 +21,19 @@ let trilhas = [];
 
 let trilhaAtual = null;
 let licaoAtual = null;
+let metaDaLicao = null;       // language, level, lessonId, lessonTitle
+
+/* A CONTA E O PROGRESSO.
+   `partidas` e o historico da pessoa, como veio da nuvem mais o que foi jogado
+   agora. `respondidas` e a contagem por licao, e quem conta e o CEREBRO -- a
+   mesma conta que o app faz, testada contra ela em progresso_test.dart. */
+let usuario = null;
+let partidas = [];
+let respondidas = {};
+let progressoFalhou = false;
+let gravouEsta = false;       // a partida desta questao ja foi registrada?
+const pendentes = [];         // partidas que ainda nao chegaram a nuvem
+let enviando = false;
 let questoes = [];
 let indice = 0;
 let estado = null;
@@ -161,12 +174,55 @@ function aplicar(json) {
   $('barra').style.width = pct + '%';
   $('barra').parentElement.setAttribute('aria-valuenow', String(pct));
   $('contador').textContent = (indice + 1) + ' de ' + questoes.length;
+
+  // A partida e gravada QUANDO A QUESTAO TERMINA, e nao no Continuar -- a mesma
+  // regra do app. Se a pessoa fechar a aba entre uma coisa e outra, o que ja
+  // foi respondido nao se perde.
+  if (e.terminou && !gravouEsta) {
+    gravouEsta = true;
+    registrar();
+  }
+}
+
+/* Registra a partida desta questao. O FORMATO vem do cerebro -- `partida.dart`,
+   o mesmo que o app grava --, e esta pagina nao sabe o nome de campo nenhum.
+   Isso e o que garante o cross-play: o celular enfia o documento da nuvem
+   DIRETO no SQLite, e um campo com outro nome quebraria la, em silencio. */
+function registrar() {
+  if (!usuario || !metaDaLicao) return;
+  const evento = JSON.parse(devlingo.evento(usuario.uid, JSON.stringify(metaDaLicao), Date.now()));
+  if (!evento) return;
+  partidas.push(evento);
+  respondidas = JSON.parse(devlingo.respondidas(JSON.stringify(partidas)));
+  pendentes.push(evento);
+  enviarPendentes();
+}
+
+/* Envia o que falta, UM de cada vez e em ordem. Se a rede cair, para e tenta
+   de novo na proxima partida -- o id e derivado do conteudo, entao reenviar e
+   inofensivo.
+   A trava `enviando` existe porque duas chamadas simultaneas tirariam da fila
+   a mesma partida duas vezes, e a segunda retiraria uma que ainda nao subiu. */
+async function enviarPendentes() {
+  if (enviando) return;
+  enviando = true;
+  try {
+    while (pendentes.length) {
+      await Nuvem.gravarPartida(pendentes[0]);
+      pendentes.shift();
+    }
+  } catch (err) {
+    console.error('partida nao subiu, tento de novo na proxima:', err);
+  } finally {
+    enviando = false;
+  }
 }
 
 /* ------------------------------------------------------------------- acoes */
 
 function abrir(i) {
   indice = i;
+  gravouEsta = false;
   $('campo').value = '';
   $('miolo').scrollTop = 0;
   aplicar(devlingo.abrir(JSON.stringify(questoes[i])));
@@ -204,6 +260,7 @@ $('copiar').addEventListener('click', async (ev) => {
 /* ---------------------------------------------------------------- vistas */
 
 function mostrar(id) {
+  $('carregando').hidden = true;
   for (const v of document.querySelectorAll('.vista')) v.hidden = v.id !== id;
   window.scrollTo(0, 0);
 }
@@ -240,8 +297,13 @@ function pintarEscolha() {
   const lista = $('lista-trilhas');
   lista.textContent = '';
   for (const t of trilhas) {
+    const feitas = t.licoes.reduce((n, l) => n + (respondidas[l.id] || 0), 0);
+    const total = t.licoes.reduce((n, l) => n + l.questoes, 0);
+    // QUEM AINDA NAO JOGOU VE UM CONVITE, NAO ZEROS. E a regra da tela de
+    // estatisticas do app: "0 de 50" parece um resultado ruim quando nao ha
+    // resultado nenhum.
     lista.appendChild(cartao('#/' + t.chave, t.nome, t.descricao,
-      t.licoes.length + ' lições'));
+      feitas ? feitas + ' de ' + total : t.licoes.length + ' lições'));
   }
   document.title = 'DevLingo';
   mostrar('vista-escolha');
@@ -253,9 +315,17 @@ function pintarTrilha(t) {
   const lista = $('lista-licoes');
   lista.textContent = '';
   for (const l of t.licoes) {
-    lista.appendChild(cartao('#/' + t.chave + '/' + l.id, l.titulo, null,
-      l.questoes + ' questões',
-      'Lição ' + String(l.numero).padStart(2, '0') + ' · ' + l.nivel));
+    const n = respondidas[l.id] || 0;
+    // Sem progresso carregado, nao se afirma zero: "0 de 10" seria progresso
+    // perdido para quem olha. O CLAUDE.md registra o susto que isso ja deu
+    // no app, com o Gustavo cogitando refazer licoes que ja tinha feito.
+    const lado = progressoFalhou ? l.questoes + ' questões' : n + ' de ' + l.questoes;
+    const c = cartao('#/' + t.chave + '/' + l.id, l.titulo, null, lado,
+      'Lição ' + String(l.numero).padStart(2, '0') + ' · ' + l.nivel);
+    // Licao concluida = todas as questoes respondidas, independente de quantas
+    // tentativas cada uma custou. A mesma regra do app.
+    if (!progressoFalhou && n >= l.questoes) c.classList.add('concluida');
+    lista.appendChild(c);
   }
   document.title = t.nome + ' — DevLingo';
   mostrar('vista-trilha');
@@ -268,6 +338,8 @@ async function abrirLicao(t, l, q) {
     const dados = await (await fetch(l.arquivo)).json();
     questoes = dados.questions;
     licaoAtual = l;
+    metaDaLicao = { language: dados.language, level: dados.level,
+      lessonId: dados.lessonId, lessonTitle: dados.lessonTitle };
   }
   $('sair').href = '#/' + t.chave;
   document.title = l.titulo + ' — DevLingo';
@@ -287,6 +359,9 @@ async function abrirLicao(t, l, q) {
    pediria ao servidor um arquivo que nao existe. E o botao voltar do
    navegador passa a funcionar de graca. */
 async function rotear() {
+  // Sem conta, nenhuma vista abre: e a decisao do Gustavo, "exige login,
+  // exatamente como no app".
+  if (!usuario) return mostrar('vista-entrada');
   const [chave, idLicao, q] = location.hash.replace(/^#\/?/, '').split('/');
   const t = trilhas.find((x) => x.chave === chave);
   if (!t) return pintarEscolha();
@@ -302,9 +377,113 @@ async function rotear() {
 
 function falhar(texto) {
   for (const v of document.querySelectorAll('.vista')) v.hidden = true;
+  $('carregando').hidden = true;
   const f = $('falha');
   f.hidden = false;
   f.textContent = texto;
+}
+
+/* ---------------------------------------------------------------- entrada */
+
+/* Os textos seguem os do app, com UMA diferenca deliberada: o app promete
+   "depois o DevLingo funciona offline", e no navegador isso seria mentira --
+   o Gustavo decidiu em 21/09 que ele nao funciona. A validacao e as mensagens
+   de erro NAO estao aqui: vem do cerebro, de `autenticacao.dart`. */
+const MODOS = {
+  entrar: { titulo: 'Entrar', botao: 'Entrar',
+    explica: 'Sua conta guarda o progresso, e ele é o mesmo aqui e no app.' },
+  criar: { titulo: 'Criar conta', botao: 'Criar conta',
+    explica: 'Só e-mail e senha. O e-mail serve para você recuperar o acesso se esquecer a senha.' },
+  recuperar: { titulo: 'Esqueci minha senha', botao: 'Enviar link',
+    explica: 'Informe o e-mail da conta e enviamos um link para criar uma senha nova.' },
+};
+let modo = 'entrar';
+
+function trocarModo(m) {
+  modo = m;
+  $('titulo-entrada').textContent = MODOS[m].titulo;
+  $('explica-entrada').textContent = MODOS[m].explica;
+  $('btn-entrar').textContent = MODOS[m].botao;
+  $('bloco-senha').hidden = m === 'recuperar';
+  $('senha').autocomplete = m === 'criar' ? 'new-password' : 'current-password';
+  $('ir-criar').hidden = m === 'criar';
+  $('ir-entrar').hidden = m === 'entrar';
+  $('ir-recuperar').hidden = m === 'recuperar';
+  $('erro-entrada').hidden = true;
+}
+
+function avisar(id, texto) {
+  const el = $(id);
+  el.textContent = texto;
+  el.hidden = !texto;
+}
+
+function prepararEntrada() {
+  $('dica-senha').textContent = 'Mínimo de ' + devlingo.minimoDaSenha + ' caracteres.';
+  trocarModo('entrar');
+  for (const [id, m] of [['ir-criar', 'criar'], ['ir-entrar', 'entrar'], ['ir-recuperar', 'recuperar']]) {
+    $(id).addEventListener('click', (ev) => { ev.preventDefault(); trocarModo(m); });
+  }
+  $('form-entrada').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const email = $('email').value.trim();
+    const senha = $('senha').value;
+    avisar('aviso-entrada', '');
+
+    // O que da para checar sem rede e checado sem rede, e a REGRA e a do app.
+    const problema = devlingo.validar(modo, email, senha);
+    if (problema) return avisar('erro-entrada', problema);
+    avisar('erro-entrada', '');
+
+    const botao = $('btn-entrar');
+    botao.disabled = true;
+    try {
+      if (modo === 'entrar') await Nuvem.entrar(email, senha);
+      else if (modo === 'criar') await Nuvem.cadastrar(email, senha);
+      else {
+        await Nuvem.recuperarSenha(email);
+        trocarModo('entrar');
+        avisar('aviso-entrada', AVISO_RECUPERACAO);
+      }
+    } catch (err) {
+      const codigo = (err && err.code) || '';
+      // A RECUPERACAO NUNCA REVELA SE A CONTA EXISTE. Responder "nao achamos
+      // esse e-mail" entregaria a lista de quem tem conta. O app conta com a
+      // protecao contra enumeracao do Firebase; aqui a regra vale mesmo se ela
+      // estiver desligada no console.
+      if (modo === 'recuperar' && /user-not-found/.test(codigo)) {
+        trocarModo('entrar');
+        avisar('aviso-entrada', AVISO_RECUPERACAO);
+      } else {
+        avisar('erro-entrada', devlingo.mensagem(codigo));
+      }
+    } finally {
+      botao.disabled = false;
+    }
+  });
+
+  $('sair-conta').addEventListener('click', async (ev) => {
+    ev.preventDefault();
+    await Nuvem.sair();
+    location.hash = '#/';
+  });
+}
+
+const AVISO_RECUPERACAO =
+  'Se houver conta com esse e-mail, o link de nova senha já está a caminho. '
+  + 'Confira também o spam.';
+
+async function carregarProgresso() {
+  try {
+    partidas = await Nuvem.baixarPartidas(usuario.uid);
+    respondidas = JSON.parse(devlingo.respondidas(JSON.stringify(partidas)));
+    progressoFalhou = false;
+  } catch (err) {
+    console.error('nao consegui baixar o progresso:', err);
+    partidas = [];
+    respondidas = {};
+    progressoFalhou = true;
+  }
 }
 
 /* -------------------------------------------------------------- a abertura */
@@ -318,6 +497,22 @@ function falhar(texto) {
       + 'Rode `python tools/construir_jogo.py` e sirva a pasta do repositório '
       + 'por um servidor -- aberta como arquivo, a página não lê nada.');
   }
+  prepararEntrada();
   window.addEventListener('hashchange', rotear);
-  rotear();
+  try {
+    await Nuvem.aoMudarUsuario(async (u) => {
+      usuario = u;
+      if (!u) {
+        partidas = [];
+        respondidas = {};
+        return mostrar('vista-entrada');
+      }
+      $('quem').textContent = u.email;
+      $('carregando').hidden = false;
+      await carregarProgresso();
+      rotear();
+    });
+  } catch (e) {
+    falhar('Não consegui falar com o servidor de contas (' + e.message + ').');
+  }
 })();

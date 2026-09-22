@@ -197,7 +197,7 @@
     "Qual a cobertura de testes?",
     "O código é bem testado?"
    ],
-   "resposta": "São 353 testes automatizados no app, rodando no GitHub Actions a cada envio. A cobertura publicada é de 95,6%, medida em setembro de 2026, e ela vem junto com o denominador: 28 dos 33 arquivos, e não \"95,6% do app inteiro\"."
+   "resposta": "São 356 testes automatizados no app, rodando no GitHub Actions a cada envio. A cobertura publicada é de 95,6%, medida em setembro de 2026, e ela vem junto com o denominador: 28 dos 33 arquivos, e não \"95,6% do app inteiro\"."
   },
   {
    "id": "validador",

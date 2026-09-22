@@ -105,6 +105,41 @@ void main() {
     });
   });
 
+  // A traducao dos codigos do Firebase, que antes morava num arquivo que os
+  // testes nao importam -- e por isso nunca tinha sido testada. Desde 22/09 o
+  // navegador depende dela, com o prefixo `auth/` do SDK de JavaScript.
+  group('traducao dos codigos do Firebase', () {
+    test('o mesmo erro chega com e sem o prefixo auth/', () {
+      // O SDK do Flutter devolve `invalid-email`; o de JavaScript,
+      // `auth/invalid-email`. Sem descartar o prefixo, o navegador mostraria
+      // "algo deu errado" para TODO erro.
+      for (final codigo in ['invalid-email', 'email-already-in-use',
+          'weak-password', 'too-many-requests', 'network-request-failed']) {
+        expect(falhaDoCodigo('auth/$codigo'), falhaDoCodigo(codigo),
+            reason: codigo);
+        expect(falhaDoCodigo(codigo), isNot(FalhaDeAutenticacao.desconhecida),
+            reason: codigo);
+      }
+    });
+
+    test('credencial invalida NAO entrega se a conta existe', () {
+      // O Firebase devolve `invalid-credential` justamente para esconder se
+      // foi a senha ou a conta. Traduzir para "conta nao encontrada" poria na
+      // mensagem a informacao que ele escondeu no codigo.
+      for (final codigo in ['invalid-credential', 'auth/invalid-credential',
+          'wrong-password', 'auth/invalid-login-credentials']) {
+        expect(falhaDoCodigo(codigo), FalhaDeAutenticacao.credenciaisErradas,
+            reason: codigo);
+      }
+    });
+
+    test('codigo desconhecido cai na mensagem generica, e nao quebra', () {
+      expect(falhaDoCodigo('auth/algo-novo-do-futuro'),
+          FalhaDeAutenticacao.desconhecida);
+      expect(falhaDoCodigo(''), FalhaDeAutenticacao.desconhecida);
+    });
+  });
+
   group('entrar', () {
     testWidgets('com credenciais certas, entra e avisa quem entrou', (
       tester,

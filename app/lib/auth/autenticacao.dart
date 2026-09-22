@@ -88,6 +88,47 @@ class ErroDeAutenticacao implements Exception {
 /// Checar no aparelho responde na hora e sem consumir cota; deixar a biblioteca
 /// reclamar faria a pessoa esperar uma ida ao servidor para descobrir que
 /// digitou cinco caracteres.
+/// Codigos do Firebase para as falhas do app.
+///
+/// Mora aqui, e nao em `autenticacao_firebase.dart`, desde 22/09/2026: o
+/// navegador passou a receber os MESMOS codigos, e esta traducao precisava de
+/// um lugar sem Flutter para o `ponte_web.dart` compila-la. De brinde, ela
+/// passou a ser testavel -- no arquivo antigo, que os testes nao importam por
+/// desenho, ela nunca tinha sido.
+///
+/// **O prefixo `auth/` e aceito e descartado.** O SDK de JavaScript devolve
+/// `auth/invalid-credential`; o do Flutter, `invalid-credential`. E o mesmo
+/// erro, e sem descartar o prefixo o navegador cairia sempre em
+/// [FalhaDeAutenticacao.desconhecida] -- "algo deu errado" para tudo.
+///
+/// `invalid-credential` e o codigo que o Firebase passou a devolver no lugar
+/// de `wrong-password` e `user-not-found` quando a protecao contra enumeracao
+/// de e-mails esta ligada -- que e o **padrao** em projetos novos. Ele e
+/// deliberadamente ambiguo: nao diz se foi a senha ou se a conta nao existe,
+/// justamente para nao entregar quem tem conta.
+///
+/// Por isso ele vira [FalhaDeAutenticacao.credenciaisErradas], cuja mensagem
+/// manda conferir os dois campos e oferece a recuperacao de senha. Mapea-lo
+/// para "conta nao encontrada" seria devolver, na mensagem, a informacao que
+/// o Firebase escondeu no codigo.
+FalhaDeAutenticacao falhaDoCodigo(String codigo) =>
+    switch (codigo.startsWith('auth/') ? codigo.substring(5) : codigo) {
+      'invalid-email' => FalhaDeAutenticacao.emailInvalido,
+      'email-already-in-use' => FalhaDeAutenticacao.emailJaCadastrado,
+      'weak-password' => FalhaDeAutenticacao.senhaFraca,
+      'wrong-password' ||
+      'invalid-credential' ||
+      'invalid-login-credentials' => FalhaDeAutenticacao.credenciaisErradas,
+      'user-not-found' => FalhaDeAutenticacao.contaNaoEncontrada,
+      'user-disabled' => FalhaDeAutenticacao.contaNaoEncontrada,
+      'network-request-failed' => FalhaDeAutenticacao.semRede,
+      // Provedor de e-mail/senha desligado no console. Nao e culpa de quem
+      // digitou, entao a mensagem generica serve -- o detalhe vai para o log.
+      'operation-not-allowed' => FalhaDeAutenticacao.desconhecida,
+      'too-many-requests' => FalhaDeAutenticacao.muitasTentativas,
+      _ => FalhaDeAutenticacao.desconhecida,
+    };
+
 const int minimoDaSenha = 6;
 
 /// Regra de e-mail deliberadamente frouxa: algo, arroba, algo, ponto, algo.

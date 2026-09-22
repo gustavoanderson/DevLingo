@@ -107,7 +107,7 @@ class AutenticacaoFirebase implements Autenticacao {
       //   operation-not-allowed    o provedor e-mail/senha esta desligado
       //   api-key-not-valid        google-services.json de outro projeto
       debugPrint('FirebaseAuth falhou: ${e.code} -- ${e.message}');
-      throw ErroDeAutenticacao(_traduzir(e.code));
+      throw ErroDeAutenticacao(falhaDoCodigo(e.code));
     } on Object catch (erro) {
       // Qualquer outra coisa -- erro de plataforma, canal fechado -- vira
       // "desconhecida". A tela precisa de uma mensagem util em TODO caminho:
@@ -117,31 +117,6 @@ class AutenticacaoFirebase implements Autenticacao {
     }
   }
 
-  /// Códigos do Firebase para as falhas do app.
-  ///
-  /// `invalid-credential` é o código que o Firebase passou a devolver no lugar
-  /// de `wrong-password` e `user-not-found` quando a proteção contra enumeração
-  /// de e-mails está ligada — que é o **padrão** em projetos novos. Ele é
-  /// deliberadamente ambíguo: não diz se foi a senha ou se a conta não existe,
-  /// justamente para não entregar quem tem conta.
-  ///
-  /// Por isso ele vira [FalhaDeAutenticacao.credenciaisErradas], cuja mensagem
-  /// manda conferir os dois campos e oferece a recuperação de senha. Mapeá-lo
-  /// para "conta não encontrada" seria devolver, na mensagem, a informação que
-  /// o Firebase escondeu no código.
-  static FalhaDeAutenticacao _traduzir(String codigo) => switch (codigo) {
-    'invalid-email' => FalhaDeAutenticacao.emailInvalido,
-    'email-already-in-use' => FalhaDeAutenticacao.emailJaCadastrado,
-    'weak-password' => FalhaDeAutenticacao.senhaFraca,
-    'wrong-password' ||
-    'invalid-credential' => FalhaDeAutenticacao.credenciaisErradas,
-    'user-not-found' => FalhaDeAutenticacao.contaNaoEncontrada,
-    'user-disabled' => FalhaDeAutenticacao.contaNaoEncontrada,
-    'network-request-failed' => FalhaDeAutenticacao.semRede,
-    // Provedor de e-mail/senha desligado no console. Nao e culpa de quem
-    // digitou, entao a mensagem generica serve -- o detalhe vai para o log.
-    'operation-not-allowed' => FalhaDeAutenticacao.desconhecida,
-    'too-many-requests' => FalhaDeAutenticacao.muitasTentativas,
-    _ => FalhaDeAutenticacao.desconhecida,
-  };
+  // A traducao dos codigos mora em autenticacao.dart, como `falhaDoCodigo`:
+  // o navegador recebe os mesmos codigos e precisava dela sem Flutter.
 }

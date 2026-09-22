@@ -26,12 +26,52 @@
   voltar do navegador funciona, e um link aponta direto para uma licao.
 -->
 
+<!-- ============================================================= entrada
+     Um formulario so, com tres modos -- entrar, criar conta, recuperar senha --,
+     como no app. Tres telas repetiriam campo, validacao e tratamento de erro
+     em triplicata, e e assim que uma delas acaba com mensagem pior que as
+     outras. -->
+<section class="vista" id="vista-entrada" hidden>
+  <div class="coluna estreita">
+    <header class="marca">
+      <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
+    </header>
+    <form class="formulario" id="form-entrada" novalidate>
+      <h2 class="titulo-form" id="titulo-entrada">Entrar</h2>
+      <p class="explica" id="explica-entrada"></p>
+
+      <label class="rotulo-campo" for="email">E-mail</label>
+      <input class="campo" id="email" type="email" autocomplete="email" required>
+
+      <div id="bloco-senha">
+        <label class="rotulo-campo" for="senha">Senha</label>
+        <input class="campo" id="senha" type="password" autocomplete="current-password" required>
+        <!-- O minimo aparece ANTES de a pessoa errar: regra escondida ate a
+             falha e regra mal comunicada. -->
+        <p class="dica-campo" id="dica-senha"></p>
+      </div>
+
+      <p class="erro-form" id="erro-entrada" role="alert" hidden></p>
+      <p class="aviso-form" id="aviso-entrada" role="status" hidden></p>
+
+      <button class="btn principal largo" id="btn-entrar" type="submit">Entrar</button>
+
+      <nav class="trocar-modo">
+        <a href="#" id="ir-criar">Criar conta</a>
+        <a href="#" id="ir-entrar" hidden>Já tenho conta</a>
+        <a href="#" id="ir-recuperar">Esqueci minha senha</a>
+      </nav>
+    </form>
+  </div>
+</section>
+
 <!-- ==================================================== escolha de trilha -->
 <section class="vista" id="vista-escolha" hidden>
   <div class="coluna">
     <header class="marca">
       <h1 class="logo" aria-label="DevLingo"><span>Dev</span>Lingo</h1>
       <p class="lema">Aprenda a programar uma questão por vez.</p>
+      <p class="conta"><span id="quem"></span> · <a href="#" id="sair-conta">sair da conta</a></p>
     </header>
     <h2 class="rotulo-secao">Escolha uma trilha</h2>
     <nav class="cartoes" id="lista-trilhas" aria-label="Trilhas"></nav>
@@ -92,9 +132,11 @@
 
 </div>
 
+<p class="carregando" id="carregando">Carregando…</p>
 <p class="falha" id="falha" hidden></p>
 
 <script src="cerebro.js"></script>
+<script src="nuvem.js"></script>
 <script src="jogo.js"></script>
 </body>
 </html>

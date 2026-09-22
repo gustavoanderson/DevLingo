@@ -46,6 +46,7 @@ import 'dart:js_interop_unsafe';
 
 import 'answer/normalize.dart';
 import 'answer/sessao_questao.dart';
+import 'auth/autenticacao.dart';
 import 'data/partida.dart';
 import 'models/lesson.dart';
 import 'models/question.dart';
@@ -243,6 +244,36 @@ String _respondidas(String eventosJson) => jsonEncode(
     respondidasPorLicaoNoHistorico((jsonDecode(eventosJson) as List<dynamic>)
         .cast<Map<String, Object?>>()));
 
+/// A validacao da tela de entrada -- a MESMA do app.
+///
+/// Recuperar senha so exige e-mail; entrar e criar conta exigem os dois, com o
+/// minimo de [minimoDaSenha]. O que da para checar sem rede e checado sem
+/// rede: e-mail malformado nem chega a chamar o Firebase.
+///
+/// Devolve a mensagem em portugues, ou texto vazio se estiver tudo certo.
+String _validar(String modo, String email, String senha) {
+  final falha = modo == 'recuperar'
+      ? validarEmail(email.trim())
+      : validarCredenciais(email.trim(), senha);
+  return falha == null ? '' : ErroDeAutenticacao(falha).mensagem;
+}
+
+/// A mensagem para um codigo de erro do Firebase, com o prefixo `auth/` do SDK
+/// de JavaScript ja tratado em [falhaDoCodigo].
+///
+/// UMA mensagem muda no navegador, e por um motivo de verdade: a do app diz
+/// *"precisa de internet so para entrar; depois disso ele funciona offline"*.
+/// No navegador isso seria mentira -- o Gustavo decidiu em 21/09/2026 que ele
+/// NAO funciona offline. Prometer o que nao existe e pior que nao prometer.
+String _mensagem(String codigo) {
+  final falha = falhaDoCodigo(codigo);
+  if (falha == FalhaDeAutenticacao.semRede) {
+    return 'Sem conexão agora. O DevLingo no navegador precisa de internet '
+        'para entrar e para guardar o seu progresso.';
+  }
+  return ErroDeAutenticacao(falha).mensagem;
+}
+
 void main() {
   // Uma unica propriedade global, `devlingo`, com as funcoes dentro. Espalhar
   // nomes soltos no `window` e como o site poluiria o espaco de qualquer outro
@@ -257,6 +288,10 @@ void main() {
   api['tokenizar'] =
       ((JSString l, JSString g) => _tokenizar(l.toDart, g.toDart).toJS).toJS;
   api['trilhas'] = ((JSString j) => _trilhas(j.toDart).toJS).toJS;
+  api['validar'] = ((JSString modo, JSString email, JSString senha) =>
+      _validar(modo.toDart, email.toDart, senha.toDart).toJS).toJS;
+  api['mensagem'] = ((JSString c) => _mensagem(c.toDart).toJS).toJS;
+  api['minimoDaSenha'] = minimoDaSenha.toJS;
   api['evento'] = ((JSString uid, JSString licao, JSNumber quando) =>
       _evento(uid.toDart, licao.toDart, quando.toDartInt).toJS).toJS;
   api['respondidas'] =
