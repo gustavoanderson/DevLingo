@@ -1604,6 +1604,36 @@ O botão aparece também na **tela de entrada**, antes do login. Decisão dele, 
 ela preserva o valor de portfólio: quem abre o link sem conta ainda consegue
 perguntar o que é isto.
 
+#### A chamada: três pontinhos que anunciam a IA
+
+Pedido do Gustavo: *"bote uma janelinha com três pontinhos e deixa ela em
+destaque (se movendo, brilhando, sei lá) pra evidenciar a presença da IA"*.
+
+**O problema é descoberta.** O botão é um gato de 62px num canto, e nada nele
+diz "converse comigo" — num portfólio, recurso que ninguém descobre é igual a
+recurso que não existe.
+
+Um balão com cauda apontando para o botão, três pontinhos saltando **em tempos
+diferentes** (0, 160 e 320 ms) — é o atraso escalonado que faz aquilo ler como
+*digitando* em vez de três luzes piscando juntas —, o balão boiando 3px, e o
+botão com um anel ciano pulsando.
+
+Três decisões que a implementação exigiu:
+
+- **Ela some ao primeiro toque, e não volta ao fechar.** Quem já sabe que ele
+  existe não precisa de um balão pulsando para sempre: aviso que não para de
+  avisar vira ruído. É a mesma disciplina que fez o app recusar sugerir o modo
+  desafio
+- **Volta na visita seguinte**, porque o estado não é guardado — quem chega de
+  novo é, para efeito de descoberta, alguém chegando
+- **Some quando cai a rede.** Três pontinhos saltitando sobre um mascote cinza
+  em `CONNECTION LOST` seria a tela se contradizendo
+
+`jogo/testar_chamada.js` mede **tamanho e nome da animação**, e não o texto ao
+lado: elemento que só existe para pintar pode resolver para zero sem nada
+denunciar — foi assim que a barra de desfechos do app ficou invisível com todos
+os rótulos certos.
+
 #### Sem conexão ele entra em STANDBY, e não vira mensagem de erro
 
 Ideia do Gustavo em 22/09/2026: *"quando estiver offline, a IA do Tr∅nikAt

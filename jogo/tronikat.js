@@ -36,6 +36,7 @@
   let tocando = null;     // o <audio> em curso, para o proximo poder calar
   let ocupado = false;
   let semRede = false;    // o que a ULTIMA tentativa descobriu, nao um palpite
+  let jaAbriu = false;    // a chamada so anuncia quem ainda nao foi descoberto
 
   /* --------------------------------------------------------- o standby
    *
@@ -61,6 +62,27 @@
     $('tronikat-campo').placeholder = fora
       ? 'Sem conexão no momento…' : 'Pergunte alguma coisa…';
     $('btn-tronikat').classList.toggle('offline', fora);
+    pintarChamada();
+  }
+
+  /* A CHAMADA: o balao de tres pontinhos que anuncia a IA.
+   *
+   * Pedido do Gustavo, e ela resolve descoberta: o botao e um gato de 62px num
+   * canto, e nada nele diz "converse comigo".
+   *
+   * Duas condicoes para ela sumir, e as duas sao sobre nao mentir:
+   *
+   *   - DEPOIS DO PRIMEIRO TOQUE. Quem ja sabe que ele existe nao precisa de um
+   *     balao pulsando para sempre; aviso que nao para de avisar vira ruido.
+   *     Ela volta na proxima visita, porque o estado nao e guardado -- quem
+   *     chega de novo e, para efeito de descoberta, alguem chegando
+   *   - OFFLINE. Tres pontinhos saltitando sobre um mascote cinza em
+   *     "connection lost" seria a tela se contradizendo */
+  function pintarChamada() {
+    const fora = semRede || navigator.onLine === false;
+    const mostrar = !jaAbriu && fora === false && $('tronikat-janela').hidden;
+    $('tronikat-chamada').hidden = !mostrar;
+    $('btn-tronikat').classList.toggle('chamando', mostrar);
   }
 
   /* ------------------------------------------------------------ a conversa */
@@ -185,6 +207,7 @@
     j.hidden = !abrindo;
     $('btn-tronikat').setAttribute('aria-expanded', String(abrindo));
     if (abrindo) {
+      jaAbriu = true;
       pintarEstado();
       if (!$('tronikat-campo').disabled) $('tronikat-campo').focus();
       if (!$('tronikat-conversa').childElementCount) {

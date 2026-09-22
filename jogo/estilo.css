@@ -902,3 +902,101 @@ html, body {
   opacity: .45;
   cursor: not-allowed;
 }
+
+/* ======================================= a chamada: "tem alguem aqui"
+ *
+ * Pedido do Gustavo. O botao sozinho e um gato de 62px num canto, e nada nele
+ * diz "converse comigo" -- num portfolio, recurso que ninguem descobre e igual
+ * a recurso que nao existe.
+ *
+ * ELA SOME AO PRIMEIRO TOQUE, e volta na proxima visita. Quem ja sabe que ele
+ * existe nao precisa de um balao pulsando no canto o tempo todo: aviso que nao
+ * para de avisar vira ruido, e o projeto ja decidiu isso quando recusou que o
+ * app sugerisse o modo desafio. */
+
+.tronikat-chamada {
+  position: fixed;
+  right: 92px;
+  bottom: 34px;
+  z-index: 49;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 12px;
+  background: var(--superficie);
+  border: 1px solid var(--destaque);
+  border-radius: 14px;
+  pointer-events: none;
+  animation: chamada-entra .5s ease both, chamada-boia 2.8s ease-in-out .5s infinite;
+}
+
+/* A cauda, apontando para o botao. Dois triangulos sobrepostos: o de tras faz
+   a borda ciano, o da frente tapa com a cor do balao. Sem o segundo, a cauda
+   sairia com um risco no meio. */
+.tronikat-chamada::before,
+.tronikat-chamada::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  margin-top: -6px;
+  border: 6px solid transparent;
+  border-left-color: var(--destaque);
+}
+.tronikat-chamada::after {
+  right: -5px;
+  border-left-color: var(--superficie);
+}
+
+.tronikat-chamada i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--visor);
+  animation: pontinho 1.25s ease-in-out infinite;
+}
+/* O atraso escalonado e o que faz ler como "digitando" em vez de tres luzes
+   piscando juntas. */
+.tronikat-chamada i:nth-child(2) { animation-delay: .16s; }
+.tronikat-chamada i:nth-child(3) { animation-delay: .32s; }
+
+@keyframes pontinho {
+  0%, 60%, 100% { opacity: .28; transform: translateY(0); }
+  30%           { opacity: 1;   transform: translateY(-4px); }
+}
+
+@keyframes chamada-entra {
+  from { opacity: 0; transform: translateX(10px) scale(.9); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* Boia de leve. Dois pixels: mais que isso vira um balao saltitante, e a
+   regra da respiracao do mascote (2%) vale pelo mesmo motivo. */
+@keyframes chamada-boia {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* O BRILHO DO BOTAO, que e a outra metade do "em destaque" que ele pediu.
+   Ele pulsa so enquanto a chamada esta na tela. */
+.btn-tronikat.chamando {
+  animation: pulso 2.4s ease-in-out infinite;
+}
+@keyframes pulso {
+  0%, 100% { box-shadow: 0 6px 22px rgba(0, 0, 0, .45), 0 0 0 0 rgba(0, 229, 255, .45); }
+  50%      { box-shadow: 0 6px 22px rgba(0, 0, 0, .45), 0 0 0 10px rgba(0, 229, 255, 0); }
+}
+
+/* Parado para quem pediu menos movimento -- mas VISIVEL, porque a chamada
+   existe para ser notada e esconde-la tiraria o recurso de quem ja tem menos
+   pistas na tela. */
+@media (prefers-reduced-motion: reduce) {
+  .tronikat-chamada,
+  .tronikat-chamada i,
+  .btn-tronikat.chamando { animation: none; }
+  .tronikat-chamada i { opacity: 1; }
+}
+
+@media (max-width: 560px) {
+  .tronikat-chamada { right: 78px; bottom: 26px; padding: 7px 10px; }
+}

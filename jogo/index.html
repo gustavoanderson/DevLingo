@@ -183,6 +183,14 @@
   <span class="sr">Falar com o Tr∅nikAt</span>
 </button>
 
+<!-- A CHAMADA. Um balao de tres pontinhos ao lado do botao, com cauda
+     apontando para ele. `aria-hidden` porque e enfeite: quem usa leitor de
+     tela ja recebe o nome do botao, e um "reticencias" lido em voz alta seria
+     ruido sem informacao. -->
+<div class="tronikat-chamada" id="tronikat-chamada" aria-hidden="true">
+  <i></i><i></i><i></i>
+</div>
+
 <aside class="tronikat-janela" id="tronikat-janela" hidden
        aria-label="Conversa com o Tr∅nikAt">
   <header class="tronikat-topo">
