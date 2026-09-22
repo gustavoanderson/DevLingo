@@ -79,12 +79,25 @@ let exemplos = null;
 
 async function embed(env, textos) {
   const formatar = FORMATOS[env.FORMATO] || FORMATOS.gemma;
-  const saida = [];
-  for (let i = 0; i < textos.length; i += 50) {          // lotes pequenos
-    const r = await env.AI.run(MODELO, { text: textos.slice(i, i + 50).map(formatar) });
-    saida.push(...r.data);
-  }
-  return saida;
+
+  // OS LOTES VAO JUNTOS, e nao um esperando o outro.
+  //
+  // Medido em 22/09/2026: a PRIMEIRA pergunta de cada instancia levava 5790 ms
+  // contra 255-1050 ms das seguintes. A causa nao era o modelo pensando
+  // devagar -- sao as 173 perguntas-exemplo, que cada instancia nova calcula
+  // uma vez e guarda. Em lotes de 50 isso da 4 chamadas, e elas eram
+  // SEQUENCIAIS: o tempo somava em vez de sobrepor.
+  //
+  // Os vetores sao exatamente os mesmos; muda so a ordem em que se espera por
+  // eles. Nenhuma nota se move, o que importa num piso com 7 milesimos de
+  // folga.
+  //
+  // Os lotes continuam de 50 -- o limite e do modelo, e nao tem a ver com isto.
+  const lotes = [];
+  for (let i = 0; i < textos.length; i += 50) lotes.push(textos.slice(i, i + 50));
+  const partes = await Promise.all(
+    lotes.map(lote => env.AI.run(MODELO, { text: lote.map(formatar) })));
+  return partes.flatMap(r => r.data);
 }
 
 function cosseno(a, b) {
