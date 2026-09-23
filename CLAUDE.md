@@ -1362,6 +1362,67 @@ Em 22/09/2026 ela quase custou caro: eu mudei uma contagem de testes numa respos
 
 `gerar_falas.py --conferir` continua sendo a forma barata de saber o que está desatualizado **sem sintetizar voz** — ele compara a impressão (texto + voz + tom), e não os bytes do WAV, porque o Piper tem aleatoriedade e gerar duas vezes nunca dá os mesmos bytes. **Ele é o portão, e a prosa daqui não é.**
 
+### O limite do modelo não se conserta no prompt, e isso custou cinco rodadas
+
+Em 22 de setembro de 2026 o Gustavo perguntou do **LangGraph** e não obteve
+resposta. Cinco tentativas depois, o que ficou vale mais que a correção.
+
+**Trocar o modelo NÃO resolve, e isso foi medido.** Os três testados na borda:
+
+| Modelo | LangGraph | AutoGen | "o que é variável" |
+|---|---|---|---|
+| `qwen3-30b-a3b` (atual) | não conhece | **conhece** | 702 ms |
+| `llama-3.3-70b-fp8-fast` | não conhece | **não conhece** | 2582 ms |
+| `qwen2.5-coder-32b` | não conhece | parcial | 3232 ms |
+
+O de 70 bilhões de parâmetros foi **pior**: perdeu o AutoGen que o atual sabe, e
+é 3,7× mais lento. O atual ficou.
+
+#### Quatro erros meus de prompt, e os três primeiros são a mesma lição
+
+- **Ditei a redação, e virou fala do personagem.** Escrevi *"ofereça ajudar com
+  o tema em volta"*, e a resposta saiu com essas palavras. O Gustavo:
+  *"totalmente com cara de IA"*. Instrução diz **o que** fazer, nunca **com que
+  palavras**
+- **Ditei de novo**, com *"peça o contexto"* — e saiu *"Por favor, forneça mais
+  contexto"*
+- **Somei regra em cima de regra**, e o modelo passou a **colar** a frase de
+  recusa antes da resposta certa: *"Eu só falo sobre... Zig não está comigo"*.
+  Consertar prompt é quase sempre **tirar**, e não somar
+- **Comparei amostras de N=1** num modelo com temperatura, e cheguei a
+  conclusões que a repetição não sustentava. Só ao medir a mesma pergunta três
+  vezes o sinal apareceu
+
+#### A condição de recusa era uma negativa ampla
+
+Ela dizia *"se NÃO for sobre programação"*, e o modelo aplicava a tudo que não
+reconhecia — "não conheço isso" virava "isso não é comigo", e só a segunda é
+uma porta fechada. Hoje ela lista o que é de fora (esporte, clima, cotação,
+receita), porque **assunto concreto casa melhor que uma ausência**.
+
+E a frase de recusa **sai do prompt quando a busca já reconheceu a pergunta**.
+Essa informação o código sempre teve: se a nota passou do piso na ficha
+`programacao`, a peneira já fez o trabalho e o modelo não precisa dela. É o
+mesmo princípio do resto do porteiro — o modelo propõe, o código decide.
+
+#### O trade-off que sobrou, e ele é de produto
+
+Proibir adivinhação tem preço, e ele foi medido: antes o modelo **chutava pelo
+nome** — acertou "CrewAI é uma plataforma de agentes" por sorte, e errou
+"LangGraph é uma biblioteca para criar grafos de linguagem", traduzindo
+Lang+Graph ao pé da letra. Depois da proibição ele diz que não conhece **nos
+dois casos**.
+
+Ficou assim de propósito: num app que ensina, **inventar é pior que admitir o
+limite** — é o risco que esta seção já nomeia, "ensinar algo errado". Quem
+quiser o contrário mexe na linha que proíbe adivinhar pelo nome.
+
+**O que a busca resolve, a busca resolve.** `CrewAI` caía na ficha
+`feito-com-ia`, que é sobre o app: o "AI" do nome puxava para lá. Quatro
+exemplos novos na ficha `programacao` corrigiram isso — e essa parte **não** é
+enxugar gelo, porque o que se ensina é uma **forma** de pergunta, não um
+conceito.
+
 ### Armadilhas medidas, que custaram tempo
 
 - **`127.0.0.1`, nunca `localhost`.** No Windows o `localhost` resolve primeiro para IPv6 (`::1`), o Ollama escuta só no IPv4, e o cliente espera a tentativa IPv6 desistir antes de tentar de novo. Medido em 14/09: **2.168 ms com `localhost` contra 108 ms com `127.0.0.1`**. E o pior é onde os 2 segundos sumiam: **fora** do Ollama, antes de a requisição chegar nele — então não apareciam em nenhuma duração que ele reportasse

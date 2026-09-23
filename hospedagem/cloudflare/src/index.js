@@ -346,8 +346,14 @@ export default {
           // `programacao` nao e uma resposta: e uma placa dizendo "esta
           // pergunta nao se responde com ficha nenhuma". Ver porteiro.js.
           const ehProgramacao = alvo === FICHA_PROGRAMACAO;
+          // `reconhecida` diz se a BUSCA achou que isto e programacao, ou se
+          // a pergunta caiu aqui por nao ter casado com nada. Quando a peneira
+          // ja fez o trabalho, o modelo nao precisa da frase de recusa -- e ela
+          // era justamente o que fazia ele recusar nomes que nao conhece.
+          const reconhecida = melhor[0] === FICHA_PROGRAMACAO
+            && melhor[1] >= FICHAS.piso;
           const gerado = ehProgramacao
-            ? await gerarProgramacao(env, pergunta.trim())
+            ? await gerarProgramacao(env, pergunta.trim(), reconhecida)
             : await gerar(env, ficha, pergunta.trim());
           // Sem ficha nao ha o que o juiz confira: ele responde "esta frase
           // esta na ficha?", e aqui a pergunta nao existe. Ficam as defesas
@@ -362,7 +368,9 @@ export default {
             // A FICHA E QUE NAO SERVIA. Segunda chance pela faixa de
             // programacao, que nao depende de ficha nenhuma. Custa uma chamada
             // a mais, e so acontece aqui -- reprovacao com nota baixa e rara.
-            const segundo = await gerarProgramacao(env, pergunta.trim());
+            // Segunda chance por ficha fraca: aqui a busca NAO reconheceu, e
+            // a frase de recusa continua sendo a peneira.
+            const segundo = await gerarProgramacao(env, pergunta.trim(), false);
             const r2 = conferirProgramacao(segundo);
             resposta.motivos = motivos;
             resposta.gerado = gerado;

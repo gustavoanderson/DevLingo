@@ -454,6 +454,9 @@ perguntas:
 - me explica o LangGraph
 - me explica o Docker
 - o que faz o Kubernetes
+- o que e CrewAI
+- o que e AutoGen
+- o que e um framework de agentes
 
 resposta:
 Programação é comigo mesmo, mas deu um engasgo aqui no estúdio agora. Pergunta de novo que eu explico. E para treinar de verdade, é dentro das trilhas: cada lição tem uma aula curta antes das questões.
