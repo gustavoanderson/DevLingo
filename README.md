@@ -4,7 +4,7 @@
 
 **Aprenda a programar no formato Duolingo — em português, do zero.**
 
-[![Baixar APK](https://img.shields.io/badge/baixar-APK%20v1.1.1-FF2D95?style=for-the-badge&logo=android&logoColor=white)](https://github.com/gustavoanderson/DevLingo/releases/latest)
+[![Baixar APK](https://img.shields.io/badge/baixar-APK%20v1.9.2-FF2D95?style=for-the-badge&logo=android&logoColor=white)](https://github.com/gustavoanderson/DevLingo/releases/latest)
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.13-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
@@ -65,6 +65,43 @@ Oito trilhas de nível iniciante, **50 questões cada**:
 | **Agentes de IA** | o laço, ferramentas, MCP, orquestração e os limites que você impõe |
 
 Cada lição começa com uma **aula do Tr∅nikAt** que prepara exatamente os tópicos que as questões vão cobrar. Isso não é convenção: o validador do projeto **reprova** quando os dois deixam de bater, nos dois sentidos — tópico cobrado sem aula que o prepare, e aula que prepara algo que nenhuma questão cobra.
+
+---
+
+## A IA do mascote, e por que ela não inventa
+
+O Tr∅nikAt responde perguntas sobre o app e sobre programação — no site, no
+jogo do navegador e dentro do app. **A decisão do que ele pode dizer não é do
+modelo: é de código comum.**
+
+<div align="center">
+
+<img src="docs/imagens/arquitetura-ia.svg" width="880" alt="Como o Tr∅nikAt responde: a busca decide se a pergunta é reconhecida, o modelo recebe só a ficha do assunto e a reescreve, e o código confere cada afirmação antes de ela virar fala">
+
+</div>
+
+O desenho acima é **gerado por script** (`tools/gerar_diagrama_ia.py`) e o
+validador reprova se alguém editar o SVG à mão — a mesma regra que vale para
+os cenários do jogo e para os efeitos sonoros.
+
+Três decisões que sustentam isso, e cada uma nasceu de uma medição:
+
+- **Nenhum modelo desse tamanho pode ser a proteção do sistema.** Três modelos
+  foram testados contra uma manobra, e todos cederam; dois erraram uma conta
+  com confiança total. Então a decisão saiu do modelo e foi para código que não
+  pode ser convencido
+- **Comparar por semelhança não separa verdade de mentira.** *"Não funciona
+  offline"* (falsa) e *"Nenhum dado é vendido"* (verdadeira) tiraram 0,463 e
+  0,464 contra a mesma ficha. Um milésimo — porque a medida capta **assunto**,
+  não veracidade. Nenhum limiar resolveria isso, e é por isso que existe uma
+  conferência afirmação por afirmação
+- **Falhar cai para o texto gravado.** Se a geração falhar ou a conferência
+  reprovar, o sistema responde com a ficha original, já gravada. No pior caso
+  nada melhora — e nada piora
+
+**Custo zero e sem chave de API.** A busca roda num Cloudflare Worker na camada
+gratuita, e o app continua inteiro sem ela: sem conexão, o mascote entra em
+modo de espera e o resto do jogo segue funcionando.
 
 ---
 

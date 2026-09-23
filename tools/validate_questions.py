@@ -300,26 +300,39 @@ def check_gerados_em_dia(content_dir, report):
         report.error("tools/gerar_faixas.py", f"o gerador nao roda: {exc}")
         return
 
+    faixas = "tools/gerar_faixas.py"
     esperados = {
-        raiz / "app" / "lib" / "ui" / "cenario_gerado.dart": ambiente["gerar_dart"](),
+        raiz / "app" / "lib" / "ui" / "cenario_gerado.dart": (ambiente["gerar_dart"](), faixas),
     }
     for nome, cores in ambiente["FAIXAS"].items():
-        esperados[raiz / "assets" / "cenarios" / f"faixa-{nome}.svg"] = ambiente[
-            "gerar_svg"
-        ](nome, cores)
+        esperados[raiz / "assets" / "cenarios" / f"faixa-{nome}.svg"] = (
+            ambiente["gerar_svg"](nome, cores),
+            faixas,
+        )
 
-    for caminho, esperado in esperados.items():
+    # O diagrama do README entra pela mesma porta. Ele e arte que nasce de
+    # codigo, como os cenarios e os sons -- e o unico jeito de a regra valer
+    # para ele e ele estar nesta lista.
+    diagrama = raiz / "tools" / "gerar_diagrama_ia.py"
+    if diagrama.is_file():
+        amb2 = {"__file__": str(diagrama), "__name__": "gerar_diagrama_ia"}
+        try:
+            exec(compile(diagrama.read_text(encoding="utf-8"), str(diagrama), "exec"), amb2)
+            esperados[amb2["SAIDA"]] = (amb2["gerar_svg"](), "tools/gerar_diagrama_ia.py")
+        except Exception as exc:  # noqa: BLE001 - o motivo vai para o relatorio
+            report.error("tools/gerar_diagrama_ia.py", f"o gerador nao roda: {exc}")
+
+    for caminho, (esperado, gerador) in esperados.items():
         onde = str(caminho.relative_to(raiz)).replace("\\", "/")
         if not caminho.is_file():
-            report.error(onde, "arquivo gerado nao existe. Rode: python3 tools/gerar_faixas.py")
+            report.error(onde, f"arquivo gerado nao existe. Rode: python3 {gerador}")
             continue
         if caminho.read_text(encoding="utf-8") != esperado:
             report.error(
                 onde,
-                "arquivo gerado esta diferente do que tools/gerar_faixas.py produz. "
+                f"arquivo gerado esta diferente do que {gerador} produz. "
                 "Ou alguem editou a mao, ou o gerador mudou e nao foi rodado. "
-                "A correcao e sempre a mesma: edite o GERADOR e rode "
-                "'python3 tools/gerar_faixas.py'.",
+                f"A correcao e sempre a mesma: edite o GERADOR e rode 'python3 {gerador}'.",
             )
 
 
