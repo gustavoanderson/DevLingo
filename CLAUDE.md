@@ -1036,6 +1036,67 @@ Três decisões da implementação:
 Dois testes travam isso: um confirma que sair **pergunta** e só então volta à
 entrada, o outro que sem conta de verdade o botão não é desenhado.
 
+### O Tr∅nikAt dentro do app, e o rosto que passou a existir duas vezes
+
+Pedido do Gustavo em 22 de setembro de 2026: *"e no app, já temos a IA rodando
+no cantinho também?"*. Não tínhamos — nem a chamada ao Worker, nem um cliente
+HTTP.
+
+Hoje tem: ícone de conversa na escolha de trilha, e uma janela que faz o mesmo
+que `jogo/tronikat.js` faz no navegador — enrola enquanto pensa, mostra o texto
+**junto** com a fala, e cai em standby sem conexão.
+
+**Nenhuma dependência nova.** `dart:io` já traz `HttpClient` e o `audioplayers`
+— que o app usa para a fanfarra — já sabe tocar bytes. E **nenhuma regra de
+porteiro mora no app**: qual ficha responde e o que o modelo pode dizer
+continuam no Worker. Três clientes, um porteiro.
+
+**As falas gravadas não vão no APK.** Elas são baixadas do site publicado.
+Empacotá-las custaria megabytes por uma voz que só toca com internet — e elas
+mudam sem o app mudar: regravar uma ficha não pode exigir uma release.
+
+#### O rosto existe duas vezes, e isso foi ESCOLHA dele
+
+`site/codec.js` é canvas 2D em JavaScript, e não roda no Flutter. As três
+saídas foram postas com o custo declarado, e o Gustavo escolheu a terceira:
+
+| | O que custa |
+|---|---|
+| WebView com a janela do jogo | zero duplicação, mas dependência nova e ~2 MB |
+| Retrato SVG que o app já tem | leve, mas sem codec e sem boca |
+| **Porte para Dart** | **fica igual e é nativo — e o desenho passa a existir em dois lugares** |
+
+Fica registrado que **é escolha, e não descuido**: a próxima sessão não deve
+"corrigir" isto achando que ninguém percebeu a duplicação.
+
+#### O que protege a identidade, já que o desenho é duplo
+
+O risco não é o código divergir — é **o personagem divergir**. As constantes de
+identidade (cores, a elipse da cabeça, os ângulos das orelhas) ficam isoladas
+em `Codec`, e `codec_paridade_test.dart` **lê `site/codec.js` e compara uma a
+uma**. Mudar o verde do visor de um lado só reprova a suíte.
+
+É a forma de `tools/normalize_cases.json` aplicada à arte: duas implementações,
+e um portão provando que concordam. Verificado pondo um **olho âmbar** no Dart
+— o erro exato que este projeto já cometeu — e ele reprovou com a mensagem que
+importa: *"um gato de olho âmbar é outro gato: conserte os dois lados"*.
+
+O que continua podendo divergir é o motor de desenho: ordem das camadas, curva
+do ombro, tamanho do bigode. Esse é o preço da escolha, e está declarado no
+cabeçalho de `tronikat_codec.dart` em vez de escondido.
+
+**Duas diferenças assumidas**, as duas documentadas no código: a interferência
+não recorta pixels já pintados (o Flutter não dá esse acesso barato), e a boca
+oscila no ritmo da fala em vez de seguir os `bocas` por fonema, porque no app
+só o áudio chega.
+
+#### Um defeito que o teste pegou antes do aparelho
+
+Ao entrar em standby, a lista sai da árvore e o `ScrollController` fica solto —
+e rolar para o fim lançava exceção no scheduler. **Perder a rede quebraria a
+janela no celular.** A guarda é `hasClients`, e quem encontrou foi o teste do
+standby, não um print.
+
 ### O Firebase está ligado
 
 Projeto **`devlingo-cc399`**, plano Spark (gratuito). Provado no emulador: conta criada de verdade, UID devolvido pelo servidor, e o app reabriu **sem pedir login** — a sessão em cache funciona, que era a promessa central do desenho.
