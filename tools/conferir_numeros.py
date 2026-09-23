@@ -86,6 +86,22 @@ AFIRMACOES: dict[str, list[tuple[str, list[str]]]] = {
         (r"- (\d+) testes automatizados",                  ["testes"]),
         (r"São (\d+) questões em (\d+) trilhas",           ["total", "trilhas"]),
     ],
+    # O README TAMBEM ENTRA, e ele e a razao desta entrada existir.
+    #
+    # O ci.yml ja confere estes tres badges, em dois passos proprios -- e por
+    # isso eu os deixei de fora aqui, achando que estavam guardados. Estavam,
+    # mas SO NO CI: rodar `conferir_numeros.py` localmente passava verde com o
+    # badge de testes dizendo 390 contra 401 reais, e a `main` levou SEIS
+    # commits com o CI vermelho antes de o Gustavo perguntar por que.
+    #
+    # Portao que so existe onde nao se olha antes de commitar nao previne nada;
+    # ele apenas documenta o erro depois. A redundancia com o ci.yml e barata e
+    # deliberada: o que importa e um comando SO cobrir tudo antes do push.
+    "README.md": [
+        (r"badge/testes-(\d+)",   ["testes"]),
+        (r"badge/questões-(\d+)", ["total"]),
+        (r"badge/trilhas-(\d+)",  ["trilhas"]),
+    ],
     "estudio/fichas.md": [
         (r'diz "(\d+) questões"',                          ["jogaveis"]),
         (r"São (\d+) trilhas:",                            ["trilhas"]),
