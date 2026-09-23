@@ -2356,6 +2356,37 @@ O `pubspec.yaml` traz `version: 1.1.0+2`. O número depois do `+` é o **`versio
 
 `1.0.0` foi a primeira release; `1.1.0` porque houve funcionalidade nova (o molde, o botão de copiar, o ícone), e não apenas correção.
 
+#### "Pacote inválido" da Xiaomi costuma ser DOWNGRADE de `versionCode`
+
+Aconteceu em 22 de setembro de 2026, e a mensagem esconde a causa: *"como o
+pacote parece ser inválido, não foi instalado"*. O pacote estava perfeito —
+assinado com a chave certa, íntegro byte a byte.
+
+**O `--split-per-abi` soma um offset ao `versionCode`**: 1000 para
+`armeabi-v7a`, **2000 para `arm64-v8a`**, 4000 para `x86_64`. É o que impede os
+três APKs da mesma versão de colidirem.
+
+Eu compilei com `--target-platform android-arm64` para economizar tempo, e sem
+o split **o offset não entra**: o `1.9.1+12` do `pubspec` virou `versionCode`
+**12**, contra os **2011** já instalados. O Android recusa downgrade, e a
+Xiaomi traduz isso para "pacote inválido".
+
+| Comando | `versionCode` de `+12` |
+|---|---|
+| `flutter build apk --release --split-per-abi` | **2012** (arm64) |
+| `flutter build apk --release --target-platform android-arm64` | **12** |
+
+**Confira o número antes de mandar ao aparelho**, e não a assinatura sozinha:
+
+```bash
+"$ANDROID_HOME/build-tools/36.0.0/aapt2.exe" dump badging <apk> | head -1
+adb shell dumpsys package com.devlingo.app | grep versionCode
+```
+
+O primeiro tem que ser **maior** que o segundo. Misturar as duas formas de
+compilar entre releases é o que produz o erro — e ele não aparece em quem
+instala pela primeira vez, só em quem atualiza.
+
 #### O app está publicado
 
 Em **https://github.com/gustavoanderson/DevLingo/releases**, desde 7 de setembro de 2026. Cada release traz dois APKs assinados com a chave de release:
