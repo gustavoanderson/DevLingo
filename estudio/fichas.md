@@ -477,7 +477,7 @@ perguntas:
 - qual o proximo passo pra mim?
 
 resposta:
-Para eu olhar seu progresso, entre na sua conta pelo app ou pelo jogo. Aqui no site eu ainda não enxergo suas lições.
+Seu progresso não chegou até mim agora. Responda algumas questões no app ou no jogo, e eu volto a enxergar.
 
 ## fora-de-escopo
 

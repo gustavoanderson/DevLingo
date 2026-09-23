@@ -284,6 +284,42 @@ function conversa(ws) {
     conferir(!dossie.includes('Java'),
         'trilha nunca tocada fica de FORA do dossie');
 
+    // E A JANELA PRECISA USAR ISSO, que e outra coisa. As duas asercoes acima
+    // provam que a FUNCAO responde, e nao que alguem a chama -- a mesma familia
+    // de `Autenticacao.sair()`, que tinha teste nas duas implementacoes e
+    // nenhuma tela chamando. Peca pronta nao e peca alcancavel.
+    //
+    // O dublê do `fetch` NAO fala com o Worker: o que se mede aqui e o CORPO
+    // que sai daqui. Se o campo `progresso` faltar, o Worker nunca liga a faixa
+    // do tutor e o Tr∅nikAt responde mandando entrar na conta -- para quem ja
+    // esta na conta.
+    await js(`(() => {
+      window.__corpos = [];
+      const real = window.fetch;
+      window.fetch = (url, opcoes) => {
+        if (String(url).includes('/perguntar')) {
+          window.__corpos.push(opcoes && opcoes.body);
+          return Promise.resolve(new Response(
+            JSON.stringify({ texto: 'resposta de teste', ficha: 'meu-progresso' }),
+            { status: 200 }));
+        }
+        if (String(url).includes('/falar')) {
+          return Promise.resolve(new Response('{}', { status: 200 }));
+        }
+        return real(url, opcoes);
+      };
+    })()`);
+    await js(`document.getElementById('btn-tronikat').click()`);
+    await js(`document.getElementById('tronikat-campo').value = 'o que eu faco agora?';
+              document.getElementById('tronikat-form')
+                .dispatchEvent(new Event('submit', { cancelable: true }))`);
+    await esperar(`window.__corpos.length > 0`);
+    const corpo = JSON.parse(await js(`window.__corpos[0] || '{}'`));
+    conferir(typeof corpo.progresso === 'string' && corpo.progresso.includes('3 de 50'),
+        'a JANELA manda o dossie junto da pergunta',
+        String(corpo.progresso).split('\n')[0]);
+    await js(`document.getElementById('tronikat-fechar').click()`);
+
     // ----------------------------------------------------------- 5. jogar
     console.log('\n=== jogando python-beg-03 inteira ===');
     const licao = JSON.parse(fs.readFileSync(path.join(RAIZ, 'app/assets/content/python/python-beg-03.json'), 'utf8'));
