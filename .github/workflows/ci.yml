@@ -54,6 +54,22 @@ jobs:
       - name: Provar que o servidor MCP sobe e anuncia as ferramentas
         run: python3 mcp/test_servidor.py
 
+      # O de cima fala com o servidor EM PROCESSO. Este sobe de verdade e fala
+      # PELA REDE, que e a parte que muda quando ele sai da maquina de quem o
+      # escreveu: negociar sessao, rotear chamada, devolver resultado.
+      #
+      # Ele guarda a promessa de que hospedar nao exige reescrever nada. Se o
+      # pacote `mcp` mudar o caminho do endpoint ou o cabecalho da sessao, o
+      # lugar de descobrir isso e aqui -- e nao no dia em que o servidor no ar
+      # parar de responder para um cliente que ninguem esta olhando.
+      #
+      # Ele NAO cobre autenticacao, e isso e de proposito: quem valida
+      # credencial e o Cloudflare Access, antes de a requisicao chegar na
+      # maquina. Testar aquilo exigiria o tunel no ar, e teste que depende da
+      # internet de terceiro nao entra no CI.
+      - name: Provar que o servidor MCP responde PELA REDE
+        run: python3 mcp/test_remoto.py
+
       # Mesma razao do badge de testes, no outro job: numero de README escrito
       # a mao envelhece em silencio. O de questoes ja errou uma vez -- saiu 214
       # quando eram 204, e o erro chegou a uma mensagem de commit.

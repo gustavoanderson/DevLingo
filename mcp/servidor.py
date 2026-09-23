@@ -38,9 +38,39 @@ automaticamente; pessoa onde nao e.*
 
 ## Como rodar
 
-    python3 mcp/servidor.py
+    python3 mcp/servidor.py                    # local, por stdio
+    MCP_TRANSPORTE=streamable-http python3 mcp/servidor.py   # pela rede
 
 Ver `mcp/README.md` para conectar num cliente.
+
+## Por que o transporte vem de VARIAVEL, e stdio continua o padrao
+
+Um servidor MCP pode ser alcancado de duas formas, e as duas estao na
+especificacao: `stdio`, em que o cliente **inicia este arquivo** como
+subprocesso e fala pelos fluxos padrao, e `streamable-http`, em que ele ja
+esta no ar e o cliente manda HTTP POST.
+
+O padrao continua `stdio` porque e assim que um cliente local o inicia -- e
+mudar o padrao quebraria quem ja o usa, sem nada avisar. Quem hospeda liga o
+outro por ambiente.
+
+**O codigo das ferramentas nao muda entre os dois**, e isso nao e sorte: o
+pacote `mcp` implementa os dois transportes, e este arquivo so escolhe. Foi
+medido antes de virar plano -- subi este mesmo servidor em HTTP e as seis
+ferramentas responderam pela rede sem uma linha alterada.
+
+## O que este arquivo NAO faz, e e proposital: autenticar
+
+Exposto na internet, ele fica atras do **Cloudflare Access**, que valida o
+`CF-Access-Client-Id`/`CF-Access-Client-Secret` **antes** de a requisicao
+chegar na maquina. Escrever autenticacao aqui seria por codigo meu no caminho
+critico de quem entra -- e autenticacao escrita a mao e onde iniciantes criam
+falhas, que e a mesma razao ja registrada para usar Firebase Auth em vez de
+escrever login.
+
+E o que segura a porta se a credencial vazar continua sendo outra coisa:
+**nenhuma das seis ferramentas grava**. Isso ja estava decidido quando o
+servidor era local e so o dono o alcancava.
 """
 
 from __future__ import annotations
@@ -190,5 +220,37 @@ def material_para_revisao(licao_id: str) -> dict:
     return ferramentas.material_para_revisao(licao_id)
 
 
+def _transporte() -> str:
+    """Qual transporte usar, lido do ambiente.
+
+    Valor invalido ABORTA em vez de cair no padrao: um servidor que deveria
+    estar na rede e subiu em stdio fica mudo para o mundo, e o sintoma aparece
+    do lado do cliente, longe da causa.
+    """
+    import os
+
+    escolhido = os.environ.get("MCP_TRANSPORTE", "stdio")
+    validos = ("stdio", "sse", "streamable-http")
+    if escolhido not in validos:
+        raise SystemExit(
+            f"MCP_TRANSPORTE={escolhido!r} nao existe; use um de {validos}")
+    return escolhido
+
+
 if __name__ == "__main__":
-    servidor.run()
+    import os
+
+    transporte = _transporte()
+    if transporte == "stdio":
+        servidor.run()
+    else:
+        # 127.0.0.1 de proposito, e nao 0.0.0.0: quem publica e o tunel do
+        # Cloudflare, que sai de DENTRO da maquina. Escutar em todas as
+        # interfaces abriria a porta para a rede sem que ninguem tivesse
+        # pedido -- e o ORACLE.md ja registra o quanto custa mexer em firewall
+        # nesta VM.
+        servidor.run(
+            transport=transporte,
+            host=os.environ.get("MCP_HOST", "127.0.0.1"),
+            port=int(os.environ.get("MCP_PORTA", "8931")),
+        )
