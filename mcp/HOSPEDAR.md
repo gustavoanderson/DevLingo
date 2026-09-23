@@ -45,6 +45,34 @@ escrita.
 
 ---
 
+## Dá para começar ANTES do domínio, e vale
+
+O domínio só é exigido na Parte 3. As Partes 1 e 2 — pôr o código na VM e
+deixá-lo rodando — não dependem de DNS nenhum, e o `cloudflared` sabe criar um
+túnel com **URL temporária** sem login e sem domínio:
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:8931
+```
+
+Ele imprime um endereço `*.trycloudflare.com`. Confira dali de fora:
+
+```bash
+python3 mcp/testar_hospedado.py https://SEU-ENDERECO.trycloudflare.com/mcp --sem-auth
+```
+
+**Por que fazer isso antes:** se a VM tiver Python velho, memória curta ou
+faltar dependência, o lugar de descobrir é aqui — e não depois de esperar a
+propagação do DNS, quando a causa fica misturada com "será que o domínio
+propagou?".
+
+A URL muda a cada reinício e **não tem Access na frente**, então ela serve para
+provar o caminho e não para usar. Enquanto durar, quem tiver o endereço
+alcança o servidor; as seis ferramentas são somente leitura, mas não deixe o
+túnel temporário aberto além do teste.
+
+---
+
 ## Antes de começar
 
 - A VM do Oracle já no ar, com o serviço de voz rodando (ver `ORACLE.md`)
