@@ -1441,11 +1441,27 @@ O que destravou foi mudar o desenho, não o provedor: **em vez de hospedar o est
 
 Fica a regra: **conferir preço e plano na fonte oficial ANTES de recomendar hospedagem.** Custa um minuto, e recomendar errado custou uma etapa inteira.
 
-### O fluxo do Pages existe porque o site não mora na raiz
+### O fluxo do Pages publica o site E o jogo, e compila o Dart
 
-`.github/workflows/pages.yml`. O GitHub Pages só serve a raiz do repositório ou `/docs`, e o site mora em `site/`. Copiar para `/docs` criaria **duas cópias da mesma página**, e uma delas ficaria para trás — a mesma armadilha dos arquivos gerados.
+`.github/workflows/pages.yml`. O GitHub Pages só serve a raiz do repositório ou `/docs`, e nem o site nem o jogo moram ali. Copiar para `/docs` criaria **duas cópias da mesma página**, e uma delas ficaria para trás — a mesma armadilha dos arquivos gerados.
 
-O fluxo dispara só quando `site/**` muda, e publica `site/` como artefato.
+**Ele compila o Dart, e isso não é opcional.** `jogo/cerebro.js` e `jogo/conteudo.json` não são versionados — o cérebro pela razão já registrada, de que `dart compile js` não garante saída byte a byte entre versões do SDK. **Sem esse passo o jogo publicado abriria numa tela morta**, e nada no repositório denunciaria.
+
+A versão do Flutter é **fixa e igual à do `ci.yml`**: o cérebro que vai ao ar tem de sair do mesmo compilador que a suíte testa. A primeira tentativa usou `flutter-version-file` apontando para o `pubspec.yaml` e derrubou a publicação em 11 segundos — eu inventei a configuração em vez de copiar a que já funcionava ao lado.
+
+#### O artefato copia o layout do REPOSITÓRIO
+
+É isso que faz o jogo funcionar **sem tocar em nenhum caminho**: ele lê `../app/assets/content/`, `../assets/mascot/` e `../site/falas/`, exatamente como quando roda em `127.0.0.1` servindo a raiz. Um layout só, desenvolvimento e produção.
+
+**O site continua na raiz**, e não em `/site/`, porque a URL dele já está divulgada. Mover exigiria um redirecionamento, e portfólio que abre redirecionando é pior que uma cópia.
+
+**As falas e o `codec.js` aparecem duas vezes no artefato, e é deliberado:** o site na raiz alcança `falas/`, o jogo alcança `../site/falas/`. As duas cópias saem do **mesmo checkout na mesma execução**, então não há como divergirem — o que este arquivo proíbe é a cópia que **fica para trás**, e esta é remontada a cada publicação. Custa 20 MB num artefato de 40 MB.
+
+#### Provar a montagem antes de subir
+
+`jogo/testar_publicacao.js` serve a pasta montada e abre o jogo nela. O teste do jogo roda contra a raiz do repositório, e a publicação é uma montagem **diferente** — presumir que "é a mesma coisa" é exatamente o erro que este repositório já pagou.
+
+Ele conta **erro de console**, e não o que aparece na tela: caminho quebrado vira 404 no console enquanto a tela continua parecendo certa.
 
 ### Para testar o site, o instrumento é o Chrome por CDP
 
@@ -1956,6 +1972,43 @@ Firestore, e cross-play provado.
 **O progresso saiu desta lista.** `sqflite` não tem web, e a decisão do Gustavo
 de que o navegador **não precisa funcionar offline** liberou o caminho direto
 ao Firestore — que é o que o cross-play provou funcionando.
+
+### O jogo ESTÁ publicado, desde 23 de setembro de 2026
+
+Em **https://gustavoanderson.github.io/DevLingo/jogo/**, ao lado do site do
+portfólio, que continua na raiz.
+
+**Isso inverteu a ordem que ele mesmo tinha dado** — construir → segurança →
+publicar. Palavras dele: *"pode publicar o site, oras bolas"*. Fica registrado
+que **é decisão, e não descuido**: a próxima sessão não deve "corrigir" isto
+achando que a segurança foi esquecida.
+
+E há um fato que muda o tamanho do risco, e que eu não tinha notado antes:
+**a URL do Worker já era pública desde sempre**, em duas passagens de
+`site/index.html`. Publicar o jogo **não abriu exposição nova** — quem quisesse
+gastar a cota do `/perguntar` já podia, desde o dia em que o portfólio foi ao
+ar. O item de segurança continua aberto; o que deixou de ser verdade é o
+argumento de que publicar o jogo o tornava urgente.
+
+Três coisas verificadas contra a URL de verdade, e não contra a local:
+
+| O quê | Como |
+|---|---|
+| Os sete caminhos que o jogo pede | todos `200`, inclusive `app/assets/content/` e `site/falas/` |
+| O cérebro compilado no CI | `typeof devlingo === "object"`, e **8 trilhas** vindas do `conteudo.json` |
+| **O domínio autorizado no Firebase** | credencial falsa devolveu `auth/invalid-credential`, e não `auth/unauthorized-domain` |
+
+A terceira é a que quebraria em silêncio. **O Firebase Auth só aceita pedido de
+domínio que esteja na lista do console**, e `gustavoanderson.github.io` estava
+lá — mas isso não se sabe lendo o repositório, só perguntando ao Firebase. É a
+mesma classe de problema das regras do Firestore coladas à mão: a verdade mora
+fora do git.
+
+O teste manda credencial falsa **de propósito** — o que interessa não é entrar,
+é qual erro volta. `invalid-credential` prova que o pedido chegou;
+`unauthorized-domain` provaria que nem chegou. Quando o domínio próprio dele
+entrar, **é esta linha que precisa ser remedida**, junto com a lista de origens
+do CORS no Worker.
 
 ### A auditoria de segurança que ele pediu, com o estado real
 
