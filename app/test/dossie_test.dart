@@ -36,8 +36,38 @@ void main() {
         {'python-beg-01': 10, 'python-beg-02': 9},
       );
 
+      final concluidas =
+          texto.split('\n').firstWhere((l) => l.contains('concluidas'));
+      expect(concluidas, contains('1 Licao 1'));
+      // 9 de 10 nao e concluida, por mais perto que esteja.
+      expect(concluidas, isNot(contains('2 Licao 2')));
+    });
+
+    test('a licao COMECADA aparece, e e ela que diz o tema', () {
+      // Faltava, e o Gustavo encontrou usando: 2 questoes de Frameworks,
+      // nenhuma licao fechada, e ele perguntou sobre o que eram. O dossie so
+      // listava concluidas, entao a unica linha sobre tema dizia "nenhuma
+      // ainda" -- e o modelo nao tinha o que responder.
+      //
+      // Quem comeca uma trilha passa muito tempo com zero licoes fechadas:
+      // este e o caso COMUM, nao a borda.
+      final texto = montarDossie(
+        [trilha('Frameworks', [('frameworks-beg-01', 1, 10)])],
+        {'frameworks-beg-01': 2},
+      );
+
+      expect(texto, contains('em andamento'));
+      expect(texto, contains('1 Licao 1 (2 de 10)'));
+    });
+
+    test('licao concluida NAO reaparece como em andamento', () {
+      final texto = montarDossie(
+        [trilha('Python', [('python-beg-01', 1, 10)])],
+        {'python-beg-01': 10},
+      );
+
       expect(texto, contains('1 Licao 1'));
-      expect(texto, isNot(contains('2 Licao 2')));
+      expect(texto, isNot(contains('em andamento')));
     });
 
     test('trilha nunca tocada fica de FORA', () {

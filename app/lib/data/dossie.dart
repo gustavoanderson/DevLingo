@@ -91,17 +91,32 @@ String montarDossie(
     var respondidas = 0;
     var total = 0;
     final concluidas = <String>[];
+    final emAndamento = <String>[];
     for (final licao in licoes) {
       final id = licao['id'] as String;
       final quantas = licao['questoes'] as int? ?? 0;
       final fez = feitas[id] ?? 0;
       respondidas += fez;
       total += quantas;
+      if (fez == 0) continue;
       // Licao concluida = todas as questoes respondidas, independente de
       // quantas tentativas cada uma custou. E a mesma definicao da trilha, e
       // mudar aqui faria o mascote contradizer a tela.
       if (quantas > 0 && fez >= quantas) {
         concluidas.add('${licao['numero']} ${licao['titulo']}');
+      } else {
+        // A LICAO COMECADA E QUEM DIZ O TEMA, e ela faltava. O Gustavo tinha
+        // respondido 2 questoes de Frameworks, nenhuma licao fechada, e
+        // perguntou sobre o que eram -- o dossie so listava CONCLUIDAS, entao
+        // a unica linha sobre tema dizia "nenhuma ainda" e o modelo nao tinha
+        // o que responder.
+        //
+        // O titulo da licao resolve isso sem consulta nova, e resolve melhor
+        // que o `topic` da questao: "01 DOM, componente e as duas camadas" se
+        // le, `jsx` nao. Quem comeca uma trilha passa muito tempo com zero
+        // licoes fechadas, entao este e o caso COMUM, nao a borda.
+        emAndamento.add('${licao['numero']} ${licao['titulo']} '
+            '($fez de $quantas)');
       }
     }
     if (respondidas == 0) continue;
@@ -115,6 +130,9 @@ String montarDossie(
         // diferente de quem terminou tres.
         ? '  licoes concluidas: nenhuma ainda'
         : '  licoes concluidas: ${concluidas.join(', ')}');
+    if (emAndamento.isNotEmpty) {
+      linhas.add('  licoes em andamento: ${emAndamento.join(', ')}');
+    }
   }
 
   if (linhas.isEmpty) return '';

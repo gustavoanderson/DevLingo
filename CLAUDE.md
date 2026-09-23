@@ -1800,6 +1800,59 @@ uma basta: tudo que entra num prompt é superfície de injeção, e o dossiê
 atravessa a rede para um serviço de terceiro. O conselho não fica melhor
 sabendo quem é a pessoa.
 
+##### A lição EM ANDAMENTO faltava, e é o caso comum
+
+Encontrado pelo Gustavo usando o app, no mesmo dia: ele tinha respondido **2
+questões de Frameworks**, perguntou o progresso e ouviu a contagem certa. Aí
+perguntou *"quais eram os temas das 2 questões que fiz"* — e levou a recusa
+genérica.
+
+**Eram dois defeitos, e só o primeiro era o que parecia.**
+
+O primeiro é de busca: aquela forma de perguntar tirava **0,692**, abaixo do
+piso, e caía na placa `programacao`, que recita a recusa. Quatro exemplos novos
+na ficha resolveram.
+
+**O segundo é o que importa.** Forçando a ficha certa, ele *continuava* sem
+responder — porque o dossiê **só listava lições concluídas**, e não havia
+nenhuma. A única linha sobre tema dizia literalmente `licoes concluidas:
+nenhuma ainda`, e a instrução proíbe inventar.
+
+Eu montei o dossiê pensando em quem já fechou lições. Mas **quem começa uma
+trilha passa muito tempo com zero lições fechadas** — esse é o caso comum, não
+a borda, e é onde o conselho mais importa.
+
+A correção não custou consulta nova: o dossiê já sabia quantas questões cada
+lição tinha recebido, só não dizia quais estavam **em andamento**.
+
+```
+trilha Frameworks Iniciante: 2 de 50 questoes respondidas
+  licoes concluidas: nenhuma ainda
+  licoes em andamento: 1 DOM, componente e o mapa das duas camadas (2 de 10)
+```
+
+**O título da lição foi preferido ao `topic` da questão, de propósito:** *"DOM,
+componente e o mapa das duas camadas"* se lê; `jsx` não. E o título já está no
+dossiê de graça, enquanto o tópico exigiria consulta nova nos dois lados.
+
+Medido contra o Worker no ar, com o progresso real dele:
+
+| Pergunta | Antes | Depois |
+|---|---|---|
+| *"quais eram os temas das 2 questões que fiz"* | 0,692 → recusa | **0,838**, e cita DOM e componentes |
+| *"sobre o que eram as questões que respondi?"* | 0,717 → ficha **errada** (`tamanho`) | **0,960** |
+| *"em que lição eu parei?"* | — | **1,000** |
+
+A segunda linha é a falha de desenho que este arquivo já nomeia — *o juiz
+confere se a resposta é fiel à ficha, e ninguém confere se a ficha responde à
+pergunta*. Ela respondeu o número de lições do app para quem perguntou do
+próprio progresso.
+
+**E a calibração ficou em 48/53 depois dos quatro exemplos novos**, o mesmo
+número de antes: nenhum roubou pergunta legítima. `quantas questoes eu ja fiz?`
+era o candidato óbvio a roubar `quantas questões tem?`, da ficha `tamanho`, e
+não roubou — mas era isso que a medição precisava responder, e não a leitura.
+
 ##### O juiz não serve aqui, e o que entrou no lugar dele
 
 O juiz pergunta *"esta frase está na ficha?"*, e aqui não há ficha — mesma
