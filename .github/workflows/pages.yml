@@ -1,15 +1,26 @@
-# Publica site/ no GitHub Pages.
+# Publica no GitHub Pages o site do portfolio E o jogo no navegador.
 #
 # Existe um fluxo proprio porque o Pages so serve a raiz do repositorio ou
-# /docs, e o site mora em site/. Copiar para /docs criaria duas copias da
-# mesma pagina, e uma delas ficaria para tras -- a mesma armadilha que o
-# CLAUDE.md registra para arquivos gerados.
+# /docs, e nem o site nem o jogo moram ali. Copiar para /docs criaria duas
+# copias da mesma pagina, e uma delas ficaria para tras -- a mesma armadilha
+# que o CLAUDE.md registra para arquivos gerados.
+#
+# ELE COMPILA O DART, e isso nao e opcional: `jogo/cerebro.js` e
+# `jogo/conteudo.json` NAO sao versionados. O cerebro porque `dart compile js`
+# nao garante saida byte a byte entre versoes do SDK, e versiona-lo criaria um
+# portao que reprovaria por troca de versao do Flutter sem ninguem ter mexido
+# em codigo. Sem este passo o jogo publicado abriria numa tela morta.
 name: Pages
 
 on:
   push:
     branches: [main]
-    paths: ["site/**", ".github/workflows/pages.yml"]
+    paths:
+      - "site/**"
+      - "jogo/**"
+      - "app/**"
+      - "assets/mascot/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -30,9 +41,46 @@ jobs:
       url: ${{ steps.publicacao.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: app/pubspec.yaml
+          cache: true
+
+      - name: Gerar o cerebro e o indice das licoes
+        run: |
+          cd app && flutter pub get && cd ..
+          python tools/construir_jogo.py
+
+      # O LAYOUT PUBLICADO COPIA O DO REPOSITORIO, e isso e o que faz o jogo
+      # funcionar sem tocar num caminho: ele le `../app/assets/content/`,
+      # `../assets/mascot/` e `../site/falas/`, exatamente como quando roda em
+      # 127.0.0.1 servindo a raiz. Um layout so, dev e producao.
+      #
+      # O site continua na RAIZ, e nao em /site/, porque a URL dele ja esta
+      # divulgada -- mover exigiria um redirecionamento, e portfolio que abre
+      # redirecionando e pior que uma copia.
+      - name: Montar a pasta de publicacao
+        run: |
+          mkdir -p publicacao/jogo publicacao/assets publicacao/app/assets publicacao/site
+          cp -r site/. publicacao/
+          cp -r jogo/. publicacao/jogo/
+          cp -r assets/mascot publicacao/assets/
+          cp -r app/assets/content publicacao/app/assets/
+          # As falas e o codec aparecem duas vezes, e isso e deliberado: o site
+          # na raiz alcanca `falas/`, o jogo alcanca `../site/falas/`. As duas
+          # copias saem do MESMO checkout nesta MESMA execucao, entao nao ha
+          # como divergirem -- o que o CLAUDE.md proibe e a copia que fica para
+          # tras, e esta e remontada a cada publicacao.
+          cp -r site/falas publicacao/site/
+          cp site/codec.js publicacao/site/
+          echo "--- o que vai ao ar ---"
+          du -sh publicacao
+          ls publicacao publicacao/jogo
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: publicacao
       - id: publicacao
         uses: actions/deploy-pages@v4
