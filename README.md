@@ -30,9 +30,10 @@ Um aplicativo Android que ensina programação e engenharia de software em **li�
 O guia é o **Tr∅nikAt**, um gato branco ciberneticamente modificado com visor no estilo scouter. Ele conhece todas as linguagens de programação, e elas vão entrando no DevLingo aos poucos, como trilhas novas.
 
 <div align="center">
-<img src="docs/imagens/tela-linguagens.png" width="240" alt="Tela de escolha de trilha">
-<img src="docs/imagens/tela-trilha.png" width="240" alt="Trilha de lições">
-<img src="docs/imagens/tela-estatisticas.png" width="240" alt="Estatísticas do jogador">
+<img src="docs/imagens/tela-tronikat-fechado.png" width="228" alt="Escolha de trilha, com o botão do Tr∅nikAt no canto">
+<img src="docs/imagens/tela-tronikat-aberto.png" width="228" alt="O Tr∅nikAt respondendo a diferença entre recursão e laço">
+<img src="docs/imagens/tela-trilha.png" width="228" alt="Trilha de lições">
+<img src="docs/imagens/tela-estatisticas.png" width="228" alt="Estatísticas do jogador">
 </div>
 
 ---
@@ -68,40 +69,37 @@ Cada lição começa com uma **aula do Tr∅nikAt** que prepara exatamente os t�
 
 ---
 
-## A IA do mascote, e por que ela não inventa
-
-O Tr∅nikAt responde perguntas sobre o app e sobre programação — no site, no
-jogo do navegador e dentro do app. **A decisão do que ele pode dizer não é do
-modelo: é de código comum.**
+## Como funciona por dentro
 
 <div align="center">
 
-<img src="docs/imagens/arquitetura-ia.svg" width="880" alt="Como o Tr∅nikAt responde: a busca decide se a pergunta é reconhecida, o modelo recebe só a ficha do assunto e a reescreve, e o código confere cada afirmação antes de ela virar fala">
+<img src="docs/imagens/arquitetura-ia.svg" alt="Fluxograma da arquitetura do DevLingo: o aluno pergunta, a busca com embeddinggemma decide se reconhece o assunto, o qwen3-30b escreve só a partir da ficha, o llama-3.2-3b julga cada afirmação, e a Oracle sintetiza a voz; quando algo reprova, o sistema responde o texto já gravado. No segundo fluxo, o aluno responde uma questão, o SQLite salva no aparelho e o Firebase sincroniza para outro aparelho">
 
 </div>
 
-O desenho acima é **gerado por script** (`tools/gerar_diagrama_ia.py`) e o
-validador reprova se alguém editar o SVG à mão — a mesma regra que vale para
-os cenários do jogo e para os efeitos sonoros.
+**O mascote não inventa, e isso é arquitetura — não é confiança no modelo.**
+A decisão do que ele pode dizer fica em código comum: a busca barra o que não
+reconhece, o modelo só reescreve uma ficha que já existe, e um segundo modelo
+julga cada afirmação antes de ela virar fala. Falhou em qualquer ponto? Ele
+responde o texto que uma pessoa escreveu e revisou.
 
-Três decisões que sustentam isso, e cada uma nasceu de uma medição:
+Três medições que explicam por que foi feito assim:
 
 - **Nenhum modelo desse tamanho pode ser a proteção do sistema.** Três modelos
-  foram testados contra uma manobra, e todos cederam; dois erraram uma conta
-  com confiança total. Então a decisão saiu do modelo e foi para código que não
-  pode ser convencido
+  foram testados contra a mesma manobra e todos cederam; dois erraram uma conta
+  com confiança total
 - **Comparar por semelhança não separa verdade de mentira.** *"Não funciona
-  offline"* (falsa) e *"Nenhum dado é vendido"* (verdadeira) tiraram 0,463 e
-  0,464 contra a mesma ficha. Um milésimo — porque a medida capta **assunto**,
-  não veracidade. Nenhum limiar resolveria isso, e é por isso que existe uma
-  conferência afirmação por afirmação
-- **Falhar cai para o texto gravado.** Se a geração falhar ou a conferência
-  reprovar, o sistema responde com a ficha original, já gravada. No pior caso
-  nada melhora — e nada piora
+  offline"* (falsa) e *"Nenhum dado é vendido"* (verdadeira) tiraram **0,463 e
+  0,464** contra a mesma ficha — um milésimo, porque a medida capta assunto e
+  não veracidade. Nenhum limiar resolveria; por isso existe a conferência
+  afirmação por afirmação
+- **Um modelo maior não resolveria.** O `llama-3.3-70b` foi testado e saiu
+  **pior** que o `qwen3-30b` atual — perdeu conhecimento que o menor tinha, e
+  respondeu 3,7× mais devagar
 
-**Custo zero e sem chave de API.** A busca roda num Cloudflare Worker na camada
-gratuita, e o app continua inteiro sem ela: sem conexão, o mascote entra em
-modo de espera e o resto do jogo segue funcionando.
+O diagrama é **gerado por script** (`tools/gerar_diagrama_ia.py`), e o validador
+reprova se alguém editar o SVG à mão — a mesma regra que vale para os cenários
+do jogo e para os efeitos sonoros.
 
 ---
 

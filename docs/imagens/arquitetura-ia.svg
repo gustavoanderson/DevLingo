@@ -1,50 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="610" viewBox="0 0 1000 610" role="img" aria-label="Como o Tr∅nikAt responde: a busca decide, o modelo escreve só a partir da ficha, e o código confere cada afirmação antes de virar fala">
-<defs>
-  <linearGradient id="ceu" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#1B0B3A"/>
-    <stop offset="1" stop-color="#170A31"/>
-  </linearGradient>
-</defs>
-<rect width="1000" height="610" fill="url(#ceu)"/>
-<text x="500" y="48" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="700" letter-spacing="3" text-anchor="middle">COMO O Tr∅nikAt RESPONDE</text>
-<text x="500" y="76" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="400" letter-spacing="0" text-anchor="middle">a IA do DevLingo, e por que dá para confiar no que ela diz</text>
-<rect x="40" y="110" width="288" height="232" rx="10" fill="#1E0F3E" stroke="#3D2A66" stroke-width="1"/>
-  <rect x="40" y="110" width="4" height="232" rx="2" fill="#00E5FF"/>
-  <text x="60" y="140" fill="#00E5FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="1.5">1. ENTRADA</text>
-  <text x="60" y="168" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="17" font-weight="700" letter-spacing="0">A busca decide</text>
-  <text x="60" y="198" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">A pergunta é comparada</text>
-  <text x="60" y="219" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">com exemplos conhecidos.</text>
-  <text x="60" y="261" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">Não reconheceu?</text>
-  <text x="60" y="282" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">Resposta fixa — o modelo</text>
-  <text x="60" y="303" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">nem chega a ser chamado.</text>
-<path d="M 331 226 l 22 0 m -7 -6 l 7 6 l -7 6" fill="none" stroke="#9B8FC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="356" y="110" width="288" height="232" rx="10" fill="#1E0F3E" stroke="#3D2A66" stroke-width="1"/>
-  <rect x="356" y="110" width="4" height="232" rx="2" fill="#FFE14D"/>
-  <text x="376" y="140" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="1.5">2. MODELO</text>
-  <text x="376" y="168" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="17" font-weight="700" letter-spacing="0">Escreve, sem inventar</text>
-  <text x="376" y="198" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">Recebe SÓ a ficha do</text>
-  <text x="376" y="219" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">assunto, e a reescreve</text>
-  <text x="376" y="240" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">com a voz do personagem.</text>
-  <text x="376" y="282" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">Ele não tem acesso</text>
-  <text x="376" y="303" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">a mais nada.</text>
-<path d="M 647 226 l 22 0 m -7 -6 l 7 6 l -7 6" fill="none" stroke="#9B8FC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="672" y="110" width="288" height="232" rx="10" fill="#1E0F3E" stroke="#3D2A66" stroke-width="1"/>
-  <rect x="672" y="110" width="4" height="232" rx="2" fill="#39FF14"/>
-  <text x="692" y="140" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="1.5">3. SAÍDA</text>
-  <text x="692" y="168" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="17" font-weight="700" letter-spacing="0">O código confere</text>
-  <text x="692" y="198" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">Cada afirmação é julgada</text>
-  <text x="692" y="219" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">contra a ficha, uma a uma.</text>
-  <text x="692" y="261" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">Qualquer falha? Descarta</text>
-  <text x="692" y="282" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">e fala o texto gravado.</text>
-<text x="40" y="390" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="2">O QUE SUSTENTA ISSO</text>
-<circle cx="46" cy="415" r="4" fill="#00E5FF"/>
-<text x="62" y="420" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Quem decide é CÓDIGO, não o modelo</text>
-<text x="62" y="439" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0">modelo pequeno não pode ser a proteção do sistema</text>
-<circle cx="46" cy="461" r="4" fill="#39FF14"/>
-<text x="62" y="466" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">O juiz faz LAUDO, não veredito</text>
-<text x="62" y="485" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0">o código numera as frases; ele classifica cada número</text>
-<circle cx="46" cy="507" r="4" fill="#FF2D95"/>
-<text x="62" y="512" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Falhar cai para o texto gravado</text>
-<text x="62" y="531" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0">no pior caso nada melhora, e nada piora</text>
-<text text-anchor="end" x="960" y="584" fill="#9B8FC7" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0">sem chave de API  ·  custo zero  ·  o app funciona offline sem ele</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="820" viewBox="0 0 1180 820" role="img" aria-label="Arquitetura do DevLingo: o aluno pergunta ao mascote e a resposta passa por busca, geração e conferência na Cloudflare e por síntese de voz na Oracle; e o aluno joga, com o progresso salvo em SQLite local e sincronizado pelo Firebase">
+<rect width="1180" height="820" fill="#170A31"/>
+<text x="590.0" y="44" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="21" font-weight="700" letter-spacing="2" text-anchor="middle">COMO O DEVLINGO FUNCIONA POR DENTRO</text>
+<text x="590.0" y="70" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="400" letter-spacing="0" text-anchor="middle">dois caminhos: perguntar ao mascote, e jogar</text>
+<rect x="24" y="94" width="1132" height="330" rx="12" fill="none" stroke="#4A3577" stroke-width="1"/>
+<text x="44" y="122" fill="#00E5FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="700" letter-spacing="1.5">1 · O ALUNO PERGUNTA AO Tr∅nikAt</text>
+<rect x="44" y="160.0" width="156" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
+<text x="122.0" y="188.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">ALUNO</text>
+<text x="122.0" y="210.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">digita a pergunta</text>
+<text x="122.0" y="227.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">no app ou no site</text>
+<line x1="200" y1="200" x2="229.0" y2="200.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 240 200 L 229.7 206.2 L 229.7 193.8 Z" fill="#B3A7DB"/>
+<rect x="244" y="160.0" width="166" height="80" rx="8" fill="#241449" stroke="#FFE14D" stroke-width="2"/>
+<text x="327.0" y="188.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">ACHA O ASSUNTO</text>
+<text x="327.0" y="210.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">embeddinggemma-300m</text>
+<text x="401" y="231.0" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0" text-anchor="end">*</text>
+<line x1="410" y1="200" x2="433.0" y2="200.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 444 200 L 433.7 206.2 L 433.7 193.8 Z" fill="#B3A7DB"/>
+<path d="M 512 157.0 L 580.0 200 L 512 243.0 L 444.0 200 Z" fill="#241449" stroke="#FFE14D" stroke-width="2"/>
+<text x="512" y="205" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0" text-anchor="middle">reconhece?</text>
+<line x1="580" y1="200" x2="603.0" y2="200.0" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 614 200 L 603.7 206.2 L 603.7 193.8 Z" fill="#39FF14"/>
+<text x="597.0" y="189.0" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="0" text-anchor="middle">SIM</text>
+<rect x="618" y="160.0" width="172" height="80" rx="8" fill="#241449" stroke="#FFE14D" stroke-width="2"/>
+<text x="704.0" y="188.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">ESCREVE</text>
+<text x="704.0" y="210.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">qwen3-30b-a3b</text>
+<text x="704.0" y="227.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">só a partir da ficha</text>
+<text x="781" y="231.0" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0" text-anchor="end">*</text>
+<line x1="790" y1="200" x2="813.0" y2="200.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 824 200 L 813.7 206.2 L 813.7 193.8 Z" fill="#B3A7DB"/>
+<path d="M 890 157.0 L 956.0 200 L 890 243.0 L 824.0 200 Z" fill="#241449" stroke="#39FF14" stroke-width="2"/>
+<text x="890" y="200" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0" text-anchor="middle">aprova?</text>
+<text x="890" y="217" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" letter-spacing="0" text-anchor="middle">frase a frase</text>
+<text x="890" y="138" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" letter-spacing="0" text-anchor="middle">llama-3.2-3b julga cada</text>
+<text x="890" y="151" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" letter-spacing="0" text-anchor="middle">afirmação contra a ficha</text>
+<line x1="956" y1="200" x2="979.0" y2="200.0" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 990 200 L 979.7 206.2 L 979.7 193.8 Z" fill="#39FF14"/>
+<text x="973.0" y="189.0" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="0" text-anchor="middle">SIM</text>
+<rect x="994" y="160.0" width="162" height="80" rx="8" fill="#241449" stroke="#FF9F45" stroke-width="2"/>
+<text x="1075.0" y="188.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">ENTREGA</text>
+<text x="1075.0" y="210.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">texto na tela</text>
+<text x="1075.0" y="227.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">+ voz do Piper</text>
+<text x="1147" y="231.0" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0" text-anchor="end">**</text>
+<rect x="300" y="324" width="400" height="64" rx="8" fill="#241449" stroke="#FF2D95" stroke-width="2"/>
+<text x="500.0" y="352" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">RESPONDE O TEXTO JÁ GRAVADO</text>
+<text x="500.0" y="374" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">escrito e revisado por uma pessoa</text>
+<line x1="512" y1="243" x2="512.0" y2="313.0" stroke="#FF2D95" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 512 324 L 505.8 313.7 L 518.2 313.7 Z" fill="#FF2D95"/>
+<text x="523.0" y="287.5" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="0">NÃO</text>
+<path d="M 890 243 L 890 356 L 715.0 356" fill="none" stroke="#FF2D95" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 704 356 L 714.3 349.8 L 714.3 362.2 Z" fill="#FF2D95"/>
+<text x="901" y="299.5" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="0">REPROVOU</text>
+<rect x="24" y="448" width="1132" height="180" rx="12" fill="none" stroke="#4A3577" stroke-width="1"/>
+<text x="44" y="476" fill="#00E5FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="700" letter-spacing="1.5">2 · O ALUNO JOGA, E O PROGRESSO O SEGUE</text>
+<rect x="44" y="516.0" width="170" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
+<text x="129.0" y="544.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">RESPONDE</text>
+<text x="129.0" y="566.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">uma questão</text>
+<line x1="214" y1="556" x2="241.0" y2="556.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 252 556 L 241.7 562.2 L 241.7 549.8 Z" fill="#B3A7DB"/>
+<rect x="256" y="516.0" width="204" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
+<text x="358.0" y="544.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">SALVA NO APARELHO</text>
+<text x="358.0" y="566.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">SQLite</text>
+<text x="358.0" y="583.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">funciona sem internet</text>
+<line x1="460" y1="556" x2="535.0" y2="556.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 546 556 L 535.7 562.2 L 535.7 549.8 Z" fill="#B3A7DB"/>
+<text x="503.0" y="545.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="0" text-anchor="middle">tem rede?</text>
+<rect x="550" y="516.0" width="210" height="80" rx="8" fill="#241449" stroke="#FF2D95" stroke-width="2"/>
+<text x="655.0" y="544.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">FIREBASE</text>
+<text x="655.0" y="566.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">Auth + Firestore</text>
+<text x="655.0" y="583.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">login e histórico</text>
+<text x="751" y="587.0" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0" text-anchor="end">***</text>
+<line x1="760" y1="556" x2="787.0" y2="556.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 798 556 L 787.7 562.2 L 787.7 549.8 Z" fill="#B3A7DB"/>
+<rect x="802" y="516.0" width="254" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
+<text x="929.0" y="544.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">OUTRO APARELHO</text>
+<text x="929.0" y="566.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">continua de onde parou</text>
+<text x="929.0" y="583.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">celular ou navegador</text>
+<text x="44" y="674" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="1.5">ONDE CADA PARTE RODA</text>
+<rect x="44" y="693" width="12" height="12" rx="3" fill="#FFE14D"/>
+<text x="66" y="704" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">*</text>
+<text x="104" y="704" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Cloudflare Workers AI</text>
+<text x="420" y="704" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">busca e geração rodam na borda, camada gratuita — não há chave de API</text>
+<rect x="44" y="723" width="12" height="12" rx="3" fill="#FF9F45"/>
+<text x="66" y="734" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">**</text>
+<text x="104" y="734" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Oracle Cloud · VM Always Free</text>
+<text x="420" y="734" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">a voz é sintetizada por Piper numa máquina de 1/8 de OCPU, custo zero</text>
+<rect x="44" y="753" width="12" height="12" rx="3" fill="#FF2D95"/>
+<text x="66" y="764" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">***</text>
+<text x="104" y="764" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Firebase · Google</text>
+<text x="420" y="764" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">o Auth guarda a senha, e nosso código nunca a vê; o Firestore, o histórico</text>
+<text x="1146" y="800" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0" text-anchor="end">sem internet o jogo continua inteiro — só o mascote fica esperando</text>
 </svg>
