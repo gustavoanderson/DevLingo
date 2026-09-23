@@ -220,6 +220,41 @@ def material_para_revisao(licao_id: str) -> dict:
     return ferramentas.material_para_revisao(licao_id)
 
 
+def _seguranca():
+    """A protecao contra DNS rebinding, com os hostnames que podem chegar.
+
+    O SDK valida o cabecalho `Host` e responde **421 Misdirected Request** ao
+    que nao reconhece. Isso me pegou no primeiro tunel: o servidor estava de
+    pe, o tunel estava de pe, e de fora vinha 421 -- um codigo que ninguem
+    associa a "o nome do host nao esta na lista".
+
+    ELA FICA LIGADA, e a lista e que cresce. Desligar seria a correcao de uma
+    linha, e seria trocar uma defesa real por conveniencia: sem ela, uma pagina
+    maliciosa no navegador de quem estiver na mesma rede pode resolver um nome
+    proprio para este endereco e conversar com o servidor. Proteger e o padrao
+    do SDK; a lista existe justamente para hospedar sem abrir mao dela.
+
+    `MCP_HOSTS` recebe os nomes separados por virgula. Sem ele, so o laco
+    local -- que e o que vale enquanto ninguem publicou nada.
+    """
+    from mcp.server.transport_security import TransportSecuritySettings
+    import os
+
+    nomes = [n.strip() for n in os.environ.get("MCP_HOSTS", "").split(",")
+             if n.strip()]
+    # O laco local entra sempre: e por ele que o tunel entrega, e e com ele
+    # que `test_remoto.py` fala.
+    locais = ["127.0.0.1", "127.0.0.1:*", "localhost", "localhost:*"]
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=locais + nomes,
+        # A origem so e conferida quando o cliente manda uma -- e cliente MCP
+        # nao e navegador, entao normalmente nao manda. A lista acompanha a de
+        # hosts para o caso de alguem abrir pelo navegador.
+        allowed_origins=[f"https://{n}" for n in nomes],
+    )
+
+
 def _transporte() -> str:
     """Qual transporte usar, lido do ambiente.
 
@@ -253,4 +288,5 @@ if __name__ == "__main__":
             transport=transporte,
             host=os.environ.get("MCP_HOST", "127.0.0.1"),
             port=int(os.environ.get("MCP_PORTA", "8931")),
+            transport_security=_seguranca(),
         )

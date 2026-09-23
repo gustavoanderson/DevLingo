@@ -127,6 +127,29 @@ def main() -> int:
                        "arguments": {"trilha": "java"}}, 3, sessao)
         conferir("igualdade" in r,
                  "uma ferramenta EXECUTA e devolve dado do banco")
+
+        # A PROTECAO CONTRA DNS REBINDING ESTA LIGADA, e isto custou o
+        # primeiro tunel: o servidor de pe, o tunel de pe, e de fora vinha
+        # **421 Misdirected Request** -- um codigo que ninguem associa a "o
+        # nome do host nao esta na lista".
+        #
+        # Um `Host` desconhecido tem de ser recusado. Se um dia alguem
+        # "consertar" o 421 desligando a protecao, e aqui que aparece: o teste
+        # passa a falhar porque o host forjado seria ACEITO.
+        codigo = 0
+        try:
+            pedido = urllib.request.Request(
+                BASE, data=json.dumps({"jsonrpc": "2.0", "id": 9,
+                                       "method": "initialize",
+                                       "params": {}}).encode(),
+                headers={"Content-Type": "application/json",
+                         "Accept": "application/json, text/event-stream",
+                         "Host": "site-de-outra-pessoa.example"})
+            with urllib.request.urlopen(pedido, timeout=15) as resposta:
+                codigo = resposta.status
+        except urllib.error.HTTPError as e:
+            codigo = e.code
+        conferir(codigo == 421, "host DESCONHECIDO e recusado", f"HTTP {codigo}")
     finally:
         processo.terminate()
         processo.wait(timeout=10)

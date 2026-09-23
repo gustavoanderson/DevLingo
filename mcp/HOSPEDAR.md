@@ -55,7 +55,31 @@ túnel com **URL temporária** sem login e sem domínio:
 cloudflared tunnel --url http://127.0.0.1:8931
 ```
 
-Ele imprime um endereço `*.trycloudflare.com`. Confira dali de fora:
+Ele imprime um endereço `*.trycloudflare.com`.
+
+> ⚠️ **O servidor vai recusar esse endereço com `421 Misdirected Request`**, e
+> isso não é defeito: o SDK valida o cabeçalho `Host` contra uma lista, como
+> defesa contra DNS rebinding. O nome sorteado pelo túnel não está nela.
+>
+**A correção é acrescentar o nome à lista, e não desligar a proteção.**
+Desligar seria uma linha, e trocaria uma defesa real por conveniência: sem
+ela, uma página maliciosa aberta por alguém na mesma rede pode resolver um
+nome próprio para este endereço e conversar com o servidor.
+
+Para o túnel temporário, o nome é sorteado, então passe-o na hora:
+
+```bash
+sudo systemctl stop mcp
+cd ~/mcp/fonte
+MCP_TRANSPORTE=streamable-http MCP_PORTA=8931 \
+  MCP_HOSTS=o-nome-sorteado.trycloudflare.com \
+  ~/mcp/.venv/bin/python mcp/servidor.py &
+```
+
+Com o domínio próprio isso deixa de ser incômodo: o nome é fixo e já está no
+`mcp.service` da Parte 2.
+
+Confira dali de fora:
 
 ```bash
 python3 mcp/testar_hospedado.py https://SEU-ENDERECO.trycloudflare.com/mcp --sem-auth
@@ -135,6 +159,7 @@ WorkingDirectory=/home/ubuntu/mcp/fonte
 Environment=MCP_TRANSPORTE=streamable-http
 Environment=MCP_HOST=127.0.0.1
 Environment=MCP_PORTA=8931
+Environment=MCP_HOSTS=mcp.devlingo.app.br
 ExecStart=/home/ubuntu/mcp/.venv/bin/python /home/ubuntu/mcp/fonte/mcp/servidor.py
 Restart=always
 RestartSec=5
@@ -278,6 +303,7 @@ estar numa pasta que o git enxerga.
 | `200` **sem** token | não há política valendo — o servidor está aberto |
 | `530` ou `1033` | o túnel não está no ar: `systemctl status cloudflared` |
 | `502` | o túnel subiu e o servidor MCP não: `systemctl status mcp` |
+| **`421`** | **o `Host` não está em `MCP_HOSTS`** — a defesa contra DNS rebinding fez o trabalho dela |
 | `406` numa chamada | faltou `Accept: application/json, text/event-stream` |
 | o domínio não resolve | nameservers ainda propagando, ou copiados com erro |
 
