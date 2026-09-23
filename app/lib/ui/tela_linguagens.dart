@@ -6,7 +6,7 @@ import '../data/question_bank.dart';
 import '../models/lesson.dart';
 import '../versao.dart';
 import '../data/tronikat.dart';
-import 'janela_tronikat.dart';
+import 'botao_tronikat.dart';
 import 'paleta.dart';
 import 'som.dart';
 import 'tela_trilha.dart';
@@ -23,6 +23,7 @@ class TelaLinguagens extends StatefulWidget {
     this.progresso,
     this.aoVoltarAoTitulo,
     this.aoSairDaConta,
+    this.consultorDoTronikat,
     this.sineta,
     this.chegouDaNuvem,
   });
@@ -54,6 +55,9 @@ class TelaLinguagens extends StatefulWidget {
   /// "sair" no modo de demonstracao seria oferecer o que nao existe.
   final VoidCallback? aoSairDaConta;
 
+  /// Só os testes passam isto: o consultor de verdade fala com a rede.
+  final ConsultorDoTronikat? consultorDoTronikat;
+
   final Sineta? sineta;
 
   /// Sobe quando a sincronizacao traz progresso novo da nuvem.
@@ -70,9 +74,6 @@ class TelaLinguagens extends StatefulWidget {
   /// `resource-id`, e com dois nomes um dos dois envelhece sozinho.
   static const String idLicencas = 'linguagens-licencas';
   static const Key chaveLicencas = Key(idLicencas);
-
-  static const String idTronikat = 'linguagens-tronikat';
-  static const Key chaveTronikat = Key(idTronikat);
 
   static const String idSair = 'linguagens-sair';
   static const Key chaveSair = Key(idSair);
@@ -145,6 +146,9 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
 
     return Scaffold(
       backgroundColor: Paleta.fundo,
+      // NO CANTO, como ele pediu. Ver `botao_tronikat.dart` para por que ele
+      // saiu da barra de cima.
+      floatingActionButton: BotaoTronikat(consultor: widget.consultorDoTronikat),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -158,7 +162,6 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
                 if (widget.aoVoltarAoTitulo != null)
                   _BotaoTitulo(aoTocar: widget.aoVoltarAoTitulo!),
                 const Spacer(),
-                const _BotaoTronikat(),
                 if (widget.aoSairDaConta != null)
                   _BotaoSair(aoSair: widget.aoSairDaConta!),
                 const _BotaoLicencas(),
@@ -407,38 +410,6 @@ class _CartaoDaTrilha extends StatelessWidget {
 /// É um ícone sem rótulo, e discreto de propósito: a ação principal desta
 /// tela é escolher uma trilha. Mesmo raciocínio que faz o botão de título ser
 /// contornado em vez de preenchido.
-/// Abre a conversa com o Tr∅nikAt.
-///
-/// ELE FICA AQUI, e nao na tela de exercicio. La a acao principal e responder,
-/// e um mascote conversavel ao lado do campo de resposta seria um convite a
-/// pedir a resposta -- que ele nao pode dar, porque nem enxerga a questao.
-/// Aqui, entre uma trilha e outra, perguntar e o movimento natural.
-///
-/// O consultor e construido na hora, e nao guardado: ele nao tem estado alem
-/// do indice das falas, e abrir a janela e coisa rara o bastante para nao valer
-/// um campo vivo o app inteiro.
-class _BotaoTronikat extends StatelessWidget {
-  const _BotaoTronikat();
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      identifier: TelaLinguagens.idTronikat,
-      label: 'Falar com o Tr∅nikAt',
-      button: true,
-      child: IconButton(
-        key: TelaLinguagens.chaveTronikat,
-        onPressed: () => JanelaTronikat.abrir(context, TronikatDaBorda()),
-        icon: const Icon(Icons.chat_bubble_outline, size: 18),
-        color: Paleta.visor,
-        tooltip: 'Falar com o Tr∅nikAt',
-        padding: const EdgeInsets.all(12),
-        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-      ),
-    );
-  }
-}
-
 class _BotaoSair extends StatelessWidget {
   const _BotaoSair({required this.aoSair});
 

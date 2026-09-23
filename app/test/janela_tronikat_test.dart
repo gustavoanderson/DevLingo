@@ -12,7 +12,9 @@ library;
 import 'dart:typed_data';
 
 import 'package:devlingo/data/tronikat.dart';
+import 'package:devlingo/ui/botao_tronikat.dart';
 import 'package:devlingo/ui/janela_tronikat.dart';
+import 'package:devlingo/ui/tronikat_codec.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -160,5 +162,73 @@ void main() {
     // O que chega ao Worker é EXATAMENTE o que a pessoa digitou, sem enunciado,
     // sem alternativas e sem gabarito grudados.
     expect(c.perguntas.single, 'me ajuda');
+  });
+
+  /// ------------------------------------------------------------- o BOTÃO
+  ///
+  /// Na v1.9.0 eu pus um ícone discreto na barra de cima da escolha de trilha,
+  /// e o Gustavo -- que tinha pedido a IA "no cantinho" -- instalou e relatou:
+  /// "não apareceu o popup do tronikat no app". O botão ESTAVA lá; estava onde
+  /// ninguém procura, e só numa das duas telas.
+  ///
+  /// **Não havia teste nenhum de que ele aparecia.** A suíte ficou verde
+  /// porque ninguém tinha perguntado. Estes perguntam.
+  group('o botão do Tr∅nikAt', () {
+    testWidgets('é um FLUTUANTE, e não um ícone perdido na barra de cima',
+        (tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          floatingActionButton: BotaoTronikat(),
+          body: SizedBox(),
+        ),
+      ));
+      expect(find.byKey(BotaoTronikat.chave), findsOneWidget);
+      // O TIPO importa: é ele que põe o botão no canto, acima do conteúdo, em
+      // vez de espremido entre os controles de sistema.
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+    });
+
+    testWidgets('fica no canto INFERIOR direito', (tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          floatingActionButton: BotaoTronikat(),
+          body: SizedBox.expand(),
+        ),
+      ));
+      final tela = tester.getSize(find.byType(Scaffold));
+      final r = tester.getRect(find.byKey(BotaoTronikat.chave));
+      expect(r.center.dx, greaterThan(tela.width * .6),
+          reason: 'ele tem que estar à direita, não no meio');
+      expect(r.center.dy, greaterThan(tela.height * .6),
+          reason: 'e embaixo -- "no cantinho" foi o pedido, e a barra de cima '
+              'é onde ele não foi encontrado');
+    });
+
+    testWidgets('leva o ROSTO, e não um ícone genérico', (tester) async {
+      // Quem vê o gato sabe com quem vai falar; um balãozinho de chat seria
+      // qualquer aplicativo.
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(floatingActionButton: BotaoTronikat(), body: SizedBox()),
+      ));
+      expect(find.byType(TronikatCodec), findsOneWidget);
+    });
+
+    testWidgets('tocar nele abre a conversa', (tester) async {
+      final c = _ConsultorFalso();
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          floatingActionButton: BotaoTronikat(consultor: c),
+          body: const SizedBox(),
+        ),
+      ));
+      await tester.tap(find.byKey(BotaoTronikat.chave));
+      // `pump` com duração, e nunca `pumpAndSettle`: o codec da janela anima em
+      // `repeat()` e a árvore nunca fica parada. A primeira versão deste teste
+      // estourou por isso -- mesma família do que a faixa de cenário já causou.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(JanelaTronikat), findsOneWidget);
+      expect(find.textContaining('Pergunte o que quiser'), findsOneWidget);
+    });
   });
 }

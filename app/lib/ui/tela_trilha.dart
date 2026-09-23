@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../data/progresso.dart';
+import '../data/tronikat.dart';
 import '../data/question_bank.dart';
 import '../models/lesson.dart';
+import 'botao_tronikat.dart';
 import 'fluxo_da_licao.dart';
 import 'paleta.dart';
 import 'som.dart';
@@ -27,6 +29,7 @@ class TelaTrilha extends StatefulWidget {
     this.progresso,
     this.podeVoltar = true,
     this.aoVoltarAoTitulo,
+    this.consultorDoTronikat,
     this.sineta,
     this.chegouDaNuvem,
   });
@@ -47,6 +50,9 @@ class TelaTrilha extends StatefulWidget {
   /// segundo botão, a seta que já existe muda de destino: ela sempre volta um
   /// passo, e qual é esse passo depende de por onde se entrou.
   final VoidCallback? aoVoltarAoTitulo;
+
+  /// Só os testes passam isto: o consultor de verdade fala com a rede.
+  final ConsultorDoTronikat? consultorDoTronikat;
 
   final Sineta? sineta;
 
@@ -190,6 +196,10 @@ class _TelaTrilhaState extends State<TelaTrilha>
     );
 
     return Scaffold(
+      // Ele aparece aqui TAMBEM. Na v1.9.0 so existia na escolha de trilha, e
+      // quem entrasse direto numa trilha nao via nada -- foi metade do motivo
+      // de o Gustavo nao ter achado.
+      floatingActionButton: BotaoTronikat(consultor: widget.consultorDoTronikat),
       backgroundColor: Paleta.fundo,
       body: SafeArea(
         child: Column(

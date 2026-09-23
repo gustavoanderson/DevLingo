@@ -124,7 +124,7 @@ class _TronikatCodecState extends State<TronikatCodec>
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 20),
-    )..repeat();
+    );
   }
 
   @override
@@ -139,6 +139,21 @@ class _TronikatCodecState extends State<TronikatCodec>
     // na tela de título.
     final reduzir = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final parado = widget.parado || reduzir;
+
+    // O RELÓGIO PARA DE VERDADE quando ele está parado, e não só o desenho.
+    //
+    // Na primeira versão o `repeat()` vinha do `initState` e `parado` afetava
+    // apenas a pintura: a árvore nunca assentava, e `pumpAndSettle` estourou
+    // em 24 testes da trilha assim que o botão entrou naquela tela. É o mesmo
+    // sintoma que a faixa de cenário já causou, e o CLAUDE.md registra.
+    //
+    // O defeito não era só de teste: um retrato "parado" repintando a cada
+    // quadro gasta bateria para desenhar sempre a mesma coisa.
+    if (parado) {
+      if (_ctrl.isAnimating) _ctrl.stop();
+    } else if (!_ctrl.isAnimating) {
+      _ctrl.repeat();
+    }
 
     return RepaintBoundary(
       child: SizedBox(
