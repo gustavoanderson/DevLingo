@@ -123,10 +123,15 @@ PENSANDO = [
     "Hmmm, quase lá.",
     "Tá. Já te falo.",
     "Pera aí que eu organizo isso.",
-    "Olha, já já sai.",
+    # AS DUAS ABAIXO SAO DELE, em 23/09/2026: "se for pra colocar uma frase
+    # ruim dessas, melhor substituir". A ruim era "Olha, já já sai." -- ela
+    # PROMETE prazo, e promessa de prazo e o unico tipo de frase que a lista
+    # inteira existe para evitar: se o Worker demorar, ela vira mentira.
+    "Estou pensando, me dê alguns segundinhos.",
     # O unico "Deixa eu" do catalogo. Ele aparecia em 5 das 13 frases, e tique
-    # de vocabulario cansa tanto quanto abertura repetida.
-    "Deixa eu montar a resposta.",
+    # de vocabulario cansa tanto quanto abertura repetida. Era "Deixa eu montar
+    # a resposta"; virou a dele, que abre com uma hesitacao em vez do verbo.
+    "Hã, deixa eu pensar um pouco.",
 ]
 
 

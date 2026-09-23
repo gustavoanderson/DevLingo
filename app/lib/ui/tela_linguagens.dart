@@ -26,10 +26,18 @@ class TelaLinguagens extends StatefulWidget {
     this.consultorDoTronikat,
     this.sineta,
     this.chegouDaNuvem,
+    this.comChamada = false,
   });
 
   final QuestionBank banco;
   final RegistroDeProgresso? progresso;
+
+  /// Mostra o balão de três pontinhos no botão do Tr∅nikAt.
+  ///
+  /// Falso por padrão para o `pumpAndSettle` dos testes desta tela não
+  /// esperar para sempre. Ver `BotaoTronikat.comChamada`.
+  final bool comChamada;
+
 
   /// Volta para a tela de título.
   ///
@@ -132,6 +140,7 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
           banco: widget.banco,
           language: language,
           level: level,
+          comChamada: widget.comChamada,
           progresso: widget.progresso,
           sineta: widget.sineta,
         ),
@@ -151,6 +160,7 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
       floatingActionButton: BotaoTronikat(
         consultor: widget.consultorDoTronikat,
         dossie: BotaoTronikat.dossieDe(widget.banco, widget.progresso),
+        comChamada: widget.comChamada,
       ),
       body: SafeArea(
         child: ListView(

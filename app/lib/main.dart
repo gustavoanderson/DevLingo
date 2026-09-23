@@ -326,6 +326,9 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
             aoVoltarAoTitulo: aoVoltarAoTitulo,
             sineta: _sineta,
             chegouDaNuvem: _chegouDaNuvem,
+            // O APP DE VERDADE MOSTRA a chamada de tres pontinhos; os testes
+            // nao. Mesmo arranjo de `comCena` acima, e pela mesma razao.
+            comChamada: true,
           );
         }
 
@@ -338,6 +341,7 @@ class _CargaState extends State<_Carga> with WidgetsBindingObserver {
           aoVoltarAoTitulo: aoVoltarAoTitulo,
           sineta: _sineta,
           chegouDaNuvem: _chegouDaNuvem,
+          comChamada: true,
         );
       },
     );

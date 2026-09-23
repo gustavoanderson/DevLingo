@@ -24,11 +24,12 @@ import '../models/lesson.dart';
 import '../data/question_bank.dart';
 import '../data/progresso.dart';
 import '../data/dossie.dart';
+import 'chamada_tronikat.dart';
 import 'janela_tronikat.dart';
 import 'paleta.dart';
 import 'tronikat_codec.dart';
 
-class BotaoTronikat extends StatelessWidget {
+class BotaoTronikat extends StatefulWidget {
   /// Monta o dossie do app: todas as trilhas do banco, contra o progresso.
   ///
   /// Mora aqui, e nao em `dossie.dart`, porque `QuestionBank` carrega asset e
@@ -62,7 +63,21 @@ class BotaoTronikat extends StatelessWidget {
     };
   }
 
-  const BotaoTronikat({super.key, this.consultor, this.dossie});
+  const BotaoTronikat({
+    super.key,
+    this.consultor,
+    this.dossie,
+    this.comChamada = false,
+  });
+
+  /// Mostra o balão de três pontinhos acima do botão.
+  ///
+  /// **Falso por padrão, e o app passa verdadeiro** -- exatamente como
+  /// `comCena` em `cena_do_login.dart`, e pelo mesmo motivo: animação em
+  /// `repeat()` faz `pumpAndSettle` esperar para sempre, e isso já derrubou
+  /// doze testes daquela tela de uma vez. Com o padrão falso, quem escreve um
+  /// teste novo de trilha não tropeça.
+  final bool comChamada;
 
   /// Repassado a janela. Ver `JanelaTronikat.dossie`.
   final Future<String> Function()? dossie;
@@ -75,16 +90,49 @@ class BotaoTronikat extends StatelessWidget {
   static const Key chave = Key(id);
 
   @override
+  State<BotaoTronikat> createState() => _BotaoTronikatState();
+}
+
+class _BotaoTronikatState extends State<BotaoTronikat> {
+  /// A chamada some ao primeiro toque e NÃO volta ao fechar a janela.
+  ///
+  /// Quem já sabe que ele existe não precisa de um balão pulsando para
+  /// sempre: aviso que não para de avisar vira ruído. É a mesma disciplina
+  /// que fez o app recusar sugerir o modo desafio.
+  ///
+  /// E ela volta na abertura seguinte, porque isto não é guardado em lugar
+  /// nenhum: quem abre o app de novo é, para efeito de descoberta, alguém
+  /// chegando.
+  bool _jaTocou = false;
+
+  @override
   Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (widget.comChamada && !_jaTocou) ...[
+          const ChamadaTronikat(),
+          const SizedBox(height: 10),
+        ],
+        _botao(context),
+      ],
+    );
+  }
+
+  Widget _botao(BuildContext context) {
     return Semantics(
-      identifier: id,
+      identifier: BotaoTronikat.id,
       label: 'Falar com o Tr∅nikAt',
       button: true,
       child: FloatingActionButton(
-        key: chave,
-        onPressed: () =>
-            JanelaTronikat.abrir(context, consultor ?? TronikatDaBorda(),
-                dossie: dossie),
+        key: BotaoTronikat.chave,
+        onPressed: () {
+          if (!_jaTocou) setState(() => _jaTocou = true);
+          JanelaTronikat.abrir(
+              context, widget.consultor ?? TronikatDaBorda(),
+              dossie: widget.dossie);
+        },
         backgroundColor: Paleta.superficie,
         foregroundColor: Paleta.visor,
         tooltip: 'Falar com o Tr∅nikAt',

@@ -32,7 +32,14 @@ class TelaTrilha extends StatefulWidget {
     this.consultorDoTronikat,
     this.sineta,
     this.chegouDaNuvem,
+    this.comChamada = false,
   });
+
+  /// Mostra o balão de três pontinhos no botão do Tr∅nikAt.
+  ///
+  /// Falso por padrão para o `pumpAndSettle` dos testes desta tela não
+  /// esperar para sempre. Ver `BotaoTronikat.comChamada`.
+  final bool comChamada;
 
   final QuestionBank banco;
   final String language;
@@ -202,6 +209,7 @@ class _TelaTrilhaState extends State<TelaTrilha>
       floatingActionButton: BotaoTronikat(
         consultor: widget.consultorDoTronikat,
         dossie: BotaoTronikat.dossieDe(widget.banco, widget.progresso),
+        comChamada: widget.comChamada,
       ),
       backgroundColor: Paleta.fundo,
       body: SafeArea(

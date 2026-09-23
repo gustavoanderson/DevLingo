@@ -22,6 +22,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 /// O que volta de uma pergunta: o texto que se lê e, quando houver, o som.
@@ -78,6 +79,7 @@ class TronikatDaBorda implements ConsultorDoTronikat {
   ];
 
   final HttpClient _http;
+  final _sorte = Random();
   Map<String, dynamic>? _indice;
 
   Future<String> _postar(String caminho, Map<String, Object?> corpo) async {
@@ -155,7 +157,17 @@ class TronikatDaBorda implements ConsultorDoTronikat {
       // O sorteio escolhe uma fala, e o arquivo tem de ser o DELA. No navegador
       // eu sorteei e depois montei o caminho com o índice zero: tocava sempre a
       // mesma frase, com a boca de outra por cima.
-      final qual = _enrolar[DateTime.now().microsecond % _enrolar.length];
+      //
+      // E AQUI ELE ERA `DateTime.now().microsecond % 5`, que PARECE sorteio e
+      // não é. O Gustavo ouviu sempre a mesma frase, e a medição deu o número:
+      // em 40 chamadas seguidas só apareceram **3 microssegundos distintos**,
+      // 34 delas caíram na mesma fala, e três das cinco nunca saíram.
+      //
+      // A causa é que `DateTime.now()` não tem resolução de microssegundo — o
+      // campo existe, e fica preso em poucos valores. Relógio não é gerador de
+      // número aleatório, e o navegador nunca teve este defeito porque sempre
+      // usou `Math.random`.
+      final qual = _enrolar[_sorte.nextInt(_enrolar.length)];
       final fala = indice[qual] as Map<String, dynamic>?;
       if (fala == null) return null;
       return await _baixar('$_falas${fala['audio']}');
