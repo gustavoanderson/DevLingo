@@ -451,6 +451,9 @@ perguntas:
 - para que serve o Redis
 - o que e TypeScript
 - o que e Kubernetes
+- me explica o LangGraph
+- me explica o Docker
+- o que faz o Kubernetes
 
 resposta:
 Programação é comigo mesmo, mas deu um engasgo aqui no estúdio agora. Pergunta de novo que eu explico. E para treinar de verdade, é dentro das trilhas: cada lição tem uma aula curta antes das questões.

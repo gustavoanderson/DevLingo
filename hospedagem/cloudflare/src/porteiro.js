@@ -209,6 +209,18 @@ const INSTRUCOES_PROGRAMACAO =
   "- Responda em português do Brasil, em EXATAMENTE 2 frases, cada uma com no máximo 12 palavras, sem emoji e sem listas.\n" +
   "- Pode escrever código, curto e na mesma linha do texto quando couber.\n" +
   "- Se não souber, diga que não sabe. Não invente função, comando nem biblioteca.\n" +
+  // NOME QUE ELE NAO CONHECE AINDA E PROGRAMACAO, e esta linha existe porque
+  // as duas regras -- a de cima e a de recusa, mais abaixo -- competiam.
+  //
+  // Medido em 22/09/2026: "o que e CrewAI" e "o que e AutoGen" foram
+  // respondidos, e "o que e LangGraph" levou a FRASE DE RECUSA. O modelo nao
+  // conhece aquela biblioteca e concluiu que o assunto e que nao era dele.
+  //
+  // "Nao conheco isso" e "isso nao e do meu assunto" sao respostas diferentes,
+  // e so a segunda e uma porta fechada. Confundi-las faz o Tr∅nikAt parecer
+  // limitado justamente onde a area se move mais rapido: ferramenta nova sai
+  // toda semana, e todo modelo tem data de corte.
+  "- Nome de ferramenta, biblioteca, linguagem ou framework que você não conhece AINDA É programação: diga que não conhece aquele nome e ofereça ajudar com o tema em volta. NUNCA use a frase de recusa nesse caso.\n" +
   // Esta regra e o que impede a faixa nova de virar um buraco no porteiro: aqui
   // ele fala de PROGRAMACAO de cabeca, mas sobre o APP continua valendo que so
   // as fichas mandam -- e nenhuma ficha chega ate aqui.
