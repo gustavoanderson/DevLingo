@@ -73,7 +73,7 @@ Cada lição começa com uma **aula do Tr∅nikAt** que prepara exatamente os t�
 
 <div align="center">
 
-<img src="docs/imagens/arquitetura-ia.svg" alt="Fluxograma da arquitetura do DevLingo: o aluno pergunta, a busca com embeddinggemma decide se reconhece o assunto, o qwen3-30b escreve só a partir da ficha, o llama-3.2-3b julga cada afirmação, e a Oracle sintetiza a voz; quando algo reprova, o sistema responde o texto já gravado. No segundo fluxo, o aluno responde uma questão, o SQLite salva no aparelho e o Firebase sincroniza para outro aparelho">
+<img src="docs/imagens/arquitetura-ia.svg" alt="Fluxograma da arquitetura do DevLingo em três caminhos. Primeiro: o aluno pergunta, a busca com embeddinggemma decide se reconhece o assunto, o qwen3-30b escreve só a partir da ficha, o llama-3.2-3b julga cada afirmação e a Oracle sintetiza a voz; quando algo reprova, responde o texto já gravado. Segundo: o aluno responde uma questão, o SQLite salva no aparelho e o Firebase sincroniza para outro aparelho. Terceiro: quem escreve conteúdo passa pelo servidor MCP, que expõe as mesmas dez regras do CI como ferramentas somente de leitura">
 
 </div>
 
@@ -96,6 +96,18 @@ Três medições que explicam por que foi feito assim:
 - **Um modelo maior não resolveria.** O `llama-3.3-70b` foi testado e saiu
   **pior** que o `qwen3-30b` atual — perdeu conhecimento que o menor tinha, e
   respondeu 3,7× mais devagar
+
+### E há um terceiro caminho, que o aluno nunca vê
+
+O **servidor MCP** expõe os dez portões de qualidade do projeto como ferramentas
+que um agente de IA pode chamar **antes** de escrever uma lição — as mesmas
+regras que reprovam no CI, disponíveis para quem está produzindo conteúdo.
+
+**Todas as seis ferramentas são somente leitura**, e isso não é detalhe de
+implementação: sem nenhuma ferramenta que grave, **publicar é impossível para o
+agente** — não importa o que ele decida, nem o que tenha lido num texto que
+processou. O limite não está no julgamento do modelo; está na ausência da
+ferramenta.
 
 O diagrama é **gerado por script** (`tools/gerar_diagrama_ia.py`), e o validador
 reprova se alguém editar o SVG à mão — a mesma regra que vale para os cenários

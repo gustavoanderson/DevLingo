@@ -44,7 +44,7 @@ from xml.sax.saxutils import escape
 RAIZ = Path(__file__).resolve().parent.parent
 SAIDA = RAIZ / "docs" / "imagens" / "arquitetura-ia.svg"
 
-L, A = 1180, 820
+L, A = 1180, 1060
 
 # Cores do projeto, copiadas de docs/paleta.md. Fundo escuro proprio serve aos
 # dois temas do GitHub: imagem com fundo nao depende do tema do leitor.
@@ -164,7 +164,7 @@ def gerar_svg() -> str:
 
     o.append(txt(L / 2, 44, "COMO O DEVLINGO FUNCIONA POR DENTRO", cor=VISOR,
                  tam=21, peso="700", meio=True, espaco="2"))
-    o.append(txt(L / 2, 70, "dois caminhos: perguntar ao mascote, e jogar",
+    o.append(txt(L / 2, 70, "três caminhos, e três públicos diferentes",
                  cor=SUAVE, tam=14, meio=True))
 
     # ============================================ FLUXO 1: a pergunta ao mascote
@@ -231,8 +231,35 @@ def gerar_svg() -> str:
     o.append(caixa(802, y2 - h / 2, 254, h, "OUTRO APARELHO",
                    ["continua de onde parou", "celular ou navegador"], CIANO))
 
+    # ============================================ FLUXO 3: o servidor MCP
+    #
+    # ELE NAO ESTAVA NO DESENHO, e o Gustavo perguntou onde estava. A resposta
+    # e que ele nao fica no caminho de quem JOGA nem no de quem PERGUNTA: fica
+    # no de quem ESCREVE, antes de a licao existir. Sao tres publicos.
+    o.append(f'<rect x="24" y="652" width="{L - 48}" height="196" rx="12" '
+             f'fill="none" stroke="{LINHA}" stroke-width="1"/>')
+    o.append(txt(44, 680, "3 · QUEM ESCREVE CONTEÚDO PASSA PELO SERVIDOR MCP",
+                 cor=CIANO, tam=15, peso="700", espaco="1.5"))
+    o.append(txt(44, 700, "este caminho é interno: o aluno nunca passa por aqui",
+                 cor=SUAVE, tam=12))
+
+    y3 = 772
+    o.append(caixa(44, y3 - h / 2, 186, h, "AGENTE DE IA",
+                   ["escreve uma lição", "nova"], CIANO))
+    o.append(seta(230, y3, 268, y3))
+    o.append(caixa(272, y3 - h / 2, 216, h, "SERVIDOR MCP",
+                   ["6 ferramentas", "SÓ LEITURA"], VISOR, marca="****"))
+    o.append(seta(488, y3, 526, y3))
+    o.append(caixa(530, y3 - h / 2, 238, h, "AS MESMAS 10 REGRAS",
+                   ["que reprovam no CI", "validar_licao, impressão digital…"], VISOR))
+    o.append(seta(768, y3, 806, y3))
+    o.append(losango(880, y3, 132, 84, "passou?", VISOR))
+    o.append(seta(946, y3, 984, y3, rotulo="SIM", cor=VISOR))
+    o.append(caixa(988, y3 - h / 2, 168, h, "VIRA LIÇÃO",
+                   ["revisada por", "uma pessoa"], CIANO))
+
     # ============================================ legenda
-    o.append(txt(44, 674, "ONDE CADA PARTE RODA", cor=TEXTO, tam=13, peso="700", espaco="1.5"))
+    o.append(txt(44, 886, "ONDE CADA PARTE RODA", cor=TEXTO, tam=13, peso="700", espaco="1.5"))
     legenda = [
         (AMARELO, "*", "Cloudflare Workers AI",
          "busca e geração rodam na borda, camada gratuita — não há chave de API"),
@@ -240,8 +267,10 @@ def gerar_svg() -> str:
          "a voz é sintetizada por Piper numa máquina de 1/8 de OCPU, custo zero"),
         (MAGENTA, "***", "Firebase · Google",
          "o Auth guarda a senha, e nosso código nunca a vê; o Firestore, o histórico"),
+        (VISOR, "****", "MCP · e ser só leitura é a defesa",
+         "sem ferramenta que grave, publicar é impossível para o agente de IA"),
     ]
-    yl = 704
+    yl = 916
     for cor, marca, nome, porque in legenda:
         o.append(f'<rect x="44" y="{yl - 11}" width="12" height="12" rx="3" fill="{cor}"/>')
         o.append(txt(66, yl, marca, cor=cor, tam=13, peso="700"))

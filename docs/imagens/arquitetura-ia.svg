@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="820" viewBox="0 0 1180 820" role="img" aria-label="Arquitetura do DevLingo: o aluno pergunta ao mascote e a resposta passa por busca, geração e conferência na Cloudflare e por síntese de voz na Oracle; e o aluno joga, com o progresso salvo em SQLite local e sincronizado pelo Firebase">
-<rect width="1180" height="820" fill="#170A31"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="1060" viewBox="0 0 1180 1060" role="img" aria-label="Arquitetura do DevLingo: o aluno pergunta ao mascote e a resposta passa por busca, geração e conferência na Cloudflare e por síntese de voz na Oracle; e o aluno joga, com o progresso salvo em SQLite local e sincronizado pelo Firebase">
+<rect width="1180" height="1060" fill="#170A31"/>
 <text x="590.0" y="44" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="21" font-weight="700" letter-spacing="2" text-anchor="middle">COMO O DEVLINGO FUNCIONA POR DENTRO</text>
-<text x="590.0" y="70" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="400" letter-spacing="0" text-anchor="middle">dois caminhos: perguntar ao mascote, e jogar</text>
+<text x="590.0" y="70" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="400" letter-spacing="0" text-anchor="middle">três caminhos, e três públicos diferentes</text>
 <rect x="24" y="94" width="1132" height="330" rx="12" fill="none" stroke="#4A3577" stroke-width="1"/>
 <text x="44" y="122" fill="#00E5FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="700" letter-spacing="1.5">1 · O ALUNO PERGUNTA AO Tr∅nikAt</text>
 <rect x="44" y="160.0" width="156" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
@@ -75,18 +75,53 @@
 <text x="929.0" y="544.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">OUTRO APARELHO</text>
 <text x="929.0" y="566.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">continua de onde parou</text>
 <text x="929.0" y="583.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">celular ou navegador</text>
-<text x="44" y="674" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="1.5">ONDE CADA PARTE RODA</text>
-<rect x="44" y="693" width="12" height="12" rx="3" fill="#FFE14D"/>
-<text x="66" y="704" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">*</text>
-<text x="104" y="704" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Cloudflare Workers AI</text>
-<text x="420" y="704" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">busca e geração rodam na borda, camada gratuita — não há chave de API</text>
-<rect x="44" y="723" width="12" height="12" rx="3" fill="#FF9F45"/>
-<text x="66" y="734" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">**</text>
-<text x="104" y="734" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Oracle Cloud · VM Always Free</text>
-<text x="420" y="734" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">a voz é sintetizada por Piper numa máquina de 1/8 de OCPU, custo zero</text>
-<rect x="44" y="753" width="12" height="12" rx="3" fill="#FF2D95"/>
-<text x="66" y="764" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">***</text>
-<text x="104" y="764" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Firebase · Google</text>
-<text x="420" y="764" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">o Auth guarda a senha, e nosso código nunca a vê; o Firestore, o histórico</text>
-<text x="1146" y="800" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0" text-anchor="end">sem internet o jogo continua inteiro — só o mascote fica esperando</text>
+<rect x="24" y="652" width="1132" height="196" rx="12" fill="none" stroke="#4A3577" stroke-width="1"/>
+<text x="44" y="680" fill="#00E5FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="700" letter-spacing="1.5">3 · QUEM ESCREVE CONTEÚDO PASSA PELO SERVIDOR MCP</text>
+<text x="44" y="700" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0">este caminho é interno: o aluno nunca passa por aqui</text>
+<rect x="44" y="732.0" width="186" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
+<text x="137.0" y="760.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">AGENTE DE IA</text>
+<text x="137.0" y="782.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">escreve uma lição</text>
+<text x="137.0" y="799.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">nova</text>
+<line x1="230" y1="772" x2="257.0" y2="772.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 268 772 L 257.7 778.2 L 257.7 765.8 Z" fill="#B3A7DB"/>
+<rect x="272" y="732.0" width="216" height="80" rx="8" fill="#241449" stroke="#39FF14" stroke-width="2"/>
+<text x="380.0" y="760.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">SERVIDOR MCP</text>
+<text x="380.0" y="782.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">6 ferramentas</text>
+<text x="380.0" y="799.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">SÓ LEITURA</text>
+<text x="479" y="803.0" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0" text-anchor="end">****</text>
+<line x1="488" y1="772" x2="515.0" y2="772.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 526 772 L 515.7 778.2 L 515.7 765.8 Z" fill="#B3A7DB"/>
+<rect x="530" y="732.0" width="238" height="80" rx="8" fill="#241449" stroke="#39FF14" stroke-width="2"/>
+<text x="649.0" y="760.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">AS MESMAS 10 REGRAS</text>
+<text x="649.0" y="782.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">que reprovam no CI</text>
+<text x="649.0" y="799.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">validar_licao, impressão digital…</text>
+<line x1="768" y1="772" x2="795.0" y2="772.0" stroke="#B3A7DB" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 806 772 L 795.7 778.2 L 795.7 765.8 Z" fill="#B3A7DB"/>
+<path d="M 880 730.0 L 946.0 772 L 880 814.0 L 814.0 772 Z" fill="#241449" stroke="#39FF14" stroke-width="2"/>
+<text x="880" y="777" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0" text-anchor="middle">passou?</text>
+<line x1="946" y1="772" x2="973.0" y2="772.0" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M 984 772 L 973.7 778.2 L 973.7 765.8 Z" fill="#39FF14"/>
+<text x="965.0" y="761.0" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="700" letter-spacing="0" text-anchor="middle">SIM</text>
+<rect x="988" y="732.0" width="168" height="80" rx="8" fill="#241449" stroke="#00E5FF" stroke-width="2"/>
+<text x="1072.0" y="760.0" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="700" letter-spacing="0" text-anchor="middle">VIRA LIÇÃO</text>
+<text x="1072.0" y="782.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">revisada por</text>
+<text x="1072.0" y="799.0" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="12" font-weight="400" letter-spacing="0" text-anchor="middle">uma pessoa</text>
+<text x="44" y="886" fill="#F2F0FF" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="1.5">ONDE CADA PARTE RODA</text>
+<rect x="44" y="905" width="12" height="12" rx="3" fill="#FFE14D"/>
+<text x="66" y="916" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">*</text>
+<text x="104" y="916" fill="#FFE14D" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Cloudflare Workers AI</text>
+<text x="420" y="916" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">busca e geração rodam na borda, camada gratuita — não há chave de API</text>
+<rect x="44" y="935" width="12" height="12" rx="3" fill="#FF9F45"/>
+<text x="66" y="946" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">**</text>
+<text x="104" y="946" fill="#FF9F45" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Oracle Cloud · VM Always Free</text>
+<text x="420" y="946" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">a voz é sintetizada por Piper numa máquina de 1/8 de OCPU, custo zero</text>
+<rect x="44" y="965" width="12" height="12" rx="3" fill="#FF2D95"/>
+<text x="66" y="976" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">***</text>
+<text x="104" y="976" fill="#FF2D95" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">Firebase · Google</text>
+<text x="420" y="976" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">o Auth guarda a senha, e nosso código nunca a vê; o Firestore, o histórico</text>
+<rect x="44" y="995" width="12" height="12" rx="3" fill="#39FF14"/>
+<text x="66" y="1006" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" letter-spacing="0">****</text>
+<text x="104" y="1006" fill="#39FF14" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" letter-spacing="0">MCP · e ser só leitura é a defesa</text>
+<text x="420" y="1006" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0">sem ferramenta que grave, publicar é impossível para o agente de IA</text>
+<text x="1146" y="1040" fill="#B3A7DB" font-family="ui-monospace, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="400" letter-spacing="0" text-anchor="end">sem internet o jogo continua inteiro — só o mascote fica esperando</text>
 </svg>
