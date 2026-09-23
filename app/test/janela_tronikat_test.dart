@@ -25,9 +25,11 @@ class _ConsultorFalso implements ConsultorDoTronikat {
   final bool falha;
   final perguntas = <String>[];
   int enrolacoes = 0;
+  String? ultimoProgresso;
 
   @override
-  Future<RespostaDoTronikat> perguntar(String pergunta) async {
+  Future<RespostaDoTronikat> perguntar(String pergunta, {String? progresso}) async {
+    ultimoProgresso = progresso;
     perguntas.add(pergunta);
     if (falha) throw Exception('sem rede');
     return RespostaDoTronikat(texto: resposta);
@@ -40,8 +42,11 @@ class _ConsultorFalso implements ConsultorDoTronikat {
   }
 }
 
-Widget _montar(ConsultorDoTronikat c) => MaterialApp(
-      home: Scaffold(body: JanelaTronikat(consultor: c, comSom: false)),
+Widget _montar(ConsultorDoTronikat c, {Future<String> Function()? dossie}) =>
+    MaterialApp(
+      home: Scaffold(
+        body: JanelaTronikat(consultor: c, comSom: false, dossie: dossie),
+      ),
     );
 
 void main() {
@@ -265,5 +270,45 @@ void main() {
       expect(find.byType(JanelaTronikat), findsOneWidget);
       expect(find.textContaining('Pergunte o que quiser'), findsOneWidget);
     });
+  });
+
+  testWidgets('o dossie de progresso viaja JUNTO com a pergunta',
+      (tester) async {
+    // Sem isto a faixa do tutor no Worker nunca liga: ela so existe quando
+    // chega dossie, e o app e quem tem o progresso -- o Worker nao alcanca o
+    // SQLite do aparelho nem o Firestore.
+    final c = _ConsultorFalso();
+    await tester.pumpWidget(_montar(
+      c,
+      dossie: () async => 'trilha Python iniciante: 12 de 50',
+    ));
+
+    await tester.enterText(
+        find.byKey(JanelaTronikat.chaveCampo), 'o que eu faco agora?');
+    await tester.tap(find.byKey(JanelaTronikat.chaveEnviar));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(c.ultimoProgresso, 'trilha Python iniciante: 12 de 50');
+  });
+
+  testWidgets('falhar a montar o dossie NAO derruba a pergunta',
+      (tester) async {
+    // Pior que um conselho sem progresso e nenhuma resposta. O banco pode
+    // estar travado, e a pergunta continua valendo.
+    final c = _ConsultorFalso(resposta: 'Continue de onde parou.');
+    await tester.pumpWidget(_montar(
+      c,
+      dossie: () async => throw Exception('banco travado'),
+    ));
+
+    await tester.enterText(find.byKey(JanelaTronikat.chaveCampo), 'e ai?');
+    await tester.tap(find.byKey(JanelaTronikat.chaveEnviar));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(c.perguntas, ['e ai?']);
+    expect(c.ultimoProgresso, isNull);
+    expect(find.text('Continue de onde parou.'), findsOneWidget);
   });
 }

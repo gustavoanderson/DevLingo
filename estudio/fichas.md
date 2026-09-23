@@ -259,7 +259,7 @@ perguntas:
 - O código é bem testado?
 
 resposta:
-São 390 testes automatizados no app, rodando no GitHub Actions a cada envio. A cobertura publicada é de 95,6%, medida em setembro de 2026, e ela vem junto com o denominador: 28 dos 33 arquivos, e não "95,6% do app inteiro".
+São 399 testes automatizados no app, rodando no GitHub Actions a cada envio. A cobertura publicada é de 95,6%, medida em setembro de 2026, e ela vem junto com o denominador: 28 dos 33 arquivos, e não "95,6% do app inteiro".
 
 ## validador
 
@@ -460,6 +460,24 @@ perguntas:
 
 resposta:
 Programação é comigo mesmo, mas deu um engasgo aqui no estúdio agora. Pergunta de novo que eu explico. E para treinar de verdade, é dentro das trilhas: cada lição tem uma aula curta antes das questões.
+
+## meu-progresso
+
+fonte: placa de desvio -- o Worker analisa o progresso que o app enviou
+perguntas:
+- como estou indo?
+- qual meu progresso?
+- o que eu faco agora?
+- me da um desafio
+- que projeto eu posso fazer?
+- o que devo estudar depois?
+- ja posso fazer algum projeto?
+- me sugere um exercicio
+- estou pronto para o que?
+- qual o proximo passo pra mim?
+
+resposta:
+Para eu olhar seu progresso, entre na sua conta pelo app ou pelo jogo. Aqui no site eu ainda não enxergo suas lições.
 
 ## fora-de-escopo
 

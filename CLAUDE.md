@@ -1739,6 +1739,113 @@ o projeto e passa a ser **entregar a resposta** — o que esvaziaria a eliminaç
 e a revelação que a mecânica inteira sustenta. Nada em `tronikat.js` lê a tela
 do exercício, e é isso que torna a garantia verificável em vez de prometida.
 
+#### Mas ele VÊ o progresso, e sugere o próximo passo
+
+Pedido do Gustavo em 23 de setembro de 2026: *"quero que a IA analise o
+progresso do aluno, possa sugerir projetos/exercícios e desafios a mais para o
+aluno (**"monte uma calculadora depois de assistir até a lição tal"**)"*.
+
+**As duas coisas convivem, e a linha entre elas é o que torna a garantia acima
+verificável:** ele sabe *quanto* você já fez, e não sabe *o que* está na tela.
+Progresso é um número; o enunciado é o gabarito.
+
+##### Quem monta o dossiê é o CLIENTE, não o Worker
+
+O Worker não alcança o SQLite do aparelho nem o Firestore, e dar credencial de
+banco a ele seria abrir uma porta grande para resolver uma leitura. Quem já tem
+o dado é quem joga — então o app e o navegador montam um resumo e o mandam
+**junto com a pergunta**, no campo `progresso`.
+
+Ele é **opcional em toda a cadeia**, e isso não é frouxidão: o site público não
+tem login e nunca manda um. Sem dossiê a placa `meu-progresso` cai no caminho
+normal e recita a própria ficha, que manda entrar na conta.
+
+##### `montarDossie` é Dart livre de Flutter, e o navegador usa a MESMA
+
+`app/lib/data/dossie.dart`. Não há versão escrita em JavaScript para divergir
+— `ponte_web.dart` compila esta função, e `jogo.js` a chama pelo cérebro.
+
+É a disciplina que já pagou por si: `normalize()` existe em Dart e em Python, e
+`tools/normalize_cases.json` existe **só** para impedir que as duas divirjam em
+silêncio. Aqui não há segunda implementação.
+
+O que o dossiê diz, e por quê:
+
+| Decisão | Motivo |
+|---|---|
+| **Trilha nunca tocada fica de fora** | com 5 trilhas no banco e 9 previstas, listar as intocadas gastaria o orçamento dizendo "zero" cinco vezes, e enterraria a única linha que sustenta um conselho |
+| **Lição concluída = todas as questões respondidas** | é a mesma definição da trilha; mudar aqui faria o mascote contradizer a tela |
+| **Quem começou e não terminou nada diz isso em voz alta** | o silêncio seria lido como "não sei", e esse aluno precisa de conselho diferente de quem terminou três lições |
+| **Quem não respondeu nada produz dossiê VAZIO** | mandar zeros faria o modelo dar conselho sobre nada; vazio é entendido como "não pergunte" |
+| **O corte é por linha inteira** | meia linha de progresso é um número pela metade, e `38 de 5` não denuncia nada. Verificado trocando por `substring`: reprovou com `5 de 10 ques` |
+
+**Nem identificador, nem e-mail, nem a resposta digitada.** Duas razões, e cada
+uma basta: tudo que entra num prompt é superfície de injeção, e o dossiê
+atravessa a rede para um serviço de terceiro. O conselho não fica melhor
+sabendo quem é a pessoa.
+
+##### O juiz não serve aqui, e o que entrou no lugar dele
+
+O juiz pergunta *"esta frase está na ficha?"*, e aqui não há ficha — mesma
+situação da faixa `programacao`. O que existe no lugar é `conferirTutor`, e ele
+guarda uma coisa só: **número inventado**.
+
+O aluno acredita no número que ouve. *"Você já fez 40 questões"* dito a quem fez
+12 não é impreciso: é a peça que mede virando a peça que mente.
+
+**Chegar à trava certa custou três tentativas, e as duas primeiras erraram para
+o mesmo lado:**
+
+| Tentativa | O que reprovou de errado |
+|---|---|
+| qualquer dígito fora do dossiê | *"tabuada de 1 a 10"*, *"faça as primeiras 3 questões"* |
+| dígito colado a palavra de progresso | ainda *"faça as primeiras 3 questões"* — `3 quest` casa igual |
+| **só `X de Y` e `X%`** | nada até agora |
+
+O que separava as duas frases era o **modo verbal** — afirmar contra sugerir —,
+e não a palavra ao lado. `X de Y` e `X%` não têm outra leitura: ninguém escreve
+isso sugerindo exercício.
+
+**O que isso deixa passar, dito em voz alta:** *"você fez 40 questões"* com um
+número solto. Medido nos casos de teste, o modelo não faz isso — ele escreve
+*"metade das questões"* e *"parte dos conceitos"*, porque a instrução proíbe
+inventar contagem. A trava é a segunda linha, e **uma segunda linha que barra o
+conselho certo não vale o que protege** — é a regra de falso positivo que este
+arquivo já registra para o validador, aplicada ao porteiro.
+
+##### Provado nos três lugares
+
+| Onde | O quê |
+|---|---|
+| `app/test/dossie_test.dart` | 7 testes do que o dossiê diz, com a sonda do corte |
+| `app/test/janela_tronikat_test.dart` | ele viaja junto da pergunta, e **falhar a montá-lo não derruba a pergunta** |
+| `jogo/testar_jogo.js` | a fiação do navegador, sem rede: `3 de 50` da conta de teste, e a trilha intocada fora |
+| `hospedagem/testar_tutor.py` | à mão, contra o Worker no ar — é o único que alcança o modelo |
+
+Resposta real do Worker, em 23/09, para *"que projeto eu posso fazer agora?"*
+com 14 de 20 em Python: *"Você já fez os primeiros passos, agora pode criar um
+programa que calcule o total de uma compra com 5 itens."*
+
+**Os "5 itens" são o caso que a trava afrouxada deixa passar de propósito:** é
+número de sugestão, não de progresso.
+
+##### Duas armadilhas da fiação
+
+- **Quem lê é `tronikat.js`, quem escreve é `jogo.js`** — via
+  `window.ProgressoDoAluno`. O contrário dependeria da ordem das tags
+  `<script>`, porque `jogo.js` carrega **antes**, e derrubaria a abertura do
+  jogo no dia em que alguém as reordenasse
+- **O dossiê é montado a cada pergunta**, e não ao abrir a janela: quem joga uma
+  lição e volta a perguntar sem fechar o app receberia conselho sobre número
+  velho
+
+##### A calibração não se mexeu, e era o risco
+
+A placa nova podia roubar pergunta legítima — é a armadilha que este arquivo já
+registra, quando *"Qual o resultado do jogo?"* roubou *"tem placar com outros
+jogadores?"*. Medido em 23/09: **48 de 53 legítimas na ficha certa**, o mesmo
+número de 16/09. Nenhuma foi roubada.
+
 #### Fica fora do muro
 
 O botão aparece também na **tela de entrada**, antes do login. Decisão dele, e

@@ -533,6 +533,24 @@ async function carregarProgresso() {
       + 'por um servidor -- aberta como arquivo, a página não lê nada.');
   }
   prepararEntrada();
+
+  // O TR∅NIKAT PASSA A ENXERGAR O PROGRESSO. Ele le `trilhas` e `respondidas`
+  // NA HORA da pergunta, e nao agora: quem joga uma licao e volta a perguntar
+  // sem recarregar a pagina receberia conselho sobre numero velho.
+  //
+  // Quem monta o texto e o CEREBRO compilado -- a mesma `montarDossie` que o
+  // app Android usa. Nao ha versao em JavaScript para divergir dela, pela
+  // razao que este repositorio ja pagou uma vez com o `normalize()`.
+  //
+  // Devolve nulo sem login ou sem progresso, e ai a pergunta segue sem o
+  // campo: o botao fica FORA do muro, e quem ainda nao entrou nao tem
+  // progresso a analisar.
+  window.ProgressoDoAluno = () => {
+    if (!usuario || !trilhas.length) return null;
+    return devlingo.dossie(
+      JSON.stringify(trilhas), JSON.stringify(respondidas)) || null;
+  };
+
   window.addEventListener('hashchange', rotear);
   try {
     await Nuvem.aoMudarUsuario(async (u) => {

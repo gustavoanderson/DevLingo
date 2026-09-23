@@ -267,6 +267,23 @@ function conversa(ws) {
     const licoes = await js(`[...document.querySelectorAll('#lista-licoes .num-licao')].map(e => e.textContent)`);
     conferir(!licoes.some((t) => t.includes(' 00')), 'a licao 00 de referencia NAO aparece');
 
+    // ----------------------------------------------- 4b. o dossie do tutor
+    //
+    // O TR∅NIKAT PRECISA ENXERGAR O PROGRESSO para sugerir o proximo passo, e
+    // o Worker nao tem como busca-lo: ele nao fala com o Firestore em nome de
+    // ninguem. Entao o navegador monta o resumo e manda junto da pergunta.
+    //
+    // Aqui se prova a FIACAO, sem rede: que a funcao existe, que ela usa o
+    // cerebro compilado, e que o texto bate com o progresso desta conta. O que
+    // o dossie deve DIZER ja esta provado em `app/test/dossie_test.dart` --
+    // mesma funcao Dart, compilada para ca.
+    console.log('\n=== o dossie que o Tr∅nikAt recebe ===');
+    const dossie = await js('String(window.ProgressoDoAluno())');
+    conferir(dossie.includes('3 de 50'),
+        'o dossie conta o progresso desta conta', dossie.split('\n')[0]);
+    conferir(!dossie.includes('Java'),
+        'trilha nunca tocada fica de FORA do dossie');
+
     // ----------------------------------------------------------- 5. jogar
     console.log('\n=== jogando python-beg-03 inteira ===');
     const licao = JSON.parse(fs.readFileSync(path.join(RAIZ, 'app/assets/content/python/python-beg-03.json'), 'utf8'));

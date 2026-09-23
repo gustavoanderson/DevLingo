@@ -5,13 +5,25 @@
 // por hospedagem/gerar_falas.py. Por isso este Worker nunca ve uma resposta --
 // ele so conhece as perguntas-exemplo -- e nao tem o que vazar.
 import FICHAS from "./fichas.json";
-import { gerar, conferirSaida, gerarProgramacao, conferirProgramacao } from "./porteiro.js";
+import { gerar, conferirSaida, gerarProgramacao, conferirProgramacao,
+         gerarTutor, conferirTutor } from "./porteiro.js";
 
 const MODELO = "@cf/google/embeddinggemma-300m";
 // O id da placa de desvio. Vive em estudio/fichas.md como qualquer outra ficha
 // -- e por isso compete na mesma busca, com a mesma nota -- mas o que acontece
 // quando ela vence e outra coisa inteira.
 const FICHA_PROGRAMACAO = "programacao";
+// A TERCEIRA PLACA. Quando ela vence, o Worker nao reescreve ficha nenhuma:
+// ele analisa o dossie de progresso que o CLIENTE mandou junto da pergunta.
+//
+// O Worker nao alcanca o SQLite do aparelho nem o Firestore, e dar credencial
+// de banco a ele seria abrir uma porta grande para resolver uma leitura. Quem
+// ja tem o dado e o app; ele manda o resumo.
+const FICHA_PROGRESSO = "meu-progresso";
+// O dossie e pequeno de proposito: contagens e nomes de licao, nada de
+// identificador, e-mail ou resposta dada. E um teto existe porque tudo que
+// entra num prompt e superficie de injecao.
+const LIMITE_DO_DOSSIE = 900;
 
 /* QUANDO O JUIZ REPROVA, A CULPA PODE SER DA FICHA -- e ate hoje ninguem
  * perguntava de quem era.
@@ -279,8 +291,17 @@ export default {
       return json(request, 404, { erro: "caminho desconhecido" });
     }
 
-    let pergunta;
-    try { pergunta = (await request.json()).pergunta; }
+    let pergunta, dossie = "";
+    try {
+      const corpo = await request.json();
+      pergunta = corpo.pergunta;
+      // OPCIONAL, e continua opcional de proposito: o site publico nao tem
+      // login, entao ele nunca manda isto. A placa de progresso sabe lidar com
+      // a ausencia -- ela diz para entrar no app, em vez de fingir que sabe.
+      if (typeof corpo.progresso === "string") {
+        dossie = corpo.progresso.slice(0, LIMITE_DO_DOSSIE);
+      }
+    }
     catch { return json(request, 400, { erro: "corpo precisa ser JSON com o campo 'pergunta'" }); }
     if (typeof pergunta !== "string" || !pergunta.trim()) {
       return json(request, 400, { erro: "pergunta vazia" });
@@ -345,6 +366,10 @@ export default {
           // A FAIXA DE PROGRAMACAO desvia aqui, e so aqui. A ficha
           // `programacao` nao e uma resposta: e uma placa dizendo "esta
           // pergunta nao se responde com ficha nenhuma". Ver porteiro.js.
+          // A FAIXA DO TUTOR so vale com dossie. Sem ele a placa cai no
+          // caminho normal e recita a propria ficha, que diz para entrar na
+          // conta -- degradacao igual a de todas as outras faixas.
+          const ehTutor = alvo === FICHA_PROGRESSO && dossie !== "";
           const ehProgramacao = alvo === FICHA_PROGRAMACAO;
           // `reconhecida` diz se a BUSCA achou que isto e programacao, ou se
           // a pergunta caiu aqui por nao ter casado com nada. Quando a peneira
@@ -352,19 +377,26 @@ export default {
           // era justamente o que fazia ele recusar nomes que nao conhece.
           const reconhecida = melhor[0] === FICHA_PROGRAMACAO
             && melhor[1] >= FICHAS.piso;
-          const gerado = ehProgramacao
-            ? await gerarProgramacao(env, pergunta.trim(), reconhecida)
-            : await gerar(env, ficha, pergunta.trim());
+          const gerado = ehTutor
+            ? await gerarTutor(env, pergunta.trim(), dossie)
+            : ehProgramacao
+              ? await gerarProgramacao(env, pergunta.trim(), reconhecida)
+              : await gerar(env, ficha, pergunta.trim());
           // Sem ficha nao ha o que o juiz confira: ele responde "esta frase
           // esta na ficha?", e aqui a pergunta nao existe. Ficam as defesas
           // contra injecao, que nunca dependeram de ficha.
-          const { motivos } = ehProgramacao
-            ? conferirProgramacao(gerado)
-            : await conferirSaida(env, gerado, ficha);
+          // O juiz NAO serve ao tutor: ele pergunta "esta frase esta na
+          // ficha?", e aqui nao ha ficha. O que se confere e outra coisa --
+          // que nenhum NUMERO da resposta tenha sido inventado.
+          const { motivos } = ehTutor
+            ? conferirTutor(gerado, dossie)
+            : ehProgramacao
+              ? conferirProgramacao(gerado)
+              : await conferirSaida(env, gerado, ficha);
           if (motivos.length === 0) {
             resposta.texto = gerado;
             resposta.caminho = "gerada";
-          } else if (!ehProgramacao && melhor[1] < CONFIANCA_FICHA) {
+          } else if (!ehProgramacao && !ehTutor && melhor[1] < CONFIANCA_FICHA) {
             // A FICHA E QUE NAO SERVIA. Segunda chance pela faixa de
             // programacao, que nao depende de ficha nenhuma. Custa uma chamada
             // a mais, e so acontece aqui -- reprovacao com nota baixa e rara.

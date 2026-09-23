@@ -32,9 +32,22 @@ class _Fala {
 }
 
 class JanelaTronikat extends StatefulWidget {
-  const JanelaTronikat({super.key, required this.consultor, this.comSom = true});
+  const JanelaTronikat({
+    super.key,
+    required this.consultor,
+    this.comSom = true,
+    this.dossie,
+  });
 
   final ConsultorDoTronikat consultor;
+
+  /// Quem sabe montar o resumo do progresso, ou nulo quando nao ha progresso
+  /// nenhum a consultar -- no modo de demonstracao, por exemplo.
+  ///
+  /// E uma funcao, e nao um texto pronto, porque ele e lido do banco NA HORA
+  /// de perguntar. Montar na abertura da janela devolveria numero velho para
+  /// quem joga uma licao e volta a perguntar sem fechar o app.
+  final Future<String> Function()? dossie;
 
   /// Desligável para teste: `audioplayers` conversa com a plataforma, e teste
   /// de widget não tem plataforma. Mesma razão pela qual `comCena` nasce falso
@@ -46,12 +59,13 @@ class JanelaTronikat extends StatefulWidget {
   static const chaveStandby = Key('tronikat-standby');
 
   /// Abre a janela por cima da tela atual.
-  static Future<void> abrir(BuildContext context, ConsultorDoTronikat c) {
+  static Future<void> abrir(BuildContext context, ConsultorDoTronikat c,
+      {Future<String> Function()? dossie}) {
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => JanelaTronikat(consultor: c),
+      builder: (_) => JanelaTronikat(consultor: c, dossie: dossie),
     );
   }
 
@@ -146,7 +160,17 @@ class _JanelaTronikatState extends State<JanelaTronikat> {
     unawaited(widget.consultor.enrolacao().then(_tocar).catchError((_) {}));
 
     try {
-      final r = await widget.consultor.perguntar(pergunta);
+      // O dossie e montado A CADA pergunta, e falhar a montar nao derruba
+      // a pergunta: pior que um conselho sem progresso e nenhuma resposta.
+      String? progresso;
+      if (widget.dossie != null) {
+        try {
+          progresso = await widget.dossie!();
+        } on Object {
+          progresso = null;
+        }
+      }
+      final r = await widget.consultor.perguntar(pergunta, progresso: progresso);
       if (!mounted) return;
       setState(() {
         _semRede = false;

@@ -161,9 +161,26 @@
   }
 
   async function perguntar(pergunta) {
+    // O DOSSIE DE PROGRESSO viaja junto, quando ha quem o monte. Sem ele a
+    // faixa do tutor no Worker nunca liga -- e o Worker nao tem como buscar o
+    // progresso sozinho: ele nao fala com o Firestore em nome de ninguem.
+    //
+    // Quem preenche `window.ProgressoDoAluno` e `jogo.js`, apos o login. Na
+    // tela de entrada ele continua nulo de proposito: o botao fica FORA do
+    // muro, e quem ainda nao entrou nao tem progresso a analisar.
+    //
+    // E QUEM LE E ESTE LADO, e nao o contrario: `jogo.js` carrega ANTES deste
+    // arquivo, entao ele escrever aqui dependeria da ordem das tags `<script>`
+    // e derrubaria a abertura do jogo no dia em que alguem as reordenasse.
+    let progresso = null;
+    try {
+      if (window.ProgressoDoAluno) progresso = window.ProgressoDoAluno();
+    } catch (e) {
+      // Pior que um conselho sem progresso e nenhuma resposta.
+    }
     const r = await fetch(WORKER + '/perguntar', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pergunta }),
+      body: JSON.stringify(progresso ? { pergunta, progresso } : { pergunta }),
     });
     if (!r.ok) throw new Error('o servidor respondeu ' + r.status);
     const corpo = await r.json();

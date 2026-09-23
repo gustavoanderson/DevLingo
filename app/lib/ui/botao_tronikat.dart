@@ -20,12 +20,52 @@ library;
 import 'package:flutter/material.dart';
 
 import '../data/tronikat.dart';
+import '../models/lesson.dart';
+import '../data/question_bank.dart';
+import '../data/progresso.dart';
+import '../data/dossie.dart';
 import 'janela_tronikat.dart';
 import 'paleta.dart';
 import 'tronikat_codec.dart';
 
 class BotaoTronikat extends StatelessWidget {
-  const BotaoTronikat({super.key, this.consultor});
+  /// Monta o dossie do app: todas as trilhas do banco, contra o progresso.
+  ///
+  /// Mora aqui, e nao em `dossie.dart`, porque `QuestionBank` carrega asset e
+  /// **importa Flutter** -- e `dossie.dart` precisa continuar compilando para
+  /// JavaScript, que e o que faz o navegador usar a mesma regra em vez de uma
+  /// segunda escrita a mao.
+  ///
+  /// Devolve nulo quando nao ha progresso a consultar. A janela entende isso
+  /// como "nao pergunte", e a placa `meu-progresso` responde mandando entrar.
+  static Future<String> Function()? dossieDe(
+    QuestionBank banco,
+    RegistroDeProgresso? progresso,
+  ) {
+    if (progresso == null) return null;
+    return () async {
+      // TODAS as trilhas, e nao so aquela em que a pessoa esta. A pergunta
+      // "o que eu faco agora?" nao respeita a tela em que foi feita, e um
+      // conselho que ignora as outras quatro trilhas e um conselho pela
+      // metade.
+      final trilhas = <List<Lesson>>[
+        for (final language in banco.linguagens)
+          for (final level in Level.values)
+            if (banco.trilha(language, level).isNotEmpty)
+              banco.trilha(language, level),
+      ];
+      return montarDossie(
+        trilhasParaDossie(trilhas),
+        await progresso.respondidasPorLicao(),
+        deCabeca: (await progresso.resumoDoJogador()).deCabeca,
+      );
+    };
+  }
+
+  const BotaoTronikat({super.key, this.consultor, this.dossie});
+
+  /// Repassado a janela. Ver `JanelaTronikat.dossie`.
+  final Future<String> Function()? dossie;
 
   /// Injetável para teste: o de verdade fala com a rede, e teste de widget
   /// roda em tempo falso, onde I/O nunca avança.
@@ -43,7 +83,8 @@ class BotaoTronikat extends StatelessWidget {
       child: FloatingActionButton(
         key: chave,
         onPressed: () =>
-            JanelaTronikat.abrir(context, consultor ?? TronikatDaBorda()),
+            JanelaTronikat.abrir(context, consultor ?? TronikatDaBorda(),
+                dossie: dossie),
         backgroundColor: Paleta.superficie,
         foregroundColor: Paleta.visor,
         tooltip: 'Falar com o Tr∅nikAt',

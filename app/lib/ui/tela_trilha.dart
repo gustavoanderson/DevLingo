@@ -199,7 +199,10 @@ class _TelaTrilhaState extends State<TelaTrilha>
       // Ele aparece aqui TAMBEM. Na v1.9.0 so existia na escolha de trilha, e
       // quem entrasse direto numa trilha nao via nada -- foi metade do motivo
       // de o Gustavo nao ter achado.
-      floatingActionButton: BotaoTronikat(consultor: widget.consultorDoTronikat),
+      floatingActionButton: BotaoTronikat(
+        consultor: widget.consultorDoTronikat,
+        dossie: BotaoTronikat.dossieDe(widget.banco, widget.progresso),
+      ),
       backgroundColor: Paleta.fundo,
       body: SafeArea(
         child: Column(

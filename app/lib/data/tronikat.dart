@@ -42,7 +42,12 @@ class RespostaDoTronikat {
 /// widget roda em tempo falso e **I/O de verdade nunca avança nele**. A janela
 /// recebe isto, e o teste passa uma implementação em memória.
 abstract class ConsultorDoTronikat {
-  Future<RespostaDoTronikat> perguntar(String pergunta);
+  /// [progresso] e o dossie montado por `montarDossie`, ou nulo.
+  ///
+  /// Opcional de proposito, e ele continua opcional ate o Worker: o site
+  /// publico nao tem login e nunca manda um. A placa `meu-progresso` responde
+  /// mandando entrar na conta, em vez de fingir que sabe.
+  Future<RespostaDoTronikat> perguntar(String pergunta, {String? progresso});
 
   /// Uma fala curta de enrolação, para tocar ENQUANTO a resposta não chega.
   ///
@@ -104,9 +109,14 @@ class TronikatDaBorda implements ConsultorDoTronikat {
   }
 
   @override
-  Future<RespostaDoTronikat> perguntar(String pergunta) async {
-    final corpo = jsonDecode(await _postar('/perguntar', {'pergunta': pergunta}))
-        as Map<String, dynamic>;
+  Future<RespostaDoTronikat> perguntar(String pergunta,
+      {String? progresso}) async {
+    final corpo = jsonDecode(await _postar('/perguntar', {
+      'pergunta': pergunta,
+      // Ausente, e nao vazio, quando nao ha: o Worker so liga a faixa do tutor
+      // com dossie de verdade, e string vazia passaria pelo `typeof` dele.
+      if (progresso != null && progresso.isNotEmpty) 'progresso': progresso,
+    })) as Map<String, dynamic>;
 
     // Dois caminhos, e o Worker diz qual foi. Resposta GERADA na borda não tem
     // áudio gravado e passa pelo serviço de voz; ficha conhecida já tem texto e

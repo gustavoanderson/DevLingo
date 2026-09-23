@@ -148,7 +148,10 @@ class _TelaLinguagensState extends State<TelaLinguagens> {
       backgroundColor: Paleta.fundo,
       // NO CANTO, como ele pediu. Ver `botao_tronikat.dart` para por que ele
       // saiu da barra de cima.
-      floatingActionButton: BotaoTronikat(consultor: widget.consultorDoTronikat),
+      floatingActionButton: BotaoTronikat(
+        consultor: widget.consultorDoTronikat,
+        dossie: BotaoTronikat.dossieDe(widget.banco, widget.progresso),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),

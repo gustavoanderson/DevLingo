@@ -47,6 +47,7 @@ import 'dart:js_interop_unsafe';
 import 'answer/normalize.dart';
 import 'answer/sessao_questao.dart';
 import 'auth/autenticacao.dart';
+import 'data/dossie.dart';
 import 'data/partida.dart';
 import 'models/lesson.dart';
 import 'models/question.dart';
@@ -244,6 +245,20 @@ String _respondidas(String eventosJson) => jsonEncode(
     respondidasPorLicaoNoHistorico((jsonDecode(eventosJson) as List<dynamic>)
         .cast<Map<String, Object?>>()));
 
+/// O DOSSIE de progresso, para o Tr∅nikAt dar um conselho.
+///
+/// A MESMA funcao que o app usa -- e nao ha versao escrita em JavaScript em
+/// lugar nenhum. O navegador ja tem as duas pecas nas maos: `trilhas` saiu de
+/// [_trilhas], e `respondidas` de [_respondidas].
+///
+/// Devolve texto vazio para quem nao respondeu nada, e ai o cliente nao manda
+/// o campo: a placa `meu-progresso` responde mandando entrar na conta.
+String _dossie(String trilhasJson, String respondidasJson) => montarDossie(
+      (jsonDecode(trilhasJson) as List<dynamic>).cast<Map<String, Object?>>(),
+      (jsonDecode(respondidasJson) as Map<String, dynamic>)
+          .map((k, v) => MapEntry(k, v as int)),
+    );
+
 /// A validacao da tela de entrada -- a MESMA do app.
 ///
 /// Recuperar senha so exige e-mail; entrar e criar conta exigem os dois, com o
@@ -296,5 +311,7 @@ void main() {
       _evento(uid.toDart, licao.toDart, quando.toDartInt).toJS).toJS;
   api['respondidas'] =
       ((JSString eventos) => _respondidas(eventos.toDart).toJS).toJS;
+  api['dossie'] = ((JSString t, JSString r) =>
+      _dossie(t.toDart, r.toDart).toJS).toJS;
   globalContext['devlingo'] = api;
 }
