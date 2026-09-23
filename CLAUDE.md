@@ -1090,6 +1090,25 @@ não recorta pixels já pintados (o Flutter não dá esse acesso barato), e a bo
 oscila no ritmo da fala em vez de seguir os `bocas` por fonema, porque no app
 só o áudio chega.
 
+#### A barra do Android ficava por cima do campo, e o teste não via
+
+Encontrado pelo Gustavo num Xiaomi 15T Pro, com print: os botões de navegação
+do sistema cobriam o campo de pergunta e o **Enviar**.
+
+`showModalBottomSheet` encosta na borda física da tela — e a borda física é
+onde moram os botões, ou a barra de gestos, conforme o aparelho. A correção é
+`SafeArea(top: false)` só na barra de envio: em cima quem manda é o arredondado
+da folha, e dos lados não há recorte.
+
+**O teste não pegava porque a tela de teste não tem barra nenhuma.** Sobra
+espaço, e tudo cabe. O teste novo **declara 48px de barra** no `MediaQuery` e
+exige que o campo termine antes dela — verificado removendo o `SafeArea`, e ele
+reprovou com o número do defeito: *"sobram apenas 12,0px, e a barra ocupa
+48,0px"*.
+
+Fica a regra, que é a nona vez nesta lista: **a tela de teste é uma tela sem
+sistema.** Recorte, barra e entalhe só existem se o teste os declarar.
+
 #### Um defeito que o teste pegou antes do aparelho
 
 Ao entrar em standby, a lista sai da árvore e o `ScrollController` fica solto —

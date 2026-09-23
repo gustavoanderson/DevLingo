@@ -164,6 +164,41 @@ void main() {
     expect(c.perguntas.single, 'me ajuda');
   });
 
+  testWidgets('a barra de envio fica ACIMA dos botões do Android',
+      (tester) async {
+    // DEFEITO REAL, encontrado pelo Gustavo num Xiaomi 15T Pro: a barra de
+    // navegação do sistema ficava POR CIMA do campo e do Enviar.
+    //
+    // O teste não pegava porque a tela de teste não tem barra nenhuma -- sobra
+    // espaço, e tudo cabe. Só simulando o `padding` do sistema o defeito
+    // aparece, e é por isso que este teste declara 48px de barra embaixo.
+    const barra = 48.0;
+    await tester.pumpWidget(MaterialApp(
+      home: MediaQuery(
+        data: const MediaQueryData(
+          size: Size(400, 800),
+          padding: EdgeInsets.only(bottom: barra),
+          viewPadding: EdgeInsets.only(bottom: barra),
+        ),
+        child: Scaffold(
+          body: JanelaTronikat(consultor: _ConsultorFalso(), comSom: false),
+        ),
+      ),
+    ));
+
+    final campo = tester.getRect(find.byKey(JanelaTronikat.chaveCampo));
+    final janela = tester.getRect(find.byType(JanelaTronikat));
+    // O campo tem que terminar ANTES de onde a barra do sistema começa.
+    expect(campo.bottom, lessThanOrEqualTo(janela.bottom - barra),
+        reason: 'o campo entra na faixa dos botões do Android: sobram apenas '
+            '${(janela.bottom - campo.bottom).toStringAsFixed(1)}px, e a barra '
+            'ocupa ${barra}px');
+
+    final enviar = tester.getRect(find.byKey(JanelaTronikat.chaveEnviar));
+    expect(enviar.bottom, lessThanOrEqualTo(janela.bottom - barra),
+        reason: 'o botão Enviar fica debaixo da barra do sistema');
+  });
+
   /// ------------------------------------------------------------- o BOTÃO
   ///
   /// Na v1.9.0 eu pus um ícone discreto na barra de cima da escolha de trilha,

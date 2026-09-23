@@ -185,7 +185,18 @@ class _JanelaTronikatState extends State<JanelaTronikat> {
           children: [
             _cabecalho(context),
             Expanded(child: _semRede ? _standby() : _conversa()),
-            _barraDeEnvio(),
+            // A BARRA DE NAVEGAÇÃO DO ANDROID FICAVA POR CIMA do campo e do
+            // Enviar. `showModalBottomSheet` encosta na borda física da tela, e
+            // a borda física é onde moram os botões do sistema -- ou a barra de
+            // gestos, conforme o aparelho.
+            //
+            // Encontrado pelo Gustavo num Xiaomi 15T Pro, e é o tipo de defeito
+            // que só o aparelho de verdade mostra: no teste a tela não tem
+            // barra nenhuma, e sobra espaço.
+            //
+            // `SafeArea` só embaixo: em cima quem manda é o arredondado da
+            // folha, e dos lados não há recorte.
+            SafeArea(top: false, child: _barraDeEnvio()),
           ],
         ),
       ),
