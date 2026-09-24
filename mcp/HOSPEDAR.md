@@ -244,6 +244,37 @@ sleep 6 && systemctl is-active cloudflared
 
 ---
 
+## Quatro armadilhas do painel, todas pagas em 24/09/2026
+
+Elas não estão na documentação, e nenhuma delas dá mensagem que aponte a causa.
+
+**1. O secret mudou de formato em 26/08/2026.** Os novos são `cfast_` + 48
+caracteres, **54 no total, e não são hexadecimais**; os antigos, 64 hex,
+continuam valendo. Eu escrevi "64 hex" de cabeça e `conferir.sh` passou a
+**barrar uma credencial válida** — o Gustavo chegou a destruir um token bom
+seguindo diagnóstico meu. O sinal estava na repetição: **54 caracteres em duas
+tentativas, com tokens diferentes.** Número que se repete com entradas
+diferentes acusa a regra, não quem digita.
+
+**2. Dá para criar várias políticas com o mesmo nome, e só uma vale.** Três
+`so service token` apareceram na lista, idênticas, e a única coluna que as
+distinguia era `Used by applications` — `1` numa, `0` nas outras. Editar a
+errada não dá erro nenhum: dá `403` com credencial boa.
+
+**3. A política pode ser salva com o seletor VAZIO.** `Include: Service Token`
+aparecia sem token nenhum ao lado. Ela barra todo mundo e não autoriza
+ninguém, e a tela não distingue isso de uma política preenchida.
+
+**4. Cada token tem o SEU Client ID.** Misturar o id de um com o secret de
+outro dá `403`, e os dois "parecem certos" isoladamente.
+
+> **O termômetro que resolve as quatro:** na tela do token, o campo
+> **`Last Seen`**. Enquanto disser `Not Seen Yet`, **nenhuma credencial válida
+> chegou** — o problema está na credencial ou na política, nunca no servidor.
+> `Usage` diz a que aplicação ele está ligado.
+
+---
+
 ## Parte 4 — A autenticação, no painel
 
 Isto é no navegador, em **Zero Trust** no painel da Cloudflare.
