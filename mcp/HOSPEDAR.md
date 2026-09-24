@@ -202,11 +202,26 @@ cloudflared tunnel route dns devlingo-mcp mcp.devlingo.app.br
 
 Depois, o serviço:
 
+> ⚠️ **O arquivo de credencial NÃO se chama como o túnel.** O `create` grava
+> `<id-do-tunel>.json`, e diz isso numa linha que se perde no meio da saída:
+>
+> ```
+> Tunnel credentials written to /home/ubuntu/.cloudflared/fe57d35a-....json
+> ```
+>
+> Apontar o `credentials-file` para `devlingo-mcp.json` produz um serviço que
+> **não sobe**, e o `systemctl` só diz "control process exited with error
+> code" — sem mencionar arquivo nenhum. Por isso o bloco abaixo **descobre o
+> caminho sozinho**, em vez de alguém digitar o id.
+
 ```bash
 sudo mkdir -p /etc/cloudflared
-sudo tee /etc/cloudflared/config.yml >/dev/null <<'FIM'
+CRED=$(ls -t ~/.cloudflared/*.json | head -1)
+echo "usando: $CRED"
+
+sudo tee /etc/cloudflared/config.yml >/dev/null <<FIM
 tunnel: devlingo-mcp
-credentials-file: /home/ubuntu/.cloudflared/devlingo-mcp.json
+credentials-file: $CRED
 ingress:
   - hostname: mcp.devlingo.app.br
     service: http://127.0.0.1:8931
@@ -215,7 +230,13 @@ FIM
 
 sudo cloudflared service install
 sudo systemctl enable --now cloudflared
+sleep 6 && systemctl is-active cloudflared
 ```
+
+> **Este heredoc usa `FIM` SEM aspas**, ao contrário dos outros deste arquivo.
+> É o que permite o `$CRED` ser substituído; com `'FIM'` o shell escreveria a
+> palavra `$CRED` crua dentro do arquivo, e o serviço falharia de novo — pelo
+> mesmo sintoma e por outra causa.
 
 > **A última regra do `ingress` é obrigatória.** Sem o `http_status:404` final,
 > o `cloudflared` recusa a configuração — e a mensagem fala de "catch-all
@@ -303,6 +324,7 @@ estar numa pasta que o git enxerga.
 | `200` **sem** token | não há política valendo — o servidor está aberto |
 | `530` ou `1033` | o túnel não está no ar: `systemctl status cloudflared` |
 | `502` | o túnel subiu e o servidor MCP não: `systemctl status mcp` |
+| `cloudflared` fica em `activating` ou `failed` | o `credentials-file` aponta para um arquivo que não existe — veja o nome real em `ls ~/.cloudflared/*.json` |
 | **`421`** | **o `Host` não está em `MCP_HOSTS`** — a defesa contra DNS rebinding fez o trabalho dela |
 | `406` numa chamada | faltou `Accept: application/json, text/event-stream` |
 | o domínio não resolve | nameservers ainda propagando, ou copiados com erro |
