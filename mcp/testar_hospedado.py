@@ -113,6 +113,23 @@ def main() -> int:
 
     print(f"conferindo {args.url}")
 
+    # POLITICA RECEM-SALVA DEMORA A VALER, e no meio disso o servidor responde
+    # as duas coisas: uma chamada leva 403 e a seguinte 200. Quem le a saida
+    # conclui que ha defeito de credencial, quando o que ha e transicao.
+    #
+    # Entao a primeira chamada e repetida ate o resultado parar de mudar. O
+    # caso do Gustavo em 24/09: o Access entrou em vigor ENTRE duas linhas do
+    # mesmo teste, e a saida saiu contraditoria consigo mesma.
+    if not args.sem_auth:
+        import time
+        anterior = None
+        for _ in range(12):
+            atual, _c, _t = postar(args.url, INICIAR, None)
+            if atual == anterior:
+                break
+            anterior = atual
+            time.sleep(5)
+
     # 1. de pe
     try:
         codigo, _, _ = postar(args.url, INICIAR, credenciais)
