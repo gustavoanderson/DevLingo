@@ -67,6 +67,15 @@ def postar(url: str, corpo: dict, credenciais: dict[str, str] | None):
         # O transporte responde JSON **ou** um fluxo SSE, conforme a chamada.
         # Pedir so um dos dois devolve 406, e a mensagem nao diz isso.
         "Accept": "application/json, text/event-stream",
+        # SEM ISTO A CLOUDFLARE RESPONDE 403, e o CLAUDE.md ja registrava:
+        # `urllib` se anuncia como "Python-urllib" e e tratado como robo. Eu
+        # escrevi este conferidor sem o cabecalho e passei um tempo achando
+        # que o 403 vinha do Access -- ou seja, li como "a porta esta
+        # trancada" o que era "voce nem chegou na porta".
+        #
+        # O navegador de quem visita nao passa por isso; ferramenta de linha
+        # de comando, sim.
+        "User-Agent": "DevLingo-MCP-conferidor/1.0",
     }
     if credenciais:
         cabecalhos.update(credenciais)
