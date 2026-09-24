@@ -69,6 +69,12 @@ const CONFIANCA_FICHA = 0.75;
 const FICHA_FORA = "fora-de-escopo";
 const LIMITE_DA_PERGUNTA = 300;
 const ORIGENS = new Set([
+  // O DOMINIO PROPRIO entrou em 24/09/2026. O antigo FICA: o GitHub Pages
+  // redireciona `gustavoanderson.github.io/DevLingo` para ca, e durante a
+  // transicao os dois respondem -- tirar o velho quebraria quem abrisse um
+  // link ja divulgado.
+  "https://devlingo.app.br",
+  "https://www.devlingo.app.br",
   "https://gustavoanderson.github.io",
   "http://127.0.0.1:8000", "http://localhost:8000", "null",
 ]);
