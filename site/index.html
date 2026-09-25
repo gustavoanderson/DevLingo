@@ -107,7 +107,10 @@
 
   .palco{display:grid;grid-template-columns:minmax(0,358px) minmax(0,1fr);
          gap:20px;align-items:stretch;margin-top:20px}
-  @media (max-width:760px){.palco{grid-template-columns:1fr}}
+  /* Em tela estreita os atalhos quebram em duas linhas e roubavam a altura da
+     conversa: a saudacao aparecia cortada no topo. O painel cresce um pouco. */
+  @media (max-width:760px){.palco{grid-template-columns:1fr}
+    .palco .terminal{min-height:330px;max-height:330px}}
 
   /* O QUADRO DO CODEC. Era uma videochamada com a cabeca em 3D; virou a tela
      de transmissao do Metal Gear Solid 1, a pedido do Gustavo -- e o motivo
@@ -260,8 +263,10 @@
     .secao{grid-template-columns:1fr;gap:14px;padding:18px}
     .prosa.duas{columns:1}
   }
-  .trilhas{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));
-           gap:11px}
+  /* Flex, e nao grid: a ultima fileira fica CENTRALIZADA em vez de encostar
+     a esquerda, que quebraria o alinhamento unico da pagina. */
+  .trilhas{display:flex;flex-wrap:wrap;justify-content:center;gap:11px}
+  .trilhas .trilha{flex:0 1 200px}
   .trilha{border:1px solid var(--linha);border-radius:11px;padding:13px 15px;
           background:rgba(16,8,36,.7)}
   .trilha b{color:var(--ciano);font-size:14.5px}
@@ -314,6 +319,15 @@
         filter:blur(1px);animation:fogo .09s steps(2) infinite alternate}
   .nave::after{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;
         background:radial-gradient(circle,rgba(0,229,255,.35),transparent 70%)}
+  /* A FUMACA. Cada nuvem e um circulo que cresce, sobe um pouco e some -- so
+     `transform` e `opacity`, no compositor. Sao ~30 por voo e cada uma se
+     remove sozinha ao terminar, entao nada se acumula na pagina. */
+  .fumaca{position:fixed;z-index:28;left:0;top:0;width:34px;height:34px;border-radius:50%;
+          pointer-events:none;
+          background:radial-gradient(circle,rgba(242,240,255,.9),rgba(190,180,225,.45) 50%,transparent 70%)}
+  .fumaca.rosa{background:radial-gradient(circle,rgba(255,215,240,.9),rgba(255,45,149,.30) 50%,transparent 70%)}
+  .fumaca.ciano{background:radial-gradient(circle,rgba(220,250,255,.9),rgba(0,229,255,.28) 50%,transparent 70%)}
+  .chamada{transition:opacity .45s ease}
   @keyframes fogo{from{transform:translateX(-50%) scaleY(.8)}to{transform:translateX(-50%) scaleY(1.15)}}
   .janela-tk{position:fixed;right:18px;bottom:96px;z-index:29;
              width:min(380px,calc(100vw - 36px));transform-origin:100% 100%;
@@ -425,6 +439,53 @@
     .trilho ol{grid-template-columns:1fr 1fr}
     .trilho li::after{display:none}
   }
+  /* UM ALINHAMENTO SO, pedido do Gustavo: havia dois layouts misturados --
+     titulo numa coluna a esquerda em umas secoes, titulo em cima em outras --
+     e o texto comecava ora na margem, ora no meio. Agora tudo e centralizado:
+     cabecalho, titulos e prosa. A EXCECAO e deliberada: dentro dos cartoes de
+     defeito, das etapas do CI e das caixas do fluxo MCP o texto segue a
+     esquerda, porque sao listas com rotulo, e lista centralizada nao se le. */
+  .capa > .marca,.capa > .sub{text-align:center}
+  .acoes{justify-content:center}
+  .secao,.secao.qa,.secao.larga{grid-template-columns:1fr;justify-items:center;
+        text-align:center;gap:16px}
+  .secao h2{border-left:0;padding-left:0;position:relative;padding-bottom:12px}
+  .secao h2::after{content:"";position:absolute;left:50%;bottom:0;width:46px;height:3px;
+        transform:translateX(-50%);background:var(--magenta);border-radius:2px}
+  .secao .prosa{width:100%}
+  .prosa > p,.qa .prosa > p,.larga .prosa > p{max-width:72ch;margin-left:auto;margin-right:auto}
+  .trilha,.cela,.tipo,.rodape{text-align:center}
+  .tipo b{justify-content:center}
+  .barra-testes{margin-left:auto;margin-right:auto}
+  .ferramentas{justify-content:center}
+  .esteira,.fluxo,.defeito,.trilho li,.no{text-align:left}
+
+  /* O BOTAO DE JOGAR. Ele e a acao principal da pagina e estava com o mesmo
+     peso visual do secundario. Agora e maior, tem o triangulo de play, uma
+     linha de apoio que tira a duvida de quem hesita ("sem instalar nada") e
+     um brilho que atravessa de tempos em tempos. O brilho e o halo animam so
+     `transform` e `opacity`, no compositor -- a regra que tirou os 12 s de
+     travamento desta pagina. */
+  .botao.primario{position:relative;overflow:hidden;display:inline-grid;align-items:center;
+        grid-template-columns:auto auto;justify-content:center;column-gap:12px;row-gap:0;
+        padding:16px 30px 13px;font-size:21px;letter-spacing:2.4px;border-radius:14px;
+        box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 8px 30px rgba(255,45,149,.45)}
+  .botao.primario small{grid-column:1 / -1;text-align:center;font-family:var(--mono);
+        font-weight:400;font-size:11.5px;letter-spacing:.4px;text-transform:none;
+        opacity:.9;margin-top:2px}
+  .play{width:0;height:0;border-left:15px solid #fff;border-top:9px solid transparent;
+        border-bottom:9px solid transparent}
+  .botao.primario::before{content:"";position:absolute;top:0;bottom:0;left:0;width:45%;
+        background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);
+        transform:translateX(-120%);animation:brilho 3.4s ease-in-out infinite}
+  @keyframes brilho{0%,55%{transform:translateX(-120%)}85%,100%{transform:translateX(330%)}}
+  .acoes{position:relative;align-items:center}
+  .acoes .botao.primario::after{content:"";position:absolute;inset:-2px;border-radius:15px;
+        box-shadow:0 0 26px 6px rgba(255,45,149,.7);opacity:.25;pointer-events:none;
+        animation:halo 2.2s ease-in-out infinite}
+  @keyframes halo{50%{opacity:1}}
+  .botao.primario:hover{transform:translateY(-2px)}
+
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -440,7 +501,7 @@
   <div class="marca">DevLingo</div>
   <div class="sub">Aprenda a programar · 404 questões · 8 trilhas</div>
   <div class="acoes">
-    <a class="botao primario" href="jogo/">Jogar no navegador</a>
+    <a class="botao primario" href="jogo/"><span class="play" aria-hidden="true"></span>Jogar no navegador<small>grátis, sem instalar nada</small></a>
     <a class="botao" href="https://github.com/gustavoanderson/DevLingo/releases/latest">Baixar para Android</a>
   </div>
 
@@ -506,7 +567,7 @@
 
   <section class="secao">
     <h2>Por que ele existe</h2>
-    <div class="prosa duas">
+    <div class="prosa">
       <p>O DevLingo é um app para aprender programação no formato do Duolingo,
         pensado desde a primeira linha para quem fala português do Brasil. Dá para
         jogar no Android e no navegador, e o progresso acompanha você de um para o
@@ -1510,10 +1571,33 @@ dizer('Tr∅nikAt na escuta. Câmbio.\nMe pergunte algo sobre o mundo dos devs, 
   bolha.addEventListener('click', () => (janela.hidden ? abrirJanela() : fecharJanela()));
   fechar.addEventListener('click', fecharJanela);
 
+  /* A FUMACA. Uma nuvem nasce num ponto, cresce, deriva e some. */
+  const TONS = ['', '', 'rosa', 'ciano'];
+  function nuvem(x, y, forca = 1) {
+    const n = document.createElement('div');
+    n.className = 'fumaca ' + TONS[Math.floor(Math.random() * TONS.length)];
+    document.body.appendChild(n);
+    const dx = (Math.random() - .5) * 40 * forca, dy = (Math.random() * -26 - 6) * forca;
+    const fim = 1.8 + Math.random() * 1.6 * forca;
+    const a = n.animate([
+      { transform: `translate(${x - 17}px, ${y - 17}px) scale(.4)`, opacity: .95 },
+      { transform: `translate(${x - 17 + dx}px, ${y - 17 + dy}px) scale(${fim})`, opacity: 0 },
+    ], { duration: 1000 + Math.random() * 600, easing: 'cubic-bezier(.2,.6,.3,1)' });
+    a.onfinish = a.oncancel = () => n.remove();
+  }
+  // Uma rajada em volta de um ponto: a decolagem e o pouso.
+  function rajada(x, y, quantas) {
+    for (let i = 0; i < quantas; i++) {
+      const ang = (i / quantas) * Math.PI * 2, r = 10 + Math.random() * 14;
+      nuvem(x + Math.cos(ang) * r, y + Math.sin(ang) * r * .6, 1.3);
+    }
+  }
+
   /* O VOO. Uma nave feita so do rosto sai de um retangulo e pousa no outro,
      fazendo um arco para cima no meio do caminho e inclinando para o lado em
-     que vai, com o propulsor aceso. Tudo por `transform`, que o navegador anima
-     no compositor -- a regra que tirou os 12 s de travamento desta pagina. */
+     que vai, com o propulsor aceso e deixando um rastro de fumaca. A nave anda
+     por `transform`, no compositor -- a regra que tirou os 12 s de travamento
+     desta pagina. */
   function voar(de, para, quando) {
     if (parado) { quando(); return; }
     const nave = document.createElement('div');
@@ -1530,11 +1614,30 @@ dizer('Tr∅nikAt na escuta. Câmbio.\nMe pergunte algo sobre o mundo dos devs, 
     const lado = dx < 0 ? 1 : -1;                   // inclina para onde vai
     const k = [
       { transform: `translate(${dx}px, ${dy}px) scale(${s0}) rotate(0deg)`, borderRadius: '18%' },
-      { transform: `translate(${dx * .45}px, ${dy * .55 - 110}px) scale(${(s0 + s1) * .45}) rotate(${14 * lado}deg)`, borderRadius: '50%', offset: .45 },
+      { transform: `translate(${dx * .8}px, ${dy * .8 - 40}px) scale(${s0 * .7 + s1 * .3}) rotate(${6 * lado}deg)`, borderRadius: '40%', offset: .18 },
+      { transform: `translate(${dx * .45}px, ${dy * .55 - 110}px) scale(${(s0 + s1) * .45}) rotate(${14 * lado}deg)`, borderRadius: '50%', offset: .5 },
+      { transform: `translate(${dx * .08}px, ${dy * .08 - 18}px) scale(${s1 * 1.08}) rotate(${-4 * lado}deg)`, borderRadius: '50%', offset: .88 },
       { transform: `translate(0, 0) scale(${s1}) rotate(0deg)`, borderRadius: '50%' },
     ];
-    const anim = nave.animate(k, { duration: 900, easing: 'cubic-bezier(.55,0,.25,1)' });
-    anim.onfinish = anim.oncancel = () => { espelhos.delete(c); nave.remove(); quando(); };
+    rajada(de.x + de.w / 2, de.y + de.h / 2, 16);   // a decolagem levanta poeira
+    const anim = nave.animate(k, { duration: 1300, easing: 'cubic-bezier(.45,.05,.3,1)' });
+    // O rastro: duas nuvens a cada 30 ms, na traseira, onde o fogo sai.
+    let ultima = 0, voando = true;
+    (function rastro(t) {
+      if (!voando) return;
+      if (t - ultima > 30) {
+        ultima = t;
+        const r = nave.getBoundingClientRect();
+        nuvem(r.left + r.width / 2, r.top + r.height * .92);
+        nuvem(r.left + r.width / 2 + (Math.random() - .5) * 14, r.top + r.height * .8, .7);
+      }
+      requestAnimationFrame(rastro);
+    })(0);
+    anim.onfinish = anim.oncancel = () => {
+      voando = false;
+      rajada(para.x + para.w / 2, para.y + para.h / 2, 12);   // e o pouso tambem
+      espelhos.delete(c); nave.remove(); quando();
+    };
   }
 
   const retangulo = (el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; };
@@ -1544,10 +1647,12 @@ dizer('Tr∅nikAt na escuta. Câmbio.\nMe pergunte algo sobre o mundo dos devs, 
     if (estado === 'voando' || estado === desejado) return;
     if (desejado === 'bolha') {
       estado = 'voando';
-      chamada.style.visibility = 'hidden';
+      chamada.style.opacity = '0';
       voar(retangulo(chamada), daBolha(), () => {
         bolha.hidden = false; espelhos.add(bolha.firstElementChild);
         espelhar(bolha.firstElementChild);
+        if (!parado) bolha.animate([{ transform: 'scale(.7)' }, { transform: 'scale(1.14)' },
+                                    { transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' });
         estado = 'bolha'; aplicar();
       });
     } else {
@@ -1555,19 +1660,21 @@ dizer('Tr∅nikAt na escuta. Câmbio.\nMe pergunte algo sobre o mundo dos devs, 
       fecharJanela();
       bolha.hidden = true; espelhos.delete(bolha.firstElementChild);
       voar(daBolha(), retangulo(chamada), () => {
-        chamada.style.visibility = '';
+        chamada.style.opacity = '';
         estado = 'palco'; aplicar();
       });
     }
   }
 
-  // "Saiu da tela" = menos de um quinto do palco visivel, E para cima. Rolar
-  // ate o fim de uma pagina curta nao conta como ter passado por ele.
+  // Decola com METADE do palco ainda visivel, e rolando para cima. Com menos
+  // que isso a nave surgia ja na borda da tela, vinda do nada -- era a
+  // passagem "brusca" que o Gustavo apontou. Rolar ate o fim de uma pagina
+  // curta nao conta como ter passado pelo palco.
   new IntersectionObserver(([e]) => {
-    const passou = e.intersectionRatio < .2 && e.boundingClientRect.top < 0;
+    const passou = e.intersectionRatio < .5 && e.boundingClientRect.top < 0;
     desejado = passou ? 'bolha' : 'palco';
     aplicar();
-  }, { threshold: [0, .2, .4] }).observe(palco);
+  }, { threshold: [0, .25, .5, .75] }).observe(palco);
 })();
 
 claudePronto = (window.claude?.use ? claude.use('sample') : Promise.resolve(null))
