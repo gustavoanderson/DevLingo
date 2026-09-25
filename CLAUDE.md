@@ -2069,14 +2069,14 @@ do CORS no Worker.
 |---|---|
 | Rotas de API com autenticação | **parcial** — o Firestore exige `request.auth.uid == uid`; o Worker (`/perguntar`, `/falar`, `/aquecer`) **não pede nada** |
 | Senhas criptografadas | **sim, e melhor**: não existe campo de senha em lugar nenhum do banco. O Firebase guarda, nosso código nunca vê |
-| Rate limit de login / DDoS | **parcial** — login protegido pelo Firebase (*"user-agent strings and IP addresses to prevent abuse"*), Cloudflare na frente. **`/perguntar` sem limite nenhum** |
+| Rate limit de login / DDoS | **parcial** — login protegido pelo Firebase (*"user-agent strings and IP addresses to prevent abuse"*), Cloudflare na frente. **`/perguntar`: 10 por minuto por IP desde 24/09/2026** — ver abaixo |
 | RLS nas tabelas | **sim** — `firestore.rules`, com `allow read, write: if request.auth.uid == uid` e negação explícita para o resto |
 | Dados criptografados | **sim** — em trânsito por HTTPS e em repouso, conferido na página de privacidade do Firebase |
 
 **Duas lacunas concretas**, e a segunda eu não sabia que existia:
 
-1. **`/perguntar` não tem limite de uso.** Com o jogo no navegador, a URL do
-   Worker passa a estar no código da página que todos abrem
+1. ~~**`/perguntar` não tem limite de uso.**~~ **Fechada em 24/09/2026** — ver
+   "O limite do `/perguntar`" logo abaixo
 2. **As regras do Firestore são coladas à mão no console.** O arquivo avisa
    isso. Logo, **não temos como provar que o publicado é igual ao versionado** —
    se alguém editou no console, o repositório não sabe. Num projeto que é
@@ -2090,6 +2090,42 @@ os dados são as regras e a autenticação.
 
 **Decisão dele, confirmada:** o jogo no navegador **exige login**, igual ao app.
 O Tr∅nikAt fica fora do muro, então o valor de portfólio se preserva.
+
+### O limite do `/perguntar`, e o limitador que reprovou antes dele
+
+Dez perguntas por minuto, por IP, contadas num **Durable Object** — um por IP,
+em `hospedagem/cloudflare/src/index.js`. O recurso protegido são os 10.000
+neurons diários, **uma cota só** para o site, o jogo e o app.
+
+**O limitador nativo da Cloudflare foi publicado primeiro e reprovou medido:**
+
+| Cenário | Limite | Passou |
+|---|---|---|
+| 12 seguidas | 10 | 12 |
+| laço sequencial, 90 s | 10/min | **~87/min** |
+
+A documentação avisa que ele é *"permissivo, eventualmente consistente"* — cada
+máquina conta sozinha e sincroniza depois. Eu li o aviso e apostei que serviria
+em número pequeno. **Com o Durable Object: 10 passaram, a 11ª levou 429, e o laço
+passou exatamente 10 por minuto.**
+
+Três coisas que valem para quem mexer:
+
+- **Teste de carga NUNCA sai do IP do Gustavo.** A primeira bateria bloqueou o
+  site para ele próprio, que estava na mesma rede — e o sintoma foi o Tr∅nikAt
+  respondendo *"neste modo eu só respondo o básico"*. Os testes rodam a partir
+  da VM da Oracle, que tem outro IP
+- **A sonda é a pergunta VAZIA.** O limite é conferido antes de ler o corpo, então
+  pergunta vazia devolve `400` se passou e `429` se foi barrada — sem gastar
+  neuron nenhum
+- **Se o Durable Object falhar, deixa passar.** Fechar ali tiraria o mascote do
+  ar para todo mundo por causa de uma peça de proteção; os neurons ainda se
+  defendem sozinhos, com erro
+
+**O que não resolve:** o Worker gratuito atende 100 mil pedidos por dia, e o
+`429` conta nesse total. Muitas máquinas juntas ainda o derrubam por volume.
+`calibrar_borda.py` e `testar_tutor.py` esperam e repetem no `429` — a
+calibração passou de ~3 para ~10 minutos.
 
 ## O servidor MCP, e o agente local que o usa
 

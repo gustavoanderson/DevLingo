@@ -4,6 +4,7 @@
 // gerador, sem juiz. O texto e a voz de cada ficha ja estao no site, gravados
 // por hospedagem/gerar_falas.py. Por isso este Worker nunca ve uma resposta --
 // ele so conhece as perguntas-exemplo -- e nao tem o que vazar.
+import { DurableObject } from "cloudflare:workers";
 import FICHAS from "./fichas.json";
 import { gerar, conferirSaida, gerarProgramacao, conferirProgramacao,
          gerarTutor, conferirTutor } from "./porteiro.js";
@@ -143,6 +144,52 @@ function cabecalhos(request) {
 
 const json = (request, codigo, corpo) =>
   new Response(JSON.stringify(corpo), { status: codigo, headers: cabecalhos(request) });
+
+/* LIMITE DE USO DO /perguntar: 10 por minuto, por IP.
+ *
+ * Cada pergunta gasta neurons da cota diaria gratuita, e a cota e UMA so para
+ * o site, o jogo e o app. Sem limite, um laco de script de uma maquina so
+ * derrubava o Tr∅nikAt nos tres lugares ate o dia virar.
+ *
+ * POR QUE UM DURABLE OBJECT, e nao o limitador nativo da Cloudflare. O nativo
+ * foi publicado primeiro, em 24/09/2026, e MEDIDO: um laco sequencial passava
+ * ~87 pedidos por minuto contra um limite de 10, e 12 seguidos passavam todos.
+ * A documentacao avisa -- cada maquina conta sozinha e sincroniza depois -- e
+ * eu apostei que serviria em numero pequeno. Nao serve.
+ *
+ * Um Durable Object por IP existe num lugar so e atende um pedido por vez:
+ * a contagem e exata. Ela mora na MEMORIA, sem gravar nada -- se o objeto
+ * dormir por ociosidade, a janela zera, e ociosidade e justamente a ausencia de
+ * abuso.
+ *
+ * O que isto NAO faz: o Worker gratuito atende 100 mil pedidos por dia, e o
+ * 429 conta nesse total. Muitas maquinas juntas ainda o derrubam por volume. O
+ * que fica protegido e o recurso escasso de verdade, os neurons.
+ */
+const LIMITE_POR_MINUTO = 10;
+
+export class LimiteDePerguntas extends DurableObject {
+  inicio = 0;
+  contagem = 0;
+
+  permitir() {
+    const agora = Date.now();
+    if (agora - this.inicio >= 60_000) { this.inicio = agora; this.contagem = 0; }
+    return ++this.contagem <= LIMITE_POR_MINUTO;
+  }
+}
+
+async function dentroDoLimite(env, ip) {
+  try {
+    return await env.LIMITE.get(env.LIMITE.idFromName(ip)).permitir();
+  } catch (e) {
+    // Cota de Durable Objects estourada ou falha da plataforma: DEIXA PASSAR.
+    // Fechar aqui tiraria o Tr∅nikAt do ar para todo mundo por causa de uma
+    // peca de protecao -- e os neurons ainda se defendem sozinhos, com erro.
+    console.log("limite indisponivel:", e && e.message);
+    return true;
+  }
+}
 
 export default {
   /* O AGENDADOR, e ele e SEGURO, nao a defesa principal.
@@ -295,6 +342,13 @@ export default {
 
     if (request.method !== "POST" || url.pathname !== "/perguntar") {
       return json(request, 404, { erro: "caminho desconhecido" });
+    }
+
+    // Antes de ler o corpo, e antes de gastar neuron: quem passou do limite nao
+    // custa nada. A chave e o IP que a Cloudflare ve (ver LimiteDePerguntas).
+    const ip = request.headers.get("CF-Connecting-IP") || "sem-ip";
+    if (!(await dentroDoLimite(env, ip))) {
+      return json(request, 429, { erro: "perguntas demais em pouco tempo; espere um minuto" });
     }
 
     let pergunta, dossie = "";

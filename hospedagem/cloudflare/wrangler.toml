@@ -11,6 +11,17 @@ binding = "AI"
 [vars]
 FORMATO = "gemma"
 
+# LIMITE DE USO DO /perguntar: um Durable Object por IP, e o porque esta em
+# src/index.js, junto da classe. Durable Object com SQLite e o unico tipo que o
+# plano gratuito oferece -- por isso `new_sqlite_classes`, mesmo sem gravar nada.
+[[durable_objects.bindings]]
+name = "LIMITE"
+class_name = "LimiteDePerguntas"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LimiteDePerguntas"]
+
 # AQUECE A VOZ DE 15 EM 15 MINUTOS.
 #
 # Confirmado na documentacao oficial antes de escrever: Cron Triggers existem

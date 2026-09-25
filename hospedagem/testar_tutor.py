@@ -7,6 +7,8 @@ E um dossie VAZIO, que e o do site publico: ali a placa tem que cair no caminho
 normal e recitar a propria ficha, que manda entrar na conta.
 """
 import json
+import time
+import urllib.error
 import urllib.request
 
 URL = "https://tronikat.tronikat-busca.workers.dev/perguntar"
@@ -49,8 +51,15 @@ def perguntar(pergunta, dossie):
                  "User-Agent": "DevLingo-teste/1.0",
                  "Origin": "https://gustavoanderson.github.io"},
     )
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read())
+    # O Worker limita 10 perguntas por minuto por IP: no 429, espera e repete.
+    while True:
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code != 429:
+                raise
+            time.sleep(15)
 
 
 for pergunta, dossie in CASOS:

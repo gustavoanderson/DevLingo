@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -29,8 +30,16 @@ def perguntar(base: str, pergunta: str) -> dict:
     req = urllib.request.Request(
         base + "/perguntar", data=json.dumps({"pergunta": pergunta}).encode(),
         headers={"Content-Type": "application/json", "User-Agent": "calibrar-borda-devlingo"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read())
+    # O Worker limita 10 perguntas por minuto por IP (wrangler.toml), e esta
+    # calibracao faz ~95 em sequencia. No 429 ela espera a janela e repete.
+    while True:
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code != 429:
+                raise
+            time.sleep(15)
 
 
 # As duas formas de barrar. Ver o comentario em `vazaram`, no fim deste arquivo.
