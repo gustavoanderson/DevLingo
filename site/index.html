@@ -221,7 +221,11 @@
   .atalho:hover{color:var(--visor);border-color:var(--visor)}
 
   .chao{position:relative}
-  .chao::before{content:"";position:absolute;left:-50vw;right:-50vw;top:-40px;
+  /* A sombra vai de borda a borda da TELA, e nao meia tela alem de cada lado.
+     Com -50vw ela saia 195 px para fora num celular de 390, a pagina passava a
+     medir 565, e tudo que e preso a direita -- a bolinha do Tr∅nikAt -- caia
+     fora da vista. `50% - 50vw` e exatamente a borda, porque a capa e centrada. */
+  .chao::before{content:"";position:absolute;left:calc(50% - 50vw);right:calc(50% - 50vw);top:-40px;
                 bottom:-400px;z-index:-1;
                 background:linear-gradient(to bottom,
                   rgba(10,5,24,0) 0, rgba(8,6,20,.62) 90px,
@@ -267,6 +271,160 @@
           padding:20px 24px;background:rgba(9,5,22,.80);
           color:var(--suave);font-size:12.5px;line-height:1.8}
   a{color:var(--ciano)}
+
+  /* O CAMINHO PARA JOGAR. O jogo existe em /jogo/ desde 23/09, e a home nao
+     tinha um link para ele: o Gustavo, dono do jogo, nao achou a porta. */
+  .acoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .botao{display:inline-block;border:1px solid var(--ciano);border-radius:10px;
+         padding:11px 18px;font-family:var(--hud);font-weight:600;font-size:15px;
+         letter-spacing:1.6px;text-transform:uppercase;text-decoration:none;
+         color:var(--texto);background:rgba(9,5,22,.7)}
+  .botao.primario{background:var(--magenta);border-color:var(--magenta);color:#fff}
+  .botao:hover{filter:brightness(1.12)}
+  .botao:focus-visible{outline:2px solid var(--ciano);outline-offset:2px}
+
+  /* A NAVE, A BOLINHA E A JANELA.
+     Quando o quadro do codec sai da tela, o Tr∅nikAt nao some: ele voa ate o
+     canto e vira uma bolinha que abre o MESMO chat. O rosto da bolinha nao e
+     um segundo desenho -- e o proprio retrato do codec copiado quadro a quadro
+     (ver `espelhar`), entao a cara e igual por construcao e a boca mexe junto
+     quando ele fala. */
+  .bolha{position:fixed;right:18px;bottom:18px;z-index:30;width:66px;height:66px;
+         border-radius:50%;padding:0;border:2px solid var(--visor);cursor:pointer;
+         background:#05010C;overflow:visible;
+         box-shadow:0 0 0 0 rgba(57,255,20,.5),0 6px 22px rgba(0,0,0,.55);
+         animation:anel 2.4s ease-out infinite}
+  .bolha[hidden]{display:none}
+  .bolha canvas,.nave canvas{width:100%;height:100%;display:block;border-radius:50%;
+         image-rendering:pixelated;image-rendering:crisp-edges}
+  .bolha::after{content:"";position:absolute;right:1px;bottom:3px;width:12px;height:12px;
+                border-radius:50%;background:var(--visor);border:2px solid #05010C}
+  .bolha:focus-visible{outline:2px solid var(--ciano);outline-offset:3px}
+  @keyframes anel{0%{box-shadow:0 0 0 0 rgba(57,255,20,.45),0 6px 22px rgba(0,0,0,.55)}
+                  70%,100%{box-shadow:0 0 0 14px rgba(57,255,20,0),0 6px 22px rgba(0,0,0,.55)}}
+  /* A nave e so o rosto com propulsor, e existe apenas durante o voo. O fogo
+     sai de baixo dela e treme: e o que faz um recorte que muda de lugar ler
+     como algo VOANDO, e nao como uma imagem deslizando. */
+  .nave{position:fixed;z-index:31;width:66px;height:66px;border-radius:50%;
+        border:2px solid var(--visor);background:#05010C;pointer-events:none;
+        box-shadow:0 0 24px rgba(57,255,20,.45)}
+  .nave::before{content:"";position:absolute;left:50%;top:100%;width:26px;height:34px;
+        transform:translateX(-50%);transform-origin:50% 0;border-radius:50% 50% 50% 50%/30% 30% 70% 70%;
+        background:radial-gradient(ellipse at 50% 18%,#fff 0 12%,#FFE14D 30%,#FF2D95 62%,transparent 72%);
+        filter:blur(1px);animation:fogo .09s steps(2) infinite alternate}
+  .nave::after{content:"";position:absolute;inset:-10px;border-radius:50%;z-index:-1;
+        background:radial-gradient(circle,rgba(0,229,255,.35),transparent 70%)}
+  @keyframes fogo{from{transform:translateX(-50%) scaleY(.8)}to{transform:translateX(-50%) scaleY(1.15)}}
+  .janela-tk{position:fixed;right:18px;bottom:96px;z-index:29;
+             width:min(380px,calc(100vw - 36px));transform-origin:100% 100%;
+             animation:abrirJanela .22s ease-out}
+  .janela-tk[hidden]{display:none}
+  @keyframes abrirJanela{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  /* Opaco na janela: no palco o vidro translucido fica sobre o ceu, mas aqui
+     ele ficaria sobre TEXTO, e as duas leituras se misturavam no print. */
+  .janela-tk .terminal{background:#030D06;min-height:0;max-height:min(440px,calc(100vh - 130px));
+                       height:min(440px,calc(100vh - 130px));
+                       box-shadow:0 12px 40px rgba(0,0,0,.6),inset 0 0 60px rgba(57,255,20,.10)}
+  .fechar{display:none;margin-left:auto;background:none;border:0;color:#7BE08A;
+          font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+  .janela-tk .fechar{display:block}
+  @media (max-width:560px){.janela-tk{right:10px;bottom:90px;width:calc(100vw - 20px)}}
+
+  /* A SECAO DE QUALIDADE. O titulo sobe para cima do conteudo porque o que vem
+     depois dele e um diagrama largo, e espremido numa coluna ele deixaria de
+     ser lido como caminho. */
+  .secao.qa,.secao.larga{grid-template-columns:1fr}
+  .larga .prosa > p{max-width:78ch}
+  .larga .nota{font-size:13px;color:var(--suave)}
+  .qa .prosa > p{max-width:78ch}
+  .esteira{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;
+           margin:18px 0 22px}
+  .gatilho{border:1px dashed var(--ciano);border-radius:10px;padding:10px 12px;
+           font-family:var(--hud);letter-spacing:1.4px;text-transform:uppercase;
+           font-size:14px;text-align:center;position:relative}
+  .gatilho small{display:block;font-family:var(--mono);text-transform:none;
+                 letter-spacing:0;color:var(--suave);font-size:11.5px;margin-top:3px}
+  .gatilho::after{content:"";position:absolute;right:-14px;top:50%;width:14px;
+                  border-top:1px solid var(--ciano)}
+  .trilhos{display:grid;gap:10px;border-left:1px solid var(--ciano);padding-left:14px}
+  .trilho{display:grid;grid-template-columns:118px 1fr;gap:10px;align-items:center}
+  .trilho-nome{font-family:var(--hud);font-weight:600;letter-spacing:1.4px;
+               text-transform:uppercase;font-size:15px}
+  .trilho-nome span{display:block;font-weight:500;color:var(--suave);font-size:11px;
+                    letter-spacing:1.6px}
+  .trilho ol{list-style:none;margin:0;padding:0;display:grid;
+             grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;counter-reset:passo}
+  .trilho li{border:1px solid var(--linha);border-radius:9px;padding:8px 10px;
+             background:rgba(16,8,36,.75);position:relative;counter-increment:passo}
+  .trilho li b{display:block;font-size:12.5px;color:var(--texto)}
+  .trilho li b::before{content:counter(passo) " ";color:var(--visor)}
+  .trilho li span{display:block;font-size:11.5px;color:var(--suave);line-height:1.45;
+                  margin-top:3px}
+  .trilho li:not(:last-child)::after{content:"";position:absolute;right:-9px;top:50%;
+                  width:10px;border-top:1px solid var(--linha)}
+  /* A barra dos testes. Cores validadas contra este fundo com o validador de
+     paleta (lightness, contraste e separacao para daltonismo): o ciano de marca
+     #00E5FF reprovou por claro demais, e a fatia usa um passo abaixo dele. O
+     numero vai escrito dentro, entao a cor nunca e a unica pista. */
+  .barra-testes{display:flex;gap:2px;height:38px;margin:10px 0 16px;max-width:760px}
+  .fatia{display:flex;align-items:center;gap:6px;padding:0 12px;font-size:12.5px;
+         color:#0C0618;min-width:0;white-space:nowrap;overflow:hidden}
+  .fatia b{font-size:15px}
+  .fatia.logica{background:#0FA3C6;border-radius:4px 0 0 4px}
+  .fatia.tela{background:#FF2D95;border-radius:0 4px 4px 0}
+  .tipos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;
+         margin-bottom:16px}
+  .tipo{border:1px solid var(--linha);border-radius:10px;padding:11px 13px;
+        background:rgba(16,8,36,.6)}
+  .tipo b{display:flex;align-items:center;gap:8px;font-size:13.5px}
+  .tipo span{display:block;color:var(--suave);font-size:12.5px;line-height:1.6;margin-top:5px}
+  .ponto{width:10px;height:10px;border-radius:3px;flex:none}
+  .ponto.logica{background:#0FA3C6}
+  .ponto.tela{background:#FF2D95}
+  .ponto.neutro{background:none;border:1px solid var(--suave)}
+  .qa .nota{font-size:13px;color:var(--suave)}
+  /* O caminho de uma chamada ao servidor MCP. Mesma linguagem visual da
+     esteira do CI: caixas escuras com borda de linha, conectores ciano. */
+  .fluxo{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;
+         margin:18px 0 12px}
+  .no{border:1px solid var(--linha);border-radius:10px;padding:10px 11px;
+      background:rgba(16,8,36,.75);position:relative}
+  .no b{display:block;font-family:var(--hud);font-weight:600;letter-spacing:1.2px;
+        text-transform:uppercase;font-size:14px}
+  .no span{display:block;font-size:11.5px;color:var(--suave);line-height:1.45;margin-top:4px}
+  .no.destaque{border-color:var(--visor);box-shadow:0 0 18px rgba(57,255,20,.18)}
+  .no:not(:last-child)::after{content:"";position:absolute;right:-14px;top:50%;
+       width:14px;border-top:1px solid var(--ciano)}
+  .ferramentas{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:14px}
+  .ferramentas .rotulo{font-family:var(--hud);letter-spacing:1.4px;text-transform:uppercase;
+       font-size:12.5px;color:var(--visor);margin-right:4px}
+  .ferramentas code{border:1px solid rgba(57,255,20,.3);border-radius:6px;padding:3px 8px;
+       font-size:12px;color:#DFF7E2;background:rgba(2,14,6,.7)}
+  .defeitos{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;
+            margin-top:14px}
+  .defeito{border:1px solid var(--linha);border-radius:11px;padding:13px 15px;
+           background:rgba(16,8,36,.7)}
+  .defeito > b{display:block;color:var(--ciano);font-size:14px;margin-bottom:8px}
+  .defeito dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px}
+  .defeito dt{font-family:var(--hud);font-weight:600;letter-spacing:1.2px;
+              text-transform:uppercase;font-size:11.5px;color:var(--suave);padding-top:2px}
+  .defeito dd{margin:0;font-size:12.5px;line-height:1.55;color:#DCD6F2}
+  .defeito code,.larga .prosa p code{font-size:.92em;color:#8FDCE8}
+  @media (max-width:880px){
+    .fluxo{grid-template-columns:1fr;gap:10px}
+    .no:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-10px;width:0;
+         height:10px;border-top:0;border-left:1px solid var(--ciano)}
+    .defeito dl{grid-template-columns:1fr;gap:2px}
+    .defeito dd{margin-bottom:6px}
+  }
+  @media (max-width:880px){
+    .esteira{grid-template-columns:1fr}
+    .gatilho::after{display:none}
+    .trilhos{border-left:0;padding-left:0}
+    .trilho{grid-template-columns:1fr}
+    .trilho ol{grid-template-columns:1fr 1fr}
+    .trilho li::after{display:none}
+  }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -281,6 +439,10 @@
 <div class="capa">
   <div class="marca">DevLingo</div>
   <div class="sub">Aprenda a programar · 404 questões · 8 trilhas</div>
+  <div class="acoes">
+    <a class="botao primario" href="jogo/">Jogar no navegador</a>
+    <a class="botao" href="https://github.com/gustavoanderson/DevLingo/releases/latest">Baixar para Android</a>
+  </div>
 
   <div class="palco">
     <div class="chamada" id="chamada">
@@ -301,6 +463,7 @@
         <span class="bolinha" style="background:#FFBD2E"></span>
         <span class="bolinha" style="background:#28CA42"></span>
         <span class="nome" id="estado">Tr∅nikAt · online</span>
+        <button class="fechar" id="fechar-janela" type="button" aria-label="Fechar a conversa">×</button>
       </div>
       <div class="fala" id="fala" role="log" aria-live="polite"></div>
       <div class="atalhos">
@@ -344,42 +507,204 @@
   <section class="secao">
     <h2>Por que ele existe</h2>
     <div class="prosa duas">
-      <p>O DevLingo é um app Android para aprender programação no formato Duolingo,
-        escrito em português — <b>não traduzido</b>. Detalhes como não exigir acento no
-        que o aluno digita existem porque digitar <code>ç</code> em teclado de celular é
-        toque longo, e ninguém deveria errar uma questão de programação por causa do
-        teclado.</p>
-      <p>O princípio que ordena o app inteiro: <b>o objetivo é a pessoa aprender, não ser
-        punida.</b> A tela nunca diz <i>errado</i> — diz <b>ainda não</b>, e ao revelar a
-        resposta diz <b>vamos juntos</b>. A alternativa errada é riscada, não apagada,
-        porque ver o que já foi descartado faz parte do raciocínio.</p>
+      <p>O DevLingo é um app para aprender programação no formato do Duolingo,
+        pensado desde a primeira linha para quem fala português do Brasil. Dá para
+        jogar no Android e no navegador, e o progresso acompanha você de um para o
+        outro.</p>
+      <p>Nenhuma resposta de escrita exige caractere acentuado. Em teclados de
+        celular, <code>ç</code> e <code>ã</code> exigem toque longo, e a avaliação
+        deve medir o conhecimento de programação, não a destreza no teclado.</p>
+      <p>Uma resposta incorreta não encerra a questão. Na múltipla escolha, a
+        alternativa escolhida é eliminada e o aluno tenta novamente. Nas questões de
+        escrita, a dica é aberta a partir do segundo erro. Ao final, a explicação
+        completa é sempre exibida.</p>
     </div>
   </section>
 
-  <section class="secao">
+  <section class="secao larga">
     <h2>Quem construiu</h2>
-    <div class="prosa duas">
-      <p><b>Gustavo Anderson</b> é <b>QA e desenvolvedor</b>, especializado em levar IA
-        para o dia a dia de quem programa: <b>LLMs aplicados a agentes</b> e
-        <b>servidores MCP</b> que automatizam atividades de desenvolvimento.</p>
-      <p>O DevLingo é onde as duas coisas se encontram — um app real, com portões de
-        qualidade automatizados, e um servidor MCP que expõe esses portões como
-        ferramentas para um agente consultar antes de escrever.</p>
-      <p>Ele encontrou <b>nove defeitos jogando o próprio app</b>, todos documentados com
-        a causa raiz — e consegue dizer quais a automação pegaria e quais não, que é a
-        pergunta que separa quem decorou a ferramenta de quem entende teste.</p>
+    <div class="prosa">
+      <p>O DevLingo foi desenvolvido por <b>Gustavo Anderson</b>, que atua no limiar
+        entre a qualidade de software e a aplicação de inteligência artificial no
+        desenvolvimento de soluções inteligentes.</p>
+      <p>O projeto mantém em produção um <b>servidor MCP</b> (Model Context Protocol)
+        no endereço <code>mcp.devlingo.app.br</code>, protegido por autenticação do
+        Cloudflare Access. Ele expõe as regras de qualidade do banco de questões do
+        DevLingo, as mesmas aplicadas no pipeline de CI, como seis ferramentas que um
+        agente de IA consulta antes de propor uma lição nova.</p>
+
+      <div class="fluxo" role="img"
+           aria-label="Caminho de uma chamada ao servidor MCP do DevLingo, do agente de IA ao banco de questões">
+        <div class="no"><b>Agente de IA</b><span>Claude Code ou outro cliente MCP</span></div>
+        <div class="no"><b>Cloudflare Access</b><span>token de serviço; sem ele, HTTP 403</span></div>
+        <div class="no"><b>Cloudflare Tunnel</b><span>conexão de saída da máquina até a Cloudflare</span></div>
+        <div class="no destaque"><b>Servidor MCP</b><span>Python, em uma VM da Oracle Cloud</span></div>
+        <div class="no"><b>Banco de questões</b><span>lições em JSON versionado no GitHub</span></div>
+      </div>
+      <div class="ferramentas">
+        <span class="rotulo">6 ferramentas, todas somente leitura</span>
+        <code>validar_licao</code><code>impressao_digital</code><code>conferir_teclado</code>
+        <code>topicos_da_trilha</code><code>criterios_de_revisao</code><code>material_para_revisao</code>
+      </div>
+      <p class="nota">Nenhuma ferramenta grava. Mesmo com a credencial comprometida,
+        o servidor não permite alterar o conteúdo, e dois testes no CI reprovam se
+        surgir uma ferramenta com nome de escrita.</p>
     </div>
   </section>
 
-  <section class="secao">
+  <section class="secao larga">
+    <h2>Defeitos encontrados e corrigidos</h2>
+    <div class="prosa">
+      <p>Alguns dos defeitos identificados ao longo do desenvolvimento, com a causa,
+        a correção aplicada e a evidência de que ela funciona. Cada correção ganhou
+        um teste automatizado, verificado removendo a correção de propósito para
+        confirmar que o teste reprova.</p>
+      <div class="defeitos">
+        <div class="defeito">
+          <b>Resposta errada aceita como certa</b>
+          <dl>
+            <dt>Problema</dt><dd>A correção removia todos os espaços, e
+              <code>consttotal=0</code> era aceito como <code>const total = 0;</code>.</dd>
+            <dt>Correção</dt><dd>Passaram a ser ignorados apenas os espaços junto a
+              pontuação e operadores. O espaço entre palavras é exigido.</dd>
+            <dt>Evidência</dt><dd>35 casos num arquivo lido pelas implementações em
+              Python e em Dart. O CI reprova se as duas divergirem.</dd>
+          </dl>
+        </div>
+        <div class="defeito">
+          <b>Posição perdida ao consultar a aula</b>
+          <dl>
+            <dt>Problema</dt><dd>Quem abria a aula na questão 7 voltava para a 5. A
+              tela de exercício era recriada com o índice de abertura da lição.</dd>
+            <dt>Correção</dt><dd>Posição, texto digitado e estado da questão foram
+              movidos para o componente que sobrevive à troca de tela.</dd>
+            <dt>Evidência</dt><dd>Teste de widget com enunciados distintos por
+              questão, que reprova se a tela voltar para a questão errada.</dd>
+          </dl>
+        </div>
+        <div class="defeito">
+          <b>Histórico de respostas corrompido</b>
+          <dl>
+            <dt>Problema</dt><dd>Responder de novo uma questão já concluída gravava
+              uma partida inexistente e zerava o contador de tentativas.</dd>
+            <dt>Correção</dt><dd>A sessão da questão passou a ser preservada inteira
+              entre as telas, e não campo a campo.</dd>
+            <dt>Evidência</dt><dd>O teste mede as tentativas gravadas. Sem a
+              correção, registrava 1 onde deviam ser 2.</dd>
+          </dl>
+        </div>
+        <div class="defeito">
+          <b>Gráfico de estatísticas invisível</b>
+          <dl>
+            <dt>Problema</dt><dd>Num Xiaomi 15T Pro, a barra de desempenho não
+              aparecia. Um <code>ColoredBox</code> sem filho recebia altura zero
+              dentro de um <code>Row</code>.</dd>
+            <dt>Correção</dt><dd><code>crossAxisAlignment: stretch</code> no
+              <code>Row</code>.</dd>
+            <dt>Evidência</dt><dd>A captura de tela, medida com Pillow, tinha 105.300
+              pixels da cor do fundo onde deviam estar três faixas. O teste mede a
+              altura renderizada e reprova com 0,0 sem a correção.</dd>
+          </dl>
+        </div>
+        <div class="defeito">
+          <b>Site mais largo que o celular</b>
+          <dl>
+            <dt>Problema</dt><dd>Numa tela de 390 px, esta página media 565 px e
+              podia ser arrastada para o lado. Uma sombra decorativa se estendia
+              além das bordas.</dd>
+            <dt>Correção</dt><dd>A sombra passou a ser ancorada nas bordas da
+              tela.</dd>
+            <dt>Evidência</dt><dd>Inspeção automatizada no Chrome via DevTools
+              Protocol, comparando a largura da página com a da tela. Antes 565,
+              depois 390.</dd>
+          </dl>
+        </div>
+        <div class="defeito">
+          <b>Limite de uso que não limitava</b>
+          <dl>
+            <dt>Problema</dt><dd>O limitador nativo da Cloudflare, configurado para
+              10 perguntas por minuto ao mascote, deixava passar cerca de 87.</dd>
+            <dt>Correção</dt><dd>Substituído por um contador em Durable Object, com
+              contagem exata por IP.</dd>
+            <dt>Evidência</dt><dd>Teste de carga disparado de outra máquina. A 11ª
+              pergunta recebeu HTTP 429, e o laço sequencial passou exatamente 10
+              por minuto.</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao qa">
     <h2>Como a qualidade é garantida</h2>
-    <div class="prosa duas">
-      <p>Cada regra do validador nasceu de um defeito real, e nenhuma é preventiva por
-        princípio: gabarito concentrado numa letra, a mesma resposta cobrada duas vezes,
-        marcação aninhada que aparecia crua na tela.</p>
-      <p><b>Toda regra é verificada reprovando de propósito</b> — um portão que só sabe
-        aprovar não é portão. São 407 testes automatizados, e a cobertura é publicada
-        junto com o denominador: 95,6% de 28 dos 33 arquivos de lib/, medido em 16/09/2026, e não "95,6% do app".</p>
+    <div class="prosa">
+      <p>Cada envio de código para o GitHub dispara o <b>GitHub Actions</b>, que roda
+        duas esteiras em paralelo. Se uma única checagem falha, a execução fica
+        vermelha e aponta o teste que caiu, com o erro.</p>
+
+      <div class="esteira" role="img" aria-label="O que o GitHub Actions roda a cada envio de código">
+        <div class="gatilho">envio de código<small>git push</small></div>
+        <div class="trilhos">
+          <div class="trilho">
+            <div class="trilho-nome">Conteúdo <span>Python</span></div>
+            <ol>
+              <li><b>Validador do banco</b><span>10 grupos de regras sobre todas as questões</span></li>
+              <li><b>Contrato de normalização</b><span>35 casos, provados em Python e em Dart</span></li>
+              <li><b>Servidor MCP</b><span>ferramentas, subida e acesso pela rede</span></li>
+              <li><b>Números do README</b><span>os selos não podem mentir</span></li>
+            </ol>
+          </div>
+          <div class="trilho">
+            <div class="trilho-nome">App <span>Dart e Flutter</span></div>
+            <ol>
+              <li><b>Análise estática</b><span>flutter analyze, sem nenhum aviso</span></li>
+              <li><b>Testes do app</b><span>lógica e tela, detalhados abaixo</span></li>
+              <li><b>Números do site</b><span>o que esta página anuncia é conferido</span></li>
+              <li><b>Cobertura</b><span>publicada junto com o denominador</span></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <p>São 407 testes automatizados no app, de dois tipos.</p>
+      <div class="barra-testes" role="img"
+           aria-label="407 testes: 255 de lógica e 152 de tela">
+        <div class="fatia logica" style="flex:255" title="255 testes de lógica"><b>255</b> lógica</div>
+        <div class="fatia tela" style="flex:152" title="152 testes de tela"><b>152</b> tela</div>
+      </div>
+
+      <div class="tipos">
+        <div class="tipo">
+          <b><i class="ponto logica"></i>Testes de lógica</b>
+          <span>Conferem as regras sem desenhar tela nenhuma. Como a resposta digitada
+            é normalizada, quando uma alternativa é eliminada, se a atualização do
+            banco preserva o progresso, se a sincronização entre aparelhos não
+            duplica partida.</span>
+        </div>
+        <div class="tipo">
+          <b><i class="ponto tela"></i>Testes de tela</b>
+          <span>Montam cada tela num ambiente simulado e conferem o que aparece e o
+            que acontece ao tocar. Botões, mensagens, cores, e até a altura de uma
+            barra que um dia foi desenhada com zero pixels.</span>
+        </div>
+        <div class="tipo">
+          <b><i class="ponto neutro"></i>Validador de conteúdo</b>
+          <span>Cada questão passa por regras que nasceram de defeitos reais. Gabarito
+            concentrado numa letra, a mesma resposta cobrada duas vezes, aula que
+            não prepara o que a lição cobra.</span>
+        </div>
+        <div class="tipo">
+          <b><i class="ponto neutro"></i>Contrato entre linguagens</b>
+          <span>A regra que corrige a resposta existe em Python e em Dart. Um arquivo
+            com 35 casos é lido pelos dois lados, e se eles discordarem, o CI
+            reprova.</span>
+        </div>
+      </div>
+
+      <p class="nota">Toda regra foi provada reprovando de propósito, porque um portão
+        que só sabe aprovar não protege nada. A cobertura é de <b>95,6% das linhas em
+        28 dos 33 arquivos</b> do app, medida em 16/09/2026. A divisão entre lógica e
+        tela é de 25/09/2026.</p>
     </div>
   </section>
 
@@ -390,6 +715,12 @@
   </div>
   </div>
 </div>
+
+<button class="bolha" id="bolha" type="button" hidden
+        aria-label="Conversar com o Tr∅nikAt" aria-expanded="false" aria-controls="janela-tk">
+  <canvas width="70" height="70" aria-hidden="true"></canvas>
+</button>
+<div class="janela-tk" id="janela-tk" hidden></div>
 
 <script src="codec.js"></script>
 <script>
@@ -945,10 +1276,10 @@ O QUE VOCE SABE:
 - Ha um servidor MCP que expoe os portoes de qualidade como ferramentas.`;
 
 const RESERVA = {
-  'o que é o devlingo?': 'Um app para aprender programação no formato Duolingo, em português de verdade — escrito assim, não traduzido. São 404 questões em 8 trilhas, e eu de guia.',
+  'o que é o devlingo?': 'Um app para aprender programação no formato do Duolingo, feito em português desde a primeira linha. São 404 questões em 8 trilhas, no Android e no navegador, e eu de guia.',
   'quais trilhas existem?': 'Python, JavaScript, Java, Frameworks, Backend, Qualidade de Software, Selenium e Agentes de IA. Oito, todas no nível iniciante por enquanto.',
-  'quem construiu o devlingo?': 'O Gustavo Anderson — QA e desenvolvedor, especializado em levar IA para o dia a dia de quem programa: LLMs aplicados a agentes e servidores MCP para automação. Ele achou nove defeitos jogando o próprio app, e documentou todos com a causa raiz.',
-  'como vocês garantem a qualidade das questões?': 'Cada regra do validador nasceu de um defeito real. E toda regra é verificada reprovando de propósito: portão que só sabe aprovar não é portão.',
+  'quem construiu o devlingo?': 'O Gustavo Anderson, que atua no limiar entre a qualidade de software e a aplicação de inteligência artificial no desenvolvimento de soluções inteligentes.',
+  'como vocês garantem a qualidade das questões?': 'A cada envio de código, o GitHub Actions roda os testes do app, o validador das questões e os testes do servidor MCP. Cada regra nasceu de um defeito real, e cada uma foi provada reprovando de propósito.',
 };
 
 async function responder(pergunta) {
@@ -1097,7 +1428,7 @@ async function responder(pergunta) {
   } catch (e) {
     // Sem o Claude, o roteiro responde o que der -- e quando nao souber, diz
     // que nao sabe. Inventar aqui seria pior que calar.
-    const t = pronta || 'Aqui neste modo eu so respondo o basico. Toque num dos atalhos acima que eu conto direitinho.';
+    const t = pronta || 'Perdi a conexão com a central por um instante. Tente de novo daqui a pouco, ou toque num dos atalhos que eu conto direitinho.';
     balao.textContent = t; Voz(t);
   } finally {
     estado.textContent = 'Tr∅nikAt · online';
@@ -1126,7 +1457,118 @@ form.addEventListener('submit', e => {
 document.querySelectorAll('.atalho').forEach(b =>
   b.addEventListener('click', () => responder(b.dataset.p)));
 
-dizer('Tr∅nikAt na escuta. Câmbio.\nAqui é o DevLingo: você aprende a programar resolvendo questão, no celular. Pergunte o que quiser sobre ele — eu respondo falando.', false);
+dizer('Tr∅nikAt na escuta. Câmbio.\nMe pergunte algo sobre o mundo dos devs, que eu tento te responder em voz alta.', false);
+
+/* ------------------------------------------------ a nave e a bolinha
+   Pedido do Gustavo: ao rolar para baixo, o chat nao pode ficar para tras.
+   O Tr∅nikAt sai do quadro do codec, voa ate o canto e vira uma bolinha que
+   abre a MESMA conversa.
+
+   A MESMA, e nao uma copia: tocar na bolinha MUDA o painel do terminal de
+   lugar, para dentro da janela flutuante. A conversa, o campo digitado, a voz
+   e a boca continuam sendo os mesmos objetos -- nao existe um segundo chat
+   para ficar dessincronizado do primeiro. Voltar ao topo devolve o painel. */
+(function aNave() {
+  const palco = document.querySelector('.palco');
+  const chamada = document.getElementById('chamada');
+  const terminal = document.querySelector('.terminal');
+  const retrato = document.getElementById('retrato');
+  const bolha = document.getElementById('bolha');
+  const janela = document.getElementById('janela-tk');
+  const fechar = document.getElementById('fechar-janela');
+  if (!palco || !retrato || !bolha || !('IntersectionObserver' in window)) return;
+  const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* O ROSTO recortado do retrato de 128x96. A cabeca do codec tem centro em
+     (64, 45) e as orelhas sobem ate y ~ 5 (constantes CX, CY, RX, RY de
+     codec.js); o quadrado de 70 px a partir de (29, 4) pega orelhas, visor e
+     boca. */
+  const CORTE = [29, 4, 70, 70];
+  function espelhar(canvas) {
+    const g = canvas.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = '#05010C'; g.fillRect(0, 0, canvas.width, canvas.height);
+    g.drawImage(retrato, ...CORTE, 0, 0, canvas.width, canvas.height);
+  }
+  // 12 quadros por segundo, o ritmo do proprio codec, e so enquanto a bolinha
+  // ou a nave existem -- com o quadro grande na tela, ninguem copia nada.
+  const espelhos = new Set();
+  setInterval(() => { espelhos.forEach(espelhar); }, 83);
+
+  let estado = 'palco';     // 'palco' | 'voando' | 'bolha'
+  let desejado = 'palco';
+
+  function abrirJanela() {
+    if (terminal.parentNode !== janela) janela.appendChild(terminal);
+    janela.hidden = false; bolha.setAttribute('aria-expanded', 'true');
+    document.getElementById('txt').focus({ preventScroll: true });
+  }
+  function fecharJanela() {
+    janela.hidden = true; bolha.setAttribute('aria-expanded', 'false');
+    if (terminal.parentNode !== palco) palco.appendChild(terminal);
+  }
+  bolha.addEventListener('click', () => (janela.hidden ? abrirJanela() : fecharJanela()));
+  fechar.addEventListener('click', fecharJanela);
+
+  /* O VOO. Uma nave feita so do rosto sai de um retangulo e pousa no outro,
+     fazendo um arco para cima no meio do caminho e inclinando para o lado em
+     que vai, com o propulsor aceso. Tudo por `transform`, que o navegador anima
+     no compositor -- a regra que tirou os 12 s de travamento desta pagina. */
+  function voar(de, para, quando) {
+    if (parado) { quando(); return; }
+    const nave = document.createElement('div');
+    nave.className = 'nave';
+    const c = document.createElement('canvas'); c.width = c.height = 70;
+    nave.appendChild(c); document.body.appendChild(nave);
+    espelhar(c); espelhos.add(c);
+    const T = 66;                                   // a nave mede o que a bolinha mede
+    nave.style.left = (para.x + para.w / 2 - T / 2) + 'px';
+    nave.style.top = (para.y + para.h / 2 - T / 2) + 'px';
+    const dx = (de.x + de.w / 2) - (para.x + para.w / 2);
+    const dy = (de.y + de.h / 2) - (para.y + para.h / 2);
+    const s0 = Math.min(de.w, de.h) / T, s1 = Math.min(para.w, para.h) / T;
+    const lado = dx < 0 ? 1 : -1;                   // inclina para onde vai
+    const k = [
+      { transform: `translate(${dx}px, ${dy}px) scale(${s0}) rotate(0deg)`, borderRadius: '18%' },
+      { transform: `translate(${dx * .45}px, ${dy * .55 - 110}px) scale(${(s0 + s1) * .45}) rotate(${14 * lado}deg)`, borderRadius: '50%', offset: .45 },
+      { transform: `translate(0, 0) scale(${s1}) rotate(0deg)`, borderRadius: '50%' },
+    ];
+    const anim = nave.animate(k, { duration: 900, easing: 'cubic-bezier(.55,0,.25,1)' });
+    anim.onfinish = anim.oncancel = () => { espelhos.delete(c); nave.remove(); quando(); };
+  }
+
+  const retangulo = (el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; };
+  const daBolha = () => ({ x: innerWidth - 18 - 66, y: innerHeight - 18 - 66, w: 66, h: 66 });
+
+  function aplicar() {
+    if (estado === 'voando' || estado === desejado) return;
+    if (desejado === 'bolha') {
+      estado = 'voando';
+      chamada.style.visibility = 'hidden';
+      voar(retangulo(chamada), daBolha(), () => {
+        bolha.hidden = false; espelhos.add(bolha.firstElementChild);
+        espelhar(bolha.firstElementChild);
+        estado = 'bolha'; aplicar();
+      });
+    } else {
+      estado = 'voando';
+      fecharJanela();
+      bolha.hidden = true; espelhos.delete(bolha.firstElementChild);
+      voar(daBolha(), retangulo(chamada), () => {
+        chamada.style.visibility = '';
+        estado = 'palco'; aplicar();
+      });
+    }
+  }
+
+  // "Saiu da tela" = menos de um quinto do palco visivel, E para cima. Rolar
+  // ate o fim de uma pagina curta nao conta como ter passado por ele.
+  new IntersectionObserver(([e]) => {
+    const passou = e.intersectionRatio < .2 && e.boundingClientRect.top < 0;
+    desejado = passou ? 'bolha' : 'palco';
+    aplicar();
+  }, { threshold: [0, .2, .4] }).observe(palco);
+})();
 
 claudePronto = (window.claude?.use ? claude.use('sample') : Promise.resolve(null))
   .catch(() => null);
