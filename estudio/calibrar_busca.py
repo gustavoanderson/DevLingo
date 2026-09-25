@@ -167,6 +167,58 @@ PROGRAMACAO = [
     "Qual a diferença entre Python e JavaScript?",
 ]
 
+# IA COMO ASSUNTO DE PROGRAMACAO. Em 25/09/2026 o Gustavo perguntou "o que e
+# uma LLM?" e ouviu "Eu so falo sobre programacao, tecnologia e o DevLingo".
+# A busca nao reconhecia a pergunta (0,63, abaixo do piso), e o modelo aplicou
+# a regra de recusa a um assunto de tecnologia.
+#
+# ESTAS NAO SAO OS EXEMPLOS DA FICHA, e isso e o que da valor a elas. Os
+# exemplos de `programacao` ensinam a busca; estas medem se o que ela
+# aprendeu GENERALIZA para outras formas de perguntar. Testar com os proprios
+# exemplos passaria por construcao e nao provaria nada.
+#
+# O criterio e de RESPOSTA, e nao de ficha: "o que e uma LLM?" ja caia na
+# ficha `programacao` e mesmo assim recebia a frase de recusa. Conferir so a
+# ficha deixaria o defeito passar verde.
+#
+# Conceitos, e nao nomes de nicho: "nao conheco LangGraph" e o limite do
+# modelo, e resposta honesta. Aqui a pergunta e se ele RECUSA, nao se sabe.
+IA = [
+    "tronikat, o que é uma LLM?",
+    "o que é uma LLM?",
+    "como funciona um modelo de linguagem?",
+    "o que é inteligencia artificial generativa",
+    "me explica o que é machine learning",
+    "qual a diferença entre IA e machine learning?",
+    "o que é uma rede neural?",
+    "o que é deep learning",
+    "o que são tokens num modelo de IA?",
+    "o que é um embedding?",
+    "como funciona o RAG?",
+    "o que é fine-tuning de um modelo?",
+    "o que é engenharia de prompt?",
+    "por que a IA alucina?",
+    "o que é um agente de IA?",
+    "o que é o protocolo MCP?",
+    "o que é um transformer em IA?",
+    "como o ChatGPT funciona por dentro?",
+    "o que é visão computacional?",
+    "o que significa treinar um modelo?",
+    "o que é temperatura num LLM?",
+    "qual a diferença entre GPT e BERT?",
+    "o que é um banco de dados vetorial?",
+    "como a IA entende texto?",
+    "o que é aprendizado por reforço?",
+    "o que é overfitting?",
+    "tronikat, me explica como uma IA aprende",
+    "o que é janela de contexto de um modelo?",
+    "o que é IA multimodal?",
+    "o que são pesos de uma rede neural?",
+]
+# Piso de aprovacao: o modelo tem temperatura, e uma recusa isolada numa
+# rodada nao e o defeito que isto guarda. O defeito e recusar como regra.
+IA_MINIMO = 27
+
 
 def embed_com(modelo: str, textos: list[str]) -> list[list[float]]:
     return chamar("/api/embed", {"model": modelo, "keep_alive": "5m", "options": {"num_gpu": 0},

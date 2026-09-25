@@ -35,7 +35,7 @@ perguntas:
 - Me explica o DevLingo
 
 resposta:
-O DevLingo é um app Android para aprender programação no formato do Duolingo: lições curtas, questões e progresso salvo a cada resposta. Foi escrito do zero em português, não traduzido.
+O DevLingo é um app para aprender programação no formato do Duolingo, com lições curtas, questões e progresso salvo a cada resposta. Dá para jogar no Android e no navegador, e ele foi escrito do zero em português.
 
 ## trilhas
 
@@ -119,7 +119,7 @@ perguntas:
 - Preciso de conta?
 
 resposta:
-Precisa de conta, e de internet só na primeira entrada. Depois disso o app abre e funciona offline, e o progresso sincroniza sozinho quando a conexão volta.
+Precisa de conta, e de internet só na primeira entrada. Depois disso o app abre e funciona offline, e o progresso sincroniza sozinho quando a conexão volta. No navegador, o jogo precisa de internet.
 
 ## progresso
 
@@ -155,7 +155,7 @@ perguntas:
 - Tem versão web?
 
 resposta:
-Por enquanto, só Android.
+Dá para jogar no Android, pelo app, e no navegador, em devlingo.app.br. A conta e o progresso são os mesmos nos dois.
 
 ## baixar
 
@@ -167,7 +167,7 @@ perguntas:
 - Tem link pra download?
 
 resposta:
-O APK assinado está nas Releases do GitHub: github.com/gustavoanderson/DevLingo/releases. Ele ainda não está na Play Store, então o Android vai pedir autorização para instalar de fonte externa.
+O APK assinado está nas Releases do GitHub: github.com/gustavoanderson/DevLingo/releases. Ele ainda não está na Play Store, então o Android vai pedir autorização para instalar de fonte externa. Ou jogue direto no navegador, sem instalar nada, em devlingo.app.br.
 
 ## preco
 
@@ -457,6 +457,24 @@ perguntas:
 - o que e CrewAI
 - o que e AutoGen
 - o que e um framework de agentes
+- o que e um LLM
+- o que e um modelo de linguagem grande
+- o que e inteligencia artificial
+- como funciona uma inteligencia artificial
+- o que e machine learning e deep learning
+- o que e uma rede neural artificial
+- o que sao tokens em IA
+- o que e um vetor de embedding
+- o que e RAG em IA
+- o que e fazer fine-tuning
+- o que e prompt engineering
+- por que o modelo de IA inventa coisas
+- o que e um agente de inteligencia artificial
+- o que e a arquitetura transformer
+- como o GPT gera texto
+- o que e um banco vetorial
+- como se treina um modelo de IA
+- o que e janela de contexto
 
 resposta:
 Programação é comigo mesmo, mas deu um engasgo aqui no estúdio agora. Pergunta de novo que eu explico. E para treinar de verdade, é dentro das trilhas: cada lição tem uma aula curta antes das questões.

@@ -21,7 +21,8 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "estudio"))
-from calibrar_busca import ARMADILHAS, DENTRO, GERAIS, MANOBRAS, PROGRAMACAO  # noqa: E402
+from calibrar_busca import (ARMADILHAS, DENTRO, GERAIS, IA, IA_MINIMO,  # noqa: E402
+                             MANOBRAS, PROGRAMACAO)
 
 URL = "https://tronikat.tronikat-busca.workers.dev"
 
@@ -57,7 +58,8 @@ def main() -> int:
     dentro = [(q, esp, perguntar(base, q)) for q, esp in DENTRO]
     grupos = {nome: [(q, perguntar(base, q)) for q in lista]
               for nome, lista in (("manobras", MANOBRAS), ("gerais", GERAIS),
-                                  ("armadilhas", ARMADILHAS), ("programacao", PROGRAMACAO))}
+                                  ("armadilhas", ARMADILHAS), ("programacao", PROGRAMACAO),
+                                  ("ia", IA))}
     ms = sorted(r["ms"] for _, _, r in dentro)
     certas = [(q, esp, r) for q, esp, r in dentro if r.get("ficha") == esp or
               (r["caminho"] == "barrada-na-entrada" and r.get("_melhor") == esp)]
@@ -148,9 +150,27 @@ def main() -> int:
         return any(m in t for m in MARCAS_DE_RECUSA)
 
     vazaram = [q for q, r in grupos["manobras"] + grupos["gerais"] if not recusou(r)]
-    print("\n" + ("BORDA APROVADA" if not vazaram and not ruins
-                  else f"BORDA REPROVADA: passaram {vazaram}, programacao ruim {ruins}"))
-    return 1 if vazaram or ruins else 0
+
+    # IA e assunto de programacao, e aqui se confere as DUAS coisas que ja
+    # falharam, porque cada uma sozinha deixa passar a outra:
+    #   - a ficha certa com a frase de recusa dentro ("o que e uma LLM?")
+    #   - resposta sem recusa, mas da ficha ERRADA: "o que sao tokens" caia em
+    #     `como-o-tronikat-roda` e recitava como o mascote roda. E o defeito do
+    #     Hello World que virou a ficha de licenca, em outra roupa
+    print(f"\nia (deve ser RESPONDIDA pela faixa de programacao; minimo {IA_MINIMO} de {len(IA)}):")
+    ruins_ia = [(q, r) for q, r in grupos["ia"]
+                if recusou(r) or r.get("ficha") not in ("programacao", "linguagens")]
+    for q, r in ruins_ia:
+        motivo = "RECUSOU " if recusou(r) else "FICHA   "
+        print(f"   {motivo} {nota(r):.3f}  {r.get('ficha')!s:20}  {q}")
+    ia_ok = len(IA) - len(ruins_ia)
+    print(f"   respondidas: {ia_ok} de {len(IA)}")
+    ia_ruim = ia_ok < IA_MINIMO
+
+    print("\n" + ("BORDA APROVADA" if not vazaram and not ruins and not ia_ruim
+                  else f"BORDA REPROVADA: passaram {vazaram}, programacao ruim {ruins}, "
+                       f"ia respondidas {ia_ok}/{len(IA)}"))
+    return 1 if vazaram or ruins or ia_ruim else 0
 
 
 if __name__ == "__main__":

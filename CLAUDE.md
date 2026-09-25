@@ -1423,6 +1423,36 @@ exemplos novos na ficha `programacao` corrigiram isso — e essa parte **não** 
 enxugar gelo, porque o que se ensina é uma **forma** de pergunta, não um
 conceito.
 
+#### IA é assunto de programação, e a calibração não via a recusa
+
+Em 25/09/2026 o Gustavo perguntou *"o que é uma LLM?"* e ouviu *"Eu só falo
+sobre programação, tecnologia e o DevLingo"*. A ficha `programacao` não tinha
+um exemplo sequer sobre IA, a nota ficava abaixo do piso, e o modelo aplicava a
+recusa a um assunto de tecnologia.
+
+**O ponto de partida era pior do que parecia.** Numa bateria de 30 perguntas de
+IA, 20 "passavam" — mas metade delas caía em ficha errada e recitava o
+**projeto**: *"o que são tokens"* ia para `como-o-tronikat-roda`, *"o que é um
+agente de IA"* para `mcp`. Respondidas de verdade eram **10 de 30**. É o defeito
+do Hello World de novo, em outra roupa.
+
+**O furo era da própria calibração:** o grupo `programacao` conferia a **ficha**
+e não o **texto**, então ficha certa com a frase de recusa dentro passava
+verde. Hoje o grupo `ia` de `calibrar_busca.py` confere as duas coisas, e
+`calibrar_borda.py` reprova abaixo de 27 de 30. As 30 **não são os exemplos da
+ficha** — medem se a busca generaliza; testar com os próprios exemplos
+passaria por construção.
+
+Com 18 exemplos de IA na ficha: **28 de 30**, e as legítimas continuaram em
+48/53. **Um exemplo roubou pergunta, e saiu:** *"o que e o Model Context
+Protocol"* puxou *"o que é model context protocol nesse projeto?"* da ficha
+`mcp` com 0,903. Sem ele, o MCP genérico cai na ficha do servidor do projeto —
+assunto certo, menos geral, e preferível a quebrar pergunta sobre o app.
+
+**A calibração roda da VM, nunca daqui.** São ~130 perguntas, e o limite de 10
+por minuto trancaria o IP do Gustavo por dez minutos. Copie `estudio/` e
+`calibrar_borda.py` para uma pasta temporária lá, e não para o clone do MCP.
+
 ### Armadilhas medidas, que custaram tempo
 
 - **`127.0.0.1`, nunca `localhost`.** No Windows o `localhost` resolve primeiro para IPv6 (`::1`), o Ollama escuta só no IPv4, e o cliente espera a tentativa IPv6 desistir antes de tentar de novo. Medido em 14/09: **2.168 ms com `localhost` contra 108 ms com `127.0.0.1`**. E o pior é onde os 2 segundos sumiam: **fora** do Ollama, antes de a requisição chegar nele — então não apareciam em nenhuma duração que ele reportasse
