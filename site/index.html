@@ -764,7 +764,7 @@
         <li class="passo"><span>HTTPS</span></li>
         <li class="no"><b>Cloudflare Worker</b><span>o porteiro: até 10 perguntas por minuto por IP</span></li>
         <li class="passo"><span>busca</span></li>
-        <li class="no"><b>EmbeddingGemma 300M</b><i class="oque">(transforma frases em números para comparar o sentido delas)</i><span>escolhe a ficha que responde, ou reconhece o assunto como programação</span></li>
+        <li class="no"><b>EmbeddingGemma 300M</b><i class="oque">(transforma frases em números para comparar o sentido delas)</i><span>dá à pergunta uma nota de 0 a 1 contra perguntas de exemplo: acima de 0,70, ela vai para a ficha do assunto; parecida com assunto de fora (clima, futebol, dólar), ela é barrada</span></li>
         <li class="passo"><span>gera</span></li>
         <li class="no destaque"><b>Qwen3 30B</b><i class="oque">(modelo de linguagem: escreve texto a partir de instruções)</i><span>escreve a resposta; o Llama 3.2 3B confere cada frase antes de ela sair</span></li>
         <li class="passo"><span>fala</span></li>
