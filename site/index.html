@@ -638,6 +638,7 @@
   .arq ol.fluxo .no b{font-size:14px}
   .arq ol.fluxo .no span{font-size:11.5px}
   .arq ol.fluxo .passo span{background:#0B0519}
+  .arq ol.fluxo .no .oque{display:block;font-size:11px;color:var(--ciano);margin-top:3px}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -763,11 +764,11 @@
         <li class="passo"><span>HTTPS</span></li>
         <li class="no"><b>Cloudflare Worker</b><span>o porteiro: até 10 perguntas por minuto por IP</span></li>
         <li class="passo"><span>busca</span></li>
-        <li class="no"><b>EmbeddingGemma 300M</b><span>escolhe a ficha que responde, ou reconhece o assunto como programação</span></li>
+        <li class="no"><b>EmbeddingGemma 300M</b><i class="oque">(transforma frases em números para comparar o sentido delas)</i><span>escolhe a ficha que responde, ou reconhece o assunto como programação</span></li>
         <li class="passo"><span>gera</span></li>
-        <li class="no destaque"><b>Qwen3 30B</b><span>escreve a resposta; o Llama 3.2 3B confere cada frase antes de ela sair</span></li>
+        <li class="no destaque"><b>Qwen3 30B</b><i class="oque">(modelo de linguagem: escreve texto a partir de instruções)</i><span>escreve a resposta; o Llama 3.2 3B confere cada frase antes de ela sair</span></li>
         <li class="passo"><span>fala</span></li>
-        <li class="no"><b>Piper</b><span>a voz, sintetizada numa VM da Oracle Cloud</span></li>
+        <li class="no"><b>Piper</b><i class="oque">(sintetizador de voz: transforma texto em fala)</i><span>a voz, sintetizada numa VM da Oracle Cloud</span></li>
           </ol>
         </div>
         <div class="coluna">
