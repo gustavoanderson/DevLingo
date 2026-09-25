@@ -249,6 +249,20 @@ def criar_manipulador(estudio: Estudio, limitador: Limitador):
             return self.client_address[0] in LOCAIS
 
         def do_POST(self) -> None:
+            # O CORPO E LIDO ANTES DE QUALQUER RESPOSTA, inclusive das que saem
+            # cedo. A conexao e HTTP/1.1 com keep-alive, e o Worker a reaproveita:
+            # corpo deixado sem ler fica na linha e vira o comeco do proximo
+            # pedido. Em 25/09/2026 o `{}` de um /aquecer fez o /falar seguinte
+            # chegar como `{}POST /falar`, levar 501, e a segunda frase de uma
+            # resposta ficar muda no site. testar_voz_servico.py prova isto.
+            try:
+                n = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                n = -1
+            if n < 0 or n > 8192:
+                self.close_connection = True      # sem ler, a conexao nao serve mais
+                return self._json(413, {"erro": "corpo grande demais"})
+            bruto = self.rfile.read(n)
             if self.path not in ("/falar", "/aquecer"):
                 return self._json(404, {"erro": "caminho desconhecido"})
             if not self._autorizado():
@@ -270,10 +284,7 @@ def criar_manipulador(estudio: Estudio, limitador: Limitador):
                     print(f"falha ao aquecer: {e}", flush=True)
                     return self._json(503, {"erro": "voz indisponivel"})
             try:
-                n = int(self.headers.get("Content-Length", "0"))
-                if n > 8192:
-                    return self._json(413, {"erro": "corpo grande demais"})
-                texto = json.loads(self.rfile.read(n) or b"{}").get("texto")
+                texto = json.loads(bruto or b"{}").get("texto")
             except Exception:
                 return self._json(400, {"erro": "corpo precisa ser JSON com o campo 'texto'"})
             if not isinstance(texto, str) or not texto.strip():

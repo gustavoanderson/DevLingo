@@ -16,6 +16,7 @@ razao de `estudio/testar_voz.py` e de `mcp/agente.py`.
 """
 from __future__ import annotations
 
+import http.client
 import json
 import subprocess
 import sys
@@ -94,6 +95,22 @@ def main() -> int:
                  "falar continua guardando e reusando", f"do_cache {fim['do_cache']}")
 
         conferir(bate("/naoexiste", {})[0] == 404, "caminho desconhecido da 404")
+
+        # A MESMA CONEXAO, dois pedidos. Encontrado em 25/09/2026: o Worker
+        # reaproveita a conexao (keep-alive), e uma resposta que saia SEM LER O
+        # CORPO deixava o `{}` na linha -- o pedido seguinte chegava como
+        # `{}POST /falar` e levava 501. No site, a segunda frase da resposta
+        # ficava muda. `urlopen` abre uma conexao por pedido e nunca veria isto.
+        for primeiro in ("/aquecer", "/naoexiste"):
+            con = http.client.HTTPConnection("127.0.0.1", 8770, timeout=120)
+            try:
+                for caminho, corpo in ((primeiro, {}), ("/falar", {"texto": "Depois do " + primeiro[1:] + "."})):
+                    con.request("POST", caminho, body=json.dumps(corpo),
+                                headers={"Content-Type": "application/json"})
+                    r = con.getresponse(); r.read()
+                conferir(r.status == 200, f"/falar depois de {primeiro} na mesma conexao", f"status {r.status}")
+            finally:
+                con.close()
 
         print(f"\n{'SERVICO APROVADO' if not falhas else f'SERVICO REPROVADO: {len(falhas)} falha(s)'}")
         return 1 if falhas else 0

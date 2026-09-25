@@ -1574,6 +1574,14 @@ K), `voce` vira `vˈɔsɪ` (a tônica muda de sílaba) e `la` fica **sem tônica
 falso positivo (`reabri-la` quebrava no hífen), corrigido **na regra**, não no
 conteúdo.
 
+**Corpo não lido emudece a frase seguinte.** Em 25/09/2026 o Gustavo ouviu só a
+primeira frase de uma resposta. No registro da VM: `"{}POST /falar" 501`. O
+`/aquecer` respondia **sem ler o corpo** `{}`, a conexão HTTP/1.1 é reaproveitada
+pelo Worker, e os dois bytes viravam o começo do pedido seguinte. Hoje o corpo
+é lido antes de qualquer resposta, inclusive as que saem cedo (401, 404, 429).
+`testar_voz_servico.py` manda dois pedidos pela **mesma conexão** — `urlopen`
+abre uma por pedido e nunca veria isto — e reprovou com 501 antes da correção.
+
 ### A reprovação do juiz virou o detector de ficha errada
 
 Este arquivo registra a falha de desenho em uma frase: *"o juiz confere se a
