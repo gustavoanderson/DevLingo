@@ -638,6 +638,11 @@
   .arq ol.fluxo .no b{font-size:14px}
   .arq ol.fluxo .no span{font-size:11.5px}
   .arq ol.fluxo .passo span{background:#0B0519}
+  .arq .caminhos{list-style:none;margin:9px 0 0;padding:0;text-align:left;display:grid;gap:6px}
+  .arq .caminhos li{font-size:11.5px;line-height:1.5;color:#C9C2E8;padding-left:10px;
+       border-left:2px solid rgba(0,229,255,.45)}
+  .arq ol.fluxo .caminhos b{display:inline;font-family:var(--mono);font-weight:700;
+       text-transform:none;letter-spacing:0;font-size:inherit;color:var(--texto)}
   .arq ol.fluxo .no .oque{display:block;font-size:11px;color:var(--ciano);margin-top:3px}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -764,7 +769,12 @@
         <li class="passo"><span>HTTPS</span></li>
         <li class="no"><b>Cloudflare Worker</b><span>o porteiro: até 10 perguntas por minuto por IP</span></li>
         <li class="passo"><span>busca</span></li>
-        <li class="no"><b>EmbeddingGemma 300M</b><i class="oque">(transforma frases em números para comparar o sentido delas)</i><span>dá à pergunta uma nota de 0 a 1 contra perguntas de exemplo: acima de 0,70, ela vai para a ficha do assunto; parecida com assunto de fora (clima, futebol, dólar), ela é barrada</span></li>
+        <li class="no"><b>EmbeddingGemma 300M</b><i class="oque">(transforma frases em números para comparar o sentido delas)</i><span>compara a pergunta que o visitante fez ao Tr∅nikAt com frases de referência escritas para cada assunto que ele sabe responder, e dá uma nota de semelhança: 0 é nada a ver, 1 é o mesmo sentido</span>
+          <ul class="caminhos">
+            <li><b>nota acima de 0,70:</b> assunto reconhecido, sobre o DevLingo ou sobre programação, e a pergunta segue para ser respondida</li>
+            <li><b>parecida com assunto proibido</b> (clima, futebol, dólar): barrada. É o <i>guardrail de escopo</i>, que impede a fuga de escopo, ou seja, o Tr∅nikAt respondendo o que não foi feito para responder</li>
+            <li><b>nenhum assunto reconhecido:</b> segue para o Qwen, que responde se for programação e recusa se não for</li>
+          </ul></li>
         <li class="passo"><span>gera</span></li>
         <li class="no destaque"><b>Qwen3 30B</b><i class="oque">(modelo de linguagem: escreve texto a partir de instruções)</i><span>escreve a resposta; o Llama 3.2 3B confere cada frase antes de ela sair</span></li>
         <li class="passo"><span>fala</span></li>
