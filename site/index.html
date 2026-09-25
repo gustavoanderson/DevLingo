@@ -102,8 +102,11 @@
   .marca{font-family:var(--mono);font-weight:700;font-size:clamp(34px,7vw,62px);
          letter-spacing:-1px;line-height:1;
          text-shadow:-2px 0 var(--ciano), 2px 0 var(--magenta)}
-  .sub{font-family:var(--hud);font-size:clamp(14px,2.4vw,19px);letter-spacing:3px;
-       text-transform:uppercase;color:var(--suave);margin-top:10px}
+  /* O subtitulo virou a frase da pagina: sem os numeros ao lado, ele ganha o
+     peso que era dividido com eles. */
+  .sub{font-family:var(--hud);font-weight:600;font-size:clamp(18px,3.2vw,28px);letter-spacing:5px;
+       text-transform:uppercase;color:var(--texto);margin-top:8px;
+       text-shadow:0 0 18px rgba(0,229,255,.45)}
 
   .palco{display:grid;grid-template-columns:minmax(0,358px) minmax(0,1fr);
          gap:20px;align-items:stretch;margin-top:20px}
@@ -480,7 +483,7 @@
      esquerda, porque sao listas com rotulo, e lista centralizada nao se le. */
   .capa > .marca,.capa > .sub{text-align:center}
   .acoes{justify-content:center}
-  .secao,.secao.qa,.secao.larga{grid-template-columns:1fr;justify-items:center;
+  .secao,.secao.qa,.secao.larga{grid-template-columns:minmax(0,1fr);justify-items:center;
         text-align:center;gap:16px}
   .secao h2{border-left:0;padding-left:0;position:relative;padding-bottom:12px}
   .secao h2::after{content:"";position:absolute;left:50%;bottom:0;width:46px;height:3px;
@@ -519,6 +522,99 @@
   @keyframes halo{50%{opacity:1}}
   .botao.primario:hover{transform:translateY(-2px)}
 
+  /* RESPIRO. As secoes ocupavam a largura inteira do painel, e o conteudo se
+     esticava de ponta a ponta. O painel continua largo; o que vai dentro dele
+     tem medida propria, centralizada. */
+  .chao > .secao:first-child{margin-top:150px}
+  .secao .prosa{max-width:940px;margin-left:auto;margin-right:auto}
+  .prosa .intro{color:var(--suave);font-size:13.5px;margin:-4px auto 18px}
+  /* No celular, dois cursos por linha: um so faria oito cartoes estreitos
+     empilhados, e a secao virava uma coluna comprida. */
+  @media (max-width:560px){.trilhas .trilha{flex:1 1 140px;padding:11px 10px}}
+  .trilha .qtd{display:block;color:var(--visor);font-weight:700;font-size:15px;margin-top:4px}
+
+  /* O fluxo do MCP, na vertical: cada passo diz o que acontece entre uma
+     caixa e a seguinte, que e o que torna o diagrama didatico. */
+  ol.fluxo{list-style:none;padding:0;margin:26px auto 0;max-width:460px;display:block}
+  ol.fluxo .no{text-align:center;padding:12px 16px}
+  ol.fluxo .no::after{display:none}
+  ol.fluxo .no b{font-size:15px}
+  ol.fluxo .passo{position:relative;text-align:center;font-size:11.5px;color:var(--ciano);
+       padding:10px 0 12px;letter-spacing:.3px}
+  ol.fluxo .passo::before{content:"";position:absolute;left:50%;top:0;bottom:0;
+       border-left:1px dashed rgba(0,229,255,.55)}
+  ol.fluxo .passo::after{content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+       border:5px solid transparent;border-top-color:var(--ciano);margin-bottom:-6px}
+  /* O rotulo fica POR CIMA da linha tracejada, com fundo da cor do painel:
+     sem isso a linha atravessava o texto. */
+  ol.fluxo .passo span{position:relative;z-index:1;background:#0C0618;padding:1px 10px;border-radius:6px}
+  ol.fluxo .ferramentas{margin:12px 0 2px;gap:6px}
+  ol.fluxo .ferramentas .rotulo{flex-basis:100%;margin:0 0 2px}
+
+  /* Os bugs: cada cartao diz em uma linha o problema e a correcao, e a
+     EVIDENCIA vem como saida de terminal -- os numeros sao os registrados
+     quando cada bug foi corrigido. */
+  /* `min(260px, 100%)`, e nao 260px puro: para medir a largura MINIMA da
+     grade, o navegador usa o max-width (900) e conclui que cabem tres colunas
+     -- 812 px -- e estica a secao inteira ate isso, ate num celular de 390.
+     Medido em 25/09/2026: a pagina foi a 851 px e voltou a escorregar. */
+  .bugs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;
+        max-width:900px;margin:22px auto 0;text-align:left}
+  .bug{border:1px solid var(--linha);border-radius:12px;padding:14px 15px;
+       background:rgba(16,8,36,.7);display:flex;flex-direction:column;gap:7px}
+  .bug > b{color:var(--ciano);font-size:14px;margin-bottom:2px}
+  .bug p{margin:0;font-size:12.5px;line-height:1.5;color:#DCD6F2;display:flex;gap:7px}
+  .bug p i{font-style:normal;flex:none;width:16px;height:16px;border-radius:4px;
+           display:grid;place-items:center;font-size:10px;margin-top:1px}
+  .bug p.problema i{color:#FF7B74;background:rgba(255,95,87,.14);border:1px solid rgba(255,95,87,.5)}
+  .bug p.correcao i{color:var(--visor);background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.45)}
+  .bug code{color:#8FDCE8;font-size:.95em}
+  .bug pre.evidencia{margin:4px 0 0;padding:9px 10px;border-radius:8px;white-space:pre-wrap;
+       background:#05010C;border:1px solid rgba(0,229,255,.28);font-size:11.5px;line-height:1.6;
+       color:#DFF7E2;font-family:var(--mono);position:relative}
+  .bug pre.evidencia::before{content:"◉ evidência";display:block;color:var(--ciano);
+       font-family:var(--hud);letter-spacing:1.2px;text-transform:uppercase;font-size:10.5px;
+       margin-bottom:4px}
+  .evidencia .cmd{color:var(--suave)}
+  .evidencia .ok{color:var(--visor)}
+  .evidencia .mal{color:#FF7B74}
+  .evidencia a{color:var(--ciano);text-decoration:none}
+  .video-bug{margin-top:26px}
+
+  /* A qualidade, contida: os quatro cartoes viram 2 por 2, e a esteira ganha
+     medida propria em vez de esticar ate as bordas do painel. */
+  .qa .prosa{max-width:900px}
+  .tipos{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px;margin-left:auto;
+         margin-right:auto;gap:12px}
+  .qa .data{font-size:11.5px;color:var(--suave);margin:-8px auto 18px}
+  @media (max-width:640px){.tipos{grid-template-columns:1fr}}
+
+  /* O rodape. Os logos sao do Simple Icons (CC0), embutidos -- nenhum pedido a
+     servidor externo -- e numa cor so, a do texto suave: identificam a
+     tecnologia sem transformar o rodape num mosaico de marcas. */
+  .rodape{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;
+          padding:30px 24px 26px}
+  .rod-marca{font-family:var(--mono);font-weight:700;font-size:26px;
+             text-shadow:-1px 0 var(--ciano),1px 0 var(--magenta);color:var(--texto)}
+  .autoria{margin:0;color:#DCD6F2;font-size:13.5px}
+  .rodape svg{width:18px;height:18px;fill:currentColor;flex:none}
+  .loja{display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:10px;
+        border:1px solid var(--linha);background:rgba(16,8,36,.8);color:var(--texto);
+        text-decoration:none;text-align:left}
+  .loja:hover{border-color:var(--ciano)}
+  .loja svg{width:22px;height:22px}
+  .loja b{display:block;font-family:var(--hud);font-weight:600;letter-spacing:1.4px;
+          text-transform:uppercase;font-size:14px}
+  .loja small{display:block;color:var(--suave);font-size:11.5px}
+  .feito-com .rotulo{display:block;font-family:var(--hud);letter-spacing:1.6px;
+          text-transform:uppercase;font-size:11.5px;color:var(--suave);margin-bottom:8px}
+  .feito-com ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;
+          justify-content:center;gap:8px 16px;max-width:640px}
+  .feito-com li{display:flex;align-items:center;gap:6px;color:#C9C2E8;font-size:12px}
+  .licencas{margin:4px 0 0;font-size:11.5px;color:var(--suave);max-width:640px;line-height:1.7}
+  .licencas a{display:inline-flex;align-items:center;gap:4px;text-decoration:none}
+  .licencas svg{width:13px;height:13px}
+
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -532,7 +628,7 @@
 
 <div class="capa">
   <div class="marca">DevLingo</div>
-  <div class="sub">Aprenda a programar · 404 questões · 8 trilhas</div>
+  <div class="sub">Aprenda a programar</div>
   <div class="acoes">
     <a class="botao primario" href="jogo/"><span class="play" aria-hidden="true"></span>Jogar no navegador<small>grátis, sem instalar nada</small></a>
     <a class="botao" href="https://github.com/gustavoanderson/DevLingo/releases/latest">Baixar para Android</a>
@@ -575,25 +671,19 @@
   </div>
 
   <div class="chao">
-  <div class="placar">
-    <div class="cela"><div class="num">404</div><div class="rot">questões</div></div>
-    <div class="cela"><div class="num">8</div><div class="rot">trilhas</div></div>
-    <div class="cela"><div class="num">407</div><div class="rot">testes</div></div>
-    <div class="cela"><div class="num">95,6%</div><div class="rot">cobertura · set/2026</div></div>
-  </div>
-
   <section class="secao">
     <h2>As trilhas</h2>
     <div class="prosa">
+      <p class="intro">400 questões para jogar, em 8 trilhas, todas no nível iniciante.</p>
       <div class="trilhas">
-        <div class="trilha"><b>Python</b><span>Exibir valores, contas, decidir, strings e listas</span></div>
-        <div class="trilha"><b>JavaScript</b><span>Variáveis, comparação, funções e arrays no navegador</span></div>
-        <div class="trilha"><b>Java</b><span>A classe, o main, tipos primitivos e igualdade</span></div>
-        <div class="trilha"><b>Frameworks</b><span>React, Vue, Svelte, Next, Nuxt e Astro — e qual é mais fácil</span></div>
-        <div class="trilha"><b>Backend</b><span>Cliente e servidor, HTTP, REST, bancos e autenticação</span></div>
-        <div class="trilha"><b>Qualidade de Software</b><span>Princípios, níveis, ciclo do bug e técnicas de teste</span></div>
-        <div class="trilha"><b>Selenium</b><span>Localizadores, esperas, Page Object e teste instável</span></div>
-        <div class="trilha"><b>Agentes de IA</b><span>O laço, ferramentas, MCP, orquestração e os limites</span></div>
+        <div class="trilha"><b>Python</b><span class="qtd" data-trilha="python">50 questões</span><span>Exibir valores, contas, decidir, strings e listas</span></div>
+        <div class="trilha"><b>JavaScript</b><span class="qtd" data-trilha="javascript">50 questões</span><span>Variáveis, comparação, funções e arrays no navegador</span></div>
+        <div class="trilha"><b>Java</b><span class="qtd" data-trilha="java">50 questões</span><span>A classe, o main, tipos primitivos e igualdade</span></div>
+        <div class="trilha"><b>Frameworks</b><span class="qtd" data-trilha="frameworks">50 questões</span><span>React, Vue, Svelte, Next, Nuxt e Astro, e qual é mais fácil</span></div>
+        <div class="trilha"><b>Backend</b><span class="qtd" data-trilha="backend">50 questões</span><span>Cliente e servidor, HTTP, REST, bancos e autenticação</span></div>
+        <div class="trilha"><b>Qualidade de Software</b><span class="qtd" data-trilha="qa">50 questões</span><span>Princípios, níveis, ciclo do bug e técnicas de teste</span></div>
+        <div class="trilha"><b>Selenium</b><span class="qtd" data-trilha="selenium">50 questões</span><span>Localizadores, esperas, Page Object e teste instável</span></div>
+        <div class="trilha"><b>Agentes de IA</b><span class="qtd" data-trilha="agentes">50 questões</span><span>O laço, ferramentas, MCP, orquestração e os limites</span></div>
       </div>
     </div>
   </section>
@@ -627,42 +717,40 @@
         DevLingo, as mesmas aplicadas no pipeline de CI, como seis ferramentas que um
         agente de IA consulta antes de propor uma lição nova.</p>
 
-      <div class="fluxo" role="img"
-           aria-label="Caminho de uma chamada ao servidor MCP do DevLingo, do agente de IA ao banco de questões">
-        <div class="no"><b>Agente de IA</b><span>Claude Code ou outro cliente MCP</span></div>
-        <div class="no"><b>Cloudflare Access</b><span>token de serviço; sem ele, HTTP 403</span></div>
-        <div class="no"><b>Cloudflare Tunnel</b><span>conexão de saída da máquina até a Cloudflare</span></div>
-        <div class="no destaque"><b>Servidor MCP</b><span>Python, em uma VM da Oracle Cloud</span></div>
-        <div class="no"><b>Banco de questões</b><span>lições em JSON versionado no GitHub</span></div>
-      </div>
-      <div class="ferramentas">
-        <span class="rotulo">6 ferramentas, todas somente leitura</span>
-        <code>validar_licao</code><code>impressao_digital</code><code>conferir_teclado</code>
-        <code>topicos_da_trilha</code><code>criterios_de_revisao</code><code>material_para_revisao</code>
-      </div>
-      <p class="nota">Nenhuma ferramenta grava. Mesmo com a credencial comprometida,
-        o servidor não permite alterar o conteúdo, e dois testes no CI reprovam se
-        surgir uma ferramenta com nome de escrita.</p>
+      <ol class="fluxo" aria-label="O caminho de uma chamada ao servidor MCP do DevLingo">
+        <li class="no"><b>Agente de IA</b><span>Claude Code ou outro cliente MCP</span></li>
+        <li class="passo"><span>pedido HTTPS com token de serviço</span></li>
+        <li class="no"><b>Cloudflare Access</b><span>confere o token; sem ele, HTTP 403</span></li>
+        <li class="passo"><span>só segue quem se identificou</span></li>
+        <li class="no"><b>Cloudflare Tunnel</b><span>conexão de saída da máquina até a Cloudflare</span></li>
+        <li class="passo"><span>chega à máquina</span></li>
+        <li class="no destaque"><b>Servidor MCP</b><span>Python, numa VM da Oracle Cloud</span>
+          <div class="ferramentas">
+            <span class="rotulo">6 ferramentas, somente leitura</span>
+            <code>validar_licao</code><code>impressao_digital</code><code>conferir_teclado</code>
+            <code>topicos_da_trilha</code><code>criterios_de_revisao</code><code>material_para_revisao</code>
+          </div>
+        </li>
+        <li class="passo"><span>consulta</span></li>
+        <li class="no"><b>Banco de questões</b><span>lições em JSON versionado no GitHub</span></li>
+      </ol>
     </div>
   </section>
 
   <section class="secao larga">
-    <h2>Defeitos encontrados e corrigidos</h2>
+    <h2>Bugs encontrados e corrigidos</h2>
     <div class="prosa">
-      <p>Alguns dos defeitos identificados ao longo do desenvolvimento, com a causa,
-        a correção aplicada e a evidência de que ela funciona. Cada correção ganhou
-        um teste automatizado, verificado removendo a correção de propósito para
-        confirmar que o teste reprova.</p>
+      <p>Alguns bugs encontrados durante o desenvolvimento, cada um com a correção e
+        a prova de que ela funciona.</p>
       <figure class="video-bug">
         <video id="video-bug" src="video/bug-largura.mp4" poster="video/bug-largura.jpg"
                muted loop playsinline preload="none" controls width="390" height="844"
                aria-label="Gravação: a página arrastada para o lado num celular, a medida de 565 px contra 390, o culpado destacado, e a página corrigida"></video>
         <figcaption>
           <b>O processo, gravado</b>
-          <span>Reprodução do defeito <i>site mais largo que o celular</i> com o
-            código anterior à correção (commit <code>525cdca</code>), num Chrome com
-            tela de 390 px. O arrasto é um toque simulado, e as medidas que aparecem
-            na tela são calculadas durante a gravação.</span>
+          <span>Reprodução do bug <i>site mais largo que o celular</i> com o código
+            anterior à correção (commit <code>525cdca</code>), num Chrome com tela de
+            390 px. As medidas na tela são calculadas durante a gravação.</span>
           <ol>
             <li>arrastar a página para o lado</li>
             <li>medir a tela contra a página</li>
@@ -671,77 +759,55 @@
           </ol>
         </figcaption>
       </figure>
-      <div class="defeitos">
-        <div class="defeito">
+      <div class="bugs">
+        <div class="bug">
           <b>Resposta errada aceita como certa</b>
-          <dl>
-            <dt class="problema">Problema</dt><dd>A correção removia todos os espaços, e
-              <code>consttotal=0</code> era aceito como <code>const total = 0;</code>.</dd>
-            <dt class="correcao">Correção</dt><dd>Passaram a ser ignorados apenas os espaços junto a
-              pontuação e operadores. O espaço entre palavras é exigido.</dd>
-            <dt class="evidencia">Evidência</dt><dd>35 casos num arquivo lido pelas implementações em
-              Python e em Dart. O CI reprova se as duas divergirem.</dd>
-          </dl>
+          <p class="problema"><i>✕</i><span><code>consttotal=0</code> passava como <code>const total = 0;</code>.</span></p>
+          <p class="correcao"><i>✓</i><span>Só os espaços junto a pontuação são ignorados.</span></p>
+          <pre class="evidencia" aria-label="Evidência"><span class="cmd">$ python3 tools/test_normalize.py</span>
+<span class="ok">CONTRATO DE NORMALIZACAO CUMPRIDO: 35 casos</span></pre>
         </div>
-        <div class="defeito">
-          <b>Posição perdida ao consultar a aula</b>
-          <dl>
-            <dt class="problema">Problema</dt><dd>Quem abria a aula na questão 7 voltava para a 5. A
-              tela de exercício era recriada com o índice de abertura da lição.</dd>
-            <dt class="correcao">Correção</dt><dd>Posição, texto digitado e estado da questão foram
-              movidos para o componente que sobrevive à troca de tela.</dd>
-            <dt class="evidencia">Evidência</dt><dd>Teste de widget com enunciados distintos por
-              questão, que reprova se a tela voltar para a questão errada.</dd>
-          </dl>
-        </div>
-        <div class="defeito">
+        <div class="bug">
           <b>Histórico de respostas corrompido</b>
-          <dl>
-            <dt class="problema">Problema</dt><dd>Responder de novo uma questão já concluída gravava
-              uma partida inexistente e zerava o contador de tentativas.</dd>
-            <dt class="correcao">Correção</dt><dd>A sessão da questão passou a ser preservada inteira
-              entre as telas, e não campo a campo.</dd>
-            <dt class="evidencia">Evidência</dt><dd>O teste mede as tentativas gravadas. Sem a
-              correção, registrava 1 onde deviam ser 2.</dd>
-          </dl>
+          <p class="problema"><i>✕</i><span>Refazer uma questão gravava uma partida que nunca aconteceu.</span></p>
+          <p class="correcao"><i>✓</i><span>A sessão da questão passou a sobreviver à troca de tela.</span></p>
+          <pre class="evidencia" aria-label="Evidência"><span class="cmd">o teste, antes da correção</span>
+tentativas esperadas: 2
+<span class="mal">tentativas gravadas:  1  ✕</span></pre>
         </div>
-        <div class="defeito">
-          <b>Gráfico de estatísticas invisível</b>
-          <dl>
-            <dt class="problema">Problema</dt><dd>Num Xiaomi 15T Pro, a barra de desempenho não
-              aparecia. Um <code>ColoredBox</code> sem filho recebia altura zero
-              dentro de um <code>Row</code>.</dd>
-            <dt class="correcao">Correção</dt><dd><code>crossAxisAlignment: stretch</code> no
-              <code>Row</code>.</dd>
-            <dt class="evidencia">Evidência</dt><dd>A captura de tela, medida com Pillow, tinha 105.300
-              pixels da cor do fundo onde deviam estar três faixas. O teste mede a
-              altura renderizada e reprova com 0,0 sem a correção.</dd>
-          </dl>
+        <div class="bug">
+          <b>Gráfico invisível no celular</b>
+          <p class="problema"><i>✕</i><span>A barra de desempenho tinha altura zero num Xiaomi 15T Pro.</span></p>
+          <p class="correcao"><i>✓</i><span><code>crossAxisAlignment: stretch</code> no <code>Row</code>.</span></p>
+          <pre class="evidencia" aria-label="Evidência"><span class="cmd">medindo o print com Pillow</span>
+<span class="mal">105.300 px da cor do fundo</span>
+<span class="cmd">o teste, sem a correção</span>
+<span class="mal">Actual: &lt;0.0&gt;</span></pre>
         </div>
-        <div class="defeito">
+        <div class="bug">
           <b>Site mais largo que o celular</b>
-          <dl>
-            <dt class="problema">Problema</dt><dd>Numa tela de 390 px, esta página media 565 px e
-              podia ser arrastada para o lado. Uma sombra decorativa se estendia
-              além das bordas.</dd>
-            <dt class="correcao">Correção</dt><dd>A sombra passou a ser ancorada nas bordas da
-              tela.</dd>
-            <dt class="evidencia">Evidência</dt><dd>Inspeção automatizada no Chrome via DevTools
-              Protocol, comparando a largura da página com a da tela. Antes 565,
-              depois 390.</dd>
-          </dl>
+          <p class="problema"><i>✕</i><span>Numa tela de 390 px, a página media 565 e escorregava para o lado.</span></p>
+          <p class="correcao"><i>✓</i><span>A sombra decorativa passou a respeitar as bordas da tela.</span></p>
+          <pre class="evidencia" aria-label="Evidência"><span class="cmd">largura medida no Chrome</span>
+<span class="mal">antes:  página 565 px ✕</span>
+<span class="ok">depois: página 390 px ✓</span>
+<a href="#video-bug">▶ ver a gravação</a></pre>
         </div>
-        <div class="defeito">
+        <div class="bug">
           <b>Limite de uso que não limitava</b>
-          <dl>
-            <dt class="problema">Problema</dt><dd>O limitador nativo da Cloudflare, configurado para
-              10 perguntas por minuto ao mascote, deixava passar cerca de 87.</dd>
-            <dt class="correcao">Correção</dt><dd>Substituído por um contador em Durable Object, com
-              contagem exata por IP.</dd>
-            <dt class="evidencia">Evidência</dt><dd>Teste de carga disparado de outra máquina. A 11ª
-              pergunta recebeu HTTP 429, e o laço sequencial passou exatamente 10
-              por minuto.</dd>
-          </dl>
+          <p class="problema"><i>✕</i><span>Configurado para 10 perguntas por minuto, deixava passar 87.</span></p>
+          <p class="correcao"><i>✓</i><span>Um contador exato num Durable Object da Cloudflare.</span></p>
+          <pre class="evidencia" aria-label="Evidência"><span class="cmd">12 perguntas seguidas</span>
+<span class="ok">400 × 10</span>
+<span class="mal">429, 429 ✓ barradas</span></pre>
+        </div>
+        <div class="bug">
+          <b>A voz que calava no meio</b>
+          <p class="problema"><i>✕</i><span>A segunda frase da resposta do Tr∅nikAt ficava muda.</span></p>
+          <p class="correcao"><i>✓</i><span>O servidor de voz lê o pedido inteiro antes de responder.</span></p>
+          <pre class="evidencia" aria-label="Evidência"><span class="cmd">registro do servidor</span>
+<span class="ok">"POST /falar" 200</span>
+<span class="mal">"{}POST /falar" 501 ✕</span></pre>
         </div>
       </div>
     </div>
@@ -772,7 +838,7 @@
               <li><b>Análise estática</b><span>flutter analyze, sem nenhum aviso</span></li>
               <li><b>Testes do app</b><span>lógica e tela, detalhados abaixo</span></li>
               <li><b>Números do site</b><span>o que esta página anuncia é conferido</span></li>
-              <li><b>Cobertura</b><span>publicada junto com o denominador</span></li>
+              <li><b>Cobertura</b><span>medida a cada envio</span></li>
             </ol>
           </div>
         </div>
@@ -784,6 +850,7 @@
         <div class="fatia logica" style="flex:255" title="255 testes de lógica"><b>255</b> lógica</div>
         <div class="fatia tela" style="flex:152" title="152 testes de tela"><b>152</b> tela</div>
       </div>
+      <p class="data">divisão medida em 25/09/2026</p>
 
       <div class="tipos">
         <div class="tipo">
@@ -801,7 +868,7 @@
         </div>
         <div class="tipo">
           <b><i class="ponto neutro"></i>Validador de conteúdo</b>
-          <span>Cada questão passa por regras que nasceram de defeitos reais. Gabarito
+          <span>Cada questão passa por regras que nasceram de bugs reais. Gabarito
             concentrado numa letra, a mesma resposta cobrada duas vezes, aula que
             não prepara o que a lição cobra.</span>
         </div>
@@ -813,18 +880,34 @@
         </div>
       </div>
 
-      <p class="nota">Toda regra foi provada reprovando de propósito, porque um portão
-        que só sabe aprovar não protege nada. A cobertura é de <b>95,6% das linhas em
-        28 dos 33 arquivos</b> do app, medida em 16/09/2026. A divisão entre lógica e
-        tela é de 25/09/2026.</p>
     </div>
   </section>
 
-  <div class="rodape">
-    <b>Tr∅nikAt</b> · gato branco bípede ciberneticamente modificado, com visor verde.<br>
-    Código sob licença MIT · conteúdo sob CC BY-NC-ND 4.0 · o mascote e o nome são reservados.<br>
-    <a href="https://github.com/gustavoanderson/DevLingo">github.com/gustavoanderson/DevLingo</a>
-  </div>
+  <footer class="rodape">
+    <div class="rod-marca">DevLingo</div>
+    <p class="autoria">© 2026 DevLingo · Desenvolvido por <b>Gustavo Anderson</b></p>
+    <a class="loja" href="https://github.com/gustavoanderson/DevLingo/releases/latest">
+      <svg viewBox="0 0 24 24" role="img" aria-label="Google Play"><title>Google Play</title><path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z"/></svg>
+      <span><b>Google Play · em breve</b><small>enquanto isso, baixe o APK no GitHub</small></span>
+    </a>
+    <div class="feito-com">
+      <span class="rotulo">Desenvolvido com</span>
+      <ul>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Flutter"><title>Flutter</title><path d="M14.314 0L2.3 12 6 15.7 21.684.013h-7.357zm.014 11.072L7.857 17.53l6.47 6.47H21.7l-6.46-6.468 6.46-6.46h-7.37z"/></svg><span>Flutter</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Dart"><title>Dart</title><path d="M4.105 4.105S9.158 1.58 11.684.316a3.079 3.079 0 0 1 1.481-.315c.766.047 1.677.788 1.677.788L24 9.948v9.789h-4.263V24H9.789l-9-9C.303 14.5 0 13.795 0 13.105c0-.319.18-.818.316-1.105l3.789-7.895zm.679.679v11.787c.002.543.021 1.024.498 1.508L10.204 23h8.533v-4.263L4.784 4.784zm12.055-.678c-.899-.896-1.809-1.78-2.74-2.643-.302-.267-.567-.468-1.07-.462-.37.014-.87.195-.87.195L6.341 4.105l10.498.001z"/></svg><span>Dart</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Firebase"><title>Firebase</title><path d="M19.455 8.369c-.538-.748-1.778-2.285-3.681-4.569-.826-.991-1.535-1.832-1.884-2.245a146 146 0 0 0-.488-.576l-.207-.245-.113-.133-.022-.032-.01-.005L12.57 0l-.609.488c-1.555 1.246-2.828 2.851-3.681 4.64-.523 1.064-.864 2.105-1.043 3.176-.047.241-.088.489-.121.738-.209-.017-.421-.028-.632-.033-.018-.001-.035-.002-.059-.003a7.46 7.46 0 0 0-2.28.274l-.317.089-.163.286c-.765 1.342-1.198 2.869-1.252 4.416-.07 2.01.477 3.954 1.583 5.625 1.082 1.633 2.61 2.882 4.42 3.611l.236.095.071.025.003-.001a9.59 9.59 0 0 0 2.941.568q.171.006.342.006c1.273 0 2.513-.249 3.69-.742l.008.004.313-.145a9.63 9.63 0 0 0 3.927-3.335c1.01-1.49 1.577-3.234 1.641-5.042.075-2.161-.643-4.304-2.133-6.371m-7.083 6.695c.328 1.244.264 2.44-.191 3.558-1.135-1.12-1.967-2.352-2.475-3.665-.543-1.404-.87-2.74-.974-3.975.48.157.922.366 1.315.622 1.132.737 1.914 1.902 2.325 3.461zm.207 6.022c.482.368.99.712 1.513 1.028-.771.21-1.565.302-2.369.273a8 8 0 0 1-.373-.022c.458-.394.869-.823 1.228-1.279zm1.347-6.431c-.516-1.957-1.527-3.437-3.002-4.398-.647-.421-1.385-.741-2.194-.95.011-.134.026-.268.043-.4.014-.113.03-.216.046-.313.133-.689.332-1.37.589-2.025.099-.25.206-.499.321-.74l.004-.008c.177-.358.376-.719.61-1.105l.092-.152-.003-.001c.544-.851 1.197-1.627 1.942-2.311l.288.341c.672.796 1.304 1.548 1.878 2.237 1.291 1.549 2.966 3.583 3.612 4.48 1.277 1.771 1.893 3.579 1.83 5.375-.049 1.395-.461 2.755-1.195 3.933-.694 1.116-1.661 2.05-2.8 2.708-.636-.318-1.559-.839-2.539-1.599.79-1.575.952-3.28.479-5.072zm-2.575 5.397c-.725.939-1.587 1.55-2.09 1.856-.081-.029-.163-.06-.243-.093l-.065-.026c-1.49-.616-2.747-1.656-3.635-3.01-.907-1.384-1.356-2.993-1.298-4.653.041-1.19.338-2.327.882-3.379.316-.07.638-.114.96-.131l.084-.002c.162-.003.324-.003.478 0 .227.011.454.035.677.07.073 1.513.445 3.145 1.105 4.852.637 1.644 1.694 3.162 3.144 4.515z"/></svg><span>Firebase</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Cloudflare"><title>Cloudflare</title><path d="M16.5088 16.8447c.1475-.5068.0908-.9707-.1553-1.3154-.2246-.3164-.6045-.499-1.0615-.5205l-8.6592-.1123a.1559.1559 0 0 1-.1333-.0713c-.0283-.042-.0351-.0986-.021-.1553.0278-.084.1123-.1484.2036-.1562l8.7359-.1123c1.0351-.0489 2.1601-.8868 2.5537-1.9136l.499-1.3013c.0215-.0561.0293-.1128.0147-.168-.5625-2.5463-2.835-4.4453-5.5499-4.4453-2.5039 0-4.6284 1.6177-5.3876 3.8614-.4927-.3658-1.1187-.5625-1.794-.499-1.2026.119-2.1665 1.083-2.2861 2.2856-.0283.31-.0069.6128.0635.894C1.5683 13.171 0 14.7754 0 16.752c0 .1748.0142.3515.0352.5273.0141.083.0844.1475.1689.1475h15.9814c.0909 0 .1758-.0645.2032-.1553l.12-.4268zm2.7568-5.5634c-.0771 0-.1611 0-.2383.0112-.0566 0-.1054.0415-.127.0976l-.3378 1.1744c-.1475.5068-.0918.9707.1543 1.3164.2256.3164.6055.498 1.0625.5195l1.8437.1133c.0557 0 .1055.0263.1329.0703.0283.043.0351.1074.0214.1562-.0283.084-.1132.1485-.204.1553l-1.921.1123c-1.041.0488-2.1582.8867-2.5527 1.914l-.1406.3585c-.0283.0713.0215.1416.0986.1416h6.5977c.0771 0 .1474-.0489.169-.126.1122-.4082.1757-.837.1757-1.2803 0-2.6025-2.125-4.727-4.7344-4.727"/></svg><span>Cloudflare</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Python"><title>Python</title><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"/></svg><span>Python</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="SQLite"><title>SQLite</title><path d="M21.678.521c-1.032-.92-2.28-.55-3.513.544a8.71 8.71 0 0 0-.547.535c-2.109 2.237-4.066 6.38-4.674 9.544.237.48.422 1.093.544 1.561a13.044 13.044 0 0 1 .164.703s-.019-.071-.096-.296l-.05-.146a1.689 1.689 0 0 0-.033-.08c-.138-.32-.518-.995-.686-1.289-.143.423-.27.818-.376 1.176.484.884.778 2.4.778 2.4s-.025-.099-.147-.442c-.107-.303-.644-1.244-.772-1.464-.217.804-.304 1.346-.226 1.478.152.256.296.698.422 1.186.286 1.1.485 2.44.485 2.44l.017.224a22.41 22.41 0 0 0 .056 2.748c.095 1.146.273 2.13.5 2.657l.155-.084c-.334-1.038-.47-2.399-.41-3.967.09-2.398.642-5.29 1.661-8.304 1.723-4.55 4.113-8.201 6.3-9.945-1.993 1.8-4.692 7.63-5.5 9.788-.904 2.416-1.545 4.684-1.931 6.857.666-2.037 2.821-2.912 2.821-2.912s1.057-1.304 2.292-3.166c-.74.169-1.955.458-2.362.629-.6.251-.762.337-.762.337s1.945-1.184 3.613-1.72C21.695 7.9 24.195 2.767 21.678.521m-18.573.543A1.842 1.842 0 0 0 1.27 2.9v16.608a1.84 1.84 0 0 0 1.835 1.834h9.418a22.953 22.953 0 0 1-.052-2.707c-.006-.062-.011-.141-.016-.2a27.01 27.01 0 0 0-.473-2.378c-.121-.47-.275-.898-.369-1.057-.116-.197-.098-.31-.097-.432 0-.12.015-.245.037-.386a9.98 9.98 0 0 1 .234-1.045l.217-.028c-.017-.035-.014-.065-.031-.097l-.041-.381a32.8 32.8 0 0 1 .382-1.194l.2-.019c-.008-.016-.01-.038-.018-.053l-.043-.316c.63-3.28 2.587-7.443 4.8-9.791.066-.069.133-.128.198-.194Z"/></svg><span>SQLite</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="GitHub Actions"><title>GitHub Actions</title><path d="M10.984 13.836a.5.5 0 0 1-.353-.146l-.745-.743a.5.5 0 1 1 .706-.708l.392.391 1.181-1.18a.5.5 0 0 1 .708.707l-1.535 1.533a.504.504 0 0 1-.354.146zm9.353-.147l1.534-1.532a.5.5 0 0 0-.707-.707l-1.181 1.18-.392-.391a.5.5 0 1 0-.706.708l.746.743a.497.497 0 0 0 .706-.001zM4.527 7.452l2.557-1.585A1 1 0 0 0 7.09 4.17L4.533 2.56A1 1 0 0 0 3 3.406v3.196a1.001 1.001 0 0 0 1.527.85zm2.03-2.436L4 6.602V3.406l2.557 1.61zM24 12.5c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3h-2.08a3.503 3.503 0 0 1-3.46 3 3.502 3.502 0 0 1-3.46-3h-.558c-.972 0-1.85-.399-2.482-1.042V17c0 1.654 1.346 3 3 3h.04c.244-1.693 1.7-3 3.46-3 1.93 0 3.5 1.57 3.5 3.5S13.43 24 11.5 24a3.502 3.502 0 0 1-3.46-3H8c-2.206 0-4-1.794-4-4V9.899A5.008 5.008 0 0 1 0 5c0-2.757 2.243-5 5-5s5 2.243 5 5a5.005 5.005 0 0 1-4.952 4.998A2.482 2.482 0 0 0 7.482 12h.558c.244-1.693 1.7-3 3.46-3a3.502 3.502 0 0 1 3.46 3h2.08a3.503 3.503 0 0 1 3.46-3c1.93 0 3.5 1.57 3.5 3.5zm-15 8c0 1.378 1.122 2.5 2.5 2.5s2.5-1.122 2.5-2.5-1.122-2.5-2.5-2.5S9 19.122 9 20.5zM5 9c2.206 0 4-1.794 4-4S7.206 1 5 1 1 2.794 1 5s1.794 4 4 4zm9 3.5c0-1.378-1.122-2.5-2.5-2.5S9 11.122 9 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm9 0c0-1.378-1.122-2.5-2.5-2.5S18 11.122 18 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm-13 8a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm2 0a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm12 0c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3.002c-.007.001-.013.005-.021.005l-.506.017h-.017a.5.5 0 0 1-.016-.999l.506-.017c.018-.002.035.006.052.007A3.503 3.503 0 0 1 20.5 17c1.93 0 3.5 1.57 3.5 3.5zm-1 0c0-1.378-1.122-2.5-2.5-2.5S18 19.122 18 20.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5z"/></svg><span>GitHub Actions</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Oracle Cloud"><title>Oracle Cloud</title><path d="M16.412 4.412h-8.82a7.588 7.588 0 0 0-.008 15.176h8.828a7.588 7.588 0 0 0 0-15.176zm-.193 12.502H7.786a4.915 4.915 0 0 1 0-9.828h8.433a4.914 4.914 0 1 1 0 9.828z"/></svg><span>Oracle Cloud</span></li>
+        <li><svg viewBox="0 0 24 24" role="img" aria-label="Anthropic Claude"><title>Anthropic Claude</title><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg><span>Anthropic Claude</span></li>
+      </ul>
+    </div>
+    <p class="licencas">Código sob licença MIT · conteúdo didático sob CC BY-NC-ND 4.0 ·
+      o nome DevLingo e o mascote Tr∅nikAt são reservados ·
+      <a href="https://github.com/gustavoanderson/DevLingo"><svg viewBox="0 0 24 24" role="img" aria-label="GitHub"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>código-fonte</a></p>
+  </footer>
   </div>
 </div>
 

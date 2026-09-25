@@ -58,6 +58,7 @@ def contar_banco() -> dict[str, int]:
     """Conta o que o banco realmente tem. Esta e a unica fonte de verdade."""
     total = jogaveis = licoes = 0
     trilhas = set()
+    por_trilha: dict[str, int] = {}
     for arquivo in sorted(CONTEUDO.glob("*/*.json")):
         dados = json.loads(arquivo.read_text(encoding="utf-8"))
         quantas = len(dados.get("questions", []))
@@ -66,21 +67,31 @@ def contar_banco() -> dict[str, int]:
         if not arquivo.name.endswith(SUFIXO_REFERENCIA):
             jogaveis += quantas
             licoes += 1
+            chave = f"trilha:{arquivo.parent.name}"
+            por_trilha[chave] = por_trilha.get(chave, 0) + quantas
     return {
         "total": total,
         "jogaveis": jogaveis,
         "licoes": licoes,
         "trilhas": len(trilhas),
+        **por_trilha,
     }
+
+
+# Uma afirmacao POR TRILHA DO BANCO, gerada, e nao escrita a mao. Desde 25/09/2026
+# cada cartao de curso do site anuncia quantas questoes aquele curso tem. Gerar a
+# lista a partir das pastas faz duas coisas: confere o numero de cada cartao, e
+# REPROVA quando entra uma trilha nova sem cartao -- a expressao dela nao casa.
+TRILHAS_NO_BANCO = sorted(d.name for d in CONTEUDO.iterdir() if d.is_dir())
 
 
 # (expressao, fatos na ordem dos grupos capturados)
 AFIRMACOES: dict[str, list[tuple[str, list[str]]]] = {
     "site/index.html": [
-        (r"· (\d+) questões · (\d+) trilhas",              ["total", "trilhas"]),
-        (r'<div class="num">(\d+)</div><div class="rot">questões</div>', ["total"]),
-        (r'<div class="num">(\d+)</div><div class="rot">trilhas</div>',  ["trilhas"]),
-        (r'<div class="num">(\d+)</div><div class="rot">testes</div>',   ["testes"]),
+        # O topo e o placar deixaram de anunciar numeros em 25/09/2026: eles
+        # foram para dentro da secao de trilhas, onde tem contexto.
+        (r"(\d+) questões para jogar, em (\d+) trilhas",    ["jogaveis", "trilhas"]),
+        *[(rf'data-trilha="{t}">(\d+) questões', [f"trilha:{t}"]) for t in TRILHAS_NO_BANCO],
         (r"São (\d+) testes automatizados",                ["testes"]),
         (r"- (\d+) questoes em (\d+) trilhas",             ["total", "trilhas"]),
         (r"- (\d+) testes automatizados",                  ["testes"]),
@@ -124,6 +135,12 @@ ROTULOS = {
 }
 
 
+def rotulo(chave: str) -> str:
+    if chave.startswith("trilha:"):
+        return f"questoes de {chave[7:]}"
+    return ROTULOS[chave]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--testes", type=int, default=None,
@@ -136,7 +153,7 @@ def main() -> int:
 
     print("medido agora:")
     for chave, valor in fatos.items():
-        print(f"  {ROTULOS[chave]:20s} {valor}")
+        print(f"  {rotulo(chave):20s} {valor}")
     if "testes" not in fatos:
         print("  testes na suite     -- nao informado, afirmacoes sobre a suite PULADAS")
     print()
@@ -171,12 +188,12 @@ def main() -> int:
                     anunciado = int(achado.group(grupo))
                     real = fatos[chave]
                     marca = "ok  " if anunciado == real else "ERRO"
-                    print(f"  {marca} {relativo}:{linha}  {ROTULOS[chave]}: "
+                    print(f"  {marca} {relativo}:{linha}  {rotulo(chave)}: "
                           f"anuncia {anunciado}, real {real}")
                     if anunciado != real:
                         erros.append(
                             f"{relativo}:{linha} anuncia {anunciado} "
-                            f"{ROTULOS[chave]}, e o real e {real}.")
+                            f"{rotulo(chave)}, e o real e {real}.")
 
     print()
     if pulados:
