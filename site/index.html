@@ -414,6 +414,25 @@
        font-size:12.5px;color:var(--visor);margin-right:4px}
   .ferramentas code{border:1px solid rgba(57,255,20,.3);border-radius:6px;padding:3px 8px;
        font-size:12px;color:#DFF7E2;background:rgba(2,14,6,.7)}
+  /* O video do defeito. 300 KB de MP4 no lugar de um GIF de varios MB, e so
+     baixado quando o visitante chega nele: esta pagina ja travou o Chrome do
+     Gustavo por peso, e nao volta a travar por um enfeite. */
+  .video-bug{display:flex;gap:26px;align-items:center;justify-content:center;
+             margin:20px auto 22px;max-width:760px}
+  .video-bug video{width:240px;height:auto;aspect-ratio:390/844;border-radius:14px;
+             border:1px solid var(--linha);background:#05010C;flex:none;
+             box-shadow:0 10px 34px rgba(0,0,0,.5)}
+  .video-bug figcaption{text-align:left;max-width:380px}
+  .video-bug figcaption b{display:block;font-family:var(--hud);font-weight:600;
+             letter-spacing:1.6px;text-transform:uppercase;font-size:17px;margin-bottom:6px}
+  .video-bug figcaption span{display:block;color:#DCD6F2;font-size:13px;line-height:1.65}
+  .video-bug figcaption code{color:#8FDCE8}
+  .video-bug ol{margin:10px 0 0;padding-left:20px;color:var(--suave);font-size:12.5px;line-height:1.8}
+  @media (max-width:640px){
+    .video-bug{flex-direction:column;gap:14px}
+    .video-bug figcaption{text-align:center}
+    .video-bug ol{display:inline-block;text-align:left}
+  }
   .defeitos{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;
             margin-top:14px}
   .defeito{border:1px solid var(--linha);border-radius:11px;padding:13px 15px;
@@ -422,6 +441,20 @@
   .defeito dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px}
   .defeito dt{font-family:var(--hud);font-weight:600;letter-spacing:1.2px;
               text-transform:uppercase;font-size:11.5px;color:var(--suave);padding-top:2px}
+  /* Os tres rotulos em cores DIFERENTES, e cada um com simbolo -- a cor nunca
+     e a unica pista. As cores sao as que o app ja usa para o mesmo sentido:
+     o vermelho do "ainda nao", o verde do acerto, o ciano de destaque. So o
+     rotulo e colorido; o texto segue claro, porque verde saturado em texto
+     corrido reprova em contraste (docs/paleta.md). */
+  .defeito dt{justify-self:start;align-self:start;border-radius:5px;padding:2px 7px 1px;line-height:1.4;
+              border:1px solid;white-space:nowrap}
+  .defeito dt::before{margin-right:5px;font-family:var(--mono)}
+  .defeito dt.problema{color:#FF7B74;border-color:rgba(255,95,87,.5);background:rgba(255,95,87,.10)}
+  .defeito dt.problema::before{content:"✕"}
+  .defeito dt.correcao{color:var(--visor);border-color:rgba(57,255,20,.45);background:rgba(57,255,20,.08)}
+  .defeito dt.correcao::before{content:"✓"}
+  .defeito dt.evidencia{color:var(--ciano);border-color:rgba(0,229,255,.45);background:rgba(0,229,255,.08)}
+  .defeito dt.evidencia::before{content:"◉"}
   .defeito dd{margin:0;font-size:12.5px;line-height:1.55;color:#DCD6F2}
   .defeito code,.larga .prosa p code{font-size:.92em;color:#8FDCE8}
   @media (max-width:880px){
@@ -620,49 +653,67 @@
         a correção aplicada e a evidência de que ela funciona. Cada correção ganhou
         um teste automatizado, verificado removendo a correção de propósito para
         confirmar que o teste reprova.</p>
+      <figure class="video-bug">
+        <video id="video-bug" src="video/bug-largura.mp4" poster="video/bug-largura.jpg"
+               muted loop playsinline preload="none" controls width="390" height="844"
+               aria-label="Gravação: a página arrastada para o lado num celular, a medida de 565 px contra 390, o culpado destacado, e a página corrigida"></video>
+        <figcaption>
+          <b>O processo, gravado</b>
+          <span>Reprodução do defeito <i>site mais largo que o celular</i> com o
+            código anterior à correção (commit <code>525cdca</code>), num Chrome com
+            tela de 390 px. O arrasto é um toque simulado, e as medidas que aparecem
+            na tela são calculadas durante a gravação.</span>
+          <ol>
+            <li>arrastar a página para o lado</li>
+            <li>medir a tela contra a página</li>
+            <li>destacar o elemento culpado</li>
+            <li>repetir o gesto na versão corrigida</li>
+          </ol>
+        </figcaption>
+      </figure>
       <div class="defeitos">
         <div class="defeito">
           <b>Resposta errada aceita como certa</b>
           <dl>
-            <dt>Problema</dt><dd>A correção removia todos os espaços, e
+            <dt class="problema">Problema</dt><dd>A correção removia todos os espaços, e
               <code>consttotal=0</code> era aceito como <code>const total = 0;</code>.</dd>
-            <dt>Correção</dt><dd>Passaram a ser ignorados apenas os espaços junto a
+            <dt class="correcao">Correção</dt><dd>Passaram a ser ignorados apenas os espaços junto a
               pontuação e operadores. O espaço entre palavras é exigido.</dd>
-            <dt>Evidência</dt><dd>35 casos num arquivo lido pelas implementações em
+            <dt class="evidencia">Evidência</dt><dd>35 casos num arquivo lido pelas implementações em
               Python e em Dart. O CI reprova se as duas divergirem.</dd>
           </dl>
         </div>
         <div class="defeito">
           <b>Posição perdida ao consultar a aula</b>
           <dl>
-            <dt>Problema</dt><dd>Quem abria a aula na questão 7 voltava para a 5. A
+            <dt class="problema">Problema</dt><dd>Quem abria a aula na questão 7 voltava para a 5. A
               tela de exercício era recriada com o índice de abertura da lição.</dd>
-            <dt>Correção</dt><dd>Posição, texto digitado e estado da questão foram
+            <dt class="correcao">Correção</dt><dd>Posição, texto digitado e estado da questão foram
               movidos para o componente que sobrevive à troca de tela.</dd>
-            <dt>Evidência</dt><dd>Teste de widget com enunciados distintos por
+            <dt class="evidencia">Evidência</dt><dd>Teste de widget com enunciados distintos por
               questão, que reprova se a tela voltar para a questão errada.</dd>
           </dl>
         </div>
         <div class="defeito">
           <b>Histórico de respostas corrompido</b>
           <dl>
-            <dt>Problema</dt><dd>Responder de novo uma questão já concluída gravava
+            <dt class="problema">Problema</dt><dd>Responder de novo uma questão já concluída gravava
               uma partida inexistente e zerava o contador de tentativas.</dd>
-            <dt>Correção</dt><dd>A sessão da questão passou a ser preservada inteira
+            <dt class="correcao">Correção</dt><dd>A sessão da questão passou a ser preservada inteira
               entre as telas, e não campo a campo.</dd>
-            <dt>Evidência</dt><dd>O teste mede as tentativas gravadas. Sem a
+            <dt class="evidencia">Evidência</dt><dd>O teste mede as tentativas gravadas. Sem a
               correção, registrava 1 onde deviam ser 2.</dd>
           </dl>
         </div>
         <div class="defeito">
           <b>Gráfico de estatísticas invisível</b>
           <dl>
-            <dt>Problema</dt><dd>Num Xiaomi 15T Pro, a barra de desempenho não
+            <dt class="problema">Problema</dt><dd>Num Xiaomi 15T Pro, a barra de desempenho não
               aparecia. Um <code>ColoredBox</code> sem filho recebia altura zero
               dentro de um <code>Row</code>.</dd>
-            <dt>Correção</dt><dd><code>crossAxisAlignment: stretch</code> no
+            <dt class="correcao">Correção</dt><dd><code>crossAxisAlignment: stretch</code> no
               <code>Row</code>.</dd>
-            <dt>Evidência</dt><dd>A captura de tela, medida com Pillow, tinha 105.300
+            <dt class="evidencia">Evidência</dt><dd>A captura de tela, medida com Pillow, tinha 105.300
               pixels da cor do fundo onde deviam estar três faixas. O teste mede a
               altura renderizada e reprova com 0,0 sem a correção.</dd>
           </dl>
@@ -670,12 +721,12 @@
         <div class="defeito">
           <b>Site mais largo que o celular</b>
           <dl>
-            <dt>Problema</dt><dd>Numa tela de 390 px, esta página media 565 px e
+            <dt class="problema">Problema</dt><dd>Numa tela de 390 px, esta página media 565 px e
               podia ser arrastada para o lado. Uma sombra decorativa se estendia
               além das bordas.</dd>
-            <dt>Correção</dt><dd>A sombra passou a ser ancorada nas bordas da
+            <dt class="correcao">Correção</dt><dd>A sombra passou a ser ancorada nas bordas da
               tela.</dd>
-            <dt>Evidência</dt><dd>Inspeção automatizada no Chrome via DevTools
+            <dt class="evidencia">Evidência</dt><dd>Inspeção automatizada no Chrome via DevTools
               Protocol, comparando a largura da página com a da tela. Antes 565,
               depois 390.</dd>
           </dl>
@@ -683,11 +734,11 @@
         <div class="defeito">
           <b>Limite de uso que não limitava</b>
           <dl>
-            <dt>Problema</dt><dd>O limitador nativo da Cloudflare, configurado para
+            <dt class="problema">Problema</dt><dd>O limitador nativo da Cloudflare, configurado para
               10 perguntas por minuto ao mascote, deixava passar cerca de 87.</dd>
-            <dt>Correção</dt><dd>Substituído por um contador em Durable Object, com
+            <dt class="correcao">Correção</dt><dd>Substituído por um contador em Durable Object, com
               contagem exata por IP.</dd>
-            <dt>Evidência</dt><dd>Teste de carga disparado de outra máquina. A 11ª
+            <dt class="evidencia">Evidência</dt><dd>Teste de carga disparado de outra máquina. A 11ª
               pergunta recebeu HTTP 429, e o laço sequencial passou exatamente 10
               por minuto.</dd>
           </dl>
@@ -1675,6 +1726,18 @@ dizer('Tr∅nikAt na escuta. Câmbio.\nMe pergunte algo sobre o mundo dos devs, 
     desejado = passou ? 'bolha' : 'palco';
     aplicar();
   }, { threshold: [0, .25, .5, .75] }).observe(palco);
+})();
+
+/* O video do defeito toca so enquanto esta na tela, e so e baixado quando
+   chega nela (`preload="none"`). Quem pediu "reduzir movimento" no sistema
+   nao ganha reproducao automatica: tem os controles para tocar se quiser. */
+(function oVideoDoDefeito() {
+  const v = document.getElementById('video-bug');
+  if (!v || !('IntersectionObserver' in window)) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+  }, { threshold: .35 }).observe(v);
 })();
 
 claudePronto = (window.claude?.use ? claude.use('sample') : Promise.resolve(null))
