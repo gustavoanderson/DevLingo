@@ -622,6 +622,22 @@
   .licencas a{display:inline-flex;align-items:center;gap:4px;text-decoration:none}
   .licencas svg{width:13px;height:13px}
 
+  /* A ARQUITETURA: tres caminhos lado a lado, cada um um fluxo vertical. O
+     Tr∅nikAt e o servidor MCP dividem a VM da Oracle, mas sao pecas
+     independentes -- a coluna de cada um diz onde ele roda de verdade. */
+  .arquitetura .prosa{max-width:1060px}
+  .arq{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));
+       gap:26px;margin-top:22px;align-items:start}
+  .arq .coluna{border:1px solid var(--linha);border-radius:14px;padding:16px 14px 18px;
+       background:rgba(12,6,28,.55)}
+  .arq h3{margin:0 0 4px;font-family:var(--hud);font-weight:600;letter-spacing:1.8px;
+       text-transform:uppercase;font-size:16px;color:var(--ciano)}
+  .arq .sobre{font-size:12px;color:var(--suave);line-height:1.5;margin:0 0 12px}
+  .arq ol.fluxo{max-width:none;margin-top:12px}
+  .arq ol.fluxo .no{padding:10px 12px}
+  .arq ol.fluxo .no b{font-size:14px}
+  .arq ol.fluxo .no span{font-size:11.5px}
+  .arq ol.fluxo .passo span{background:#0B0519}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -720,29 +736,63 @@
         desenvolvimento de soluções inteligentes.</p>
       <p class="formacao"><span>Bacharel e mestre pela UFPR</span>
         <span>Analista de sistemas pela Universidade Positivo</span></p>
-      <p>O projeto mantém em produção um <b>servidor MCP</b> (Model Context Protocol)
-        no endereço <code>mcp.devlingo.app.br</code>, protegido por autenticação do
-        Cloudflare Access. Ele expõe as regras de qualidade do banco de questões do
-        DevLingo, as mesmas aplicadas no pipeline de CI, como seis ferramentas que um
-        agente de IA consulta antes de propor uma lição nova.</p>
+    </div>
+  </section>
 
-      <ol class="fluxo" aria-label="O caminho de uma chamada ao servidor MCP do DevLingo">
-        <li class="no"><b>Agente de IA</b><span>Claude Code ou outro cliente MCP</span></li>
-        <li class="passo"><span>pedido HTTPS com token de serviço</span></li>
-        <li class="no"><b>Cloudflare Access</b><span>confere o token; sem ele, HTTP 403</span></li>
-        <li class="passo"><span>só segue quem se identificou</span></li>
-        <li class="no"><b>Cloudflare Tunnel</b><span>conexão de saída da máquina até a Cloudflare</span></li>
-        <li class="passo"><span>chega à máquina</span></li>
-        <li class="no destaque"><b>Servidor MCP</b><span>Python, numa VM da Oracle Cloud</span>
-          <div class="ferramentas">
-            <span class="rotulo">6 ferramentas, somente leitura</span>
-            <code>validar_licao</code><code>impressao_digital</code><code>conferir_teclado</code>
-            <code>topicos_da_trilha</code><code>criterios_de_revisao</code><code>material_para_revisao</code>
-          </div>
-        </li>
-        <li class="passo"><span>consulta</span></li>
-        <li class="no"><b>Banco de questões</b><span>lições em JSON versionado no GitHub</span></li>
-      </ol>
+  <section class="secao larga arquitetura">
+    <h2>Arquitetura do DevLingo</h2>
+    <div class="prosa">
+      <p>Três partes em produção, em paralelo, cada uma com a sua infraestrutura.
+        Nenhuma depende de um computador pessoal ligado.</p>
+      <div class="arq">
+        <div class="coluna">
+          <h3>O app e o jogo</h3>
+          <ol class="fluxo">
+        <li class="no"><b>Android ou navegador</b><span>app em Flutter, ou o jogo no navegador, com as regras do app compiladas de Dart para JavaScript</span></li>
+        <li class="passo"><span>entra com a conta</span></li>
+        <li class="no"><b>Firebase Authentication</b><span>login e recuperação de senha</span></li>
+        <li class="passo"><span>cada resposta</span></li>
+        <li class="no destaque"><b>Cloud Firestore</b><span>o histórico sincronizado entre aparelhos; no Android, guardado antes em SQLite para funcionar offline</span></li>
+          </ol>
+        </div>
+        <div class="coluna">
+          <h3>O Tr∅nikAt, ao vivo</h3>
+          <p class="sobre">IA generativa rodando no Workers AI da Cloudflare</p>
+          <ol class="fluxo">
+        <li class="no"><b>Visitante</b><span>pergunta no chat, aqui mesmo</span></li>
+        <li class="passo"><span>HTTPS</span></li>
+        <li class="no"><b>Cloudflare Worker</b><span>o porteiro: até 10 perguntas por minuto por IP</span></li>
+        <li class="passo"><span>busca</span></li>
+        <li class="no"><b>EmbeddingGemma 300M</b><span>escolhe a ficha que responde, ou reconhece o assunto como programação</span></li>
+        <li class="passo"><span>gera</span></li>
+        <li class="no destaque"><b>Qwen3 30B</b><span>escreve a resposta; o Llama 3.2 3B confere cada frase antes de ela sair</span></li>
+        <li class="passo"><span>fala</span></li>
+        <li class="no"><b>Piper</b><span>a voz, sintetizada numa VM da Oracle Cloud</span></li>
+          </ol>
+        </div>
+        <div class="coluna">
+          <h3>O servidor MCP</h3>
+          <p class="sobre">as regras de qualidade do banco, para um agente de IA consultar
+            antes de propor uma lição, em <code>mcp.devlingo.app.br</code></p>
+          <ol class="fluxo">
+            <li class="no"><b>Agente de IA</b><span>Claude Code ou outro cliente MCP</span></li>
+            <li class="passo"><span>pedido HTTPS com token de serviço</span></li>
+            <li class="no"><b>Cloudflare Access</b><span>confere o token; sem ele, HTTP 403</span></li>
+            <li class="passo"><span>só segue quem se identificou</span></li>
+            <li class="no"><b>Cloudflare Tunnel</b><span>conexão de saída da máquina até a Cloudflare</span></li>
+            <li class="passo"><span>chega à máquina</span></li>
+            <li class="no destaque"><b>Servidor MCP</b><span>Python, numa VM da Oracle Cloud</span>
+              <div class="ferramentas">
+                <span class="rotulo">6 ferramentas, somente leitura</span>
+                <code>validar_licao</code><code>impressao_digital</code><code>conferir_teclado</code>
+                <code>topicos_da_trilha</code><code>criterios_de_revisao</code><code>material_para_revisao</code>
+              </div>
+            </li>
+            <li class="passo"><span>consulta</span></li>
+            <li class="no"><b>Banco de questões</b><span>lições em JSON versionado no GitHub</span></li>
+          </ol>
+        </div>
+      </div>
     </div>
   </section>
 
