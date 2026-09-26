@@ -4,7 +4,10 @@
 
 **Aprenda a programar no formato Duolingo — em português, do zero.**
 
+[![Jogar no navegador](https://img.shields.io/badge/jogar-no%20navegador-00E5FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://devlingo.app.br/jogo/)
 [![Baixar APK](https://img.shields.io/badge/baixar-APK%20v1.9.2-FF2D95?style=for-the-badge&logo=android&logoColor=white)](https://github.com/gustavoanderson/DevLingo/releases/latest)
+
+**[devlingo.app.br](https://devlingo.app.br)** · converse com o Tr∅nikAt, o mascote com IA, e veja a arquitetura do projeto
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.13-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
@@ -23,7 +26,7 @@
 
 ## O que é
 
-Um aplicativo Android que ensina programação e engenharia de software em **lições curtas**, no formato que o Duolingo popularizou: você escolhe uma trilha, responde questões, e o progresso fica salvo a cada resposta.
+Um aplicativo, para Android e navegador, que ensina programação e engenharia de software em **lições curtas**, no formato que o Duolingo popularizou: você escolhe uma trilha, responde questões, e o progresso fica salvo a cada resposta.
 
 **Feito para o público brasileiro.** Todo o conteúdo é escrito em português — enunciados, aulas, dicas e explicações. Não é tradução: as questões foram pensadas em português, e até detalhes como *não exigir acento no que o aluno digita* existem porque digitar `ç` em teclado de celular é toque longo, e ninguém deveria errar uma questão de programação por causa do teclado.
 
