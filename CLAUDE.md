@@ -1477,6 +1477,21 @@ Fica a regra: **conferir preço e plano na fonte oficial ANTES de recomendar hos
 
 **Ele compila o Dart, e isso não é opcional.** `jogo/cerebro.js` e `jogo/conteudo.json` não são versionados — o cérebro pela razão já registrada, de que `dart compile js` não garante saída byte a byte entre versões do SDK. **Sem esse passo o jogo publicado abriria numa tela morta**, e nada no repositório denunciaria.
 
+**Desde 25/09/2026 ele só publica depois do CI verde** (`workflow_run`). Antes
+os dois fluxos disparavam juntos, e um site com teste vermelho ia ao ar do
+mesmo jeito. Ele publica o commit que o CI **aprovou** (`head_sha`), e não o
+último da `main`. Sem filtro de caminho — o `workflow_run` não aceita —, então
+toda mudança na `main` republica; custa um minuto de runner gratuito.
+
+**E o CI tem um job `site`**: `site/testar_largura.js` abre a home num celular
+de 390 px e num computador de 1280 px e reprova se ela ficar mais larga que a
+tela. No celular isso não aparece como rolagem — o Chrome **alarga a área
+útil** até caber, e `scrollWidth` e `innerWidth` crescem juntos —, então o que
+se mede é `innerWidth` passar da tela. No computador mede-se a **barra lateral
+visível**; `scrollTo` não serve de sonda porque rola por código mesmo com a
+rolagem escondida. Provado contra as duas versões quebradas do mesmo dia: 565
+e 851 px, as duas reprovaram.
+
 A versão do Flutter é **fixa e igual à do `ci.yml`**: o cérebro que vai ao ar tem de sair do mesmo compilador que a suíte testa. A primeira tentativa usou `flutter-version-file` apontando para o `pubspec.yaml` e derrubou a publicação em 11 segundos — eu inventei a configuração em vez de copiar a que já funcionava ao lado.
 
 #### O artefato copia o layout do REPOSITÓRIO

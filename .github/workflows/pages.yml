@@ -12,15 +12,19 @@
 # em codigo. Sem este passo o jogo publicado abriria numa tela morta.
 name: Pages
 
+# SO PUBLICA DEPOIS DO CI VERDE, desde 25/09/2026. Antes os dois fluxos
+# disparavam juntos a cada push, e um site com teste vermelho ia ao ar do
+# mesmo jeito -- a publicacao nao sabia do CI. Agora ela espera o CI
+# TERMINAR e so segue se ele passou.
+#
+# `workflow_run` nao aceita filtro de caminho, entao toda mudanca na `main`
+# republica o site. Custa um minuto de runner, gratuito em repositorio
+# publico, e elimina a pergunta "esta mudanca devia ter publicado?".
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
-    paths:
-      - "site/**"
-      - "jogo/**"
-      - "app/**"
-      - "assets/mascot/**"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -36,11 +40,21 @@ concurrency:
 jobs:
   publicar:
     runs-on: ubuntu-latest
+    # CI de PR tambem dispara `workflow_run`; so o push na `main` publica, e so
+    # se passou. A publicacao manual continua valendo.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
     environment:
       name: github-pages
       url: ${{ steps.publicacao.outputs.page_url }}
     steps:
+      # O commit que o CI APROVOU, e nao o ultimo da `main`: se outro push
+      # chegou no meio, publicar o mais novo seria publicar algo nao testado.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       # A VERSAO E FIXA, e igual a do ci.yml de proposito: o cerebro que vai ao
       # ar tem de sair do mesmo compilador que a suite testa. Deixar uma delas

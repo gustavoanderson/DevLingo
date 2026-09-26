@@ -97,6 +97,25 @@ jobs:
           fi
           exit $falhou
 
+  # A HOME CABE NA TELA. Em 25/09/2026 a pagina ficou mais larga que o celular
+  # duas vezes no mesmo dia -- 565 px e depois 851 px numa tela de 390 -- e as
+  # duas foram pegas por medicao feita a mao. O runner do Ubuntu ja traz o
+  # Chrome; o Node 22 traz o WebSocket que o teste usa para falar com ele.
+  site:
+    name: Site cabe na tela
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v5
+
+      - name: Preparar o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: A home no celular e no computador
+        run: node site/testar_largura.js
+
   app:
     name: App em Dart
     runs-on: ubuntu-latest
