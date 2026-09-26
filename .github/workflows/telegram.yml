@@ -3,7 +3,17 @@
 # Le as mensagens que o Gustavo manda ao bot, responde os comandos com dados
 # medidos na hora, e guarda o resto como recado no RECADOS.md.
 #
-# ## Sobre o "a cada minuto"
+# ## DESLIGADO desde 26/09/2026: o bot roda na VM da Oracle
+#
+# Medido em 24/09: o cron pedia "a cada minuto" e o GitHub executava a cada
+# ~4 h (mediana de 40 execucoes; de 1h48 a 6h55). Hoje o MESMO script roda na
+# VM como servico do systemd (telegram-bot), a cada 5 s, e o primeiro recado
+# chegou ao GitHub 4 s depois de enviado. Ver ~/bot/rodar.sh na VM.
+#
+# O agendamento saiu -- dois lugares lendo o mesmo bot disputariam as mesmas
+# mensagens. Ficou o `workflow_dispatch`: se a VM cair, roda-se isto a mao.
+#
+# ## Sobre o "a cada minuto" (historico)
 #
 # O cron abaixo pede execucao a cada minuto, e o GitHub **nao garante isso**.
 # A documentacao dele avisa que tarefas agendadas atrasam em horario de pico,
@@ -24,8 +34,6 @@
 name: Telegram
 
 on:
-  schedule:
-    - cron: "* * * * *"
   workflow_dispatch:
 
 # Duas rodadas ao mesmo tempo brigariam pelo mesmo `getUpdates` e pelo mesmo

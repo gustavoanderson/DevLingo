@@ -240,7 +240,26 @@ Cinco segredos no repositório: `REMETENTE_EMAIL`, `REMETENTE_SENHA_APP`, `DESTI
 
 **Isso é deliberado e está escrito na ajuda do bot.** Responder uma pergunta de verdade com texto genérico seria pior que silêncio: daria a impressão de ter sido lido por alguém que não leu. Resposta de verdade exige chamar um modelo, o que custa dinheiro — e a decisão do Gustavo em 11/09 foi **não gastar por enquanto**.
 
-### PENDENTE, e ele pediu para ser lembrado: medir o atraso do agendamento
+### RESOLVIDO em 26/09/2026: o bot saiu do Actions e roda na VM
+
+O atraso foi medido em 24/09: o cron de "a cada minuto" rodava a cada **~4 h**
+(mediana de 40 execuções, de 1h48 a 6h55). Um `/status` era respondido à noite.
+
+Hoje `tools/telegram.py` roda na **VM da Oracle**, como o serviço `telegram-bot`
+do systemd, a cada 5 s. O primeiro recado chegou ao GitHub **4 s** depois de
+enviado. O agendamento do `telegram.yml` saiu; ficou o disparo manual, como
+reserva se a VM cair. Três coisas que valem para quem mexer:
+
+- **A VM grava no repositório com uma deploy key** (`~/.ssh/devlingo_bot`),
+  que só vale para o DevLingo — decisão do Gustavo, com o risco dito: quem
+  invadir a VM consegue commitar aqui. O SSH vai pela **porta 443**
+  (`ssh.github.com`), porque a varredura pela 22 voltou vazia
+- **O token mora em `/etc/devlingo-bot.env`** (600), e o serviço nem sobe sem o
+  arquivo. Ele foi colado na conversa de 26/09; o Gustavo decidiu não trocar
+- **O `rodar.sh` filtra o "nada novo"**, que seriam ~14 mil linhas de registro
+  por dia, e atualiza o repositório a cada 5 min e antes de cada envio
+
+### Histórico: o que motivou a mudança
 
 O cron do Telegram pede execução **a cada minuto**, e o GitHub **não garante isso** — a documentação dele avisa que tarefas agendadas atrasam em horário de pico.
 
