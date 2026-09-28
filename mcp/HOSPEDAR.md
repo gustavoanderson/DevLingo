@@ -179,6 +179,44 @@ sleep 5 && systemctl is-active mcp
 > entre o servidor e o mundo, o que é exatamente o arranjo que este roteiro
 > existe para evitar.
 
+### A cópia do repositório se atualiza sozinha
+
+Sem isto, o `git clone` da Parte 1 envelhece calado: em 28/09/2026 ele estava
+**24 commits atrás**, e as ferramentas que leem o banco responderiam sobre as
+questões do dia da instalação. `mcp/atualizar.sh` puxa a `main` a cada 15 min
+e **só reinicia o servidor se o código dele mudou** — o banco é relido do
+disco a cada chamada e não precisa de reinício.
+
+```bash
+sudo tee /etc/systemd/system/mcp-atualizar.service >/dev/null <<'FIM'
+[Unit]
+Description=Atualiza a copia do repositorio que o servidor MCP le
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/bin/bash /home/ubuntu/mcp/fonte/mcp/atualizar.sh
+FIM
+
+sudo tee /etc/systemd/system/mcp-atualizar.timer >/dev/null <<'FIM'
+[Unit]
+Description=Atualiza o servidor MCP a cada 15 minutos
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target
+FIM
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now mcp-atualizar.timer
+```
+
+Para ver o que ele fez: `journalctl -u mcp-atualizar --since today`.
+
 ---
 
 ## Parte 3 — O túnel
