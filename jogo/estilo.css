@@ -1033,3 +1033,26 @@ html, body {
   border-radius: 6px;
   background: #06110C;
 }
+
+/* ------------------------------------------------------------------- aula
+   A aula do Tr∅nikAt: antes das questoes, na primeira vez, e depois pelo livro
+   no topo do exercicio. O texto largo pede medida curta de leitura. */
+.x-termo { color: #8FDCE8; font-style: italic; }
+.x-negrito { font-weight: 700; }
+.livro { display: inline-flex; align-items: center; justify-content: center;
+         width: 34px; height: 34px; border-radius: 9px; color: var(--ciano, #00E5FF);
+         border: 1px solid rgba(0, 229, 255, .35); flex: none; }
+.livro[hidden] { display: none; }
+.livro svg { width: 18px; height: 18px; fill: currentColor; }
+.livro:focus-visible { outline: 2px solid var(--ciano, #00E5FF); outline-offset: 2px; }
+.vista-aula .topo { display: flex; align-items: center; gap: 12px; }
+.rotulo-aula { font-family: "Barlow Condensed", sans-serif; letter-spacing: 1.8px;
+               text-transform: uppercase; color: #9A92C4; font-size: 13px; }
+.miolo-aula { max-width: 680px; margin: 0 auto; padding: 8px 18px 40px; }
+.titulo-aula { font-family: "Barlow Condensed", sans-serif; font-weight: 600;
+               letter-spacing: 1.2px; font-size: 26px; margin: 14px 0 18px; }
+.secao-aula { margin-bottom: 22px; }
+.secao-aula h2 { font-size: 17px; color: #00E5FF; margin: 0 0 8px; }
+.secao-aula p { line-height: 1.7; margin: 0 0 12px; color: #E8E4FA; }
+.codigo-aula { border-radius: 10px; padding: 10px 0; overflow-x: auto; }
+#aula-seguir { width: 100%; margin-top: 8px; }

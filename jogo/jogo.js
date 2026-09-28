@@ -37,6 +37,8 @@ let enviando = false;
 let questoes = [];
 let indice = 0;
 let estado = null;
+let aulaDaLicao = null;       // o campo `aula` do JSON da licao, ou null
+let voltandoDaAula = false;   // ver abrirLicao: voltar NAO reabre a questao
 
 /* ------------------------------------------------------------------ desenho */
 
@@ -46,7 +48,13 @@ function pintarCodigo(codigo) {
   ide.hidden = false;
   $('ide-nome').textContent = codigo.linguagem;
 
-  const alvo = $('codigo');
+  linhasDeCodigo($('codigo'), codigo);
+}
+
+/* As linhas numeradas e realcadas de um bloco de codigo. Separada de
+   pintarCodigo para a AULA desenhar o codigo dela do mesmo jeito que o
+   exercicio -- mesmo tokenizador, mesma invariante. */
+function linhasDeCodigo(alvo, codigo) {
   alvo.textContent = '';
   codigo.conteudo.split('\n').forEach((linha, i) => {
     const div = document.createElement('div');
@@ -70,6 +78,21 @@ function pintarCodigo(codigo) {
     });
     div.appendChild(src);
     alvo.appendChild(div);
+  });
+}
+
+/* OS TERMOS TECNICOS E O NEGRITO vem do cerebro, que roda a MESMA analise do
+   app (`analise_texto.dart`): o que e termo, o que e negrito e o lexico de
+   cada trilha nao moram aqui. Este arquivo so pinta. */
+function pintarTermos(el, texto) {
+  el.textContent = '';
+  const linguagem = (metaDaLicao && metaDaLicao.language) || '';
+  JSON.parse(devlingo.termos(texto, linguagem)).forEach((t) => {
+    if (t.estilo === 'normal') { el.appendChild(document.createTextNode(t.texto)); return; }
+    const s = document.createElement(t.estilo === 'negrito' ? 'strong' : 'em');
+    s.className = 'x-' + t.estilo;
+    s.textContent = t.texto;
+    el.appendChild(s);
   });
 }
 
@@ -158,7 +181,7 @@ function aplicar(json) {
   const e = estado;
 
   $('topico').textContent = e.topico;
-  $('enunciado').textContent = e.enunciado;
+  pintarTermos($('enunciado'), e.enunciado);
   pintarCodigo(e.codigo);
   pintarAlternativas(e);
   pintarEscrita(e);
@@ -366,21 +389,99 @@ function pintarTrilha(t) {
   mostrar('vista-trilha');
 }
 
-async function abrirLicao(t, l, q) {
+async function carregarLicao(l) {
   // A mesma licao ja aberta nao e rebaixada: trocar so a questao nao pode
   // perder o que se jogou nela.
-  if (licaoAtual !== l) {
-    const dados = await (await fetch(l.arquivo)).json();
-    questoes = dados.questions;
-    licaoAtual = l;
-    metaDaLicao = { language: dados.language, level: dados.level,
-      lessonId: dados.lessonId, lessonTitle: dados.lessonTitle };
+  if (licaoAtual === l) return;
+  const dados = await (await fetch(l.arquivo)).json();
+  questoes = dados.questions;
+  aulaDaLicao = dados.aula || null;
+  licaoAtual = l;
+  indice = -1;
+  estado = null;
+  metaDaLicao = { language: dados.language, level: dados.level,
+    lessonId: dados.lessonId, lessonTitle: dados.lessonTitle };
+}
+
+/* A AULA APARECE SOZINHA NA PRIMEIRA VEZ, e depois pelo livro no topo -- a
+   mesma regra do app. "Ja vi" fica neste navegador: e uma conveniencia, e
+   perde-la so faz a aula aparecer de novo, nunca some progresso. */
+const CHAVE_AULA = 'devlingo.aula-vista.';
+function jaViuAula(id) {
+  try { return localStorage.getItem(CHAVE_AULA + id) === '1'; } catch { return false; }
+}
+function marcarAulaVista(id) {
+  try { localStorage.setItem(CHAVE_AULA + id, '1'); } catch { /* sem armazenamento: so reaparece */ }
+}
+
+async function abrirLicao(t, l, q) {
+  await carregarLicao(l);
+  const base = '#/' + t.chave + '/' + l.id;
+  if (q === undefined && aulaDaLicao && !jaViuAula(l.id)) {
+    // `replace`, e nao `hash =`: senao o voltar do navegador cairia de novo aqui
+    // e mandaria de volta para a aula, num laco.
+    location.replace(base + '/aula');
+    return;
   }
   $('sair').href = '#/' + t.chave;
+  $('ver-aula').href = base + '/aula';
+  $('ver-aula').hidden = !aulaDaLicao;
   document.title = l.titulo + ' — DevLingo';
   mostrar('vista-exercicio');
   const n = Number(q);
-  abrir(Number.isInteger(n) && n >= 0 && n < questoes.length ? n : 0);
+  const alvo = Number.isInteger(n) && n >= 0 && n < questoes.length ? n : 0;
+  /* VOLTAR DA AULA NAO REABRE A QUESTAO. `abrir` recria a sessao e limpa o
+     campo -- e no app isso ja custou tres defeitos: a posicao perdida, o texto
+     digitado apagado, e a resposta ja dada zerada, que corrompia o historico.
+     Aqui a questao nunca saiu da memoria; basta mostra-la de novo. */
+  if (voltandoDaAula && alvo === indice && estado) {
+    voltandoDaAula = false;
+    return;
+  }
+  voltandoDaAula = false;
+  abrir(alvo);
+}
+
+async function abrirAula(t, l) {
+  await carregarLicao(l);
+  const base = '#/' + t.chave + '/' + l.id;
+  if (!aulaDaLicao) { location.replace(base); return; }
+  $('aula-sair').href = '#/' + t.chave;
+  $('aula-titulo').textContent = aulaDaLicao.titulo || l.titulo;
+  const alvo = $('aula-secoes');
+  alvo.textContent = '';
+  for (const s of aulaDaLicao.secoes || []) {
+    const sec = document.createElement('section');
+    sec.className = 'secao-aula';
+    const h = document.createElement('h2');
+    h.textContent = s.titulo;
+    sec.appendChild(h);
+    for (const par of String(s.texto || '').split(/\n\s*\n/)) {
+      if (!par.trim()) continue;
+      const p = document.createElement('p');
+      pintarTermos(p, par.trim());
+      sec.appendChild(p);
+    }
+    if (s.code) {
+      const pre = document.createElement('pre');
+      pre.className = 'codigo codigo-aula';
+      pre.tabIndex = 0;
+      pre.setAttribute('aria-label', 'Exemplo em ' + s.code.language);
+      linhasDeCodigo(pre, { linguagem: s.code.language, conteudo: s.code.content });
+      sec.appendChild(pre);
+    }
+    alvo.appendChild(sec);
+  }
+  // No meio da licao, o botao devolve para a questao em que a pessoa estava.
+  const emAndamento = estado && indice >= 0;
+  $('aula-seguir').textContent = emAndamento ? 'Voltar para a questão' : 'Começar as questões';
+  $('aula-seguir').onclick = () => {
+    voltandoDaAula = emAndamento;
+    location.hash = base + '/' + (emAndamento ? indice : 0);
+  };
+  marcarAulaVista(l.id);
+  document.title = 'Aula: ' + l.titulo + ' — DevLingo';
+  mostrar('vista-aula');
 }
 
 /* O ROTEADOR, pelo `#` do endereco:
@@ -404,7 +505,8 @@ async function rotear() {
   const l = t.licoes.find((x) => x.id === idLicao);
   if (!l) return pintarTrilha(t);
   try {
-    await abrirLicao(t, l, q);
+    if (q === 'aula') await abrirAula(t, l);
+    else await abrirLicao(t, l, q);
   } catch (e) {
     falhar('Não consegui abrir a lição (' + e.message + ').');
   }

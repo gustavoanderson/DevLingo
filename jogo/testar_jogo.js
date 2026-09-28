@@ -28,6 +28,7 @@
  * Sai com 0 se tudo passar e 1 se qualquer coisa falhar, dizendo o que.
  */
 'use strict';
+const LARGURA_FOTO = process.env.CELULAR ? '390' : '900';
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -141,6 +142,11 @@ function conversa(ws) {
     const { targetId } = await cdp('Target.createTarget', { url: 'about:blank' }).then((r) => r.result);
     const { sessionId } = await cdp('Target.attachToTarget', { targetId, flatten: true }).then((r) => r.result);
     for (const d of ['Page', 'Runtime', 'Log']) await cdp(d + '.enable', {}, sessionId);
+    // CELULAR=1 roda tudo numa tela de celular de 390 px -- serve para o print.
+    if (process.env.CELULAR) {
+      await cdp('Emulation.setDeviceMetricsOverride',
+        { width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, sessionId);
+    }
     await cdp('Emulation.setCPUThrottlingRate', { rate: 4 }, sessionId);
     // A nuvem falsa entra ANTES de qualquer script da pagina.
     await cdp('Page.addScriptToEvaluateOnNewDocument', { source: NUVEM_FALSA }, sessionId);
@@ -324,8 +330,37 @@ function conversa(ws) {
     console.log('\n=== jogando python-beg-03 inteira ===');
     const licao = JSON.parse(fs.readFileSync(path.join(RAIZ, 'app/assets/content/python/python-beg-03.json'), 'utf8'));
     await js(`document.querySelector('a[href="#/python/python-beg-03"]').click()`);
+
+    // A AULA VEM ANTES, na primeira vez -- a mesma regra do app. O perfil do
+    // Chrome e novo a cada rodada, entao esta e sempre a primeira vez.
+    conferir(await esperar(visivel('vista-aula')), 'a primeira vez na licao abre a AULA');
+    // FOTOS=pasta guarda um print da aula: teste verde nao ve defeito visual.
+    if (process.env.FOTOS) {
+      await dormir(400);
+      const f = await cdp('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true,
+        clip: await js(`(() => { const r = document.getElementById('vista-aula').getBoundingClientRect();
+          return { x: 0, y: 0, width: innerWidth, height: Math.max(r.height, innerHeight), scale: 1 }; })()`) }, sessionId);
+      fs.writeFileSync(path.join(process.env.FOTOS, 'aula-' + LARGURA_FOTO + '.png'), Buffer.from(f.result.data, 'base64'));
+    }
+    const secoes = await js(`document.querySelectorAll('#aula-secoes .secao-aula').length`);
+    conferir(secoes === licao.aula.secoes.length, 'a aula traz TODAS as secoes do banco',
+      `${secoes} de ${licao.aula.secoes.length}`);
+    // O destaque vem do cerebro, pela MESMA analise do app. Conferir o texto
+    // inteiro, e nao so a existencia do destaque: um analisador que come um
+    // caractere e pior que nenhum, e passaria numa checagem de "tem <em>".
+    const primeira = licao.aula.secoes[0];
+    const paragrafo = await js(`document.querySelector('#aula-secoes .secao-aula p').textContent`);
+    const semMarcas = primeira.texto.split(/\n\s*\n/)[0].trim().replace(/\*\*|`/g, '');
+    conferir(paragrafo === semMarcas, 'o paragrafo e o texto do banco, sem os marcadores e sem perder letra');
+    conferir(await js(`document.querySelectorAll('#aula-secoes .x-termo').length`) > 0,
+      'os termos tecnicos aparecem destacados');
+    const comCodigo = licao.aula.secoes.filter((x) => x.code).length;
+    conferir(await js(`document.querySelectorAll('#aula-secoes .codigo-aula').length`) === comCodigo,
+      'cada secao com exemplo mostra o bloco de codigo', comCodigo + ' blocos');
+    await js(`document.getElementById('aula-seguir').click()`);
     conferir(await esperar(visivel('vista-exercicio') + ` && document.querySelectorAll('.alt').length > 0`),
-      'clicar na licao abre o exercicio');
+      '"Comecar as questoes" leva ao exercicio');
+    conferir(await js(`!document.getElementById('ver-aula').hidden`), 'o livro para rever a aula aparece no topo');
 
     let errouUmaVez = false;
     let jogadas = 0;
@@ -348,6 +383,19 @@ function conversa(ws) {
           conferir(riscada.includes(errada), 'errar risca a alternativa escolhida');
           conferir(await texto('retorno-titulo') === 'AINDA NÃO', 'errar mostra AINDA NÃO, e nunca ERRADO');
           errouUmaVez = true;
+
+          // REVER A AULA NO MEIO DA QUESTAO NAO PODE ZERA-LA. No app isso ja
+          // custou tres defeitos -- posicao, texto digitado e resposta dada --,
+          // todos da tela sendo recriada ao voltar. Aqui a prova e a alternativa
+          // eliminada continuar riscada, na mesma questao.
+          await js(`document.getElementById('ver-aula').click()`);
+          conferir(await esperar(visivel('vista-aula')), 'o livro abre a aula no meio da questao');
+          conferir(await texto('aula-seguir') === 'Voltar para a questão', 'e oferece VOLTAR, e nao comecar de novo');
+          await js(`document.getElementById('aula-seguir').click()`);
+          await esperar(visivel('vista-exercicio'));
+          conferir(await texto('enunciado') === q.prompt, 'volta para a MESMA questao');
+          const aindaRiscada = await js(`[...document.querySelectorAll('.alt.eliminada .rotulo')].map(e => e.textContent)`);
+          conferir(aindaRiscada.includes(errada), 'e a alternativa eliminada CONTINUA riscada', aindaRiscada.join(','));
         }
         await clicar(certa);
       } else {

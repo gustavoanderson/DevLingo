@@ -51,6 +51,7 @@ import 'data/dossie.dart';
 import 'data/partida.dart';
 import 'models/lesson.dart';
 import 'models/question.dart';
+import 'ui/analise_texto.dart';
 import 'ui/realce.dart';
 
 /// A questao em jogo. Uma por vez: a tela do exercicio mostra uma.
@@ -148,6 +149,17 @@ String _dica() {
 String _tokenizar(String linha, String linguagem) => jsonEncode(
     tokenizar(linha, linguagem)
         .map((t) => {'texto': t.texto, 'tipo': t.tipo.name})
+        .toList());
+
+/// Os termos tecnicos e o negrito de um texto corrido -- enunciado ou aula.
+///
+/// A MESMA analise do app, compilada: o que e termo, o que e negrito e o lexico
+/// de cada trilha moram em `analise_texto.dart`, e nao aqui nem no JS. O
+/// navegador so pinta. Mesma invariante do app: os trechos juntos sao o texto
+/// original sem os marcadores.
+String _termos(String texto, String linguagem) => jsonEncode(
+    analisarTexto(texto, linguagem: linguagem)
+        .map((t) => {'texto': t.texto, 'estilo': t.estilo.name})
         .toList());
 
 /// AS TRILHAS, montadas com as regras do app -- nenhuma delas mora no JS.
@@ -303,6 +315,8 @@ void main() {
   api['tokenizar'] =
       ((JSString l, JSString g) => _tokenizar(l.toDart, g.toDart).toJS).toJS;
   api['trilhas'] = ((JSString j) => _trilhas(j.toDart).toJS).toJS;
+  api['termos'] =
+      ((JSString t, JSString g) => _termos(t.toDart, g.toDart).toJS).toJS;
   api['validar'] = ((JSString modo, JSString email, JSString senha) =>
       _validar(modo.toDart, email.toDart, senha.toDart).toJS).toJS;
   api['mensagem'] = ((JSString c) => _mensagem(c.toDart).toJS).toJS;

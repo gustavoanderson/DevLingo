@@ -630,7 +630,7 @@ Isso tornou redundante o esqueleto que aparecia no terceiro erro — seria a mes
 
 Ideia do Gustavo: nome de função, tipo de dado e palavra reservada aparecem em **itálico e cor própria** dentro do enunciado e da aula, para o aluno separar o que é da linguagem do que é português. Vive em `app/lib/ui/texto_rico.dart`, fora de widget — mesma razão de `realce.dart`.
 
-> **Correção de 21/09/2026:** este arquivo já foi descrito aqui como *"Dart puro"*, e **não é** — ele importa `package:flutter/material.dart`, porque devolve trechos já estilizados. A distinção passou a ter consequência no dia em que o jogo foi para o navegador: `normalize.dart`, `sessao_questao.dart` e `realce.dart` compilam para JavaScript sozinhos, e este **não**. Separar o analisador da pintura é trabalho pequeno e ainda não foi feito.
+> **Correção de 21/09/2026:** este arquivo já foi descrito aqui como *"Dart puro"*, e **não é** — ele importa `package:flutter/material.dart`, porque devolve trechos já estilizados. A distinção passou a ter consequência no dia em que o jogo foi para o navegador: `normalize.dart`, `sessao_questao.dart` e `realce.dart` compilam para JavaScript sozinhos, e este **não**. ~~Separar o analisador da pintura é trabalho pequeno e ainda não foi feito.~~ **Feito em 28/09/2026:** a regra mora em `analise_texto.dart` (Dart puro, compila para o navegador), e `texto_rico.dart` só pinta e a reexporta.
 
 #### O léxico NÃO pode ser a lista do realce de sintaxe
 
@@ -2089,10 +2089,24 @@ Firestore, e cross-play provado.
 
 | Pendência | Nota |
 |---|---|
-| Título, aula e estatísticas | as três telas que faltam |
+| Título e estatísticas | as duas telas que faltam. **A aula entrou em 28/09/2026** — ver abaixo |
 | A janela do Tr∅nikAt | reusa a interface que já existe, e fica **fora** do login |
-| Termos destacados no enunciado | depende de separar o analisador de `texto_rico.dart` da pintura |
+| ~~Termos destacados no enunciado~~ | **feito em 28/09/2026**, junto com a aula |
 | Os cinco itens de segurança | antes de publicar |
+
+#### A aula no navegador, e a armadilha que o app já pagou três vezes
+
+`#/trilha/licao/aula`. Aparece sozinha na primeira vez que a lição abre — "já
+vi" fica no `localStorage` deste navegador, e perdê-lo só faz a aula reaparecer
+— e depois pelo **livro** no topo do exercício. Os termos e o negrito vêm do
+cérebro (`devlingo.termos`), pela **mesma** análise do app.
+
+**Voltar da aula NÃO chama `abrir()`.** `abrir` recria a sessão e limpa o campo,
+e no app a tela recriada custou três defeitos: posição, texto digitado e a
+resposta já dada — que corrompia o histórico. `testar_jogo.js` erra uma
+alternativa, abre a aula pelo livro e volta: a alternativa tem de continuar
+riscada e a partida tem de gravar **2** tentativas. Verificado desligando a
+proteção: reprovou nas duas, com `tentativas: 1`.
 
 **O progresso saiu desta lista.** `sqflite` não tem web, e a decisão do Gustavo
 de que o navegador **não precisa funcionar offline** liberou o caminho direto

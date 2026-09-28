@@ -125,11 +125,25 @@
   </div>
 </section>
 
+<!-- ================================================================= aula -->
+<section class="vista vista-aula" id="vista-aula" hidden>
+  <header class="topo">
+    <a class="sair" id="aula-sair" href="#/" title="Voltar para a trilha" aria-label="Voltar para a trilha">✕</a>
+    <span class="rotulo-aula">Aula do Tr∅nikAt</span>
+  </header>
+  <main class="miolo-aula">
+    <h1 class="titulo-aula" id="aula-titulo"></h1>
+    <div id="aula-secoes"></div>
+    <button class="btn principal" id="aula-seguir">Começar as questões</button>
+  </main>
+</section>
+
 <!-- ============================================================ exercicio -->
 <div class="tela vista" id="vista-exercicio" hidden>
 
   <header class="topo">
     <a class="sair" id="sair" href="#/" title="Sair da lição" aria-label="Sair da lição">✕</a>
+    <a class="livro" id="ver-aula" href="#/" title="Rever a aula" aria-label="Rever a aula da lição" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5zM6.5 19H18V4H6.5a.5.5 0 0 0-.5.5v14.6c.16-.07.33-.1.5-.1z"/></svg></a>
     <div class="barra" role="progressbar" aria-label="Progresso da lição"
          aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="barra"></i></div>
     <span class="contador" id="contador">—</span>
